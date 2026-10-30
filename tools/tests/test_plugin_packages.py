@@ -72,6 +72,23 @@ class PluginPackageTests(unittest.TestCase):
         ]:
             with self.assertRaises(tools.ValidationError):
                 tools.validate_view({'layout': 'focus', 'slots': {'hero': component}}, 2)
+    def test_api_four_tiles_contract(self):
+        tile = {'template': 'tile', 'faces': [{'label': 'Weather', 'value': '{{temp}}'}]}
+        page = {'layout': 'tiles', 'slots': {'tiles': [{'widget': 'clock.tile', 'size': 'wide'}]}}
+        for view in [tile, page]:
+            tools.validate_view(view, 4)
+            for api in (1, 2, 3):
+                with self.assertRaises(tools.ValidationError): tools.validate_view(view, api)
+        for color in ['#2D89EF', '{{c}}']:
+            tools.validate_view(dict(tile, color=color), 4)
+            tools.validate_view({'layout': 'tiles', 'slots': {'tiles': [dict(page['slots']['tiles'][0], color=color)]}}, 4)
+        for color in ['red', '#FFF', '#2D89EF80']:
+            with self.assertRaises(tools.ValidationError): tools.validate_view(dict(tile, color=color), 4)
+            with self.assertRaises(tools.ValidationError): tools.validate_view({'layout': 'tiles', 'slots': {'tiles': [dict(page['slots']['tiles'][0], color=color)]}}, 4)
+        for content in [{'type': 'list', 'items': '{{rows}}', 'item': {'title': '{{.name}}'}}, {'type': 'image', 'src': '{{src}}'}, {'type': 'carousel', 'items': 'photos', 'interval': 30, 'duration': 800}]:
+            with self.assertRaises(tools.ValidationError): tools.validate_view(dict(tile, content=content), 4)
+        with self.assertRaises(tools.ValidationError): tools.validate_view({'layout': 'tiles', 'slots': {'tiles': [{'widget': 'clock.tile', 'size': 'huge'}]}}, 4)
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
@@ -175,7 +192,7 @@ class PluginPackageTests(unittest.TestCase):
         self.assertEqual(list((device / 'files/dev-plugins').iterdir()), [device / 'files/dev-plugins/clock'])
 
     def test_new_api_is_rejected(self):
-        self.manifest(lambda data: data.update(api=4))
+        self.manifest(lambda data: data.update(api=5))
         with self.assertRaises(packages.ValidationError): packages.validate_plugin(self.plugin)
 
     def test_traversal_reference_is_rejected(self):

@@ -12,6 +12,31 @@ class PluginSchemaTest {
         catch (_: IllegalArgumentException) { }
     }
 
+    @Test fun apiFourTilesColorsAndBoundedContent() {
+        val tile = JSONObject("""{"template":"tile","faces":[{"label":"Weather","value":"{{temp}}"}]}""")
+        val page = JSONObject("""{"layout":"tiles","slots":{"tiles":[{"widget":"clock.tile","size":"wide"}]}}""")
+        for (view in listOf(tile, page)) {
+            PluginSchema.validateView(view, 4)
+            for (api in 1..3) rejected { PluginSchema.validateView(view, api) }
+        }
+        for (color in listOf("#2D89EF", "{{c}}", "red", "#FFF", "#2D89EF80")) {
+            tile.put("color", color)
+            page.getJSONObject("slots").getJSONArray("tiles").getJSONObject(0).put("color", color)
+            for (view in listOf(tile, page)) {
+                if (color in listOf("#2D89EF", "{{c}}")) PluginSchema.validateView(view, 4)
+                else rejected { PluginSchema.validateView(view, 4) }
+            }
+        }
+        tile.remove("color")
+        for (content in listOf(
+            """{"type":"list","items":"{{rows}}","item":{"title":"{{.name}}"}}""",
+            """{"type":"image","src":"{{src}}"}""",
+            """{"type":"carousel","items":"photos","interval":30,"duration":800}"""
+        )) rejected { PluginSchema.validateView(JSONObject(tile.toString()).put("content", JSONObject(content)), 4) }
+        page.getJSONObject("slots").getJSONArray("tiles").getJSONObject(0).apply { remove("color"); put("size", "huge") }
+        rejected { PluginSchema.validateView(page, 4) }
+    }
+
     @Test fun directoryIndexAndCatalogUseTheSharedContract() {
         val index = JSONObject("""{"id":"probe","version":"1.0.0","digest":"e52ad792c9cfdd084aa054903dd13150c03cd8b751c24acfe4a8e12172633490","files":[{"path":"manifest.json","size":3,"sha256":"ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"}]}""")
         PluginSchema.validateIndex(index)
@@ -37,7 +62,7 @@ class PluginSchemaTest {
     }
 
     @Test fun rejectsNewApiAndPrivateFields() {
-        rejected { PluginSchema.validateManifest(manifest().put("api", 4)) }
+        rejected { PluginSchema.validateManifest(manifest().put("api", 5)) }
         rejected { PluginSchema.validateManifest(manifest().put("privateBridge", true)) }
         rejected { PluginSchema.validateManifest(manifest().put("main", "../escape.lua")) }
     }

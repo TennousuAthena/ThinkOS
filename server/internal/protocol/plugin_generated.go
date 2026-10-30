@@ -206,6 +206,38 @@ type SchemaCarousel struct {
 	Pan_direction *string `json:"pan_direction,omitempty"`
 }
 
+type SchemaTileReference struct {
+	Widget string `json:"widget"`
+	Size string `json:"size"`
+	Color *string `json:"color,omitempty"`
+}
+
+type SchemaTileFace struct {
+	Icon *string `json:"icon,omitempty"`
+	Value *string `json:"value,omitempty"`
+	Label string `json:"label"`
+	Detail *string `json:"detail,omitempty"`
+}
+
+type SchemaTileView struct {
+	Template string `json:"template"`
+	Color *string `json:"color,omitempty"`
+	Faces []SchemaTileFace `json:"faces"`
+	Badge *string `json:"badge,omitempty"`
+	Content any `json:"content,omitempty"`
+}
+
+type SchemaTilesView struct {
+	Layout string `json:"layout"`
+	Slots SchemaTilesSlots `json:"slots"`
+	Variants []SchemaVariant `json:"variants,omitempty"`
+	Mood *string `json:"mood,omitempty"`
+}
+
+type SchemaTilesSlots struct {
+	Tiles []SchemaTileReference `json:"tiles"`
+}
+
 type SchemaManifest struct {
 	Id string `json:"id"`
 	Name string `json:"name"`
@@ -265,13 +297,15 @@ type SchemaCommand struct {
 	Gesture *string `json:"gesture,omitempty"`
 }
 
-const PluginAPI = 3
+const PluginAPI = 4
 
 var renderComponentTypes = map[string]int{"text": 1, "icon": 1, "clock": 1, "form": 1, "progress": 2, "chart": 2, "list": 2, "daylight": 2, "moon": 2, "image": 3, "carousel": 3}
 
-var renderLayouts = map[string]int{"stacks": 1, "focus": 1, "form": 1, "split": 2, "stage": 2}
+var renderLayouts = map[string]int{"stacks": 1, "focus": 1, "form": 1, "split": 2, "stage": 2, "tiles": 4}
 
 var renderComponentProperties = map[string]int{"tap": 2, "weight": 2}
+
+var renderTemplates = map[string]int{"glance": 1, "tile": 4}
 
 // ValidateRenderAPI gates the fixed render vocabulary after schema validation.
 // The version table is generated from layouts.json, the same source used by Android and Python.
@@ -287,6 +321,11 @@ func ValidateRenderAPI(value any, api int) error {
                 name, ok := raw.(string)
                 minimum, known := renderLayouts[name]
                 if !ok || !known || minimum > api { return fmt.Errorf("layout requires a newer plugin API") }
+            }
+            if raw, present := node["template"]; present {
+                name, ok := raw.(string)
+                minimum, known := renderTemplates[name]
+                if !ok || !known || minimum > api { return fmt.Errorf("template requires a newer plugin API") }
             }
             rawKind, component := node["type"]
             if component {

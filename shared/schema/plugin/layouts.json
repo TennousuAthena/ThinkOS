@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "layouts.json",
-  "description": "Fixed OS render vocabulary. API 1: stacks/focus/form/glance and text/icon/clock. API 2: progress/chart/list/daylight/moon, groups, split/stage, tap and weight. No plugin styles or executable view expressions. API 3: local/asset/HTTP(S) image and carousel with lossless framing and native panning.",
+  "description": "Fixed OS render vocabulary. API 1: stacks/focus/form/glance and text/icon/clock. API 2: progress/chart/list/daylight/moon, groups, split/stage, tap and weight. No plugin styles or executable view expressions. API 3: local/asset/HTTP(S) image and carousel with lossless framing and native panning. API 4: tiles grid and tile template; only tile backgrounds allow plugin colors (ADR-025).",
   "$defs": {
     "component": {
       "oneOf": [
@@ -1069,10 +1069,184 @@
         }
       },
       "description": "API 3. Local library files, plugin asset:assets/... or HTTP(S) with network permission. OS owns bounded downloads/cache and decoding. pan sweeps the entire image; contain displays the whole image at once. Continuous native panning, independently of scene tick cadence. Vertical drag browses adjacent items without wrapping; horizontal navigation and long press belong to the OS."
+    },
+    "tileColor": {
+      "type": "string",
+      "pattern": "^(#[0-9A-Fa-f]{6}|\\{\\{[^{}]+\\}\\})$",
+      "maxLength": 2048
+    },
+    "tileReference": {
+      "title": "SchemaTileReference",
+      "type": "object",
+      "required": [
+        "widget",
+        "size"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "widget": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*\\.[a-z][a-z0-9-]*$",
+          "maxLength": 130
+        },
+        "size": {
+          "enum": [
+            "small",
+            "medium",
+            "wide",
+            "large"
+          ]
+        },
+        "color": {
+          "$ref": "#/$defs/tileColor"
+        }
+      }
+    },
+    "tileFace": {
+      "title": "SchemaTileFace",
+      "type": "object",
+      "required": [
+        "label"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "icon": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "value": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "detail": {
+          "type": "string",
+          "maxLength": 2048
+        }
+      }
+    },
+    "tileContent": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/clock"
+        },
+        {
+          "$ref": "#/$defs/progress"
+        },
+        {
+          "$ref": "#/$defs/chart"
+        },
+        {
+          "$ref": "#/$defs/daylight"
+        },
+        {
+          "$ref": "#/$defs/moon"
+        }
+      ]
+    },
+    "tile": {
+      "title": "SchemaTileView",
+      "type": "object",
+      "required": [
+        "template",
+        "faces"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "template": {
+          "const": "tile"
+        },
+        "color": {
+          "$ref": "#/$defs/tileColor"
+        },
+        "faces": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "items": {
+            "$ref": "#/$defs/tileFace"
+          }
+        },
+        "badge": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "content": {
+          "$ref": "#/$defs/tileContent"
+        }
+      }
+    },
+    "tiles": {
+      "title": "SchemaTilesView",
+      "type": "object",
+      "required": [
+        "layout",
+        "slots"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "layout": {
+          "const": "tiles"
+        },
+        "slots": {
+          "title": "SchemaTilesSlots",
+          "type": "object",
+          "required": [
+            "tiles"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "tiles": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 16,
+              "items": {
+                "$ref": "#/$defs/tileReference"
+              }
+            }
+          }
+        },
+        "variants": {
+          "type": "array",
+          "items": {
+            "title": "SchemaVariant",
+            "type": "object",
+            "required": [
+              "id",
+              "title"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "title": {
+                "type": "string",
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 1,
+          "maxItems": 16
+        },
+        "mood": {
+          "type": "string",
+          "maxLength": 100
+        }
+      },
+      "x-thinkos-slot-roles": {
+        "tiles": "tiles"
+      }
     }
   },
   "x-thinkos-api": {
-    "current": 3,
+    "current": 4,
     "componentTypes": {
       "text": 1,
       "icon": 1,
@@ -1091,12 +1265,17 @@
       "focus": 1,
       "form": 1,
       "split": 2,
-      "stage": 2
+      "stage": 2,
+      "tiles": 4
     },
     "componentProperties": {
       "tap": 2,
       "weight": 2
     },
-    "componentGroups": 2
+    "componentGroups": 2,
+    "templates": {
+      "glance": 1,
+      "tile": 4
+    }
   }
 }

@@ -99,7 +99,7 @@ APK 根索引 `assets/plugins/index.json` 为 `{plugins:[上述完整索引…]}
 
 各版式、模板有哪些槽位以 `shared/schema/plugin/` 为准。需要新的版式或组件属于「设备端功能迭代」：先在 APK 实现、提升 `api` 版本，插件才能使用。
 
-设备同时接受 API 1、2 和 3。使用 API 2 词汇、组件组、`tap` 或 `weight` 的插件至少声明 `"api": 2`；图片组件至少声明 `"api": 3`；安装器与打包器都检查，不会让 API 1 插件静默使用新版词汇。版本表来自 `layouts.json` 的 `x-thinkos-api`，并生成到 Kotlin / Go。
+设备同时接受 API 1、2、3 和 4。使用 API 2 词汇、组件组、`tap` 或 `weight` 的插件至少声明 `"api": 2`；图片组件至少声明 `"api": 3`；安装器与打包器都检查，不会让 API 1 插件静默使用新版词汇。版本表来自 `layouts.json` 的 `x-thinkos-api`，并生成到 Kotlin / Go。
 
 API 2 的固定组件与内容字段：
 
@@ -115,11 +115,21 @@ API 2 的固定组件与内容字段：
 
 除点击由 OS 保留的 `carousel` 外，组件可带固定事件名 `tap`；所有组件可带数值 `weight`（0…100）。点击发送 `tos.on("tap", function(name, index) ... end)`，其中 `name` 是声明值；列表行还给出从 1 开始的 `index`。OS 保留横向翻页手势，列表区域的纵向拖动用于滚动。`daylight/moon` 只消费派生数据，绘制本身不要求 `location` 权限。
 
-`weight` 只分配 OS 组件组剩余高度：文本、图标、进度默认按内容高度；时钟、表单、图表、列表、天文组件默认共享剩余高度。显式 0 使用内容高度。`focus` 的槽位以及新版式槽位可放单个组件或 `{"children":[...]}` 组件组，不支持任意嵌套。版式固定：`split` 的 `lead/main` 横屏左右约 40/60、竖屏上下约 40/60；`stage` 的 `stage` 全出血，`over/under` 覆盖其上。插件不能设置像素、颜色、CSS 或自定义动画。
+`weight` 只分配 OS 组件组剩余高度：文本、图标、进度默认按内容高度；时钟、表单、图表、列表、天文组件默认共享剩余高度。显式 0 使用内容高度。`focus` 的槽位以及新版式槽位可放单个组件或 `{"children":[...]}` 组件组，不支持任意嵌套。版式固定：`split` 的 `lead/main` 横屏左右约 40/60、竖屏上下约 40/60；`stage` 的 `stage` 全出血，`over/under` 覆盖其上。插件不能设置像素、CSS 或自定义动画；ADR-025 仅允许 tile 底色 color。
 
 当前 `icon.name` 精确支持 `sun`、`moon`、`clock`、`calendar`、`unknown`，以及天气词汇 `clear-day` / `clear-night` / `partly-day` / `partly-night` / `cloud` / `fog` / `rain` / `shower` / `snow` / `thunder`；未知名称显示明确的占位符，不按子串猜测。布局槽位及 stack/header/content/footer 角色从同一份 schema 生成。
 
 `clock.sun` 为状态路径，例如 `"sun": "sun"`，读取插件通过 `tos.astro.sun()` 取得的派生数据。solar 表盘以真实太阳中天为圆环顶部，用真实日出日落和三层曙暮光标出白昼区间；无有效天文数据时只显示空环与时间，不推测日出日落。OS 绘图只接收派生事件，不把位置反向暴露给插件。
+
+### 4.1.0 API 4：磁贴
+
+`{"layout":"tiles","slots":{"tiles":[{"widget":"clock.tile","size":"wide","color":"#D24726"}]}}`。1–16 项，size 必填：small 1×1、medium 2×2、wide 4×2、large 4×4。横屏 6×4、竖屏 4×6，按声明顺序首次适配，RTL 镜像，不滚动；放不下丢弃并 warn（横屏 large+wide 放不下 wide，竖屏可同时容纳）。打包器对两个方向都放不下的引用给警告。
+
+`{"template":"tile","color":"{{config.color}}","faces":[{"icon":"clock","value":"{{time}}","label":"@name","detail":"{{date}}"}],"badge":"{{count}}"}`。faces 1–4 面，label 必填；value/detail 都空的面跳过，全空时显示第一面的 label。color 可为 #RRGGBB 或 {{绑定}}，引用颜色在页面状态中求值，卡片颜色在所属插件状态中求值。引用 > 卡片 > 系统 accent；非法运行时值回退并 warn。OS 自动取黑白前景色，插件不能指定。可绑定配置项给用户选颜色（ADR-025）。
+
+small 只显示 icon（无 icon 时 value）与角标；medium 显示 icon/value/label；wide 左侧 icon/value/label，右侧 content 或 detail；large 上部 content，下部 icon/value/label/detail。content 仅接受 clock/progress/chart/daylight/moon（仅 wide/large 显示）。tile 在 stacks 中按 large 显示；glance 在 tiles 中为空占位。点击 opens，长按进入卡片所属插件设置。页面 active 且 AWAKE/ENGAGED 时逐张翻面，同一时间最多一张，受系统 tiles.live/tiles.interval 控制；减少动画直接换面。离线沿用本地状态。
+
+新增图标 music/photo/bell/settings/home/folder/list/star/heart/message/play/battery。
 
 ### 4.1.1 API 3：图片与轮播
 

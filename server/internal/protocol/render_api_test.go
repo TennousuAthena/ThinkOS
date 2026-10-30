@@ -20,7 +20,7 @@ func TestRenderAPIVocabularyVersions(t *testing.T) {
 		}
 		return value
 	}
-	for _, api := range []int{1, 2, 3} {
+	for _, api := range []int{1, 2, 3, 4} {
 		if err := ValidateRenderAPI(decode(legacy), api); err != nil {
 			t.Fatalf("legacy API %d: %v", api, err)
 		}
@@ -44,7 +44,21 @@ func TestRenderAPIVocabularyVersions(t *testing.T) {
 			t.Error("API 2 accepted image vocabulary")
 		}
 	}
-	if err := ValidateRenderAPI(decode(legacy), 4); err == nil {
+	if err := ValidateRenderAPI(decode(legacy), 5); err == nil {
 		t.Error("accepted unsupported API")
 	}
+}
+
+func TestTilesRequireAPIFour(t *testing.T) {
+    for _, text := range []string{
+        `{"template":"tile","faces":[{"label":"Weather"}]}`,
+        `{"layout":"tiles","slots":{"tiles":[{"widget":"clock.tile","size":"wide"}]}}`,
+    } {
+        var value any
+        if err := json.Unmarshal([]byte(text), &value); err != nil { t.Fatal(err) }
+        if err := ValidateRenderAPI(value, 4); err != nil { t.Fatal(err) }
+        for api := 1; api <= 3; api++ {
+            if ValidateRenderAPI(value, api) == nil { t.Fatalf("API %d accepted tile: %s", api, text) }
+        }
+    }
 }

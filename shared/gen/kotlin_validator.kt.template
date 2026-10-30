@@ -42,6 +42,7 @@ object PluginSchema {
                 is JSONArray -> for (i in 0 until value.length()) gate(value.opt(i))
                 is JSONObject -> {
                     if (value.has("layout")) require(renderApis.getJSONObject("layouts").optInt(value.getString("layout"), API + 1) <= api) { "layout requires a newer plugin API" }
+                    if (value.has("template")) require(renderApis.getJSONObject("templates").optInt(value.getString("template"), API + 1) <= api) { "template requires a newer plugin API" }
                     val kind = value.optString("type").takeIf { it.isNotEmpty() }
                     if (kind != null) {
                         require(renderApis.getJSONObject("componentTypes").optInt(kind, API + 1) <= api) { "component requires a newer plugin API" }

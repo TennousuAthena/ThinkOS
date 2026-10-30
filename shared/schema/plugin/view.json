@@ -20,6 +20,12 @@
     },
     {
       "$ref": "layouts.json#/$defs/stage"
+    },
+    {
+      "$ref": "layouts.json#/$defs/tiles"
+    },
+    {
+      "$ref": "layouts.json#/$defs/tile"
     }
   ]
 }

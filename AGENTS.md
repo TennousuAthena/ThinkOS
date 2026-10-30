@@ -83,7 +83,7 @@ adb shell dumpsys gfxinfo moe.kiwi.thinkos
 - 所有网络接口通过 `docs/05-protocol.md` 定义的 schema，不要自创格式
 - 插件格式与 `tos.*` API 以 `docs/06-plugins.md` 为准；Lua 永远不在主线程执行
 - **可配置项（阈值、计时、开关、地址）一律走设置 schema**（ADR-017，`docs/04-ui-spec.md` §9），不要写死在代码里，也不要另建 SharedPreferences；插件只读设置，不能写
-- **不为页面外观预留扩展点**（ADR-017）：不要引入样式语言、表盘包、部件皮肤；需要新的版式或组件，按 `docs/06-plugins.md` §4.1 的扩展流程加词汇
+- **不为页面外观预留扩展点**（ADR-017；ADR-025 仅允许 `tile` 磁贴底色 `color`，前景色由 OS 决定）：不要引入样式语言、表盘包、部件皮肤；需要新的版式或组件，按 `docs/06-plugins.md` §4.1 的扩展流程加词汇
 - **插件不再用 zip / `.tpk` 分发**（ADR-018）：设备端安装单位是目录 + 文件清单；Git 只在 Server 上用，**设备端不要引入 Git / JGit**
 
 ## 验收要求

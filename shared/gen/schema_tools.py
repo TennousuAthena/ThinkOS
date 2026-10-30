@@ -218,6 +218,9 @@ def validate_view(view, api=None):
                 gate(child)
         elif isinstance(value, dict):
             layout = value.get('layout')
+            template = value.get('template')
+            if template is not None and vocabulary['templates'].get(template, api + 1) > api:
+                raise ValidationError(f'template {template} requires a newer plugin API')
             kind = value.get('type')
             if layout is not None and vocabulary['layouts'].get(layout, api + 1) > api:
                 raise ValidationError(f'layout {layout} requires a newer plugin API')

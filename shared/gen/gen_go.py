@@ -28,7 +28,7 @@ def main():
         parts.append('type '+schema['title']+' struct {\n'+'\n'.join(fields)+'\n}\n')
     vocabulary = SCHEMAS['layouts.json']['x-thinkos-api']
     parts.append('const PluginAPI = ' + str(vocabulary['current']) + '\n')
-    for key in ('componentTypes', 'layouts', 'componentProperties'):
+    for key in ('componentTypes', 'layouts', 'componentProperties', 'templates'):
         entries = ', '.join('"' + name + '": ' + str(api) for name, api in vocabulary[key].items())
         parts.append('var render' + key[:1].upper() + key[1:] + ' = map[string]int{' + entries + '}\n')
     parts.append('''// ValidateRenderAPI gates the fixed render vocabulary after schema validation.
@@ -45,6 +45,11 @@ func ValidateRenderAPI(value any, api int) error {
                 name, ok := raw.(string)
                 minimum, known := renderLayouts[name]
                 if !ok || !known || minimum > api { return fmt.Errorf("layout requires a newer plugin API") }
+            }
+            if raw, present := node["template"]; present {
+                name, ok := raw.(string)
+                minimum, known := renderTemplates[name]
+                if !ok || !known || minimum > api { return fmt.Errorf("template requires a newer plugin API") }
             }
             rawKind, component := node["type"]
             if component {
