@@ -1,0 +1,14 @@
+{
+  "complete": true,
+  "passed": [
+    "pure declaration tiles page resolves all three API 4 plugins",
+    "cross-plugin long press opens weather settings, not tiles settings",
+    "weather removal publishes empty placeholder without crashing",
+    "weather catalog reinstall restores tile"
+  ],
+  "screens": [
+    "builtin-tiles",
+    "weather-removed",
+    "weather-restored"
+  ]
+}

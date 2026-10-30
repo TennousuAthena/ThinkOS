@@ -18,7 +18,7 @@ import schema_tools as tools
 class PluginPackageTests(unittest.TestCase):
     def test_api_three_gallery_exposes_bing_and_local_through_shared_interfaces(self):
         manifest, _ = packages.validate_plugin(ROOT / 'plugins/gallery')
-        self.assertEqual(3, manifest['api'])
+        self.assertEqual(4, manifest['api'])
         self.assertEqual(['library', 'network'], manifest['permissions'])
         self.assertEqual('bing', manifest['settings']['source']['default'])
         self.assertEqual({'bing', 'local', 'all'}, {x['value'] for x in manifest['settings']['source']['choices']})
@@ -108,7 +108,7 @@ class PluginPackageTests(unittest.TestCase):
         path.write_text(json.dumps(data))
 
     def test_builtin_packages_validate_and_are_reproducible(self):
-        for name in ('home', 'clock', 'weather', 'gallery', 'settings'):
+        for name in ('home', 'clock', 'weather', 'gallery', 'tiles', 'settings'):
             first, digest = packages.package_plugin(ROOT / 'plugins' / name, self.root / 'a')
             second, again = packages.package_plugin(ROOT / 'plugins' / name, self.root / 'b')
             self.assertEqual(digest, again)
@@ -226,7 +226,7 @@ class PluginPackageTests(unittest.TestCase):
 
     def test_duplicate_json_keys_are_rejected(self):
         path = self.plugin / 'manifest.json'
-        path.write_text(path.read_text().replace('"api": 1,', '"api": 1, "api": 2,'))
+        path.write_text(path.read_text().replace('"api": 4,', '"api": 4, "api": 2,'))
         with self.assertRaises(packages.ValidationError): packages.validate_plugin(self.plugin)
 
     def test_setting_default_must_satisfy_its_declaration(self):

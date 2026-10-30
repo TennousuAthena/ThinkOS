@@ -1,0 +1,24 @@
+{
+  "template": "tile",
+  "color": "{{mood | default \"#2D89EF\"}}",
+  "faces": [
+    {
+      "icon": "{{icon}}",
+      "value": "{{temperature}}",
+      "label": "{{location}}",
+      "detail": "{{summary}}"
+    },
+    {
+      "icon": "cloud",
+      "value": "{{metrics}}",
+      "label": "@name",
+      "detail": "{{status}}"
+    }
+  ],
+  "content": {
+    "type": "chart",
+    "values": "{{hourly}}",
+    "style": "area",
+    "highlight": "{{highlight}}"
+  }
+}

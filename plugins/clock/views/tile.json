@@ -1,0 +1,22 @@
+{
+  "template": "tile",
+  "color": "#0078D7",
+  "faces": [
+    {
+      "icon": "clock",
+      "value": "{{tileTime}}",
+      "label": "@name",
+      "detail": "{{date}}"
+    },
+    {
+      "icon": "calendar",
+      "value": "{{day}}",
+      "label": "{{weekday}}",
+      "detail": "{{month}}"
+    }
+  ],
+  "content": {
+    "type": "clock",
+    "style": "analog"
+  }
+}

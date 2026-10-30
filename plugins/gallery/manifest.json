@@ -1,8 +1,8 @@
 {
   "id": "gallery",
   "name": "@name",
-  "version": "0.3.0",
-  "api": 3,
+  "version": "0.4.0",
+  "api": 4,
   "main": "main.lua",
   "permissions": [
     "library",
@@ -316,6 +316,11 @@
     {
       "id": "preview",
       "view": "views/preview.json",
+      "opens": "slideshow"
+    },
+    {
+      "id": "tile",
+      "view": "views/tile.json",
       "opens": "slideshow"
     }
   ],

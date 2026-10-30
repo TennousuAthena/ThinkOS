@@ -1,8 +1,8 @@
 {
   "id": "weather",
   "name": "@name",
-  "version": "0.1.0",
-  "api": 2,
+  "version": "0.2.0",
+  "api": 4,
   "main": "main.lua",
   "permissions": [
     "network",
@@ -139,6 +139,11 @@
     {
       "id": "now",
       "view": "views/now.json",
+      "opens": "detail"
+    },
+    {
+      "id": "tile",
+      "view": "views/tile.json",
       "opens": "detail"
     }
   ],

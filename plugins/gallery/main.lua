@@ -39,7 +39,7 @@ local function render()
   if #photos==0 then notice=dailyEnabled() and dailyNotice or localNotice
   elseif dailyEnabled() and dailyNotice=="offline" then notice="offline"
   elseif not dailyEnabled() and localNotice=="unavailable" then notice="unavailable" end
-  tos.state.set(tos.json.encode({photos=photos,cover=photos[1] and photos[1].src or "",
+  tos.state.set(tos.json.encode({photos=photos,photoCount=tostring(#photos),cover=photos[1] and photos[1].src or "",
     coverTitle=photos[1] and photos[1].title or tos.i18n.t(notice or "name"),
     coverCredit=photos[1] and photos[1].credit or "",notice=notice and tos.i18n.t(notice) or "",directory=directory}))
 end

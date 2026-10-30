@@ -1,0 +1,14 @@
+{
+  "id": "tiles",
+  "name": "@name",
+  "version": "0.1.0",
+  "api": 4,
+  "permissions": [],
+  "pages": [
+    {
+      "id": "main",
+      "title": "@name",
+      "view": "views/main.json"
+    }
+  ]
+}

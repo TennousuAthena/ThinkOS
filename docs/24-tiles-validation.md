@@ -18,10 +18,12 @@
 | A2 纯逻辑 | 通过 | `artifacts/tiles/a2-jvm.log`；随机排布、镜像、不重叠、不越界、溢出丢弃、4096 色对比度；夜间补偿测试见 t3-jvm |
 | A3–A5 | 通过 | `tools/tests/tile_ui.py`、`artifacts/ui-validation/tiles/` |
 | A6 翻面与设置 | 通过 | `artifacts/ui-validation/tiles-live/report.json`，真机单调度器、间隔、关闭即取消、AMBIENT/离页、恢复、空面与减少动画；223 个 JVM 测试 |
-| A7 插件 | 待执行 | |
+| A7 插件 | 通过 | `artifacts/ui-validation/tiles-plugins/`，目录热加载、跨插件设置、移除与恢复 |
 | A8 性能 | 待执行 | |
 | A9 回归 | 待执行 | |
 
 Go 目录此前只有生成物和测试，没有 go.mod。已补与仓库约定一致的 `module thinkos-server`，无第三方依赖，原计划命令现在可直接运行。
 
 默认 deck 顺序来自 `PluginRuntime.publishCatalog`：home 在前、sleep 次之、其它页面按 key 排序，settings 不参与横向导航。磁贴页作为普通插件加入，不改变 home 角色。
+
+A7 的天气是 APK 自带插件：删除开发覆盖目录会按既有逻辑回退工厂版本，不会卸载自带插件。因此测试在运行时工作线程模拟 catalog 移除/恢复 weather，走真实的 publishCatalog → PageView.update 路径；另用目录推送验证 tiles 热加载。该测试没有新增插件私有 API，也没有为 Lua 开后门。

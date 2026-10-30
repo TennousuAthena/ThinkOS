@@ -1,0 +1,19 @@
+{
+  "template": "tile",
+  "color": "#8764B8",
+  "faces": [
+    {
+      "icon": "photo",
+      "value": "{{photoCount}}",
+      "label": "@name",
+      "detail": "{{coverTitle}}"
+    },
+    {
+      "icon": "photo",
+      "value": "",
+      "label": "@name",
+      "detail": "{{coverTitle}}"
+    }
+  ],
+  "badge": "{{photoCount}}"
+}

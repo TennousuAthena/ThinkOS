@@ -28,10 +28,11 @@ local function refresh()
   local now = tos.time.now()
   if not now then
     local waiting = tos.i18n.t("waiting")
-    tos.state.set { date = waiting, weekday = waiting, month = tos.i18n.t("calendar"), day = "—", sun = tos.json.null }
+    tos.state.set { tileTime = "—", date = waiting, weekday = waiting, month = tos.i18n.t("calendar"), day = "—", sun = tos.json.null }
     return
   end
   tos.state.set {
+    tileTime = tos.time.format(now, "@time"),
     date    = tos.time.format(now, "@dateFull"),
     weekday = tos.time.format(now, "@weekday"),
     month   = tos.time.format(now, "@monthYear"),

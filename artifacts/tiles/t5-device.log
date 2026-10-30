@@ -1,0 +1,8 @@
+Performing Streamed Install
+Success
+Performing Streamed Install
+Success
+PASS pure declaration tiles page resolves all three API 4 plugins
+PASS cross-plugin long press opens weather settings, not tiles settings
+PASS weather removal publishes empty placeholder without crashing
+PASS weather catalog reinstall restores tile

@@ -119,6 +119,38 @@ class TileInstrumentation : Instrumentation() {
             }
         }
     }
+    private fun pluginChecks() {
+        page("tiles.main")
+        check(read { tiles().size==3 && tiles().all { it.owner in setOf("clock","weather","gallery") } })
+        screenshot("builtin-tiles");pass("pure declaration tiles page resolves all three API 4 plugins")
+        val point=read { val t=tiles().first { it.owner=="weather" };floatArrayOf(t.left+t.width/2f,t.top+t.height/2f) }
+        touch(point[0],point[1],true)
+        check(read { host.router.settingsOpen && all().filterIsInstance<TextView>().any { it.text.toString()==host.plugins.text("weather","setting.temp_unit") } })
+        pass("cross-plugin long press opens weather settings, not tiles settings")
+        main { host.router.closeSettings() };SystemClock.sleep(700)
+        // Bundled plugins have factory fallback. Exercise catalog removal and directory reinstall
+        // on the runtime worker, the same publication path used by development uninstall.
+        val runtime=host.plugins;val worker=field(runtime,"worker") as android.os.Handler
+        var removed:Any?=null
+        fun workerCall(block:()->Unit) { val latch=java.util.concurrent.CountDownLatch(1);var error:Throwable?=null;worker.post { try { block() } catch(t:Throwable) { error=t } finally { latch.countDown() } };check(latch.await(15,java.util.concurrent.TimeUnit.SECONDS));error?.let { throw it } }
+        try {
+            workerCall {
+                @Suppress("UNCHECKED_CAST") val active=field(runtime,"active") as MutableMap<String,Any>
+                removed=active.remove("weather")
+                runtime.javaClass.getDeclaredMethod("publishCatalog").also { it.isAccessible=true }.invoke(runtime)
+            }
+            waitFor("Missing weather did not become empty") { read { tiles().size==3 && tiles().none { it.owner=="weather" } } }
+            screenshot("weather-removed");pass("weather removal publishes empty placeholder without crashing")
+        } finally {
+            workerCall {
+                @Suppress("UNCHECKED_CAST") val active=field(runtime,"active") as MutableMap<String,Any>
+                removed?.let { active["weather"]=it }
+                runtime.javaClass.getDeclaredMethod("publishCatalog").also { it.isAccessible=true }.invoke(runtime)
+            }
+        }
+        waitFor("Weather did not recover") { read { tiles().any { it.owner=="weather" } } }
+        screenshot("weather-restored");pass("weather catalog reinstall restores tile")
+    }
     override fun onCreate(arguments: Bundle?) { super.onCreate(arguments); this.arguments=arguments?:Bundle(); start() }
     override fun onStart() {
         var success=false
@@ -130,6 +162,7 @@ class TileInstrumentation : Instrumentation() {
             initialOrientation=read { activity.requestedOrientation }
             waitFor("Fixture missing") { read { host.router.pages.any { it.key=="tile-probe.grid" } } }
             main { host.sensors.debugHoldAttention(Attention.AWAKE); host.sensors.stop() }
+            if(arguments.getString("plugins")=="true") { pluginChecks();success=true;return }
             if(arguments.getString("live")=="true") { liveChecks();success=true;return }
             page("tile-probe.grid")
             for (orientation in listOf(0,1)) {
