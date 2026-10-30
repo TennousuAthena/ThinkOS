@@ -102,12 +102,30 @@
       "default": "roll",
       "group": "@setting.group.display",
       "choices": [
-        { "value": "none", "label": "@setting.motion.clock.none" },
-        { "value": "roll", "label": "@setting.motion.clock.roll" },
-        { "value": "fade", "label": "@setting.motion.clock.fade" },
-        { "value": "drop", "label": "@setting.motion.clock.drop" },
-        { "value": "flip", "label": "@setting.motion.clock.flip" },
-        { "value": "zoom", "label": "@setting.motion.clock.zoom" }
+        {
+          "value": "none",
+          "label": "@setting.motion.clock.none"
+        },
+        {
+          "value": "roll",
+          "label": "@setting.motion.clock.roll"
+        },
+        {
+          "value": "fade",
+          "label": "@setting.motion.clock.fade"
+        },
+        {
+          "value": "drop",
+          "label": "@setting.motion.clock.drop"
+        },
+        {
+          "value": "flip",
+          "label": "@setting.motion.clock.flip"
+        },
+        {
+          "value": "zoom",
+          "label": "@setting.motion.clock.zoom"
+        }
       ]
     },
     "display.brightness_max": {
@@ -278,6 +296,22 @@
       "unit": "h",
       "group": "@setting.group.time",
       "hidden": true
+    },
+    "tiles.live": {
+      "type": "bool",
+      "label": "@setting.tiles.live",
+      "default": true,
+      "group": "@setting.group.tiles"
+    },
+    "tiles.interval": {
+      "type": "number",
+      "label": "@setting.tiles.interval",
+      "default": 8,
+      "min": 5,
+      "max": 60,
+      "step": 1,
+      "unit": "s",
+      "group": "@setting.group.tiles"
     }
   },
   "constraints": [

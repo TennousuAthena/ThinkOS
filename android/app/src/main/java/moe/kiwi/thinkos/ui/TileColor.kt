@@ -34,7 +34,7 @@ object TileColor {
 
     /** The red matrix compresses contrast. Adjust only when neither composed foreground is readable. */
     fun nightSafe(color: Int, night: Float): Int {
-        fun readable(c: Int) = contrast(filtered(c, night), filtered(nightForeground(c, night), night)) >= 4.5
+        fun readable(c: Int) = contrast(filtered(c, night), filtered(nightForeground(c, night), night)) >= 4.55
         if (night <= 0 || readable(color)) return color
         fun mix(to: Int, t: Double): Int {
             fun c(s: Int) = (((color ushr s and 255) * (1-t)) + (to ushr s and 255) * t).toInt()

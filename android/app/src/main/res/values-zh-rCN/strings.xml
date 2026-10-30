@@ -95,4 +95,7 @@
     <string name="media_pause">暂停</string>
     <string name="media_next">下一首</string>
     <string name="media_video">视频</string>
+    <string name="setting_group_tiles">动态磁贴</string>
+    <string name="setting_tiles_live">自动切换磁贴内容</string>
+    <string name="setting_tiles_interval">磁贴切换间隔</string>
 </resources>

@@ -372,8 +372,10 @@ internal class PageView(
     private val stackItems = mutableMapOf<String, JSONArray>()
     private var dragging: StackSlot? = null
     private var previousLayout = ""
+    private val cadence = TileCadence()
+    private fun liveTiles(): List<TileView> = tiles.values.filter { it.visibility == VISIBLE } + stacks.values.flatMap { it.tileViews() } + groups.values.flatMap { it.tileViews() }
     private var active = false
-    fun active(value: Boolean) { active = value; groups.values.forEach { it.active(value) }; stacks.values.forEach { it.active(value) }; tiles.values.forEach { it.active(value && it.visibility == VISIBLE) } }
+    fun active(value: Boolean) { if (!value) cadence.reset(); active = value; groups.values.forEach { it.active(value) }; stacks.values.forEach { it.active(value) }; tiles.values.forEach { it.active(value && it.visibility == VISIBLE) } }
     private val layout get() = page.view.optString("layout")
     private val slotNames get() = LayoutVocabulary.slots[layout].orEmpty()
     private val roles get() = LayoutVocabulary.roles[layout].orEmpty()
@@ -450,9 +452,16 @@ internal class PageView(
         stacks.values.forEach { it.bind(pluginId, paths) }
         tiles.values.forEach { it.bind(pluginId, paths) }
     }
-    fun colors(value: Palette) { palette = value; groups.values.forEach { it.colors(value) }; stacks.values.forEach { it.colors(value) }; tiles.values.forEach { it.colors(value) } }
+    fun colors(value: Palette) { palette = value; if (layout == "tiles") setBackgroundColor(value.bg) else background = null; groups.values.forEach { it.colors(value) }; stacks.values.forEach { it.colors(value) }; tiles.values.forEach { it.colors(value) } }
     fun localeChanged() { groups.values.forEach { it.localeChanged() }; stacks.values.forEach { it.localeChanged() }; tiles.values.forEach { it.localeChanged() } }
-    fun tick(now: Long, attention: Attention) { groups.values.forEach { it.tick(now, attention) }; stacks.values.forEach { it.tick(now, attention) }; tiles.values.filter { it.visibility == VISIBLE }.forEach { it.tick(now, attention) } }
+    fun tick(now: Long, attention: Attention) {
+        groups.values.forEach { it.tick(now, attention) }; stacks.values.forEach { it.tick(now, attention) }
+        tiles.values.filter { it.visibility == VISIBLE }.forEach { it.tick(now, attention) }
+        val visible = liveTiles()
+        val allowed = active && events.tilesLive && attention in setOf(Attention.AWAKE, Attention.ENGAGED)
+        if (!allowed) visible.forEach { it.stopFlip() }
+        cadence.select(now, allowed, events.tilesIntervalMillis, visible.map { it.canFlip }, visible.any { it.flipping })?.let { visible[it].flip() }
+    }
     fun animateAttention(waking: Boolean) {
         (groups.values.toList() + stacks.values.toList() + tiles.values.toList()).forEachIndexed { i, view ->
             view.animate().cancel()

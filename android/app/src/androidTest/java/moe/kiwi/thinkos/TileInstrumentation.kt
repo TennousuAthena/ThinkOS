@@ -74,6 +74,51 @@ class TileInstrumentation : Instrumentation() {
         else SystemClock.sleep(if(long)850 else 70)
         event(MotionEvent.ACTION_UP,x+dx,y+dy); SystemClock.sleep(800)
     }
+    private fun liveChecks() {
+        val live=read { host.settings.resolved("system","tiles.live") }
+        val interval=read { host.settings.resolved("system","tiles.interval") }
+        try {
+            main { host.settings.setMany("system",mapOf("tiles.live" to true,"tiles.interval" to 5));activity.requestedOrientation=0 }
+            debugTheme(Theme.DARK);page("tile-probe.grid")
+            val changes=JSONArray();var last=emptyList<Int>();var maxMoving=0
+            val until=SystemClock.uptimeMillis()+11500
+            while(SystemClock.uptimeMillis()<until) {
+                main {
+                    val current=tiles();val faces=current.map { field(it,"faceIndex") as Int }
+                    val moving=current.count { it.flipping };maxMoving=maxOf(maxMoving,moving)
+                    check(moving<=1) { "Multiple tiles flipping" };check(faces.none { it==2 }) { "Empty face was shown" }
+                    if(last.isNotEmpty() && faces!=last)changes.put(JSONObject().put("time",SystemClock.uptimeMillis()).put("faces",JSONArray(faces)))
+                    last=faces
+                };SystemClock.sleep(15)
+            }
+            check(changes.length()>=2) { "Scheduler failed to advance" }
+            for(i in 1 until changes.length())check(changes.getJSONObject(i).getLong("time")-changes.getJSONObject(i-1).getLong("time")>=4800)
+            result.put("faceChanges",changes).put("maxConcurrentFlips",maxMoving);pass("single page scheduler; interval >=5s; round robin; empty faces skipped")
+            waitFor("No running flip",8000) { read { tiles().any { it.flipping } } }
+            main { host.settings.set("system","tiles.live",false) }
+            waitFor("Disabling did not cancel flip",500) { read { tiles().none { it.flipping } } }
+            val frozen=read { tiles().map { field(it,"faceIndex") } };SystemClock.sleep(5500)
+            check(read { tiles().map { field(it,"faceIndex") }==frozen });pass("live switch cancels a running animation and stops subsequent flips")
+            main { host.settings.set("system","tiles.live",true);host.sensors.debugHoldAttention(Attention.AMBIENT) }
+            SystemClock.sleep(6000);check(read { tiles().map { field(it,"faceIndex") }==frozen && tiles().none { it.flipping } });pass("AMBIENT stops and retains face")
+            main { host.sensors.debugHoldAttention(Attention.AWAKE) };page("tile-probe.grid")
+            waitFor("Wake did not resume",8000) { read { tiles().any { it.flipping } } }
+            val oldTiles=read { tiles() };page("tile-probe.detail")
+            check(read { oldTiles.none { it.flipping } });SystemClock.sleep(5500);check(read { oldTiles.none { it.flipping } });pass("waking resumes; leaving cancels")
+            page("tile-probe.behavior");check(read { !tiles()[0].canFlip && (field(tiles()[0],"label") as TextView).text=="Label only" });screenshot("all-empty-label")
+            val xy=read { val t=tiles()[1];floatArrayOf(t.left+t.width/2f,t.top+t.height/2f) };touch(xy[0],xy[1]);check(read { host.store.current.deck.page=="tile-probe.behavior" });pass("all-empty faces retain label; no opens is a no-op")
+            // Android's global animator setting is restored by the host script, including failure.
+            uiAutomation.executeShellCommand("settings put global animator_duration_scale 0").close();SystemClock.sleep(200)
+            val tile=read { tiles()[2] };val old=read { field(tile,"faceIndex") }
+            main { tile.flip();check(!tile.flipping);check(field(tile,"faceIndex")!=old) };pass("reduced motion switches immediately without an animation")
+            page("tile-probe.stress");check(read { tiles().size==16 });screenshot("sixteen-tiles")
+        } finally {
+            main {
+                if(live.overridden)host.settings.set("system","tiles.live",live.value) else host.settings.reset("system","tiles.live")
+                if(interval.overridden)host.settings.set("system","tiles.interval",interval.value) else host.settings.reset("system","tiles.interval")
+            }
+        }
+    }
     override fun onCreate(arguments: Bundle?) { super.onCreate(arguments); this.arguments=arguments?:Bundle(); start() }
     override fun onStart() {
         var success=false
@@ -85,6 +130,7 @@ class TileInstrumentation : Instrumentation() {
             initialOrientation=read { activity.requestedOrientation }
             waitFor("Fixture missing") { read { host.router.pages.any { it.key=="tile-probe.grid" } } }
             main { host.sensors.debugHoldAttention(Attention.AWAKE); host.sensors.stop() }
+            if(arguments.getString("live")=="true") { liveChecks();success=true;return }
             page("tile-probe.grid")
             for (orientation in listOf(0,1)) {
                 main { activity.requestedOrientation=orientation };SystemClock.sleep(1000)

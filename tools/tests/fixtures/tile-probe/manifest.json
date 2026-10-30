@@ -43,6 +43,14 @@
       "id": "dynamic",
       "view": "views/dynamic.json",
       "opens": "detail"
+    },
+    {
+      "id": "empty",
+      "view": "views/empty.json"
+    },
+    {
+      "id": "no-opens",
+      "view": "views/no-opens.json"
     }
   ],
   "pages": [
@@ -75,6 +83,11 @@
       "id": "stress",
       "title": "stress",
       "view": "views/stress.json"
+    },
+    {
+      "id": "behavior",
+      "title": "Behavior",
+      "view": "views/behavior.json"
     }
   ]
 }

@@ -17,7 +17,7 @@ class SystemSettingsVisibilityTest {
     @Test fun theDeviceListsOnlyWhatAPersonWouldChange() {
         // A set: org.json on the JVM does not keep key order (Android's does), and order is not the point here.
         assertEquals(
-            setOf("theme.mode", "theme.night", "display.orientation", "motion.clock", "display.brightness_max", "server.url", "server.token", "location.name", "kiosk.lock"),
+            setOf("theme.mode", "theme.night", "display.orientation", "motion.clock", "display.brightness_max", "server.url", "server.token", "location.name", "kiosk.lock", "tiles.live", "tiles.interval"),
             scope.visibleFields.map { it.key }.toSet())
     }
 

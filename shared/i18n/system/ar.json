@@ -92,5 +92,8 @@
   "media.play": "تشغيل",
   "media.pause": "إيقاف مؤقت",
   "media.next": "المقطع التالي",
-  "media.video": "فيديو"
+  "media.video": "فيديو",
+  "setting_group_tiles": "المربعات الحية",
+  "setting_tiles_live": "تبديل محتوى المربعات تلقائيًا",
+  "setting_tiles_interval": "الفاصل بين تحديثات المربعات"
 }

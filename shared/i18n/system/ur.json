@@ -92,5 +92,8 @@
   "media.play": "چلائیں",
   "media.pause": "وقفہ",
   "media.next": "اگلا ٹریک",
-  "media.video": "ویڈیو"
+  "media.video": "ویڈیو",
+  "setting_group_tiles": "لائیو ٹائلیں",
+  "setting_tiles_live": "ٹائل کا مواد خودکار طور پر بدلیں",
+  "setting_tiles_interval": "ٹائل بدلنے کا وقفہ"
 }

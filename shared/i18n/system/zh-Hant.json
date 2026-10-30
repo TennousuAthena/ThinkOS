@@ -92,5 +92,8 @@
   "media.play": "播放",
   "media.pause": "暫停",
   "media.next": "下一首",
-  "media.video": "影片"
+  "media.video": "影片",
+  "setting_group_tiles": "動態磚",
+  "setting_tiles_live": "自動切換動態磚內容",
+  "setting_tiles_interval": "動態磚切換間隔"
 }

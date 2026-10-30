@@ -108,6 +108,7 @@ class MainActivity : Activity(), RuntimeHost.Observer {
     }
     override fun onKioskLock(locked: Boolean) { kiosk.apply(this, locked) }
     override fun onSettingsUnavailable() { showMaintenance() }
+    override fun onRenderSettingsChanged() { stage.refreshSettings() }
     override fun onLocaleChanged() { stage.localeChanged() }
     override fun onBrightness(value: Float) {
         window.attributes = window.attributes.apply { screenBrightness = value.coerceIn(0.03f, 1f) }

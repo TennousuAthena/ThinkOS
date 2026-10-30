@@ -95,4 +95,7 @@
     <string name="media_pause">إيقاف مؤقت</string>
     <string name="media_next">المقطع التالي</string>
     <string name="media_video">فيديو</string>
+    <string name="setting_group_tiles">المربعات الحية</string>
+    <string name="setting_tiles_live">تبديل محتوى المربعات تلقائيًا</string>
+    <string name="setting_tiles_interval">الفاصل بين تحديثات المربعات</string>
 </resources>

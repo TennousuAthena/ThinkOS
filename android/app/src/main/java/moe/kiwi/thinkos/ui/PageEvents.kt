@@ -5,6 +5,8 @@ import org.json.JSONObject
 
 /** What on-screen content may ask of the rest of the OS. Plugins never see views, only these events. */
 interface PageEvents {
+    val tilesLive: Boolean
+    val tilesIntervalMillis: Long
     /** Delivers a UI event (`form.change`, `form.reset`, …) to the plugin that owns the page. */
     fun send(pluginId: String, name: String, args: List<Any?>)
 

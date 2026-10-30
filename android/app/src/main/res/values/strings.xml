@@ -95,4 +95,7 @@
     <string name="media_pause">Pause</string>
     <string name="media_next">Next track</string>
     <string name="media_video">Video</string>
+    <string name="setting_group_tiles">Live tiles</string>
+    <string name="setting_tiles_live">Animate tile content</string>
+    <string name="setting_tiles_interval">Time between tile updates</string>
 </resources>

@@ -92,5 +92,8 @@
   "media.play": "Воспроизвести",
   "media.pause": "Пауза",
   "media.next": "Следующая композиция",
-  "media.video": "Видео"
+  "media.video": "Видео",
+  "setting_group_tiles": "Живые плитки",
+  "setting_tiles_live": "Автоматически менять содержимое",
+  "setting_tiles_interval": "Интервал смены содержимого"
 }

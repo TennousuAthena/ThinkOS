@@ -92,5 +92,8 @@
   "media.play": "चलाएँ",
   "media.pause": "रोकें",
   "media.next": "अगला ट्रैक",
-  "media.video": "वीडियो"
+  "media.video": "वीडियो",
+  "setting_group_tiles": "लाइव टाइलें",
+  "setting_tiles_live": "टाइल की सामग्री अपने आप बदलें",
+  "setting_tiles_interval": "टाइल बदलने का अंतराल"
 }

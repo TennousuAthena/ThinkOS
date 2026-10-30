@@ -39,6 +39,7 @@ class RuntimeHost(private val context: Context) : PluginRuntime.Callbacks {
         fun onKioskLock(locked: Boolean) {}
         /** A long press asked for settings but the settings plugin is not running: show the recovery menu. */
         fun onSettingsUnavailable() {}
+        fun onRenderSettingsChanged() {}
         /** Language, 12/24-hour setting or time zone changed in Android's settings. */
         fun onLocaleChanged() {}
     }
@@ -72,6 +73,8 @@ class RuntimeHost(private val context: Context) : PluginRuntime.Callbacks {
 
     /** UI → plugin events and the way out of the settings page. */
     val pageEvents = object : PageEvents {
+        override val tilesLive get() = system.tilesLive
+        override val tilesIntervalMillis get() = system.tilesIntervalMillis
         override fun send(pluginId: String, name: String, args: List<Any?>) = plugins.event(pluginId, name, JSONArray(args))
         override fun closeSettings() = router.closeSettings()
         override fun settingsInteraction() { router.noteInteraction(); sensors.touch() }
@@ -109,6 +112,7 @@ class RuntimeHost(private val context: Context) : PluginRuntime.Callbacks {
     init {
         MotionPrefs.clock = system.clockMotion
         settings.addListener { scope, keys ->
+            if (scope == SettingsStore.SYSTEM && keys.any { it == SystemSettings.Keys.TILES_LIVE || it == SystemSettings.Keys.TILES_INTERVAL }) mainHandler.post { observers.toList().forEach { it.onRenderSettingsChanged() } }
             if (scope == SettingsStore.SYSTEM && SystemSettings.Keys.CLOCK_MOTION in keys) MotionPrefs.clock = system.clockMotion
             if (scope == SettingsStore.SYSTEM && SystemSettings.Keys.ORIENTATION in keys) mainHandler.post { applyOrientationSetting() }
             if (scope == SettingsStore.SYSTEM && SystemSettings.Keys.KIOSK_LOCK in keys) mainHandler.post { observers.toList().forEach { it.onKioskLock(system.kioskLock) } }

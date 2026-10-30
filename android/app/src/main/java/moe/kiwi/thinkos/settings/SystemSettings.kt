@@ -18,6 +18,8 @@ object SystemSettings {
         const val NIGHT_BELOW = "theme.night_below_lux"
         const val NIGHT_ABOVE = "theme.night_above_lux"
         const val ORIENTATION = "display.orientation"
+        const val TILES_LIVE = "tiles.live"
+        const val TILES_INTERVAL = "tiles.interval"
         const val CLOCK_MOTION = "motion.clock"
         const val BRIGHTNESS_MAX = "display.brightness_max"
         const val AWAKE_TO_AMBIENT = "attention.awake_to_ambient_s"
@@ -83,6 +85,9 @@ class SystemValues(private val store: SettingsStore) {
     val orientation: String get() = string(SystemSettings.Keys.ORIENTATION)
 
     /** `none`, `roll`, `fade`, `drop`, `flip` or `zoom`: how clock digits change. */
+    val tilesLive: Boolean get() = bool(SystemSettings.Keys.TILES_LIVE)
+    val tilesIntervalMillis: Long get() = (number(SystemSettings.Keys.TILES_INTERVAL) * 1000).toLong()
+
     val clockMotion: String get() = string(SystemSettings.Keys.CLOCK_MOTION)
 
     /** Fraction 0.2..1.0 used for AWAKE / ENGAGED. */

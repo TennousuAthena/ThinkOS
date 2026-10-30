@@ -23,6 +23,8 @@ object MotionPrefs {
 object Motion {
     const val PAGE = 320L
     const val VARIANT = 350L
+    const val TILE_EXIT = 130L
+    const val TILE_ENTER = 260L
     const val NUMBER = 260L
     const val FEEDBACK_EXIT = 120L
     const val THEME = 2_000L

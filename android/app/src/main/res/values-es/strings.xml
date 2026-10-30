@@ -95,4 +95,7 @@
     <string name="media_pause">Pausar</string>
     <string name="media_next">Pista siguiente</string>
     <string name="media_video">Vídeo</string>
+    <string name="setting_group_tiles">Mosaicos dinámicos</string>
+    <string name="setting_tiles_live">Cambiar el contenido automáticamente</string>
+    <string name="setting_tiles_interval">Intervalo entre cambios</string>
 </resources>

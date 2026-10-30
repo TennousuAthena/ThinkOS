@@ -17,7 +17,7 @@
 | A1 契约 | 通过 | `artifacts/tiles/a1-*`；生成器重复输出一致；Python/Go/JVM 拒绝 API 1–3 使用 tile/tiles；颜色、content、size 的边界测试 |
 | A2 纯逻辑 | 通过 | `artifacts/tiles/a2-jvm.log`；随机排布、镜像、不重叠、不越界、溢出丢弃、4096 色对比度；夜间补偿测试见 t3-jvm |
 | A3–A5 | 通过 | `tools/tests/tile_ui.py`、`artifacts/ui-validation/tiles/` |
-| A6 翻面与设置 | 待执行 | |
+| A6 翻面与设置 | 通过 | `artifacts/ui-validation/tiles-live/report.json`，真机单调度器、间隔、关闭即取消、AMBIENT/离页、恢复、空面与减少动画；223 个 JVM 测试 |
 | A7 插件 | 待执行 | |
 | A8 性能 | 待执行 | |
 | A9 回归 | 待执行 | |

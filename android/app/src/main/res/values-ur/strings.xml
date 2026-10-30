@@ -95,4 +95,7 @@
     <string name="media_pause">وقفہ</string>
     <string name="media_next">اگلا ٹریک</string>
     <string name="media_video">ویڈیو</string>
+    <string name="setting_group_tiles">لائیو ٹائلیں</string>
+    <string name="setting_tiles_live">ٹائل کا مواد خودکار طور پر بدلیں</string>
+    <string name="setting_tiles_interval">ٹائل بدلنے کا وقفہ</string>
 </resources>

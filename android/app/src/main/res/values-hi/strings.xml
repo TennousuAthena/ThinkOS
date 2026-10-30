@@ -95,4 +95,7 @@
     <string name="media_pause">रोकें</string>
     <string name="media_next">अगला ट्रैक</string>
     <string name="media_video">वीडियो</string>
+    <string name="setting_group_tiles">लाइव टाइलें</string>
+    <string name="setting_tiles_live">टाइल की सामग्री अपने आप बदलें</string>
+    <string name="setting_tiles_interval">टाइल बदलने का अंतराल</string>
 </resources>

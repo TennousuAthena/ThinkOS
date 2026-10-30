@@ -92,5 +92,8 @@
   "media.play": "Reproduzir",
   "media.pause": "Pausar",
   "media.next": "Próxima faixa",
-  "media.video": "Vídeo"
+  "media.video": "Vídeo",
+  "setting_group_tiles": "Blocos dinâmicos",
+  "setting_tiles_live": "Mudar o conteúdo automaticamente",
+  "setting_tiles_interval": "Intervalo entre mudanças"
 }

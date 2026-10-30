@@ -95,4 +95,7 @@
     <string name="media_pause">Пауза</string>
     <string name="media_next">Следующая композиция</string>
     <string name="media_video">Видео</string>
+    <string name="setting_group_tiles">Живые плитки</string>
+    <string name="setting_tiles_live">Автоматически менять содержимое</string>
+    <string name="setting_tiles_interval">Интервал смены содержимого</string>
 </resources>

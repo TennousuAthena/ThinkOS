@@ -95,4 +95,7 @@
     <string name="media_pause">বিরতি</string>
     <string name="media_next">পরের ট্র্যাক</string>
     <string name="media_video">ভিডিও</string>
+    <string name="setting_group_tiles">লাইভ টাইল</string>
+    <string name="setting_tiles_live">টাইলের বিষয়বস্তু স্বয়ংক্রিয়ভাবে বদলান</string>
+    <string name="setting_tiles_interval">টাইল বদলানোর বিরতি</string>
 </resources>

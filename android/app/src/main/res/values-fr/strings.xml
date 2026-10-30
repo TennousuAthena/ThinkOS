@@ -95,4 +95,7 @@
     <string name="media_pause">Mettre en pause</string>
     <string name="media_next">Piste suivante</string>
     <string name="media_video">Vidéo</string>
+    <string name="setting_group_tiles">Vignettes dynamiques</string>
+    <string name="setting_tiles_live">Changer le contenu automatiquement</string>
+    <string name="setting_tiles_interval">Intervalle entre les changements</string>
 </resources>

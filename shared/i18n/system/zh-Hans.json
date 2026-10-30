@@ -92,5 +92,8 @@
   "media.play": "播放",
   "media.pause": "暂停",
   "media.next": "下一首",
-  "media.video": "视频"
+  "media.video": "视频",
+  "setting_group_tiles": "动态磁贴",
+  "setting_tiles_live": "自动切换磁贴内容",
+  "setting_tiles_interval": "磁贴切换间隔"
 }

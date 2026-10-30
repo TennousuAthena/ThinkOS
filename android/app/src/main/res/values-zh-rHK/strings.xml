@@ -95,4 +95,7 @@
     <string name="media_pause">暫停</string>
     <string name="media_next">下一首</string>
     <string name="media_video">影片</string>
+    <string name="setting_group_tiles">動態磚</string>
+    <string name="setting_tiles_live">自動切換動態磚內容</string>
+    <string name="setting_tiles_interval">動態磚切換間隔</string>
 </resources>

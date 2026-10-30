@@ -92,5 +92,8 @@
   "media.play": "Reproducir",
   "media.pause": "Pausar",
   "media.next": "Pista siguiente",
-  "media.video": "Vídeo"
+  "media.video": "Vídeo",
+  "setting_group_tiles": "Mosaicos dinámicos",
+  "setting_tiles_live": "Cambiar el contenido automáticamente",
+  "setting_tiles_interval": "Intervalo entre cambios"
 }

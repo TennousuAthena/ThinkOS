@@ -92,5 +92,8 @@
   "media.play": "Lire",
   "media.pause": "Mettre en pause",
   "media.next": "Piste suivante",
-  "media.video": "Vidéo"
+  "media.video": "Vidéo",
+  "setting_group_tiles": "Vignettes dynamiques",
+  "setting_tiles_live": "Changer le contenu automatiquement",
+  "setting_tiles_interval": "Intervalle entre les changements"
 }

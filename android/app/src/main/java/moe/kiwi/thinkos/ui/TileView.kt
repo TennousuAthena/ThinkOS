@@ -174,9 +174,9 @@ internal class TileView(
         if (!ValueAnimator.areAnimatorsEnabled()) { faceIndex = next; showFace(); return }
         flipping = true
         face.setLayerType(LAYER_TYPE_HARDWARE, null)
-        face.animate().translationY(-dp(16).toFloat()).alpha(0f).setDuration(Motion.NUMBER / 2).setInterpolator(Motion.EXIT).withEndAction {
+        face.animate().translationY(-dp(16).toFloat()).alpha(0f).setDuration(Motion.TILE_EXIT).setInterpolator(Motion.EXIT).withEndAction {
             faceIndex = next; showFace(); face.translationY = dp(16).toFloat()
-            face.animate().translationY(0f).alpha(1f).setDuration(Motion.NUMBER).setInterpolator(Motion.EASE).withEndAction { stopFlip() }.start()
+            face.animate().translationY(0f).alpha(1f).setDuration(Motion.TILE_ENTER).setInterpolator(Motion.EASE).withEndAction { stopFlip() }.start()
         }.start()
     }
     fun stopFlip() {

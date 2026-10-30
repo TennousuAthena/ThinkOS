@@ -276,6 +276,7 @@ class ThinkStage(
         velocity?.recycle()
         velocity = null
     }
+    fun refreshSettings() { current?.tick(SystemClock.uptimeMillis(), store.current.attention); clock.wake() }
     private fun tick(now: Long) {
         if (themeAnimating) {
             val t = ((now - themeStart).toFloat() / Motion.THEME).coerceIn(0f, 1f)
