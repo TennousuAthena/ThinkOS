@@ -72,6 +72,11 @@ class PluginPackageTests(unittest.TestCase):
         ]:
             with self.assertRaises(tools.ValidationError):
                 tools.validate_view({'layout': 'focus', 'slots': {'hero': component}}, 2)
+    def test_tile_packer_uses_first_fit_in_both_orientations(self):
+        self.assertEqual({1}, packages.tile_drops(["large", "wide"], 6, 4))
+        self.assertEqual(set(), packages.tile_drops(["large", "wide"], 4, 6))
+        self.assertEqual({1, 2}, packages.tile_drops(["large"]*3, 6, 4))
+
     def test_api_four_tiles_contract(self):
         tile = {'template': 'tile', 'faces': [{'label': 'Weather', 'value': '{{temp}}'}]}
         page = {'layout': 'tiles', 'slots': {'tiles': [{'widget': 'clock.tile', 'size': 'wide'}]}}

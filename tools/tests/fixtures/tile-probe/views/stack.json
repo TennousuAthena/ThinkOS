@@ -1,0 +1,15 @@
+{
+  "layout": "stacks",
+  "slots": {
+    "left": [
+      {
+        "widget": "tile-probe.bound"
+      }
+    ],
+    "right": [
+      {
+        "widget": "clock.now"
+      }
+    ]
+  }
+}

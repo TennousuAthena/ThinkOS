@@ -17,6 +17,7 @@ object RenderGeometry {
         val usableW = width - edge * 2 - gap * (cols - 1)
         val usableH = height - edge * 2 - gap * (rows - 1)
         if (usableW < cols || usableH < rows) return sizes.map { null }
+        val cell = minOf(usableW / cols, usableH / rows)
         val occupied = Array(rows) { BooleanArray(cols) }
         return sizes.map { size ->
             val (cw, ch) = when (size) {
@@ -27,10 +28,10 @@ object RenderGeometry {
             if (cw > 0) search@ for (y in 0..rows - ch) for (x in 0..cols - cw) {
                 if ((y until y + ch).any { row -> (x until x + cw).any { occupied[row][it] } }) continue
                 for (row in y until y + ch) for (col in x until x + cw) occupied[row][col] = true
-                val left = edge + (usableW.toLong() * x / cols).toInt() + gap * x
-                val right = edge + (usableW.toLong() * (x + cw) / cols).toInt() + gap * (x + cw - 1)
-                val top = edge + (usableH.toLong() * y / rows).toInt() + gap * y
-                val bottom = edge + (usableH.toLong() * (y + ch) / rows).toInt() + gap * (y + ch - 1)
+                val left = edge + cell * x + gap * x
+                val right = edge + cell * (x + cw) + gap * (x + cw - 1)
+                val top = edge + cell * y + gap * y
+                val bottom = edge + cell * (y + ch) + gap * (y + ch - 1)
                 box = if (rtl) Box(width - right, top, width - left, bottom) else Box(left, top, right, bottom)
                 break@search
             }

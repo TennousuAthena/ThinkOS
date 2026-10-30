@@ -1,0 +1,80 @@
+{
+  "id": "tile-probe",
+  "name": "Tile probe",
+  "version": "1.0.0",
+  "api": 4,
+  "main": "main.lua",
+  "permissions": [],
+  "settings": {
+    "color": {
+      "type": "text",
+      "label": "Tile color",
+      "default": "#2D89EF",
+      "maxLength": 7
+    }
+  },
+  "widgets": [
+    {
+      "id": "bound",
+      "view": "views/bound.json",
+      "opens": "detail"
+    },
+    {
+      "id": "white",
+      "view": "views/white.json",
+      "opens": "detail"
+    },
+    {
+      "id": "black",
+      "view": "views/black.json",
+      "opens": "detail"
+    },
+    {
+      "id": "gray",
+      "view": "views/gray.json",
+      "opens": "detail"
+    },
+    {
+      "id": "accent",
+      "view": "views/accent.json",
+      "opens": "detail"
+    },
+    {
+      "id": "dynamic",
+      "view": "views/dynamic.json",
+      "opens": "detail"
+    }
+  ],
+  "pages": [
+    {
+      "id": "grid",
+      "title": "grid",
+      "view": "views/grid.json"
+    },
+    {
+      "id": "large",
+      "title": "large",
+      "view": "views/large.json"
+    },
+    {
+      "id": "detail",
+      "title": "detail",
+      "view": "views/detail.json"
+    },
+    {
+      "id": "stack",
+      "title": "stack",
+      "view": "views/stack.json"
+    },
+    {
+      "id": "glance",
+      "title": "glance",
+      "view": "views/glance.json"
+    },
+    {
+      "id": "stress",
+      "title": "stress",
+      "view": "views/stress.json"
+    }
+  ]
+}

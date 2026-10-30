@@ -1,0 +1,9 @@
+{
+  "layout": "focus",
+  "slots": {
+    "hero": {
+      "type": "text",
+      "value": "Tile opened"
+    }
+  }
+}

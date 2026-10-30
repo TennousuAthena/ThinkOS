@@ -49,6 +49,23 @@ def allowed_file(relative):
             (path.parts[0] == 'assets' and len(path.parts) > 1 and path.suffix.lower() in ('.png', '.jpg', '.jpeg', '.webp', '.ogg', '.wav')))
 
 
+def tile_drops(sizes, cols, rows):
+    occupied = set()
+    dropped = []
+    for i, size in enumerate(sizes):
+        w, h = {'small': (1,1), 'medium': (2,2), 'wide': (4,2), 'large': (4,4)}[size]
+        for y in range(rows-h+1):
+            for x in range(cols-w+1):
+                cells = {(a,b) for a in range(x,x+w) for b in range(y,y+h)}
+                if not cells & occupied:
+                    occupied |= cells
+                    break
+            else: continue
+            break
+        else: dropped.append(i)
+    return set(dropped)
+
+
 def validate_plugin(source):
     if Path(source).is_symlink():
         raise ValidationError('plugin root cannot be a symlink')
@@ -102,6 +119,10 @@ def validate_plugin(source):
                 raise ValidationError(f'missing view: {entry["view"]}')
             view = read_json(source / entry['view'])
             validate_view(view, manifest['api'])
+            if view.get('layout') == 'tiles':
+                sizes = [item['size'] for item in view['slots']['tiles']]
+                dropped = tile_drops(sizes, 6, 4) & tile_drops(sizes, 4, 6)
+                if dropped: print(f'warning: {manifest["id"]}.{entry["id"]}: tiles {sorted(dropped)} do not fit in either orientation', file=sys.stderr)
             if ('layout' in view) != (category == 'pages'):
                 raise ValidationError(f'{category}.{entry["id"]}: wrong view kind')
             declared = entry.get('variants')

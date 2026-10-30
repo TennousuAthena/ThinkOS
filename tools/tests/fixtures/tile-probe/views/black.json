@@ -1,0 +1,28 @@
+{
+  "template": "tile",
+  "faces": [
+    {
+      "icon": "rain",
+      "value": "26°",
+      "label": "@label",
+      "detail": "@detail"
+    },
+    {
+      "icon": "calendar",
+      "value": "31",
+      "label": "@label",
+      "detail": "@detail"
+    },
+    {
+      "label": "SKIPPED",
+      "value": "",
+      "detail": ""
+    }
+  ],
+  "badge": "7",
+  "color": "#000000",
+  "content": {
+    "type": "clock",
+    "style": "analog"
+  }
+}

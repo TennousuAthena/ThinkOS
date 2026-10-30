@@ -298,4 +298,8 @@
 
 ## 磁贴（API 4 / ADR-025）
 
-固定网格横屏 6×4、竖屏 4×6；外边距 20dp，间距 8dp，磁贴圆角 8dp、内边距 12dp。尺寸 small/medium/wide/large 对应 1×1/2×2/4×2/4×4，内容密度由 OS 固定；所有文字单行省略。背景按引用 color > tile color > accent，前景自动黑白，颜色变化按 Motion.NUMBER 插值，不重建 View。夜间根层滤镜统一处理。系统设置 tiles.live 默认 true，tiles.interval 默认 8 秒（5–60、步长 1），各语言同名字段由 shared schema 生成。
+固定网格横屏 6×4、竖屏 4×6；外边距 20dp，间距 8dp，磁贴直角 0dp、内边距 12dp。尺寸 small/medium/wide/large 对应 1×1/2×2/4×2/4×4，内容密度由 OS 固定；所有文字单行省略。背景按引用 color > tile color > accent，前景自动黑白，颜色变化按 Motion.NUMBER 插值，不重建 View。夜间根层滤镜统一处理。系统设置 tiles.live 默认 true，tiles.interval 默认 8 秒（5–60、步长 1），各语言同名字段由 shared schema 生成。
+
+用户补充（2026-10-31）：以 Windows Phone / Windows 8.1 的 Metro 磁贴为参照。磁贴必须直角、平面、无阴影；网格基础单元保持正方形；信息以大号轻字重数字为主、标签锚定底部起始侧、纯色留白，不沿用普通圆角卡片的排版。RTL 镜像网格和内容。参考微软 [Windows Phone 设计建议](https://blogs.windows.com/windowsdeveloper/2013/01/18/8-tips-for-designing-windows-phone-apps/) 与 [Windows/Phone 8.1 磁贴模板目录](https://learn.microsoft.com/en-us/previous-versions/windows/apps/hh761491(v=win.10))。使用现有 Android 字体，不分发 Segoe。当前沿用 Windows 8.1 的垂直 peek 方向，不采用 Phone 的 3D 翻转。
+
+真机发现夜间红色矩阵会压低中灰底的对比度。磁贴按合成后的颜色选择黑白前景；两者都低于 4.5:1 时，仅在夜间把底色向最近的可读亮/暗端补偿。浅色/深色完全保留插件底色；夜间仍经过统一根层滤镜。

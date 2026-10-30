@@ -44,6 +44,7 @@ internal class ComponentGroup(
     private val bound = mutableListOf<Bound>()
     private val shape = GradientDrawable().apply { cornerRadius = 32f * resources.displayMetrics.density }
     private var palette = Palette.DARK
+    private var embeddedTile: TileView? = null
     private var photoNotice = false
     private var allocation = RenderGeometry.VerticalAllocation(emptyList(), 0, 0)
     private val formHost = object : FormHost {
@@ -54,9 +55,9 @@ internal class ComponentGroup(
     val owner: String get() = pluginId
     val floatingClock: Boolean get() = bound.singleOrNull()?.view.let { it is ClockView && it.clockStyle == "float" }
     var opens: String? = null
-    val activeAnimations: Boolean get() = bound.any { it.renderer?.animating == true }
+    val activeAnimations: Boolean get() = embeddedTile?.activeAnimations == true || bound.any { it.renderer?.animating == true }
     val bottomOverlayInset: Int get() = bound.maxOfOrNull { it.renderer?.bottomOverlayInset ?: 0 } ?: 0
-    val ambientAnimations: Boolean get() = bound.any { (it.view as? IconView)?.animating == true }
+    val ambientAnimations: Boolean get() = embeddedTile?.ambientAnimations == true || bound.any { (it.view as? IconView)?.animating == true }
     private var signature = ""
     private var active = false
 
@@ -88,6 +89,16 @@ internal class ComponentGroup(
 
     fun update(owner: String, declaration: JSONObject) {
         pluginId = owner
+        if (declaration.optString("template") == "tile") {
+            if (embeddedTile == null) {
+                removeAllViews(); bound.clear(); background = null; clipToOutline = false
+                embeddedTile = TileView(context, state, variant, events).also { addView(it) }
+            }
+            embeddedTile!!.update(owner, owner, declaration, JSONObject(), opens, "large")
+            embeddedTile!!.colors(palette); embeddedTile!!.active(active)
+            return
+        }
+        embeddedTile?.let { it.active(false); removeView(it); embeddedTile = null; signature = ""; if (card) { background = shape; clipToOutline = true } }
         val definitions = children(declaration)
         val nextSignature = owner + ":" + definitions.joinToString { it.toString() }
         if (nextSignature != signature) {
@@ -140,6 +151,7 @@ internal class ComponentGroup(
         colors(palette)
     }
     fun bind(changedPlugin: String, paths: Set<String>, force: Boolean = false) {
+        embeddedTile?.let { it.bind(changedPlugin, paths, force); return }
         if (changedPlugin != pluginId) return
         val snapshot = state(pluginId)
         for (item in bound) {
@@ -174,6 +186,7 @@ internal class ComponentGroup(
     }
     fun colors(value: Palette) {
         palette = value
+        embeddedTile?.let { it.colors(value); return }
         if (card) shape.setColor(value.surface)
         bound.forEach { item ->
             item.renderer?.colors(value)
@@ -195,14 +208,17 @@ internal class ComponentGroup(
         photoNotice = value
         colors(palette)
     }
+    fun night(amount: Float) { embeddedTile?.night(amount) }
+    fun tileViews(): List<TileView> = listOfNotNull(embeddedTile)
     fun tick(now: Long, attention: Attention) {
+        embeddedTile?.tick(now, attention)
         bound.forEach { item ->
             item.renderer?.tick(now, attention)
             (item.view as? ClockView)?.tick(now, attention)
             (item.view as? IconView)?.tick(now, attention)
         }
     }
-    fun active(value: Boolean) { active = value; bound.forEach { it.renderer?.active(value) } }
+    fun active(value: Boolean) { active = value; embeddedTile?.active(value); bound.forEach { it.renderer?.active(value) } }
     fun tapAt(x: Float, y: Float): Boolean = bound.asReversed().any { item ->
         val v = item.view
         val hit = v.visibility == VISIBLE && x >= v.left && x < v.right && y >= v.top && y < v.bottom
@@ -217,6 +233,7 @@ internal class ComponentGroup(
         return null
     }
     fun localeChanged() {
+        embeddedTile?.localeChanged()
         bound.forEach { item -> item.renderer?.localeChanged(); (item.view as? ClockView)?.refreshLocale() }
         bind(pluginId, setOf(""), force = true)
     }
@@ -228,6 +245,7 @@ internal class ComponentGroup(
     }
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val w = MeasureSpec.getSize(widthMeasureSpec); val h = MeasureSpec.getSize(heightMeasureSpec)
+        embeddedTile?.let { it.measure(widthMeasureSpec, heightMeasureSpec); setMeasuredDimension(w, h); return }
         val padding = if (card) (24 * resources.displayMetrics.density).toInt() else 0
         val innerW = (w - 2 * padding).coerceAtLeast(0); val innerH = (h - 2 * padding).coerceAtLeast(0)
         val dense = innerH / resources.displayMetrics.density < 340 && bound.size >= 4
@@ -252,6 +270,7 @@ internal class ComponentGroup(
         setMeasuredDimension(w, h)
     }
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+        embeddedTile?.let { it.layout(0, 0, width, height); return }
         val padding = if (card) (24 * resources.displayMetrics.density).toInt() else 0
         var y = padding + allocation.offset
         bound.forEach { item ->
@@ -324,6 +343,8 @@ private class StackSlot(context: Context, private val group: (Int) -> ComponentG
         // A new drag/update can interrupt a spring; never retain a third hidden card.
         (0 until childCount).map(::getChildAt).filter { it !== current }.forEach(::removeView)
     }
+    fun night(amount: Float) { current?.night(amount); preview?.night(amount) }
+    fun tileViews(): List<TileView> = current?.tileViews().orEmpty()
     fun bind(id: String, paths: Set<String>) { current?.bind(id, paths); preview?.bind(id, paths) }
     fun localeChanged() { current?.localeChanged(); preview?.localeChanged() }
     fun colors(value: Palette) { current?.colors(value); preview?.colors(value) }
@@ -341,18 +362,23 @@ internal class PageView(
 ) : ViewGroup(context) {
     private val groups = linkedMapOf<String, ComponentGroup>()
     private val stacks = linkedMapOf<String, StackSlot>()
+    private val tiles = linkedMapOf<Int, TileView>()
+    private var tileItems = JSONArray()
+    private var tileBoxes = emptyList<RenderGeometry.Box?>()
+    private var droppedWarning = ""
+    private var night = 0f
     private var palette = Palette.DARK
     private var definitions = mutableMapOf<String, String>()
     private val stackItems = mutableMapOf<String, JSONArray>()
     private var dragging: StackSlot? = null
     private var previousLayout = ""
     private var active = false
-    fun active(value: Boolean) { active = value; groups.values.forEach { it.active(value) }; stacks.values.forEach { it.active(value) } }
+    fun active(value: Boolean) { active = value; groups.values.forEach { it.active(value) }; stacks.values.forEach { it.active(value) }; tiles.values.forEach { it.active(value && it.visibility == VISIBLE) } }
     private val layout get() = page.view.optString("layout")
     private val slotNames get() = LayoutVocabulary.slots[layout].orEmpty()
     private val roles get() = LayoutVocabulary.roles[layout].orEmpty()
-    val activeAnimations: Boolean get() = groups.values.any { it.activeAnimations } || stacks.values.any { it.activeAnimations }
-    val ambientAnimations: Boolean get() = groups.values.any { it.ambientAnimations } || stacks.values.any { it.ambientAnimations }
+    val activeAnimations: Boolean get() = groups.values.any { it.activeAnimations } || stacks.values.any { it.activeAnimations } || tiles.values.any { it.activeAnimations }
+    val ambientAnimations: Boolean get() = groups.values.any { it.ambientAnimations } || stacks.values.any { it.ambientAnimations } || tiles.values.any { it.ambientAnimations }
 
     init { clipChildren = false; clipToPadding = false; update(page, widgets) }
     private fun resolve(name: String, index: Int): Triple<String, JSONObject, String?> {
@@ -362,7 +388,9 @@ internal class PageView(
         page = next
         widgets = nextWidgets
         if (previousLayout.isNotEmpty() && previousLayout != layout) {
+            groups.values.forEach { it.active(false) }; stacks.values.forEach { it.active(false) }; tiles.values.forEach { it.active(false) }
             removeAllViews()
+            tiles.clear()
             groups.clear()
             stacks.clear()
             definitions.clear()
@@ -371,7 +399,17 @@ internal class PageView(
         contentDescription = page.title
         val slots = page.view.optJSONObject("slots") ?: JSONObject()
         for (name in slotNames) {
-            if (roles[name] == "stack") {
+            if (roles[name] == "tiles") {
+                tileItems = slots.optJSONArray(name) ?: JSONArray()
+                tiles.keys.filter { it >= tileItems.length() }.toList().forEach { i -> tiles.remove(i)?.let { it.active(false); removeView(it) } }
+                for (i in 0 until tileItems.length()) {
+                    val reference = tileItems.getJSONObject(i)
+                    val (owner, definition, opens) = resolveStackItem(page.pluginId, reference, widgets)
+                    val tile = tiles.getOrPut(i) { TileView(context, state, { variant }, events).also { addView(it) } }
+                    tile.update(page.pluginId, owner, definition, reference, opens, reference.optString("size"))
+                    tile.colors(palette)
+                }
+            } else if (roles[name] == "stack") {
                 val items = slots.optJSONArray(name) ?: JSONArray()
                 stackItems[name] = items
                 val slot = stacks.getOrPut(name) {
@@ -404,16 +442,19 @@ internal class PageView(
         }
         requestLayout()
         active(active)
+        night(night)
     }
+    fun night(amount: Float) { night = amount; tiles.values.forEach { it.night(amount) }; groups.values.forEach { it.night(amount) }; stacks.values.forEach { it.night(amount) } }
     fun bind(pluginId: String, paths: Set<String>) {
         groups.values.forEach { it.bind(pluginId, paths) }
         stacks.values.forEach { it.bind(pluginId, paths) }
+        tiles.values.forEach { it.bind(pluginId, paths) }
     }
-    fun colors(value: Palette) { palette = value; groups.values.forEach { it.colors(value) }; stacks.values.forEach { it.colors(value) } }
-    fun localeChanged() { groups.values.forEach { it.localeChanged() }; stacks.values.forEach { it.localeChanged() } }
-    fun tick(now: Long, attention: Attention) { groups.values.forEach { it.tick(now, attention) }; stacks.values.forEach { it.tick(now, attention) } }
+    fun colors(value: Palette) { palette = value; groups.values.forEach { it.colors(value) }; stacks.values.forEach { it.colors(value) }; tiles.values.forEach { it.colors(value) } }
+    fun localeChanged() { groups.values.forEach { it.localeChanged() }; stacks.values.forEach { it.localeChanged() }; tiles.values.forEach { it.localeChanged() } }
+    fun tick(now: Long, attention: Attention) { groups.values.forEach { it.tick(now, attention) }; stacks.values.forEach { it.tick(now, attention) }; tiles.values.filter { it.visibility == VISIBLE }.forEach { it.tick(now, attention) } }
     fun animateAttention(waking: Boolean) {
-        (groups.values.toList() + stacks.values.toList()).forEachIndexed { i, view ->
+        (groups.values.toList() + stacks.values.toList() + tiles.values.toList()).forEachIndexed { i, view ->
             view.animate().cancel()
             if (waking) { view.alpha = .5f; view.translationY = 14 * resources.displayMetrics.density }
             view.animate().alpha(if (waking) 1f else .84f).translationY(if (waking) 0f else 6 * resources.displayMetrics.density)
@@ -449,9 +490,10 @@ internal class PageView(
         return true
     }
     /** The plugin under a point: the card's own plugin on a stacked page, otherwise the page's plugin. */
-    fun ownerAt(x: Float, y: Float): String =
+    private fun tileAt(x: Float, y: Float): TileView? = tiles.values.firstOrNull { it.visibility == VISIBLE && x >= it.left && x < it.right && y >= it.top && y < it.bottom }
+    fun ownerAt(x: Float, y: Float): String = tileAt(x, y)?.owner ?: 
         stacks.values.firstOrNull { x >= it.left && x <= it.right && y >= it.top && y <= it.bottom }?.current?.owner ?: page.pluginId
-    fun openAt(x: Float, y: Float): String? = stacks.values.firstOrNull { x >= it.left && x <= it.right && y >= it.top && y <= it.bottom }?.current?.opens
+    fun openAt(x: Float, y: Float): String? = tileAt(x, y)?.opens ?: stacks.values.firstOrNull { x >= it.left && x <= it.right && y >= it.top && y <= it.bottom }?.current?.opens
     fun tapAt(x: Float, y: Float): Boolean = groups.values.toList().asReversed().any {
         it.tapAt(x - it.left - it.translationX, y - it.top - it.translationY)
     }
@@ -495,10 +537,21 @@ internal class PageView(
             val rect = rectangle(name, spec)
             view.measure(MeasureSpec.makeMeasureSpec(rect.width(), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(rect.height(), MeasureSpec.EXACTLY))
         }
+        tileBoxes = RenderGeometry.tiles(List(tileItems.length()) { tileItems.getJSONObject(it).optString("size") }, w, h, spec.density, layoutDirection == LAYOUT_DIRECTION_RTL)
+        tiles.forEach { (i, view) ->
+            val box = tileBoxes.getOrNull(i)
+            view.visibility = if (box == null) GONE else VISIBLE
+            view.active(active && box != null)
+            view.measure(MeasureSpec.makeMeasureSpec(box?.width ?: 0, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(box?.height ?: 0, MeasureSpec.EXACTLY))
+        }
+        val dropped = tileBoxes.indices.filter { tileBoxes[it] == null }
+        val warning = "$w:$h:$tileItems:$dropped"
+        if (dropped.isNotEmpty() && droppedWarning != warning) { android.util.Log.w("ThinkOS", "tiles dropped (no space): $dropped on ${page.key}"); droppedWarning = warning }
         setMeasuredDimension(w, h)
     }
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         val spec = LayoutSpec(width, height, resources.displayMetrics.density)
+        tiles.forEach { (i, v) -> tileBoxes.getOrNull(i)?.let { v.layout(it.left, it.top, it.right, it.bottom) } }
         slots().forEach { (name, view) ->
             val x = view.left
             val y = view.top

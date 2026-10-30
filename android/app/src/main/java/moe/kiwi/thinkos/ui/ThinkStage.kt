@@ -196,6 +196,7 @@ class ThinkStage(
     }
     private fun newPage(page: PluginPage, variant: String): PageView = PageView(context, page, variant, widgets, events) { states[it] ?: JSONObject() }.also {
         it.colors(palette)
+        it.night(night)
         it.tick(SystemClock.uptimeMillis(), store.current.attention)
     }
     private fun renderDeck(next: DeckState) {
@@ -311,6 +312,8 @@ class ThinkStage(
         system.invalidate()
     }
     private fun applyNight() {
+        current?.night(night)
+        neighbor?.night(night)
         if (night <= 0f) { setLayerType(LAYER_TYPE_NONE, null); return }
         val gray = floatArrayOf(.2126f, .7152f, .0722f)
         val matrix = FloatArray(20)

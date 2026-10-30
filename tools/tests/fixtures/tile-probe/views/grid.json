@@ -1,0 +1,42 @@
+{
+  "layout": "tiles",
+  "slots": {
+    "tiles": [
+      {
+        "widget": "tile-probe.bound",
+        "size": "wide"
+      },
+      {
+        "widget": "tile-probe.white",
+        "size": "medium"
+      },
+      {
+        "widget": "tile-probe.black",
+        "size": "small"
+      },
+      {
+        "widget": "tile-probe.gray",
+        "size": "small"
+      },
+      {
+        "widget": "tile-probe.dynamic",
+        "size": "small"
+      },
+      {
+        "widget": "tile-probe.accent",
+        "size": "small",
+        "color": "{{override}}"
+      }
+    ]
+  },
+  "variants": [
+    {
+      "id": "first",
+      "title": "First"
+    },
+    {
+      "id": "second",
+      "title": "Second"
+    }
+  ]
+}

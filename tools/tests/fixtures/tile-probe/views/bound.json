@@ -1,0 +1,35 @@
+{
+  "template": "tile",
+  "faces": [
+    {
+      "icon": "rain",
+      "value": "26°",
+      "label": "@label",
+      "detail": "@detail"
+    },
+    {
+      "icon": "calendar",
+      "value": "31",
+      "label": "@label",
+      "detail": "@detail"
+    },
+    {
+      "label": "SKIPPED",
+      "value": "",
+      "detail": ""
+    }
+  ],
+  "badge": "7",
+  "color": "{{config.color}}",
+  "content": {
+    "type": "chart",
+    "values": [
+      2,
+      4,
+      1,
+      6,
+      3
+    ],
+    "style": "area"
+  }
+}

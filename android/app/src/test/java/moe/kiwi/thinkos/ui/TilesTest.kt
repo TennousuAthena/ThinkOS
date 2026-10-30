@@ -38,4 +38,12 @@ class TilesTest {
         }
         for (color in listOf(0xff000000.toInt(), -1, 0xff808080.toInt())) assertTrue(TileColor.contrast(color, TileColor.foreground(color)) >= 4.5)
     }
+    @Test fun nightCompositionAlsoPreservesReadableContrast() {
+        for (n in listOf(0f, .25f, .5f, .75f, 1f)) for (r in 0..15) for (g in 0..15) for (b in 0..15) {
+            val color = 0xff000000.toInt() or (r*17 shl 16) or (g*17 shl 8) or (b*17)
+            val safe = TileColor.nightSafe(color, n)
+            assertTrue(TileColor.contrast(TileColor.filtered(safe, n), TileColor.filtered(TileColor.nightForeground(safe, n), n)) >= 4.5)
+            if (n == 0f) assertEquals(color, safe)
+        }
+    }
 }

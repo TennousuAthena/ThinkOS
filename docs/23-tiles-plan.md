@@ -1,6 +1,6 @@
 # 23 · 磁贴规划：`tiles` 版式、`tile` 卡片模板与 `tiles` 插件
 
-> 2026-10-31。**这是规划稿，没有改动任何实现代码。** 新增的只有本文。
+> 2026-10-31。**已于 2026-10-31 按用户授权进入实现。** 实际验收见 `24-tiles-validation.md`。
 > 标记：**已核对** = 读过代码或在设备上查过；**提议** = 我的设计，可以推翻；**未核对** = 开工前先验证。
 > 先读：`AGENTS.md` → `08-decisions.md` ADR-013 / ADR-017 → `06-plugins.md` §4 → `shared/schema/plugin/README.md` → 本文。
 
@@ -107,7 +107,7 @@
 
 ## 4. OS 实现（提议）
 
-**网格**：`RenderGeometry.tiles(sizes, width, height, density, rtl)` 是纯函数，放 JVM 测试。横屏 6×4，竖屏 4×6，外边距 20dp，间距 8dp。在本机上单元约 118×107dp（横屏）、107×118dp（竖屏），都大于 48dp 的最小点击区。
+**网格**：`RenderGeometry.tiles(sizes, width, height, density, rtl)` 是纯函数，放 JVM 测试。横屏 6×4，竖屏 4×6，外边距 20dp，间距 8dp。每个基础单元取两轴可用尺寸的较小值，保持正方形，在本机约 107×107dp，都大于 48dp 的最小点击区。
 
 **排布**：按声明顺序做首次适配，从左上起逐行找第一个放得下的位置；RTL 水平镜像。放不下的磁贴不显示并记 `warn` 日志，不缩小也不滚动。比如横屏下 `large` 加 `wide` 就放不下（6 列放不下 4+4），文档要写清这一点，并在 `package_plugins.py` 里对两个方向都放不下的情况给警告。
 
@@ -115,7 +115,7 @@
 
 - `LayoutVocabulary` 增加槽位角色 `tiles`；`PageView.update` 增加第三条分支，`openAt` / `ownerAt` / `interactiveAt` / `tick` / `bind` / `colors` 都加上磁贴集合。
 - 新文件 `ui/TileView.kt`：不复用 `ComponentGroup` 的卡片外观（圆角、内边距、`display` 字号都不适用），只用它承载 `content`（`card=false, compact=true`）。文本走 `Binding.compile`，与现有组件一致。
-- 新增 UI token（`04-ui-spec.md`）：磁贴圆角 8dp、内边距 12dp、网格间距 8dp。
+- 新增 UI token（`04-ui-spec.md`）：磁贴直角 0dp、内边距 12dp、网格间距 8dp。
 
 **颜色**：`TileColor` 是纯函数，放 JVM 测试：`parse("#RRGGBB")` 解析和拒绝非法值，`foreground(color)` 取黑白中对比度较高者。这样任意底色的对比度都 ≥ 4.5:1（最差情况约 4.58:1）。`TileView` 由底色和前景色派生一份 `Palette`（`surface` = 底色，`primary` / `secondary` / `accent` = 前景色），传给 `IconView` 和 `content`，这些组件不用改。底色不随浅色/深色主题变化；未设置颜色的磁贴跟随主题的 `accent`，切换时只插值不重建 View。绑定值变化时底色用 `Motion.NUMBER` 过渡。夜间由根层滤镜统一处理，不单独适配。
 
@@ -245,5 +245,11 @@
 
 ## 10. 待用户确认
 
-1. **T0**：94 项未提交改动由谁提交。这决定能否开工。
-2. **优先级**：磁贴排在播放器之前并占用 API 4，是否同意。目前按同意规划。
+1. **T0 已执行**：用户授权落盘，基线提交 `31ae3dc`，分支 `feat/tiles`。
+2. **优先级已执行**：磁贴 API 4 / ADR-025，播放器顺延 API 5 / ADR-026。
+
+## 11. 开发中确认的修订
+
+- 用户明确要求 Windows Phone / Windows 8.1 磁贴语言：直角 0dp，不使用 8dp 圆角；基础网格正方形、底部标签、大号轻字重数字、平面色块。
+- 无线调试设备为 `192.168.3.167:5555`；离线测试保留 ADB 局域网，阻断应用外网且无 Server，不禁用 Wi-Fi。
+- 真机验证夜间中灰底无法在原红色矩阵下保持可读，已增加仅夜间生效的最小亮/暗端对比度补偿，并在 JVM 检查合成后 ≥4.5:1。
