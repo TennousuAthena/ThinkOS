@@ -5,6 +5,38 @@ import kotlin.math.floor
 
 /** Integer geometry shared by native renderers; independent of Android so edge cases run on JVM. */
 object RenderGeometry {
+    /** First fit in declaration order. Missing boxes retain their input index (dropped tiles). */
+    fun tiles(sizes: List<String>, width: Int, height: Int, density: Float, rtl: Boolean = false): List<Box?> {
+        if (width <= 0 || height <= 0) return sizes.map { null }
+        val cols = if (width > height) 6 else 4
+        val rows = if (width > height) 4 else 6
+        val d = density.takeIf { it.isFinite() && it > 0 } ?: 1f
+        val edge = minOf((20.0 * d).coerceAtMost(Int.MAX_VALUE.toDouble()).toInt(), width / 2, height / 2)
+        val gap = minOf((8.0 * d).coerceAtMost(Int.MAX_VALUE.toDouble()).toInt(),
+            (width - edge * 2) / (cols - 1), (height - edge * 2) / (rows - 1))
+        val usableW = width - edge * 2 - gap * (cols - 1)
+        val usableH = height - edge * 2 - gap * (rows - 1)
+        if (usableW < cols || usableH < rows) return sizes.map { null }
+        val occupied = Array(rows) { BooleanArray(cols) }
+        return sizes.map { size ->
+            val (cw, ch) = when (size) {
+                "small" -> 1 to 1; "medium" -> 2 to 2; "wide" -> 4 to 2; "large" -> 4 to 4
+                else -> 0 to 0
+            }
+            var box: Box? = null
+            if (cw > 0) search@ for (y in 0..rows - ch) for (x in 0..cols - cw) {
+                if ((y until y + ch).any { row -> (x until x + cw).any { occupied[row][it] } }) continue
+                for (row in y until y + ch) for (col in x until x + cw) occupied[row][col] = true
+                val left = edge + (usableW.toLong() * x / cols).toInt() + gap * x
+                val right = edge + (usableW.toLong() * (x + cw) / cols).toInt() + gap * (x + cw - 1)
+                val top = edge + (usableH.toLong() * y / rows).toInt() + gap * y
+                val bottom = edge + (usableH.toLong() * (y + ch) / rows).toInt() + gap * (y + ch - 1)
+                box = if (rtl) Box(width - right, top, width - left, bottom) else Box(left, top, right, bottom)
+                break@search
+            }
+            box
+        }
+    }
     /** Fixed photo-clock placement, not a plugin alignment/style option. */
     fun photoClock(width: Int, height: Int, density: Float): Box {
         val w = width.coerceAtLeast(0); val h = height.coerceAtLeast(0)
