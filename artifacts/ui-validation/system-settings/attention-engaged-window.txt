@@ -1,0 +1,30 @@
+    mDisplayId=0 stackId=1 mSession=Session{59eed50 2719:u0a10074} mClient=android.os.BinderProxy@96d8c4e
+    mOwnerUid=10074 mShowToOwnerOnly=true package=moe.kiwi.thinkos appop=NONE
+    mAttrs=WM.LayoutParams{(0,0)(fillxfill) sim=#10 ty=1 fl=#81810580 pfl=0x20000 sbrt=0.85 vsysui=0x1706 needsMenuKey=2 colorMode=0}
+    Requested w=1280 h=800 mLayoutSeq=22458
+    mBaseLayer=21000 mSubLayer=0 mAnimLayer=21015+0=21015 mLastLayer=21015
+    mToken=AppWindowToken{65ea95 token=Token{33a9187 ActivityRecord{2b8fdc6 u0 moe.kiwi.thinkos/.MainActivity t175}}}
+    mAppToken=AppWindowToken{65ea95 token=Token{33a9187 ActivityRecord{2b8fdc6 u0 moe.kiwi.thinkos/.MainActivity t175}}}
+     isAnimatingWithSavedSurface()=false mAppDied=false    drawnStateEvaluated=true    mightAffectAllDrawn=true
+    mViewVisibility=0x0 mHaveFrame=true mObscured=false
+    mSeq=0 mSystemUiVisibility=0x1706
+    mGivenContentInsets=[0,0][0,0] mGivenVisibleInsets=[0,0][0,0]
+    mFullConfiguration={1.0 ?mcc?mnc [zh_CN] ldltr sw492dp w739dp h468dp 260dpi lrg land finger -keyb/v/h -nav/h appBounds=Rect(0, 0 - 1202, 800) s.111}
+    mLastReportedConfiguration={1.0 ?mcc?mnc [zh_CN] ldltr sw492dp w739dp h468dp 260dpi lrg land finger -keyb/v/h -nav/h appBounds=Rect(0, 0 - 1202, 800) s.111}
+    mHasSurface=true mShownPosition=[0,0] isReadyForDisplay()=true hasSavedSurface()=false mWindowRemovalAllowed=false
+    mFrame=[0,0][1280,800] last=[0,0][1280,800]
+    Frames: containing=[0,0][1280,800] parent=[0,0][1280,800]
+        display=[0,0][1280,800] overscan=[0,0][1280,800]
+        content=[0,0][1202,800] visible=[0,0][1280,800]
+        decor=[0,0][1280,800]
+        outset=[0,0][1202,800]
+    Cur insets: overscan=[0,0][0,0] content=[0,0][78,0] visible=[0,0][0,0] stable=[0,39][78,0] surface=[0,0][0,0] outsets=[0,0][0,0]
+    Lst insets: overscan=[0,0][0,0] content=[0,0][78,0] visible=[0,0][0,0] stable=[0,39][78,0] physical=[0,0][0,0] outset=[0,0][0,0]
+    WindowStateAnimator{dbe76fa moe.kiwi.thinkos/moe.kiwi.thinkos.MainActivity}:
+      mSurface=Surface(name=moe.kiwi.thinkos/moe.kiwi.thinkos.MainActivity)
+      Surface: shown=true layer=21015 alpha=1.0 rect=(0.0,0.0) 1280.0 x 800.0 transform=(1.0, 0.0, 1.0, 0.0)
+      mDrawState=HAS_DRAWN       mLastHidden=false
+      mSystemDecorRect=[0,0][1280,800] last=[0,0][0,0] mHasClipRect=false mLastClipRect=[0,0][1280,800]
+    mLastFreezeDuration=+207ms
+    isOnScreen=true
+    isVisible=true

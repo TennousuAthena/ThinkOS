@@ -1,0 +1,16 @@
+{
+  "complete": false,
+  "passed": [
+    "native step controls clamp at the declared maximum",
+    "a conflicting threshold is refused, rolls back and shows a translated explanation",
+    "feedback checks do not restart the application"
+  ],
+  "issues": [
+    "help-landscape: help is visible below labels, does not overlap and is included in accessibility descriptions",
+    "help-portrait: help is visible below labels, does not overlap and is included in accessibility descriptions",
+    "the refused-edit explanation disappears after its display interval"
+  ],
+  "warningText": "必须小于“高于此亮度切换为浅色”",
+  "warningAbsentObservationSeconds": 6.7,
+  "settingsRestored": true
+}

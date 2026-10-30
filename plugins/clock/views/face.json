@@ -1,0 +1,24 @@
+{
+  "layout": "focus",
+  "variants": [
+    { "id": "digital", "title": "Digital" },
+    { "id": "analog", "title": "Analog" },
+    { "id": "solar", "title": "Solar" },
+    { "id": "world", "title": "World" }
+  ],
+  "slots": {
+    "hero": {
+      "type": "clock",
+      "style": "{{variant}}",
+      "format": "{{timeFormat}}",
+      "sun": "sun",
+      "zones": [
+        { "timezone": "{{config.zone1}}" },
+        { "timezone": "{{config.zone2}}" },
+        { "timezone": "{{config.zone3}}" },
+        { "timezone": "{{config.zone4}}" }
+      ]
+    },
+    "under": { "type": "text", "value": "{{date}}", "style": "body" }
+  }
+}

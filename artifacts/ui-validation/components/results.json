@@ -1,0 +1,13 @@
+{
+  "passed": [
+    "split page displays native progress, chart, moon and a virtualized list",
+    "native ring and list row taps reach the owning Lua plugin",
+    "vertical scrolling retains the page and recycled rows emit their actual 1-based index",
+    "horizontal swipe beginning over a list still navigates to the stage layout",
+    "focus groups render derived daylight and line charts without location permission; footer tap works",
+    "focus, stage and split reflow in portrait without restarting the application",
+    "the same mock components render in light, dark and red night themes"
+  ],
+  "complete": true,
+  "pid": "15053"
+}

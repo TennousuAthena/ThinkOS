@@ -1,0 +1,140 @@
+object PluginSchema {
+    const val API = @@API@@
+    private val renderApis by lazy { JSONObject(@@RENDER_APIS@@) }
+    private val documents by lazy { mapOf(
+@@SCHEMAS@@
+    ) }
+
+    fun validateIndex(value: JSONObject) {
+        validate(value, documents.getValue("index.json"), "index.json", "index", 0)
+    }
+    fun validateCatalog(value: JSONObject) {
+        validate(value, documents.getValue("catalog.json"), "catalog.json", "catalog", 0)
+    }
+
+    fun validateManifest(value: JSONObject) {
+        validate(value, documents.getValue("manifest.json"), "manifest.json", "manifest", 0)
+        for (name in listOf("pages", "widgets", "commands")) {
+            val entries = value.optJSONArray(name) ?: continue
+            val ids = HashSet<String>()
+            for (i in 0 until entries.length()) require(ids.add(entries.getJSONObject(i).getString("id"))) { "$name: duplicate id" }
+        }
+        require(value.getString("id") != "system") { "manifest.id: 'system' is reserved for the OS's own settings" }
+        value.optJSONObject("settings")?.let { declared ->
+            // Semantic rules live in one place, shared with the runtime store.
+            for (key in declared.keys()) moe.kiwi.thinkos.settings.SettingField.parse(key, declared.getJSONObject(key), false)
+        }
+        val pages = value.optJSONArray("pages")
+        val pageIds = (0 until (pages?.length() ?: 0)).map { pages!!.getJSONObject(it).getString("id") }.toSet()
+        value.optJSONArray("widgets")?.let { widgets ->
+            for (i in 0 until widgets.length()) {
+                val widget = widgets.getJSONObject(i)
+                require(!widget.has("opens") || widget.getString("opens") in pageIds) { "widget opens unknown page" }
+            }
+        }
+    }
+
+    fun validateView(value: JSONObject, api: Int = API) {
+        require(api in 1..API) { "unsupported plugin API" }
+        validate(value, documents.getValue("view.json"), "view.json", "view", 0)
+        fun gate(value: Any?) {
+            when (value) {
+                is JSONArray -> for (i in 0 until value.length()) gate(value.opt(i))
+                is JSONObject -> {
+                    if (value.has("layout")) require(renderApis.getJSONObject("layouts").optInt(value.getString("layout"), API + 1) <= api) { "layout requires a newer plugin API" }
+                    val kind = value.optString("type").takeIf { it.isNotEmpty() }
+                    if (kind != null) {
+                        require(renderApis.getJSONObject("componentTypes").optInt(kind, API + 1) <= api) { "component requires a newer plugin API" }
+                        val properties = renderApis.getJSONObject("componentProperties")
+                        for (key in properties.keys()) if (value.has(key)) require(properties.getInt(key) <= api) { "component property requires a newer plugin API" }
+                    }
+                    if (value.has("children") && !value.has("template") && kind == null) require(renderApis.getInt("componentGroups") <= api) { "component groups require a newer plugin API" }
+                    for (key in value.keys()) gate(value.opt(key))
+                }
+            }
+        }
+        gate(value)
+        value.optJSONArray("variants")?.let { variants ->
+            val ids = HashSet<String>()
+            for (i in 0 until variants.length()) require(ids.add(variants.getJSONObject(i).getString("id"))) { "duplicate variant" }
+        }
+    }
+
+    private fun matchesType(value: Any?, type: String): Boolean = when (type) {
+        "object" -> value is JSONObject
+        "array" -> value is JSONArray
+        "string" -> value is String
+        "boolean" -> value is Boolean
+        "number" -> value is Number && value.toDouble().isFinite()
+        "integer" -> value is Number && value.toDouble().isFinite() && value.toDouble() % 1.0 == 0.0
+        "null" -> value == null || value === JSONObject.NULL
+        else -> error("Unknown schema type $type")
+    }
+
+    private fun validate(value: Any?, schema: JSONObject, document: String, path: String, depth: Int) {
+        require(depth <= 32) { "$path: maximum nesting exceeded" }
+        if (schema.has("\$ref")) {
+            val parts = schema.getString("\$ref").split('#', limit = 2)
+            val doc = parts[0].ifEmpty { document }
+            var target: Any = documents.getValue(doc)
+            if (parts.size > 1) for (part in parts[1].split('/').drop(1)) {
+                target = (target as JSONObject).get(part.replace("~1", "/").replace("~0", "~"))
+            }
+            validate(value, target as JSONObject, doc, path, depth + 1)
+            return
+        }
+        for (keyword in listOf("oneOf", "anyOf")) schema.optJSONArray(keyword)?.let { alternatives ->
+            var matches = 0
+            for (i in 0 until alternatives.length()) {
+                try { validate(value, alternatives.getJSONObject(i), document, path, depth + 1); matches++ }
+                catch (_: IllegalArgumentException) { }
+            }
+            require(if (keyword == "oneOf") matches == 1 else matches >= 1) { "$path: unsupported declaration shape" }
+        }
+        if (schema.has("type")) {
+            val type = schema.get("type")
+            val valid = if (type is JSONArray) (0 until type.length()).any { matchesType(value, type.getString(it)) }
+                        else matchesType(value, type as String)
+            require(valid) { "$path: wrong value type" }
+        }
+        if (schema.has("const")) require(equivalent(value, schema.get("const"))) { "$path: unsupported value" }
+        schema.optJSONArray("enum")?.let { options ->
+            require((0 until options.length()).any { equivalent(value, options.get(it)) }) { "$path: unsupported value" }
+        }
+        when (value) {
+            is JSONObject -> {
+                require(value.length() <= schema.optInt("maxProperties", Int.MAX_VALUE)) { "$path: too many properties" }
+                schema.optJSONArray("required")?.let { required ->
+                    for (i in 0 until required.length()) require(value.has(required.getString(i))) { "$path: missing ${required.getString(i)}" }
+                }
+                val properties = schema.optJSONObject("properties")
+                for (key in value.keys()) {
+                    val child = properties?.optJSONObject(key)
+                    if (child != null) validate(value.get(key), child, document, "$path.$key", depth + 1)
+                    else when (val extra = schema.opt("additionalProperties")) {
+                        false -> throw IllegalArgumentException("$path: unknown property $key")
+                        is JSONObject -> validate(value.get(key), extra, document, "$path.$key", depth + 1)
+                    }
+                }
+            }
+            is JSONArray -> {
+                require(value.length() >= schema.optInt("minItems", 0) && value.length() <= schema.optInt("maxItems", Int.MAX_VALUE)) { "$path: invalid item count" }
+                if (schema.optBoolean("uniqueItems")) {
+                    val items = HashSet<String>()
+                    for (i in 0 until value.length()) require(items.add(value.get(i).toString())) { "$path: duplicate item" }
+                }
+                schema.optJSONObject("items")?.let { itemSchema ->
+                    for (i in 0 until value.length()) validate(value.get(i), itemSchema, document, "$path[$i]", depth + 1)
+                }
+            }
+            is String -> {
+                require(value.length >= schema.optInt("minLength", 0) && value.length <= schema.optInt("maxLength", Int.MAX_VALUE)) { "$path: invalid string length" }
+                if (schema.has("pattern")) require(Regex(schema.getString("pattern")).containsMatchIn(value)) { "$path: invalid string format" }
+            }
+            is Number -> require(value.toDouble() >= schema.optDouble("minimum", Double.NEGATIVE_INFINITY) && value.toDouble() <= schema.optDouble("maximum", Double.POSITIVE_INFINITY)) { "$path: number outside allowed range" }
+        }
+    }
+
+    private fun equivalent(a: Any?, b: Any?): Boolean =
+        if (a is Number && b is Number) a.toDouble() == b.toDouble() else a == b
+}

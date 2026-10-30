@@ -1,0 +1,10 @@
+cmake_minimum_required(VERSION 3.10)
+project(thinkos_lua C)
+file(GLOB LUA_SOURCES CONFIGURE_DEPENDS lua/*.c)
+list(FILTER LUA_SOURCES EXCLUDE REGEX "/(lua|luac)\\.c$")
+add_library(tos SHARED tos_bridge.c json/yyjson.c ${LUA_SOURCES})
+target_include_directories(tos PRIVATE lua)
+target_compile_options(tos PRIVATE -O2 -Wall -Wextra -Wno-unused-parameter)
+target_link_libraries(tos m)
+
+target_compile_definitions(tos PRIVATE YYJSON_DISABLE_FILE=1 YYJSON_DISABLE_UTILS=1 YYJSON_READER_DEPTH_LIMIT=25 YYJSON_WRITER_DEPTH_LIMIT=25)

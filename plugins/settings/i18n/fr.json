@@ -1,0 +1,16 @@
+{
+ "name": "Réglages",
+ "title": "Réglages",
+ "done": "Terminé",
+ "system": "Réglages système",
+ "plugins": "Autres modules",
+ "error.type": "Cette valeur n’est pas valide",
+ "error.min": "Doit être au moins {min}",
+ "error.max": "Doit être au plus {max}",
+ "error.length": "{max} caractères au maximum",
+ "error.chars": "Contient des caractères non autorisés",
+ "error.required": "Veuillez choisir une option",
+ "error.option": "Cette option n’est pas disponible",
+ "error.order_below": "Doit être inférieur à « {label} »",
+ "error.order_above": "Doit être supérieur à « {label} »"
+}

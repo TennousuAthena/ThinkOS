@@ -1,0 +1,20 @@
+Crash 1: 6574 -> 6617, resumed in 1.49s
+Crash 2: 6617 -> 6688, resumed in 4.75s
+Crash 3: 6688 -> 6761, resumed in 5.49s
+Crash 4: 6761 -> 6805, resumed in 1.45s
+Crash 5: 6805 -> 6873, resumed in 4.77s
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <boolean name="safe_mode" value="true" />
+    <string name="crashes">17471470,17474048,17479897,17486471,17489035</string>
+</map>
+10-29 20:42:15.621  6805  6805 E ThinkOS : 	at android.os.Looper.loop(Looper.java:164)
+10-29 20:42:15.621  6805  6805 E ThinkOS : 	at android.app.ActivityThread.main(ActivityThread.java:6494)
+10-29 20:42:15.621  6805  6805 E ThinkOS : 	at java.lang.reflect.Method.invoke(Native Method)
+10-29 20:42:15.621  6805  6805 E ThinkOS : 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:438)
+10-29 20:42:15.621  6805  6805 E ThinkOS : 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:807)
+10-29 20:42:19.880  6873  6873 I ThinkOS : Runtime started; local mode, safe=true
+10-29 20:42:20.018  6873  6873 I ThinkOS : Activity created; orientation=1
+10-29 20:42:20.157  6873  6889 I ThinkOS : [plugin:clock] loaded 0.1.0; Lua 38932 bytes
+10-29 20:42:21.382  6873  6873 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=clock.face, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=true) plugins=[PluginDiagnostic(id=clock, version=0.1.0, bytes=38702, disabled=false, error=null)]
+10-29 20:43:56.072  6873  6873 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=clock.face, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=true) plugins=[PluginDiagnostic(id=clock, version=0.1.0, bytes=37866, disabled=false, error=null)]

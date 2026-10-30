@@ -1,0 +1,266 @@
+{
+  "complete": false,
+  "passed": [
+    "turning night mode off updates the theme while settings remains ENGAGED",
+    "dark-low-lux: a pinned dark theme stays dark beyond the sensor dwell interval",
+    "dark-high-lux: a pinned dark theme stays dark beyond the sensor dwell interval",
+    "selecting portrait immediately rearranges the native UI"
+  ],
+  "issues": [],
+  "controlled_inputs": "debug lux and presence; normal attention timing",
+  "dark-low-lux": {
+    "lux": 0.1,
+    "samples": [
+      {
+        "seconds": 0.2,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 1.42,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 2.62,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 3.83,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 5.03,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 6.23,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 7.41,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 8.62,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 9.82,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 11.03,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 12.22,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 13.42,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 14.62,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 15.82,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 17.04,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 18.24,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 19.44,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 20.64,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 21.84,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 23.04,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 24.23,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 25.42,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 26.62,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 27.82,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 29.01,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 30.22,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 31.44,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 32.6,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 33.8,
+        "theme": "DARK"
+      }
+    ]
+  },
+  "dark-high-lux": {
+    "lux": 10000,
+    "samples": [
+      {
+        "seconds": 0.15,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 1.36,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 2.55,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 3.76,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 4.95,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 6.11,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 7.32,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 8.52,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 9.7,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 10.9,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 12.1,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 13.3,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 14.5,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 15.69,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 16.9,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 18.1,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 19.28,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 20.5,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 21.7,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 22.89,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 24.09,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 25.29,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 26.48,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 27.7,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 28.88,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 30.09,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 31.29,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 32.5,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 33.7,
+        "theme": "DARK"
+      }
+    ]
+  },
+  "orientations": {
+    "portrait": [
+      800,
+      1280
+    ]
+  },
+  "failure": "Missing UI text: 屏幕方向",
+  "settingsRestored": true,
+  "restoredKeys": [
+    "display.orientation",
+    "theme.mode",
+    "theme.night"
+  ]
+}

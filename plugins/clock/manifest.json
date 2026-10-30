@@ -1,0 +1,22 @@
+{
+  "id": "clock",
+  "name": "@name",
+  "version": "0.3.0",
+  "api": 1,
+  "main": "main.lua",
+  "permissions": ["location"],
+  "settings": {
+    "seconds": { "type": "bool", "label": "@setting.seconds", "default": false, "group": "@group.display" },
+    "zone1": { "type": "choice", "label": "@setting.zone1", "default": "Asia/Hong_Kong", "source": "timezone", "group": "@group.world" },
+    "zone2": { "type": "choice", "label": "@setting.zone2", "default": "Europe/London", "source": "timezone", "allowEmpty": true, "group": "@group.world" },
+    "zone3": { "type": "choice", "label": "@setting.zone3", "default": "America/New_York", "source": "timezone", "allowEmpty": true, "group": "@group.world" },
+    "zone4": { "type": "choice", "label": "@setting.zone4", "default": "", "source": "timezone", "allowEmpty": true, "group": "@group.world" }
+  },
+  "pages": [
+    { "id": "face", "view": "views/face.json", "title": "@title", "roles": ["sleep"] }
+  ],
+  "widgets": [
+    { "id": "now", "view": "views/now.json", "opens": "face" },
+    { "id": "calendar", "view": "views/calendar.json", "opens": "face" }
+  ]
+}

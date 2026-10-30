@@ -1,0 +1,19 @@
+{
+  "mode": "editor",
+  "complete": true,
+  "passed": [
+    "vertical scrolling across numeric rows does not change their values",
+    "typing in a native dialog keeps settings open for more than 30 seconds",
+    "Home closes a text dialog without saving its draft",
+    "UI session checks do not restart the application"
+  ],
+  "issues": [],
+  "typingSeconds": 40.25,
+  "typingState": {
+    "page": "settings.form",
+    "attention": "ENGAGED",
+    "theme": "NIGHT",
+    "orientation": "LANDSCAPE"
+  },
+  "settingsUnchanged": true
+}

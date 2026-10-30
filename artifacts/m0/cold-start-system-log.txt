@@ -1,0 +1,55 @@
+10-29 21:41:47.643  1128  3642 E ActivityManager: 	at android.os.Binder.execTransact(Binder.java:697)
+10-29 21:41:47.651  1128  3642 W ActivityManager: Removing FLAG_RECEIVER_FROM_SHELL because caller is UID 1000
+10-29 21:41:47.652  1128  3642 E ActivityManager: Sending non-protected broadcast org.matrix.vector.manager.NOTIFICATION from system 1128:system/1000 pkg android
+10-29 21:41:47.652  1128  3642 E ActivityManager: java.lang.Throwable
+10-29 21:41:47.652  1128  3642 E ActivityManager: 	at com.android.server.am.ActivityManagerService.checkBroadcastFromSystem(ActivityManagerService.java:19192)
+10-29 21:41:47.652  1128  3642 E ActivityManager: 	at com.android.server.am.ActivityManagerService.broadcastIntentLocked(ActivityManagerService.java:19797)
+10-29 21:41:47.652  1128  3642 E ActivityManager: 	at com.android.server.am.ActivityManagerService.broadcastIntent(ActivityManagerService.java:19939)
+10-29 21:41:47.652  1128  3642 E ActivityManager: 	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:240)
+10-29 21:41:47.652  1128  3642 E ActivityManager: 	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:2990)
+10-29 21:41:47.652  1128  3642 E ActivityManager: 	at android.os.Binder.execTransact(Binder.java:697)
+10-29 21:41:47.728  1128  3642 I ActivityManager: Force stopping moe.kiwi.thinkos appid=10074 user=0: from pid 4182
+10-29 21:41:47.729  1128  3642 I ActivityManager: Killing 4174:moe.kiwi.thinkos/u0a74 (adj -10000): stop moe.kiwi.thinkos
+10-29 21:41:47.732  1128  3642 I ActivityManager:   Force finishing activity ActivityRecord{e1939ae u0 moe.kiwi.thinkos/.MainActivity t95}
+10-29 21:41:47.736  1128  3642 I ActivityManager: START u0 {act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000100 cmp=moe.kiwi.thinkos/.MainActivity} from uid 0
+10-29 21:41:47.761  1128  3642 I ActivityManager: Start proc 4187:moe.kiwi.thinkos/u0a74 for activity moe.kiwi.thinkos/.MainActivity
+10-29 21:41:48.380  1128  1152 I ActivityManager: Displayed moe.kiwi.thinkos/.MainActivity: +623ms (total +12m58s178ms)
+10-29 21:41:48.585  1128  3642 I ActivityManager: Fully drawn moe.kiwi.thinkos/.MainActivity: +836ms (total +12m58s391ms)
+10-29 21:41:48.669  1128  3642 I ActivityManager: START u0 {flg=0x10000000 cmp=moe.kiwi.thinkos/.MainActivity} from uid 2000
+10-29 21:41:49.494  1128  3642 I ActivityManager: START u0 {flg=0x10000000 cmp=moe.kiwi.thinkos/.MainActivity (has extras)} from uid 2000
+10-29 21:41:49.519  1128  3642 I ActivityManager: Config changes=480 {1.0 ?mcc?mnc [zh_CN] ldltr sw492dp w739dp h468dp 260dpi lrg land finger -keyb/v/h -nav/h appBounds=Rect(0, 0 - 1202, 800) s.15}
+10-29 21:41:49.570  1128  3642 I ActivityManager: Override config changes=480 {1.0 ?mcc?mnc [zh_CN] ldltr sw492dp w739dp h468dp 260dpi lrg land finger -keyb/v/h -nav/h appBounds=Rect(0, 0 - 1202, 800) s.15} for displayId=0
+10-29 21:42:54.304  1128  1467 I ActivityManager: Force stopping moe.kiwi.thinkos appid=10074 user=0: from pid 4346
+10-29 21:42:54.304  1128  1467 I ActivityManager: Killing 4187:moe.kiwi.thinkos/u0a74 (adj 0): stop moe.kiwi.thinkos
+10-29 21:42:54.305  1128  1467 W ActivityManager: Scheduling restart of crashed service moe.kiwi.thinkos/.service.KioskService in 1000ms
+10-29 21:42:54.305  1128  1467 W ActivityManager: Force removing ActivityRecord{fcae740 u0 moe.kiwi.thinkos/.MainActivity t96}: app died, no saved state
+10-29 21:42:54.318  1128  1467 I ActivityManager: START u0 {act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000100 cmp=moe.kiwi.thinkos/.MainActivity} from uid 0
+10-29 21:42:54.343  1128  1467 I ActivityManager: Start proc 4349:moe.kiwi.thinkos/u0a74 for activity moe.kiwi.thinkos/.MainActivity
+10-29 21:42:54.349  1128  1467 W ActivityManager: Stopping service due to app idle: u0a74 -1m6s260ms moe.kiwi.thinkos/.service.KioskService
+10-29 21:42:54.349  1128  1467 I ActivityManager:   Force finishing activity ActivityRecord{cb6c4a8 u0 moe.kiwi.thinkos/.MainActivity t97}
+10-29 21:42:54.353  1128  1467 I ActivityManager: START u0 {act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000100 cmp=moe.kiwi.thinkos/.MainActivity} from uid 0
+10-29 21:42:54.359  1128  1181 I ActivityManager: Config changes=480 {1.0 ?mcc?mnc [zh_CN] ldltr sw492dp w492dp h715dp 260dpi lrg port finger -keyb/v/h -nav/h appBounds=Rect(0, 0 - 800, 1202) s.16}
+10-29 21:42:54.384  1128  1181 I ActivityManager: Override config changes=480 {1.0 ?mcc?mnc [zh_CN] ldltr sw492dp w492dp h715dp 260dpi lrg port finger -keyb/v/h -nav/h appBounds=Rect(0, 0 - 800, 1202) s.16} for displayId=0
+10-29 21:42:54.426  1128  1152 W ActivityManager: setHasOverlayUi called on unknown pid: 4187
+10-29 21:42:54.609  1128  1467 I ActivityManager: START u0 {flg=0x10000000 cmp=moe.kiwi.thinkos/.MainActivity} from uid 2000
+10-29 21:42:54.863  1128  1152 I ActivityManager: Displayed moe.kiwi.thinkos/.MainActivity: +503ms (total +534ms)
+10-29 21:42:55.530  1128  2500 I ActivityManager: START u0 {flg=0x10000000 cmp=moe.kiwi.thinkos/.MainActivity (has extras)} from uid 2000
+10-29 21:42:55.550  1128  2500 I ActivityManager: Config changes=480 {1.0 ?mcc?mnc [zh_CN] ldltr sw492dp w739dp h468dp 260dpi lrg land finger -keyb/v/h -nav/h appBounds=Rect(0, 0 - 1202, 800) s.17}
+10-29 21:42:55.570  1128  2500 I ActivityManager: Override config changes=480 {1.0 ?mcc?mnc [zh_CN] ldltr sw492dp w739dp h468dp 260dpi lrg land finger -keyb/v/h -nav/h appBounds=Rect(0, 0 - 1202, 800) s.17} for displayId=0
+10-29 21:44:42.704  1128  1766 I ActivityManager: Force stopping moe.kiwi.thinkos appid=10074 user=0: from pid 4476
+10-29 21:44:42.705  1128  1766 I ActivityManager: Killing 4349:moe.kiwi.thinkos/u0a74 (adj 0): stop moe.kiwi.thinkos
+10-29 21:44:42.706  1128  1766 W ActivityManager: Scheduling restart of crashed service moe.kiwi.thinkos/.service.KioskService in 1000ms
+10-29 21:44:42.706  1128  1766 W ActivityManager: Force removing ActivityRecord{a7644b5 u0 moe.kiwi.thinkos/.MainActivity t98}: app died, no saved state
+10-29 21:44:42.724  1128  1766 I ActivityManager: START u0 {act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000100 cmp=org.lineageos.trebuchet/com.android.launcher3.searchlauncher.SearchLauncher} from uid 0
+10-29 21:44:42.744  1128  1766 I ActivityManager:   Force stopping service ServiceRecord{bba4d4c u0 moe.kiwi.thinkos/.service.KioskService}
+10-29 21:44:42.769  1128  1181 I ActivityManager: Config changes=480 {1.0 ?mcc?mnc [zh_CN] ldltr sw492dp w492dp h715dp 260dpi lrg port finger -keyb/v/h -nav/h appBounds=Rect(0, 0 - 800, 1202) s.18}
+10-29 21:44:42.790  1128  1181 I ActivityManager: Override config changes=480 {1.0 ?mcc?mnc [zh_CN] ldltr sw492dp w492dp h715dp 260dpi lrg port finger -keyb/v/h -nav/h appBounds=Rect(0, 0 - 800, 1202) s.18} for displayId=0
+10-29 21:44:42.812  1128  1152 W ActivityManager: setHasOverlayUi called on unknown pid: 4349
+10-29 21:44:43.117  1128  1758 W ActivityManager: Unable to start service Intent { act=com.android.launcher3.WINDOW_OVERLAY dat=app://org.lineageos.trebuchet:10029?v=7&cv=9 pkg=com.google.android.googlequicksearchbox } U=0: not found
+10-29 21:44:43.118  1128  1758 W ActivityManager: Unable to start service Intent { act=com.android.launcher3.WINDOW_OVERLAY dat=app://org.lineageos.trebuchet:10029?v=7&cv=9 pkg=com.google.android.googlequicksearchbox } U=0: not found
+10-29 21:44:43.264  1128  1758 I ActivityManager: START u0 {flg=0x10000000 cmp=moe.kiwi.thinkos/.MainActivity} from uid 2000
+10-29 21:44:43.283  1128  3243 W ActivityManager: Unable to start service Intent { act=com.android.launcher3.WINDOW_OVERLAY dat=app://org.lineageos.trebuchet:10029?v=7&cv=9 pkg=com.google.android.googlequicksearchbox } U=0: not found
+10-29 21:44:43.284  1128  3243 W ActivityManager: Unable to start service Intent { act=com.android.launcher3.WINDOW_OVERLAY dat=app://org.lineageos.trebuchet:10029?v=7&cv=9 pkg=com.google.android.googlequicksearchbox } U=0: not found
+10-29 21:44:43.350  1128  3243 I ActivityManager: Start proc 4497:moe.kiwi.thinkos/u0a74 for activity moe.kiwi.thinkos/.MainActivity
+10-29 21:44:43.847  1128  1152 I ActivityManager: Displayed moe.kiwi.thinkos/.MainActivity: +502ms
+10-29 21:44:44.161  1128  1758 I ActivityManager: Fully drawn moe.kiwi.thinkos/.MainActivity: +825ms

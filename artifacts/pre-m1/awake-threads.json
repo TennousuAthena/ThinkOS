@@ -1,0 +1,110 @@
+{
+  "pid": 8833,
+  "tick_hz": 100,
+  "unit": "percent of one CPU core",
+  "samples": [
+    {
+      "elapsed_s": 10.07,
+      "cpu_pct": 31.579
+    },
+    {
+      "elapsed_s": 20.08,
+      "cpu_pct": 32.867
+    }
+  ],
+  "elapsed_s": 20.08,
+  "mean_cpu_pct": 32.221,
+  "max_cpu_pct": 32.867,
+  "persistent_threads": [
+    {
+      "tid": 8857,
+      "name": "RenderThread",
+      "cpu_pct": 22.859
+    },
+    {
+      "tid": 8833,
+      "name": "oe.kiwi.thinkos",
+      "cpu_pct": 9.313
+    },
+    {
+      "tid": 8838,
+      "name": "Jit thread pool",
+      "cpu_pct": 0.398
+    },
+    {
+      "tid": 8854,
+      "name": "ThinkOS-Plugin",
+      "cpu_pct": 0.149
+    },
+    {
+      "tid": 8839,
+      "name": "Signal Catcher",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 8840,
+      "name": "JDWP",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 8844,
+      "name": "ReferenceQueueD",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 8846,
+      "name": "FinalizerDaemon",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 8847,
+      "name": "FinalizerWatchd",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 8848,
+      "name": "HeapTaskDaemon",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 8849,
+      "name": "Binder:8833_1",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 8850,
+      "name": "Binder:8833_2",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 8851,
+      "name": "Binder:8833_3",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 8852,
+      "name": "Profile Saver",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 8859,
+      "name": "queued-work-loo",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 8864,
+      "name": "RenderThread",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 8868,
+      "name": "FileObserver",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 8870,
+      "name": "hwuiTask1",
+      "cpu_pct": 0.0
+    }
+  ]
+}

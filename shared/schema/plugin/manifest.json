@@ -1,0 +1,336 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "manifest.json",
+  "title": "SchemaManifest",
+  "description": "ThinkOS plugin API 1 contract. Settings (ADR-017) replace the M0 'config' field; data-source and media capabilities arrive in later milestones.",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "version",
+    "api"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[A-Za-z0-9.-]+)?$",
+      "maxLength": 48
+    },
+    "api": {
+      "type": "integer",
+      "enum": [
+        1,
+        2
+      ]
+    },
+    "icon": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*$",
+      "maxLength": 200
+    },
+    "main": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*\\.lua$",
+      "maxLength": 200
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "network",
+          "alert",
+          "media",
+          "library",
+          "presence",
+          "server",
+          "system.settings",
+          "location"
+        ]
+      },
+      "uniqueItems": true,
+      "maxItems": 8
+    },
+    "settings": {
+      "type": "object",
+      "maxProperties": 32,
+      "additionalProperties": {
+        "$ref": "#/$defs/setting"
+      }
+    },
+    "pages": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "$ref": "#/$defs/page"
+      }
+    },
+    "widgets": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "$ref": "#/$defs/widget"
+      }
+    },
+    "commands": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "$ref": "#/$defs/command"
+      }
+    }
+  },
+  "$defs": {
+    "page": {
+      "title": "SchemaPage",
+      "type": "object",
+      "required": [
+        "id",
+        "view",
+        "title"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "view": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*$",
+          "maxLength": 200
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "home",
+              "ambient",
+              "sleep",
+              "settings"
+            ]
+          },
+          "uniqueItems": true,
+          "maxItems": 4
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "live": {
+          "type": "boolean"
+        },
+        "variants": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/variant"
+          },
+          "minItems": 1,
+          "maxItems": 16
+        }
+      }
+    },
+    "widget": {
+      "title": "SchemaWidget",
+      "type": "object",
+      "required": [
+        "id",
+        "view"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "view": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*$",
+          "maxLength": 200
+        },
+        "opens": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "minLength": 1,
+          "maxLength": 64
+        }
+      }
+    },
+    "variant": {
+      "title": "SchemaVariant",
+      "type": "object",
+      "required": [
+        "id",
+        "title"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 80
+        }
+      }
+    },
+    "setting": {
+      "title": "SchemaSetting",
+      "type": "object",
+      "required": [
+        "type",
+        "label",
+        "default"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "enum": [
+            "bool",
+            "choice",
+            "number",
+            "text"
+          ]
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "default": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ]
+        },
+        "help": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "group": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "choices": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/settingChoice"
+          }
+        },
+        "source": {
+          "enum": [
+            "timezone",
+            "place"
+          ]
+        },
+        "allowEmpty": {
+          "type": "boolean"
+        },
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "step": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string",
+          "maxLength": 16
+        },
+        "maxLength": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "secret": {
+          "type": "boolean"
+        },
+        "hidden": {
+          "type": "boolean"
+        }
+      }
+    },
+    "settingChoice": {
+      "title": "SchemaSettingChoice",
+      "type": "object",
+      "required": [
+        "value",
+        "label"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]+$",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      }
+    },
+    "command": {
+      "title": "SchemaCommand",
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "phrases": {
+          "type": "array",
+          "maxItems": 16,
+          "items": {
+            "type": "string",
+            "maxLength": 80
+          }
+        },
+        "gesture": {
+          "enum": [
+            "wave",
+            "left",
+            "right",
+            "fist"
+          ]
+        }
+      }
+    }
+  }
+}

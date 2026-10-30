@@ -1,0 +1,279 @@
+{
+  "description": "System-level settings (ADR-017). Labels are '@a.b' references resolved from Android string resources a_b. The same field format as plugin settings.",
+  "scope": "system",
+  "fields": {
+    "theme.mode": {
+      "type": "choice",
+      "label": "@setting.theme.mode",
+      "default": "auto",
+      "group": "@setting.group.theme",
+      "choices": [
+        {
+          "value": "auto",
+          "label": "@setting.theme.mode.auto"
+        },
+        {
+          "value": "sun",
+          "label": "@setting.theme.mode.sun"
+        },
+        {
+          "value": "light",
+          "label": "@setting.theme.mode.light"
+        },
+        {
+          "value": "dark",
+          "label": "@setting.theme.mode.dark"
+        }
+      ]
+    },
+    "theme.night": {
+      "type": "bool",
+      "label": "@setting.theme.night",
+      "default": true,
+      "group": "@setting.group.theme"
+    },
+    "theme.dark_below_lux": {
+      "type": "number",
+      "label": "@setting.theme.dark_below_lux",
+      "default": 50,
+      "min": 10,
+      "max": 200,
+      "step": 5,
+      "unit": "lux",
+      "group": "@setting.group.theme",
+      "hidden": true
+    },
+    "theme.light_above_lux": {
+      "type": "number",
+      "label": "@setting.theme.light_above_lux",
+      "default": 120,
+      "min": 50,
+      "max": 1000,
+      "step": 10,
+      "unit": "lux",
+      "group": "@setting.group.theme",
+      "hidden": true
+    },
+    "theme.night_below_lux": {
+      "type": "number",
+      "label": "@setting.theme.night_below_lux",
+      "default": 5,
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "unit": "lux",
+      "group": "@setting.group.theme",
+      "hidden": true
+    },
+    "theme.night_above_lux": {
+      "type": "number",
+      "label": "@setting.theme.night_above_lux",
+      "default": 15,
+      "min": 5,
+      "max": 50,
+      "step": 1,
+      "unit": "lux",
+      "group": "@setting.group.theme",
+      "hidden": true
+    },
+    "display.orientation": {
+      "type": "choice",
+      "label": "@setting.display.orientation",
+      "default": "auto",
+      "group": "@setting.group.display",
+      "choices": [
+        {
+          "value": "auto",
+          "label": "@setting.display.orientation.auto"
+        },
+        {
+          "value": "landscape",
+          "label": "@setting.display.orientation.landscape"
+        },
+        {
+          "value": "portrait",
+          "label": "@setting.display.orientation.portrait"
+        }
+      ]
+    },
+    "display.brightness_max": {
+      "type": "number",
+      "label": "@setting.display.brightness_max",
+      "default": 85,
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "group": "@setting.group.display"
+    },
+    "attention.awake_to_ambient_s": {
+      "type": "number",
+      "label": "@setting.attention.awake_to_ambient_s",
+      "default": 120,
+      "min": 30,
+      "max": 600,
+      "step": 10,
+      "unit": "s",
+      "group": "@setting.group.attention",
+      "hidden": true
+    },
+    "attention.to_asleep_s": {
+      "type": "number",
+      "label": "@setting.attention.to_asleep_s",
+      "default": 180,
+      "min": 60,
+      "max": 1800,
+      "step": 30,
+      "unit": "s",
+      "group": "@setting.group.attention",
+      "hidden": true
+    },
+    "attention.engaged_idle_s": {
+      "type": "number",
+      "label": "@setting.attention.engaged_idle_s",
+      "default": 15,
+      "min": 5,
+      "max": 60,
+      "step": 5,
+      "unit": "s",
+      "group": "@setting.group.attention",
+      "hidden": true
+    },
+    "attention.ambient_page_after_s": {
+      "type": "number",
+      "label": "@setting.attention.ambient_page_after_s",
+      "default": 300,
+      "min": 60,
+      "max": 1800,
+      "step": 30,
+      "unit": "s",
+      "group": "@setting.group.attention",
+      "hidden": true
+    },
+    "server.url": {
+      "type": "text",
+      "label": "@setting.server.url",
+      "default": "",
+      "maxLength": 200,
+      "group": "@setting.group.server"
+    },
+    "server.token": {
+      "type": "text",
+      "label": "@setting.server.token",
+      "default": "",
+      "maxLength": 128,
+      "secret": true,
+      "group": "@setting.group.server"
+    },
+    "location.mode": {
+      "type": "choice",
+      "label": "@setting.location.mode",
+      "default": "auto",
+      "group": "@setting.group.location",
+      "choices": [
+        {
+          "value": "auto",
+          "label": "@setting.location.mode.auto"
+        },
+        {
+          "value": "manual",
+          "label": "@setting.location.mode.manual"
+        }
+      ],
+      "hidden": true
+    },
+    "location.name": {
+      "type": "choice",
+      "label": "@setting.location.name",
+      "default": "",
+      "source": "place",
+      "allowEmpty": true,
+      "group": "@setting.group.location"
+    },
+    "location.latitude": {
+      "type": "number",
+      "label": "@setting.location.latitude",
+      "default": 0,
+      "min": -90,
+      "max": 90,
+      "step": 0.001,
+      "unit": "°",
+      "group": "@setting.group.location",
+      "hidden": true
+    },
+    "location.longitude": {
+      "type": "number",
+      "label": "@setting.location.longitude",
+      "default": 0,
+      "min": -180,
+      "max": 180,
+      "step": 0.001,
+      "unit": "°",
+      "group": "@setting.group.location",
+      "hidden": true
+    },
+    "location.elevation": {
+      "type": "number",
+      "label": "@setting.location.elevation",
+      "default": 0,
+      "min": -500,
+      "max": 10000,
+      "step": 1,
+      "unit": "m",
+      "group": "@setting.group.location",
+      "hidden": true
+    },
+    "location.timezone": {
+      "type": "choice",
+      "label": "@setting.location.timezone",
+      "default": "",
+      "source": "timezone",
+      "allowEmpty": true,
+      "group": "@setting.group.location",
+      "hidden": true
+    },
+    "location.search_url": {
+      "type": "text",
+      "label": "@setting.location.search_url",
+      "default": "https://geocoding-api.open-meteo.com/v1/search",
+      "maxLength": 250,
+      "group": "@setting.group.location",
+      "hidden": true
+    },
+    "kiosk.lock": {
+      "type": "bool",
+      "label": "@setting.kiosk.lock",
+      "default": true,
+      "group": "@setting.group.kiosk"
+    },
+    "time.ntp_servers": {
+      "type": "text",
+      "label": "@setting.time.ntp_servers",
+      "default": "0.pool.ntp.org, 1.pool.ntp.org, 2.pool.ntp.org, 3.pool.ntp.org",
+      "maxLength": 300,
+      "group": "@setting.group.time",
+      "hidden": true
+    },
+    "time.sync_hour": {
+      "type": "number",
+      "label": "@setting.time.sync_hour",
+      "default": 4,
+      "min": 0,
+      "max": 23,
+      "step": 1,
+      "unit": "h",
+      "group": "@setting.group.time",
+      "hidden": true
+    }
+  },
+  "constraints": [
+    [
+      "theme.dark_below_lux",
+      "theme.light_above_lux"
+    ],
+    [
+      "theme.night_below_lux",
+      "theme.night_above_lux"
+    ]
+  ]
+}

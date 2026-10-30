@@ -1,0 +1,16 @@
+{
+ "name": "Configurações",
+ "title": "Configurações",
+ "done": "Concluído",
+ "system": "Configurações do sistema",
+ "plugins": "Outros plugins",
+ "error.type": "Esse valor não é válido",
+ "error.min": "Deve ser pelo menos {min}",
+ "error.max": "Deve ser no máximo {max}",
+ "error.length": "No máximo {max} caracteres",
+ "error.chars": "Contém caracteres não permitidos",
+ "error.required": "Escolha uma opção",
+ "error.option": "Essa opção não está disponível",
+ "error.order_below": "Deve ser menor que “{label}”",
+ "error.order_above": "Deve ser maior que “{label}”"
+}

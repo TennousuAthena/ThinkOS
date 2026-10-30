@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "catalog.json",
+  "title": "SchemaPluginCatalog",
+  "description": "APK assets/plugins/index.json. Each entry names assets/plugins/<id>/ and includes its complete index.",
+  "type": "object",
+  "required": [
+    "plugins"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "plugins": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "$ref": "index.json"
+      }
+    }
+  }
+}

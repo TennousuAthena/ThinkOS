@@ -1,0 +1,8 @@
+10-29 20:34:37.481  5713  5713 I ThinkOS : Configuration changed without Activity recreation: 1
+10-29 20:34:52.230  5713  5713 I ThinkOS : attention=AWAKE
+10-29 20:34:52.231  5713  5713 I ThinkOS : theme=NIGHT lux=61.800003
+10-29 20:35:44.609  5713  5713 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=clock.face, variant=world, direction=1, vertical=true), overlay=OverlayState(message=null), link=UNPAIRED, theme=NIGHT, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.1.0, bytes=37866, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null)]
+10-29 20:35:44.873  5713  5713 I ThinkOS : Configuration changed without Activity recreation: 2
+10-29 20:35:55.358  5713  5713 I ThinkOS : theme=DARK lux=57.300003
+10-29 20:36:26.420  5713  5713 I ThinkOS : theme=LIGHT lux=57.300003
+10-29 20:36:44.793  5713  5713 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=clock.face, variant=world, direction=1, vertical=true), overlay=OverlayState(message=null), link=UNPAIRED, theme=LIGHT, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.1.0, bytes=37866, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null)]

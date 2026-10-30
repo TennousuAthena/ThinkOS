@@ -1,0 +1,8 @@
+{
+  "template": "glance",
+  "children": [
+    { "type": "text", "value": "有设置的卡片", "style": "caption" },
+    { "type": "text", "value": "{{config.name}}", "style": "title" },
+    { "type": "text", "value": "长按进入这张卡片的设置", "style": "body" }
+  ]
+}

@@ -1,0 +1,217 @@
+DISPLAY MANAGER (dumpsys display)
+  mOnlyCode=false
+  mSafeMode=false
+  mPendingTraversal=false
+  mGlobalDisplayState=ON
+  mNextNonDefaultDisplayId=1
+  mDefaultViewport=DisplayViewport{valid=true, displayId=0, uniqueId='null', orientation=1, logicalFrame=Rect(0, 0 - 1280, 800), physicalFrame=Rect(0, 0 - 1280, 800), deviceWidth=1280, deviceHeight=800}
+  mExternalTouchViewport=DisplayViewport{valid=false, displayId=0, uniqueId='null', orientation=0, logicalFrame=Rect(0, 0 - 0, 0), physicalFrame=Rect(0, 0 - 0, 0), deviceWidth=0, deviceHeight=0}
+  mVirtualTouchViewports=[]
+  mDefaultDisplayDefaultColorMode=0
+  mSingleDisplayDemoMode=false
+  mWifiDisplayScanRequestCount=0
+  mStableDisplaySize=Point(800, 1280)
+
+Display Adapters: size=4
+  LocalDisplayAdapter
+  VirtualDisplayAdapter
+  OverlayDisplayAdapter
+    mCurrentOverlaySetting=
+    mOverlays: size=0
+  WifiDisplayAdapter
+    mCurrentStatus=WifiDisplayStatus{featureState=2, scanState=0, activeDisplayState=0, activeDisplay=null, displays=[], sessionInfo=WifiDisplaySessionInfo:
+        Client/Owner: Client
+        GroupId: 
+        Passphrase: 
+        SessionId: 0
+        IP Address: }
+    mFeatureState=2
+    mScanState=0
+    mActiveDisplayState=0
+    mActiveDisplay=null
+    mDisplays=[]
+    mAvailableDisplays=[]
+    mRememberedDisplays=[]
+    mPendingStatusChangeBroadcast=false
+    mSupportsProtectedBuffers=false
+    mDisplayController:
+      mWifiDisplayOnSetting=false
+      mWifiP2pEnabled=true
+      mWfdEnabled=false
+      mWfdEnabling=false
+      mNetworkInfo=[type: WIFI_P2P[], state: UNKNOWN/IDLE, reason: (unspecified), extra: (none), failover: false, available: true, roaming: false]
+      mScanRequested=false
+      mDiscoverPeersInProgress=false
+      mDesiredDevice=null
+      mConnectingDisplay=null
+      mDisconnectingDisplay=null
+      mCancelingDisplay=null
+      mConnectedDevice=null
+      mConnectionRetriesLeft=0
+      mRemoteDisplay=null
+      mRemoteDisplayInterface=null
+      mRemoteDisplayConnected=false
+      mAdvertisedDisplay=null
+      mAdvertisedDisplaySurface=null
+      mAdvertisedDisplayWidth=0
+      mAdvertisedDisplayHeight=0
+      mAdvertisedDisplayFlags=0
+      mAvailableWifiDisplayPeers: size=0
+
+Display Devices: size=1
+  DisplayDeviceInfo{"内置屏幕": uniqueId="local:0", 800 x 1280, modeId 1, defaultModeId 1, supportedModes [{id=1, width=800, height=1280, fps=60.000004}], colorMode 0, supportedColorModes [0], HdrCapabilities android.view.Display$HdrCapabilities@1d6308, density 260, 317.5 x 318.745 dpi, appVsyncOff 1000000, presDeadline 16666666, touch INTERNAL, rotation 0, type BUILT_IN, state ON, FLAG_DEFAULT_DISPLAY, FLAG_ROTATES_WITH_CONTENT, FLAG_SECURE, FLAG_SUPPORTS_PROTECTED_BUFFERS}
+    mAdapter=LocalDisplayAdapter
+    mUniqueId=local:0
+    mDisplayToken=android.os.BinderProxy@9e7bddf
+    mCurrentLayerStack=0
+    mCurrentOrientation=1
+    mCurrentLayerStackRect=Rect(0, 0 - 1280, 800)
+    mCurrentDisplayRect=Rect(0, 0 - 1280, 800)
+    mCurrentSurface=null
+    mBuiltInDisplayId=0
+    mActivePhysIndex=0
+    mActiveModeId=1
+    mActiveColorMode=0
+    mState=ON
+    mBrightness=216
+    mBacklight=com.android.server.lights.LightsService$LightImpl@cfffa2c
+    mDisplayInfos=
+      PhysicalDisplayInfo{800 x 1280, 60.000004 fps, density 1.625, 317.5 x 318.745 dpi, secure true, appVsyncOffset 1000000, bufferDeadline 16666666}
+    mSupportedModes=
+      DisplayModeRecord{mMode={id=1, width=800, height=1280, fps=60.000004}}
+    mSupportedColorModes=[0]
+
+Logical Displays: size=1
+  Display 0:
+    mDisplayId=0
+    mLayerStack=0
+    mHasContent=true
+    mRequestedMode=0
+    mRequestedColorMode=0
+    mDisplayOffset=(0, 0)
+    mPrimaryDisplayDevice=内置屏幕
+    mBaseDisplayInfo=DisplayInfo{"内置屏幕", uniqueId "local:0", app 800 x 1280, real 800 x 1280, largest app 800 x 1280, smallest app 800 x 1280, mode 1, defaultMode 1, modes [{id=1, width=800, height=1280, fps=60.000004}], colorMode 0, supportedColorModes [0], hdrCapabilities android.view.Display$HdrCapabilities@1d6308, rotation 0, density 260 (317.5 x 318.745) dpi, layerStack 0, appVsyncOff 1000000, presDeadline 16666666, type BUILT_IN, state ON, FLAG_SECURE, FLAG_SUPPORTS_PROTECTED_BUFFERS, removeMode 0}
+    mOverrideDisplayInfo=DisplayInfo{"内置屏幕", uniqueId "local:0", app 1202 x 800, real 1280 x 800, largest app 1202 x 1163, smallest app 800 x 761, mode 1, defaultMode 1, modes [{id=1, width=800, height=1280, fps=60.000004}], colorMode 0, supportedColorModes [0], hdrCapabilities android.view.Display$HdrCapabilities@1d6308, rotation 1, density 260 (317.5 x 318.745) dpi, layerStack 0, appVsyncOff 1000000, presDeadline 16666666, type BUILT_IN, state ON, FLAG_SECURE, FLAG_SUPPORTS_PROTECTED_BUFFERS, removeMode 0}
+
+Callbacks: size=20
+  0: mPid=1128, mWifiDisplayScanRequested=false
+  1: mPid=1278, mWifiDisplayScanRequested=false
+  2: mPid=1289, mWifiDisplayScanRequested=false
+  3: mPid=1403, mWifiDisplayScanRequested=false
+  4: mPid=1418, mWifiDisplayScanRequested=false
+  5: mPid=1725, mWifiDisplayScanRequested=false
+  6: mPid=1745, mWifiDisplayScanRequested=false
+  7: mPid=1760, mWifiDisplayScanRequested=false
+  8: mPid=1769, mWifiDisplayScanRequested=false
+  9: mPid=1868, mWifiDisplayScanRequested=false
+  10: mPid=2022, mWifiDisplayScanRequested=false
+  11: mPid=2072, mWifiDisplayScanRequested=false
+  12: mPid=2207, mWifiDisplayScanRequested=false
+  13: mPid=2225, mWifiDisplayScanRequested=false
+  14: mPid=2242, mWifiDisplayScanRequested=false
+  15: mPid=2558, mWifiDisplayScanRequested=false
+  16: mPid=2719, mWifiDisplayScanRequested=false
+  17: mPid=3560, mWifiDisplayScanRequested=false
+  18: mPid=8218, mWifiDisplayScanRequested=false
+  19: mPid=8238, mWifiDisplayScanRequested=false
+
+Display Power Controller Locked State:
+  mDisplayReadyLocked=true
+  mPendingRequestLocked=policy=BRIGHT, useProximitySensor=false, screenBrightness=216, screenAutoBrightnessAdjustment=0.0, screenLowPowerBrightnessFactor=0.5, brightnessSetByUser=false, useAutoBrightness=false, blockScreenOn=false, lowPowerMode=false, boostScreenBrightness=false, dozeScreenBrightness=-1, dozeScreenState=UNKNOWN
+  mPendingRequestChangedLocked=false
+  mPendingWaitForNegativeProximityLocked=false
+  mPendingUpdatePowerStateLocked=false
+
+Display Power Controller Configuration:
+  mScreenBrightnessDozeConfig=17
+  mScreenBrightnessDimConfig=10
+  mScreenBrightnessDarkConfig=1
+  mScreenBrightnessRangeMinimum=1
+  mScreenBrightnessRangeMaximum=255
+  mUseSoftwareAutoBrightnessConfig=true
+  mAllowAutoBrightnessWhileDozingConfig=false
+  mColorFadeFadesConfig=false
+
+Display Power Controller Thread State:
+  mPowerRequest=policy=BRIGHT, useProximitySensor=false, screenBrightness=216, screenAutoBrightnessAdjustment=0.0, screenLowPowerBrightnessFactor=0.5, brightnessSetByUser=false, useAutoBrightness=false, blockScreenOn=false, lowPowerMode=false, boostScreenBrightness=false, dozeScreenBrightness=-1, dozeScreenState=UNKNOWN
+  mWaitingForNegativeProximity=false
+  mProximitySensor={Sensor name="VCNL4200 PRX", vendor="Capella", version=2, type=8, maxRange=5.000305, resolution=0.05000305, power=0.3, minDelay=0}
+  mProximitySensorEnabled=false
+  mProximityThreshold=5.0
+  mProximity=Unknown
+  mPendingProximity=Unknown
+  mPendingProximityDebounceTime=-1 (29989531 ms ago)
+  mScreenOffBecauseOfProximity=false
+  mAppliedAutoBrightness=false
+  mAppliedDimming=false
+  mAppliedLowPower=false
+  mPendingScreenOnUnblocker=null
+  mPendingScreenOff=false
+  mReportedToPolicy=REPORTED_TO_POLICY_SCREEN_ON
+  mScreenBrightnessRampAnimator.isAnimating()=false
+  mColorFadeOnAnimator.isStarted()=false
+  mColorFadeOffAnimator.isStarted()=false
+
+Display Power State:
+  mScreenState=ON
+  mScreenBrightness=216
+  mScreenReady=true
+  mScreenUpdatePending=false
+  mColorFadePrepared=false
+  mColorFadeLevel=1.0
+  mColorFadeReady=true
+  mColorFadeDrawPending=false
+
+Photonic Modulator State:
+  mPendingState=ON
+  mPendingBacklight=216
+  mActualState=ON
+  mActualBacklight=216
+  mStateChangeInProgress=false
+  mBacklightChangeInProgress=false
+
+Color Fade State:
+  mPrepared=false
+  mMode=1
+  mDisplayLayerStack=0
+  mDisplayWidth=800
+  mDisplayHeight=1280
+  mSurfaceVisible=false
+  mSurfaceAlpha=0.0
+
+Automatic Brightness Controller Configuration:
+  mScreenAutoBrightnessSpline=MonotoneCubicSpline{[(0.0, 0.023529412: 0.0058823535), (2.0, 0.03529412: 0.0053921575), (10.0, 0.07450981: 0.0032843137), (50.0, 0.14117648: 0.0021568625), (90.0, 0.24705882: 0.002696079), (100.0, 0.27450982: 0.0017647066), (150.0, 0.3137255: 5.4901955E-4), (200.0, 0.32941177: 2.3529411E-4), (300.0, 0.34509805: 3.1372547E-4), (400.0, 0.39215687: 4.3137252E-4), (500.0, 0.43137255: 3.398693E-4), (800.0, 0.5176471: 2.908497E-4), (1000.0, 0.5764706: 1.9281045E-4), (1300.0, 0.6039216: 1.8860877E-4), (2000.0, 0.8039216: 1.7206851E-4), (3000.0, 0.8627451: 3.9170067E-5), (4000.0, 0.88235295: 1.4705882E-5), (8000.0, 0.92156863: 6.5359473E-6), (20000.0, 0.9607843: 3.594771E-6), (30000.0, 1.0: 3.9215684E-6)]}
+  mScreenBrightnessRangeMinimum=1
+  mScreenBrightnessRangeMaximum=255
+  mLightSensorWarmUpTimeConfig=0
+  mBrighteningLightDebounceConfig=4000
+  mDarkeningLightDebounceConfig=8000
+  mResetAmbientLuxAfterWarmUpConfig=true
+
+Automatic Brightness Controller State:
+  mLightSensor={Sensor name="VCNL4200 ALS", vendor="Capella", version=1, type=5, maxRange=6553.0, resolution=0.1000061, power=0.213, minDelay=0}
+  mLightSensorEnabled=false
+  mLightSensorEnableTime=0 (29989531 ms ago)
+  mAmbientLux=0.0
+  mAmbientLightHorizon=10000
+  mBrighteningLuxThreshold=0.0
+  mDarkeningLuxThreshold=0.0
+  mLastObservedLux=0.0
+  mLastObservedLuxTime=0 (29989531 ms ago)
+  mRecentLightSamples=0
+  mAmbientLightRingBuffer=[]
+  mInitialHorizonAmbientLightRingBuffer=[]
+  mScreenAutoBrightness=-1
+  mScreenAutoBrightnessAdjustment=0.0
+  mScreenAutoBrightnessAdjustmentMaxGamma=3.0
+  mLastScreenAutoBrightnessGamma=1.0
+  mDozing=false
+
+PersistentDataStore
+  mLoaded=true
+  mDirty=false
+  RememberedWifiDisplays:
+  DisplayStates:
+  StableDeviceValues:
+      StableDisplayWidth=800
+      StableDisplayHeight=1280

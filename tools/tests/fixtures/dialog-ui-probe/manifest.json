@@ -1,0 +1,12 @@
+{
+  "id": "dialog-ui-probe",
+  "name": "原生弹窗样例",
+  "version": "1.0.0",
+  "api": 1,
+  "permissions": [],
+  "settings": {
+    "plain": { "type": "text", "label": "普通文字", "default": "UI-ORIGINAL", "maxLength": 64 },
+    "secret": { "type": "text", "label": "密码文字", "default": "", "maxLength": 64, "secret": true }
+  },
+  "pages": [{ "id": "main", "title": "原生弹窗样例", "view": "views/main.json" }]
+}

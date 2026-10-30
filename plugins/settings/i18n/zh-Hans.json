@@ -1,0 +1,16 @@
+{
+ "name": "设置",
+ "title": "设置",
+ "done": "完成",
+ "system": "系统设置",
+ "plugins": "其他插件",
+ "error.type": "这个值无效",
+ "error.min": "不能小于 {min}",
+ "error.max": "不能大于 {max}",
+ "error.length": "最多 {max} 个字符",
+ "error.chars": "包含不允许的字符",
+ "error.required": "请选择一项",
+ "error.option": "没有这个选项",
+ "error.order_below": "必须小于“{label}”",
+ "error.order_above": "必须大于“{label}”"
+}

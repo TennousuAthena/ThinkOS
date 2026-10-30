@@ -1,0 +1,28 @@
+--------- beginning of system
+--------- beginning of crash
+--------- beginning of main
+01-01 14:00:16.379  1782  1782 I ThinkOS : Configuration changed without Activity recreation: 2
+01-01 14:00:39.347  1782  1782 I ThinkOS : Activity created; orientation=1
+01-01 14:01:10.727  1782  1782 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.1.0, bytes=34116, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null)]
+01-01 14:02:16.329  1782  1782 I ThinkOS : attention=AMBIENT
+01-01 14:02:55.570  1782  1782 I ThinkOS : DEBUG state=DeviceState(attention=AMBIENT, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.1.0, bytes=34901, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null)]
+10-29 20:52:39.168  1782  1782 I ThinkOS : attention=AWAKE
+10-29 20:52:39.218  1782  1782 I ThinkOS : attention=ENGAGED
+10-29 20:53:04.397  1782  1782 I ThinkOS : attention=AWAKE
+10-29 20:54:56.921  1782  1782 I ThinkOS : attention=ENGAGED
+10-29 20:55:17.664  1782  1782 I ThinkOS : attention=AWAKE
+10-29 20:55:23.522  1782  1782 I ThinkOS : attention=ENGAGED
+10-29 20:55:45.777  1782  1782 I ThinkOS : attention=AWAKE
+10-29 20:57:30.834  1782  1782 I ThinkOS : attention=AMBIENT
+10-29 20:58:24.007  1782  1782 I ThinkOS : attention=AWAKE
+10-29 21:04:56.122  1782  1782 I ThinkOS : attention=AMBIENT
+10-29 21:05:30.415  1782  1782 I ThinkOS : attention=ENGAGED
+10-29 21:05:46.199  1782  1782 I ThinkOS : attention=AWAKE
+10-29 21:08:12.283  1782  1782 I ThinkOS : attention=AMBIENT
+10-29 21:08:16.748  1782  1782 I ThinkOS : attention=AWAKE
+10-29 21:09:17.313  1782  1782 I ThinkOS : attention=ENGAGED
+10-29 21:09:36.399  1782  1782 I ThinkOS : attention=AWAKE
+10-29 21:17:08.679  1782  1782 I ThinkOS : attention=AMBIENT
+10-29 21:18:41.755  1782  1782 I ThinkOS : attention=ASLEEP
+10-29 21:20:11.081  1782  1782 I ThinkOS : attention=AWAKE
+10-29 21:25:08.918  1782  1782 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.1.0, bytes=37866, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null)]

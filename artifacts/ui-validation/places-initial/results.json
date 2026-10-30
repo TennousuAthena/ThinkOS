@@ -1,0 +1,45 @@
+{
+  "complete": false,
+  "passed": [
+    "picker-landscape-dark: offline guidance, 48dp back/manual targets and the search action are visible",
+    "active-search: continuous typing keeps settings open beyond 30 seconds",
+    "manual-landscape-dark: coordinate labels have at least 4.5:1 text contrast",
+    "active-manual: continuous typing keeps settings open beyond 30 seconds",
+    "editing an unsaved manual draft does not change the stored location",
+    "out-of-range latitude shows an explanation without saving any field",
+    "an unknown IANA timezone leaves the complete stored location unchanged",
+    "offline save commits negative coordinates, elevation and an empty device-timezone choice together",
+    "reopening manual entry retains the saved negative latitude",
+    "Cancel discards a manual draft",
+    "Home closes the editor and discards its draft"
+  ],
+  "issues": [],
+  "dialogs": {
+    "manual-landscape-dark": {
+      "sampled_colors": [
+        [
+          27,
+          29,
+          34
+        ],
+        [
+          141,
+          146,
+          155
+        ]
+      ],
+      "label_contrast": 5.39
+    }
+  },
+  "scope": "offline place UI",
+  "apk_sha256": "9190390016618ba08778a03ca1a7746d3376864c17c186e31e48c14eb0228901",
+  "uiPid": "15241",
+  "wifiDisabled": true,
+  "active-searchSeconds": 40.25,
+  "active-manualSeconds": 40.25,
+  "failure": "Missing native place UI: 系统设置",
+  "settingsRestored": true,
+  "wifiRestored": true,
+  "developmentOverridesEmpty": true,
+  "privateBackupDeleted": true
+}

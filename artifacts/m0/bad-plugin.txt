@@ -1,0 +1,12 @@
+10-29 20:31:23.586  5713  5713 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.1.0, bytes=38932, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null)]
+10-29 20:32:59.836  5713  5730 E ThinkOS : [plugin:clock] plugin CPU budget exceeded (50ms / instruction limit)
+10-29 20:32:59.837  5713  5713 E ThinkOS : [plugin:clock] plugin CPU budget exceeded (50ms / instruction limit)
+10-29 20:32:59.837  5713  5713 W ThinkOS : Plugin error shown in diagnostics: clock
+10-29 20:33:00.193  5713  5713 I ThinkOS : attention=ENGAGED
+10-29 20:33:00.752  5713  5713 I ThinkOS : DEBUG state=DeviceState(attention=ENGAGED, deck=DeckState(page=clock.face, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.1.0, bytes=38702, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null)]
+10-29 20:33:16.117  5713  5713 I ThinkOS : attention=AWAKE
+10-29 20:33:44.864  5713  5730 E ThinkOS : [plugin:clock] plugin CPU budget exceeded (50ms / instruction limit)
+10-29 20:33:44.864  5713  5713 E ThinkOS : [plugin:clock] plugin CPU budget exceeded (50ms / instruction limit)
+10-29 20:33:44.864  5713  5713 W ThinkOS : Plugin error shown in diagnostics: clock
+10-29 20:34:33.686  5713  5713 I ThinkOS : attention=ENGAGED
+10-29 20:34:37.481  5713  5713 I ThinkOS : Configuration changed without Activity recreation: 1

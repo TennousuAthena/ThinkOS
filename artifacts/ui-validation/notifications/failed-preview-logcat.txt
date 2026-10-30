@@ -1,0 +1,109 @@
+--------- beginning of system
+--------- beginning of main
+10-30 03:22:40.282 20214 20214 I ThinkOS : tzdata 2026e (419 zones)
+--------- beginning of crash
+10-30 03:22:40.313 20214 20214 E AndroidRuntime: FATAL EXCEPTION: main
+10-30 03:22:40.313 20214 20214 E AndroidRuntime: Process: moe.kiwi.thinkos, PID: 20214
+10-30 03:22:40.313 20214 20214 E AndroidRuntime: java.lang.RuntimeException: Unable to start activity ComponentInfo{moe.kiwi.thinkos/moe.kiwi.thinkos.NotificationPreviewActivity}: java.lang.IllegalStateException: getResources() or getAssets() has already been called
+10-30 03:22:40.313 20214 20214 E AndroidRuntime: 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:2778)
+10-30 03:22:40.313 20214 20214 E AndroidRuntime: 	at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:2856)
+10-30 03:22:40.313 20214 20214 E AndroidRuntime: 	at android.app.ActivityThread.-wrap11(Unknown Source:0)
+10-30 03:22:40.313 20214 20214 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1589)
+10-30 03:22:40.313 20214 20214 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+10-30 03:22:40.313 20214 20214 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:164)
+10-30 03:22:40.313 20214 20214 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:6494)
+10-30 03:22:40.313 20214 20214 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+10-30 03:22:40.313 20214 20214 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:438)
+10-30 03:22:40.313 20214 20214 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:807)
+10-30 03:22:40.313 20214 20214 E AndroidRuntime: Caused by: java.lang.IllegalStateException: getResources() or getAssets() has already been called
+10-30 03:22:40.313 20214 20214 E AndroidRuntime: 	at android.view.ContextThemeWrapper.applyOverrideConfiguration(ContextThemeWrapper.java:95)
+10-30 03:22:40.313 20214 20214 E AndroidRuntime: 	at moe.kiwi.thinkos.NotificationPreviewActivity.onCreate(NotificationPreviewActivity.kt:34)
+10-30 03:22:40.313 20214 20214 E AndroidRuntime: 	at android.app.Activity.performCreate(Activity.java:7009)
+10-30 03:22:40.313 20214 20214 E AndroidRuntime: 	at android.app.Activity.performCreate(Activity.java:7000)
+10-30 03:22:40.313 20214 20214 E AndroidRuntime: 	at android.app.Instrumentation.callActivityOnCreate(Instrumentation.java:1214)
+10-30 03:22:40.313 20214 20214 E AndroidRuntime: 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:2731)
+10-30 03:22:40.313 20214 20214 E AndroidRuntime: 	... 9 more
+10-30 03:22:40.354 20214 20214 E ThinkOS : Uncaught exception; restarting
+10-30 03:22:40.354 20214 20214 E ThinkOS : java.lang.RuntimeException: Unable to start activity ComponentInfo{moe.kiwi.thinkos/moe.kiwi.thinkos.NotificationPreviewActivity}: java.lang.IllegalStateException: getResources() or getAssets() has already been called
+10-30 03:22:40.354 20214 20214 E ThinkOS : 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:2778)
+10-30 03:22:40.354 20214 20214 E ThinkOS : 	at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:2856)
+10-30 03:22:40.354 20214 20214 E ThinkOS : 	at android.app.ActivityThread.-wrap11(Unknown Source:0)
+10-30 03:22:40.354 20214 20214 E ThinkOS : 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1589)
+10-30 03:22:40.354 20214 20214 E ThinkOS : 	at android.os.Handler.dispatchMessage(Handler.java:106)
+10-30 03:22:40.354 20214 20214 E ThinkOS : 	at android.os.Looper.loop(Looper.java:164)
+10-30 03:22:40.354 20214 20214 E ThinkOS : 	at android.app.ActivityThread.main(ActivityThread.java:6494)
+10-30 03:22:40.354 20214 20214 E ThinkOS : 	at java.lang.reflect.Method.invoke(Native Method)
+10-30 03:22:40.354 20214 20214 E ThinkOS : 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:438)
+10-30 03:22:40.354 20214 20214 E ThinkOS : 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:807)
+10-30 03:22:40.354 20214 20214 E ThinkOS : Caused by: java.lang.IllegalStateException: getResources() or getAssets() has already been called
+10-30 03:22:40.354 20214 20214 E ThinkOS : 	at android.view.ContextThemeWrapper.applyOverrideConfiguration(ContextThemeWrapper.java:95)
+10-30 03:22:40.354 20214 20214 E ThinkOS : 	at moe.kiwi.thinkos.NotificationPreviewActivity.onCreate(NotificationPreviewActivity.kt:34)
+10-30 03:22:40.354 20214 20214 E ThinkOS : 	at android.app.Activity.performCreate(Activity.java:7009)
+10-30 03:22:40.354 20214 20214 E ThinkOS : 	at android.app.Activity.performCreate(Activity.java:7000)
+10-30 03:22:40.354 20214 20214 E ThinkOS : 	at android.app.Instrumentation.callActivityOnCreate(Instrumentation.java:1214)
+10-30 03:22:40.354 20214 20214 E ThinkOS : 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:2731)
+10-30 03:22:40.354 20214 20214 E ThinkOS : 	... 9 more
+10-30 03:22:40.727 20232 20232 I ThinkOS : tzdata 2026e (419 zones)
+10-30 03:22:40.758 20232 20232 E AndroidRuntime: FATAL EXCEPTION: main
+10-30 03:22:40.758 20232 20232 E AndroidRuntime: Process: moe.kiwi.thinkos, PID: 20232
+10-30 03:22:40.758 20232 20232 E AndroidRuntime: java.lang.RuntimeException: Unable to start activity ComponentInfo{moe.kiwi.thinkos/moe.kiwi.thinkos.NotificationPreviewActivity}: java.lang.IllegalStateException: getResources() or getAssets() has already been called
+10-30 03:22:40.758 20232 20232 E AndroidRuntime: 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:2778)
+10-30 03:22:40.758 20232 20232 E AndroidRuntime: 	at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:2856)
+10-30 03:22:40.758 20232 20232 E AndroidRuntime: 	at android.app.ActivityThread.-wrap11(Unknown Source:0)
+10-30 03:22:40.758 20232 20232 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1589)
+10-30 03:22:40.758 20232 20232 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+10-30 03:22:40.758 20232 20232 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:164)
+10-30 03:22:40.758 20232 20232 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:6494)
+10-30 03:22:40.758 20232 20232 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+10-30 03:22:40.758 20232 20232 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:438)
+10-30 03:22:40.758 20232 20232 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:807)
+10-30 03:22:40.758 20232 20232 E AndroidRuntime: Caused by: java.lang.IllegalStateException: getResources() or getAssets() has already been called
+10-30 03:22:40.758 20232 20232 E AndroidRuntime: 	at android.view.ContextThemeWrapper.applyOverrideConfiguration(ContextThemeWrapper.java:95)
+10-30 03:22:40.758 20232 20232 E AndroidRuntime: 	at moe.kiwi.thinkos.NotificationPreviewActivity.onCreate(NotificationPreviewActivity.kt:34)
+10-30 03:22:40.758 20232 20232 E AndroidRuntime: 	at android.app.Activity.performCreate(Activity.java:7009)
+10-30 03:22:40.758 20232 20232 E AndroidRuntime: 	at android.app.Activity.performCreate(Activity.java:7000)
+10-30 03:22:40.758 20232 20232 E AndroidRuntime: 	at android.app.Instrumentation.callActivityOnCreate(Instrumentation.java:1214)
+10-30 03:22:40.758 20232 20232 E AndroidRuntime: 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:2731)
+10-30 03:22:40.758 20232 20232 E AndroidRuntime: 	... 9 more
+10-30 03:22:40.798 20232 20232 E ThinkOS : Uncaught exception; restarting
+10-30 03:22:40.798 20232 20232 E ThinkOS : java.lang.RuntimeException: Unable to start activity ComponentInfo{moe.kiwi.thinkos/moe.kiwi.thinkos.NotificationPreviewActivity}: java.lang.IllegalStateException: getResources() or getAssets() has already been called
+10-30 03:22:40.798 20232 20232 E ThinkOS : 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:2778)
+10-30 03:22:40.798 20232 20232 E ThinkOS : 	at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:2856)
+10-30 03:22:40.798 20232 20232 E ThinkOS : 	at android.app.ActivityThread.-wrap11(Unknown Source:0)
+10-30 03:22:40.798 20232 20232 E ThinkOS : 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1589)
+10-30 03:22:40.798 20232 20232 E ThinkOS : 	at android.os.Handler.dispatchMessage(Handler.java:106)
+10-30 03:22:40.798 20232 20232 E ThinkOS : 	at android.os.Looper.loop(Looper.java:164)
+10-30 03:22:40.798 20232 20232 E ThinkOS : 	at android.app.ActivityThread.main(ActivityThread.java:6494)
+10-30 03:22:40.798 20232 20232 E ThinkOS : 	at java.lang.reflect.Method.invoke(Native Method)
+10-30 03:22:40.798 20232 20232 E ThinkOS : 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:438)
+10-30 03:22:40.798 20232 20232 E ThinkOS : 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:807)
+10-30 03:22:40.798 20232 20232 E ThinkOS : Caused by: java.lang.IllegalStateException: getResources() or getAssets() has already been called
+10-30 03:22:40.798 20232 20232 E ThinkOS : 	at android.view.ContextThemeWrapper.applyOverrideConfiguration(ContextThemeWrapper.java:95)
+10-30 03:22:40.798 20232 20232 E ThinkOS : 	at moe.kiwi.thinkos.NotificationPreviewActivity.onCreate(NotificationPreviewActivity.kt:34)
+10-30 03:22:40.798 20232 20232 E ThinkOS : 	at android.app.Activity.performCreate(Activity.java:7009)
+10-30 03:22:40.798 20232 20232 E ThinkOS : 	at android.app.Activity.performCreate(Activity.java:7000)
+10-30 03:22:40.798 20232 20232 E ThinkOS : 	at android.app.Instrumentation.callActivityOnCreate(Instrumentation.java:1214)
+10-30 03:22:40.798 20232 20232 E ThinkOS : 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:2731)
+10-30 03:22:40.798 20232 20232 E ThinkOS : 	... 9 more
+10-30 03:22:41.175 20250 20250 I ThinkOS : tzdata 2026e (419 zones)
+10-30 03:22:41.205 20250 20250 E AndroidRuntime: FATAL EXCEPTION: main
+10-30 03:22:41.205 20250 20250 E AndroidRuntime: Process: moe.kiwi.thinkos, PID: 20250
+10-30 03:22:41.205 20250 20250 E AndroidRuntime: java.lang.RuntimeException: Unable to start activity ComponentInfo{moe.kiwi.thinkos/moe.kiwi.thinkos.NotificationPreviewActivity}: java.lang.IllegalStateException: getResources() or getAssets() has already been called
+10-30 03:22:41.205 20250 20250 E AndroidRuntime: 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:2778)
+10-30 03:22:41.205 20250 20250 E AndroidRuntime: 	at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:2856)
+10-30 03:22:41.205 20250 20250 E AndroidRuntime: 	at android.app.ActivityThread.-wrap11(Unknown Source:0)
+10-30 03:22:41.205 20250 20250 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1589)
+10-30 03:22:41.205 20250 20250 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+10-30 03:22:41.205 20250 20250 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:164)
+10-30 03:22:41.205 20250 20250 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:6494)
+10-30 03:22:41.205 20250 20250 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+10-30 03:22:41.205 20250 20250 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:438)
+10-30 03:22:41.205 20250 20250 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:807)
+10-30 03:22:41.205 20250 20250 E AndroidRuntime: Caused by: java.lang.IllegalStateException: getResources() or getAssets() has already been called
+10-30 03:22:41.205 20250 20250 E AndroidRuntime: 	at android.view.ContextThemeWrapper.applyOverrideConfiguration(ContextThemeWrapper.java:95)
+10-30 03:22:41.205 20250 20250 E AndroidRuntime: 	at moe.kiwi.thinkos.NotificationPreviewActivity.onCreate(NotificationPreviewActivity.kt:34)
+10-30 03:22:41.205 20250 20250 E AndroidRuntime: 	at android.app.Activity.performCreate(Activity.java:7009)
+10-30 03:22:41.205 20250 20250 E AndroidRuntime: 	at android.app.Activity.performCreate(Activity.java:7000)
+10-30 03:22:41.205 20250 20250 E AndroidRuntime: 	at android.app.Instrumentation.callActivityOnCreate(Instrumentation.java:1214)
+10-30 03:22:41.205 20250 20250 E AndroidRuntime: 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:2731)
+10-30 03:22:41.205 20250 20250 E AndroidRuntime: 	... 9 more

@@ -1,0 +1,6 @@
+{
+  "wifi": "1",
+  "rotation": "1",
+  "home": "priority=0 preferredOrder=0 match=0x108000 specificIndex=-1 isDefault=true\nmoe.kiwi.thinkos/.MainActivity",
+  "development_overrides": "clock"
+}

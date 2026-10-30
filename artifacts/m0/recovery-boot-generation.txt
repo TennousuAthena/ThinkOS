@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <int name="boot_count" value="12" />
+    <boolean name="safe_mode" value="false" />
+    <string name="crashes">138541</string>
+</map>

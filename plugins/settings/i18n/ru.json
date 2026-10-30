@@ -1,0 +1,16 @@
+{
+ "name": "Настройки",
+ "title": "Настройки",
+ "done": "Готово",
+ "system": "Системные настройки",
+ "plugins": "Другие плагины",
+ "error.type": "Недопустимое значение",
+ "error.min": "Не меньше {min}",
+ "error.max": "Не больше {max}",
+ "error.length": "Не более {max} символов",
+ "error.chars": "Содержит недопустимые символы",
+ "error.required": "Выберите вариант",
+ "error.option": "Такого варианта нет",
+ "error.order_below": "Должно быть меньше «{label}»",
+ "error.order_above": "Должно быть больше «{label}»"
+}

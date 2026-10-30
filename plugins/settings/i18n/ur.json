@@ -1,0 +1,16 @@
+{
+ "name": "سیٹنگز",
+ "title": "سیٹنگز",
+ "done": "مکمل",
+ "system": "سسٹم سیٹنگز",
+ "plugins": "دیگر پلگ اِن",
+ "error.type": "یہ قدر درست نہیں",
+ "error.min": "کم از کم {min} ہونا چاہیے",
+ "error.max": "زیادہ سے زیادہ {max} ہونا چاہیے",
+ "error.length": "زیادہ سے زیادہ {max} حروف",
+ "error.chars": "اس میں غیر مجاز حروف ہیں",
+ "error.required": "براہ کرم ایک آپشن منتخب کریں",
+ "error.option": "یہ آپشن دستیاب نہیں",
+ "error.order_below": "“{label}” سے کم ہونا چاہیے",
+ "error.order_above": "“{label}” سے زیادہ ہونا چاہیے"
+}

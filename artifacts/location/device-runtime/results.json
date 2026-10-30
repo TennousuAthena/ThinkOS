@@ -1,0 +1,28 @@
+{
+  "plugin": "location-probe-d679b4d7",
+  "passed": [
+    "location, solar, lunar, settings and network calls refuse missing permissions; seasons remain public",
+    "location data and Sun/Moon/Seasons types, explicit place/time zone, cache and untrusted-time guard on armv7",
+    "Android API-27 TLS connects directly to geocoding; Chinese city and district queries return valid responses",
+    "directory replacement preserves the application PID"
+  ],
+  "complete": true,
+  "initialPid": "13474",
+  "deviceResults": [
+    "DENIED PASSED",
+    "LOCATION ms=2",
+    "SUN COLD ms=1475",
+    "SUN CACHED ms=4",
+    "MOON ms=262",
+    "SEASONS ms=1",
+    "ASTRO PASSED",
+    "GEOCODING query=1 status=200 results=7",
+    "GEOCODING query=2 status=200 results=0",
+    "ALL PASSED"
+  ],
+  "geocodingQueries": [
+    "上海",
+    "朝阳区"
+  ],
+  "settingsUnchanged": true
+}

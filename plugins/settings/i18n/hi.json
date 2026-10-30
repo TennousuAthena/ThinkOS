@@ -1,0 +1,16 @@
+{
+ "name": "सेटिंग",
+ "title": "सेटिंग",
+ "done": "हो गया",
+ "system": "सिस्टम सेटिंग",
+ "plugins": "अन्य प्लगइन",
+ "error.type": "यह मान मान्य नहीं है",
+ "error.min": "कम से कम {min} होना चाहिए",
+ "error.max": "अधिकतम {max} होना चाहिए",
+ "error.length": "अधिकतम {max} अक्षर",
+ "error.chars": "इसमें अस्वीकार्य अक्षर हैं",
+ "error.required": "कृपया एक विकल्प चुनें",
+ "error.option": "यह विकल्प उपलब्ध नहीं है",
+ "error.order_below": "“{label}” से कम होना चाहिए",
+ "error.order_above": "“{label}” से अधिक होना चाहिए"
+}

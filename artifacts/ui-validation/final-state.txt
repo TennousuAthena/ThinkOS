@@ -1,0 +1,11 @@
+--------- beginning of main
+10-30 05:07:39.089  4861  4861 I ThinkOS : tzdata 2026e (419 zones)
+10-30 05:07:39.255  4861  4861 I ThinkOS : Runtime started; local mode, safe=false
+10-30 05:07:39.257  4861  4861 I ThinkOS : Activity created; orientation=1
+10-30 05:07:40.013  4861  4881 I ThinkOS : [plugin:clock] loaded 0.3.0; Lua 44899 bytes
+10-30 05:07:40.094  4861  4881 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-30 05:07:40.341  4861  4881 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 37626 bytes
+10-30 05:07:50.339  4861  4861 I ThinkOS : theme=NIGHT lux=0.0
+10-30 05:09:39.623  4861  4861 I ThinkOS : attention=AMBIENT
+10-30 05:10:39.761  4861  4861 I ThinkOS : attention=ASLEEP
+10-30 05:10:53.183  4861  4861 I ThinkOS : DEBUG state=DeviceState(attention=ASLEEP, deck=DeckState(page=clock.face, variant=analog, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=NIGHT, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=54842, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40371, disabled=false, error=null)]

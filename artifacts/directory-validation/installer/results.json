@@ -1,0 +1,13 @@
+{
+  "initialPid": "12996",
+  "restartPid": "13228",
+  "passed": [
+    "directory publication loads without restarting the process",
+    "wrong file hash/size retains the running version and timers",
+    "a valid directory replaces the previous version with unchanged PID",
+    "an infinite-loop candidate is budget-terminated while the previous version runs",
+    "another publication during a prolonged rename gap does not unload or restart the old Lua instance",
+    "process restart restores the interrupted replacement backup before plugin loading",
+    "application storage contains no retired plugin archives"
+  ]
+}

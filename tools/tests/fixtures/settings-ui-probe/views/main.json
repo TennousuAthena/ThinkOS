@@ -1,0 +1,8 @@
+{
+  "layout": "focus",
+  "slots": {
+    "over": { "type": "text", "value": "无Lua设置样例", "style": "body" },
+    "hero": { "type": "text", "value": "名称：{{config.name}}", "style": "display" },
+    "under": { "type": "text", "value": "开关 {{config.enabled}} · 强度 {{config.level}} · 方案 {{config.mode}}", "style": "body" }
+  }
+}

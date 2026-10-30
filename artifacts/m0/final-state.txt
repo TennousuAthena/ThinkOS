@@ -1,0 +1,8 @@
+10-29 21:42:55.714  4349  4349 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.1.0, bytes=41339, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null)]
+10-29 21:44:43.677  4497  4497 I ThinkOS : Runtime started; local mode, safe=false
+10-29 21:44:43.680  4497  4497 I ThinkOS : Activity created; orientation=1
+10-29 21:44:43.929  4497  4515 I ThinkOS : [plugin:clock] loaded 0.1.0; Lua 41339 bytes
+10-29 21:44:44.001  4497  4515 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-29 21:45:44.080  4497  4497 I ThinkOS : Configuration changed without Activity recreation: 2
+10-29 21:45:45.728  4497  4497 I ThinkOS : Configuration changed without Activity recreation: 1
+10-29 21:45:45.779  4497  4497 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.1.0, bytes=40257, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null)]

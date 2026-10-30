@@ -1,0 +1,12 @@
+{
+  "id": "timezone-ui-probe",
+  "name": "时区UI样例",
+  "version": "1.0.0",
+  "api": 1,
+  "permissions": [],
+  "settings": {
+    "required": { "type": "choice", "label": "必选时区", "default": "Asia/Hong_Kong", "source": "timezone" },
+    "optional": { "type": "choice", "label": "可空时区", "default": "Europe/London", "source": "timezone", "allowEmpty": true }
+  },
+  "pages": [{ "id": "main", "title": "时区UI样例", "view": "views/main.json" }]
+}

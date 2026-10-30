@@ -1,0 +1,17 @@
+{
+  "sampled_colors": [
+    [
+      66,
+      66,
+      66
+    ],
+    [
+      141,
+      146,
+      155
+    ]
+  ],
+  "label_contrast": 3.21,
+  "method": "two most common solid colors in the native latitude-label bounds",
+  "layout_observation_note": "The initial search-target width check used an accessibility rectangle clipped by a temporarily visible navigation bar; it is not treated as a confirmed product regression. Both continuous-input failures are confirmed independently."
+}

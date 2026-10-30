@@ -1,0 +1,8 @@
+{
+  "layout": "stage",
+  "slots": {
+    "stage": { "type": "chart", "style": "bar", "values": "{{values}}", "highlight": "{{highlight}}" },
+    "over": { "type": "text", "value": "Full-bleed stage · header", "style": "title" },
+    "under": { "type": "progress", "value": "{{progress}}", "max": 100 }
+  }
+}

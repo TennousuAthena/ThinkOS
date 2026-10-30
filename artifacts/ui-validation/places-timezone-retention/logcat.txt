@@ -1,0 +1,11 @@
+--------- beginning of main
+10-30 06:55:47.487 22993 22993 I ThinkOS : tzdata 2026e (419 zones)
+10-30 06:55:47.649 22993 22993 I ThinkOS : Runtime started; local mode, safe=false
+10-30 06:55:47.651 22993 22993 I ThinkOS : Activity created; orientation=1
+10-30 06:55:48.397 22993 23014 I ThinkOS : [plugin:clock] loaded 0.3.0; Lua 44899 bytes
+10-30 06:55:48.479 22993 23014 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-30 06:55:48.727 22993 23014 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 37626 bytes
+10-30 06:56:30.304 22993 22993 I ThinkOS : Configuration changed without Activity recreation: 2
+10-30 06:56:30.401 22993 22993 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=37111, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=37626, disabled=false, error=null)]
+10-30 06:56:30.647 22993 22993 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=37111, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=37626, disabled=false, error=null)]
+10-30 06:56:53.280 22993 22993 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=settings.form, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=37111, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=47828, disabled=false, error=null)]

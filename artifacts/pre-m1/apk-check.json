@@ -1,0 +1,12 @@
+{
+  "apk": "android/app/build/outputs/apk/debug/app-debug.apk",
+  "bytes": 2399939,
+  "sha256": "a1497d552c954b79975f647964e1794304e93fdc7469cf94a2c159434f7addd9",
+  "libraries": [
+    "lib/armeabi-v7a/libtos.so"
+  ],
+  "elf_class": "ELF32",
+  "machine": "ARM",
+  "minSdk": 27,
+  "targetSdk": 27
+}

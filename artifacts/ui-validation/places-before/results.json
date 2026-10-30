@@ -1,0 +1,23 @@
+{
+  "complete": false,
+  "passed": [
+    "editing an unsaved manual draft does not change the stored location",
+    "place UI interactions do not restart the application",
+    "place editing does not modify Android's system timezone"
+  ],
+  "issues": [
+    "picker-landscape-dark: offline guidance and 48dp navigation, search and manual targets fit",
+    "active-search: continuous typing keeps settings open beyond 30 seconds",
+    "active-manual: continuous typing keeps settings open beyond 30 seconds"
+  ],
+  "scope": "input-session baseline",
+  "apk_sha256": "adc72084a4ac2ae1a8fb52ad4f055f1dc84e9d0ac919fb54c4ae4f2d7faa8e4d",
+  "uiPid": "13294",
+  "wifiDisabled": true,
+  "active-searchSeconds": 31.4,
+  "active-manualSeconds": 19.35,
+  "settingsRestored": true,
+  "wifiRestored": true,
+  "developmentOverridesEmpty": true,
+  "privateBackupDeleted": true
+}

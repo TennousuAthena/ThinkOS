@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "view.json",
+  "description": "Page or widget declaration with API-versioned fixed OS vocabulary",
+  "oneOf": [
+    {
+      "$ref": "layouts.json#/$defs/stacks"
+    },
+    {
+      "$ref": "layouts.json#/$defs/focus"
+    },
+    {
+      "$ref": "layouts.json#/$defs/glance"
+    },
+    {
+      "$ref": "layouts.json#/$defs/formView"
+    },
+    {
+      "$ref": "layouts.json#/$defs/split"
+    },
+    {
+      "$ref": "layouts.json#/$defs/stage"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "layout": "stacks",
+  "slots": {
+    "left": [{ "widget": "clock.now" }],
+    "right": [{ "widget": "clock.calendar" }]
+  }
+}

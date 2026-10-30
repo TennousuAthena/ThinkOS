@@ -1,0 +1,1 @@
+{"layout": "focus", "slots": {"hero": {"type": "text", "value": "{{status}}", "style": "display"}, "under": {"type": "text", "value": "{{summary}} · tick {{ticks}}", "style": "body"}}}

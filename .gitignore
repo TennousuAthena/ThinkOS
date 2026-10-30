@@ -1,0 +1,39 @@
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Android / Gradle 构建产物
+android/.gradle/
+android/.kotlin/
+android/build/
+android/app/build/
+android/app/.cxx/
+android/app/release/
+# 由 tools/package_plugins.py 生成
+android/app/src/main/assets/plugins/
+android/local.properties
+*.apk
+*.aab
+*.so
+*.o
+
+# 签名材料与密钥（绝不提交）
+*.jks
+*.keystore
+*.pem
+.env
+.env.*
+
+# Server 本地运行态
+server/thinkos-server
+server/config.toml
+server/data/
+server/logs/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+

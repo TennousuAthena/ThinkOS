@@ -1,0 +1,58 @@
+{
+  "pid": 7024,
+  "tick_hz": 100,
+  "unit": "percent of one CPU core",
+  "samples": [
+    {
+      "elapsed_s": 10.08,
+      "cpu_pct": 30.06
+    },
+    {
+      "elapsed_s": 20.16,
+      "cpu_pct": 32.044
+    },
+    {
+      "elapsed_s": 30.24,
+      "cpu_pct": 31.944
+    },
+    {
+      "elapsed_s": 40.32,
+      "cpu_pct": 30.556
+    },
+    {
+      "elapsed_s": 50.4,
+      "cpu_pct": 32.044
+    },
+    {
+      "elapsed_s": 60.48,
+      "cpu_pct": 30.952
+    },
+    {
+      "elapsed_s": 70.56,
+      "cpu_pct": 32.837
+    },
+    {
+      "elapsed_s": 80.64,
+      "cpu_pct": 31.25
+    },
+    {
+      "elapsed_s": 90.72,
+      "cpu_pct": 33.036
+    },
+    {
+      "elapsed_s": 100.8,
+      "cpu_pct": 31.151
+    },
+    {
+      "elapsed_s": 110.88,
+      "cpu_pct": 32.44
+    },
+    {
+      "elapsed_s": 120.09,
+      "cpu_pct": 31.053
+    }
+  ],
+  "elapsed_s": 120.09,
+  "mean_cpu_pct": 31.618,
+  "max_cpu_pct": 33.036
+}

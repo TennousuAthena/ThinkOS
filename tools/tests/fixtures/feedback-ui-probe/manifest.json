@@ -1,0 +1,23 @@
+{
+  "id": "feedback-ui-probe",
+  "name": "反馈UI样例",
+  "version": "1.0.0",
+  "api": 1,
+  "permissions": [],
+  "settings": {
+    "enabled": {
+      "type": "bool", "label": "说明开关", "default": false,
+      "help": "说明应显示在标签下方，点击整行可切换开关。"
+    },
+    "level": {
+      "type": "number", "label": "步进范围", "default": 2,
+      "min": 0, "max": 4, "step": 1,
+      "help": "横向拖动调值，纵向滑动滚动页面；最大值为四。"
+    },
+    "note": {
+      "type": "text", "label": "换行说明", "default": "UI-DEMO", "maxLength": 12,
+      "help": "这段说明会随屏幕宽度换行，完整展示中文与 English words，不遮挡标签、当前值或下一行，也能由无障碍服务读取。"
+    }
+  },
+  "pages": [{ "id": "main", "title": "反馈UI样例", "view": "views/main.json" }]
+}

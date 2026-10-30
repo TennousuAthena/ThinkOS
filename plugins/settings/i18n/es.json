@@ -1,0 +1,16 @@
+{
+ "name": "Ajustes",
+ "title": "Ajustes",
+ "done": "Listo",
+ "system": "Ajustes del sistema",
+ "plugins": "Otros complementos",
+ "error.type": "Ese valor no es válido",
+ "error.min": "Debe ser al menos {min}",
+ "error.max": "Debe ser como máximo {max}",
+ "error.length": "Máximo {max} caracteres",
+ "error.chars": "Contiene caracteres no permitidos",
+ "error.required": "Elija una opción",
+ "error.option": "Esa opción no está disponible",
+ "error.order_below": "Debe ser menor que «{label}»",
+ "error.order_above": "Debe ser mayor que «{label}»"
+}

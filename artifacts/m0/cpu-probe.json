@@ -1,0 +1,23 @@
+[
+  {
+    "sample": 0,
+    "machine_cpu_pct": 3.07,
+    "one_core_cpu_pct": 24.53,
+    "app_ticks": 244,
+    "total_ticks": 7956
+  },
+  {
+    "sample": 1,
+    "machine_cpu_pct": 3.19,
+    "one_core_cpu_pct": 25.55,
+    "app_ticks": 255,
+    "total_ticks": 7985
+  },
+  {
+    "sample": 2,
+    "machine_cpu_pct": 3.2,
+    "one_core_cpu_pct": 25.64,
+    "app_ticks": 256,
+    "total_ticks": 7989
+  }
+]

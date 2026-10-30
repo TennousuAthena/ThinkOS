@@ -1,0 +1,62 @@
+--- a/lstrlib.c
++++ b/lstrlib.c
+@@ -355,6 +355,9 @@
+ #define CAP_POSITION	(-2)
+ 
+ 
++/* ThinkOS: bound native pattern backtracking; see ../PATCHES.md. */
++extern void tos_pattern_step(lua_State *L);
++
+ typedef struct MatchState {
+   const char *src_init;  /* init of source string */
+   const char *src_end;  /* end ('\0') of source string */
+@@ -469,6 +472,7 @@
+ 
+ static int singlematch (MatchState *ms, const char *s, const char *p,
+                         const char *ep) {
++  tos_pattern_step(ms->L);
+   if (s >= ms->src_end)
+     return 0;
+   else {
+@@ -493,6 +497,7 @@
+     int e = *(p+1);
+     int cont = 1;
+     while (++s < ms->src_end) {
++      tos_pattern_step(ms->L);
+       if (*s == e) {
+         if (--cont == 0) return s+1;
+       }
+@@ -568,6 +573,7 @@
+ 
+ 
+ static const char *match (MatchState *ms, const char *s, const char *p) {
++  tos_pattern_step(ms->L);
+   if (l_unlikely(ms->matchdepth-- == 0))
+     luaL_error(ms->L, "pattern too complex");
+   init: /* using goto to optimize tail recursion */
+@@ -670,7 +676,7 @@
+ 
+ 
+ 
+-static const char *lmemfind (const char *s1, size_t l1,
++static const char *lmemfind (lua_State *L, const char *s1, size_t l1,
+                                const char *s2, size_t l2) {
+   if (l2 == 0) return s1;  /* empty strings are everywhere */
+   else if (l2 > l1) return NULL;  /* avoids a negative 'l1' */
+@@ -679,6 +685,7 @@
+     l2--;  /* 1st char will be checked by 'memchr' */
+     l1 = l1-l2;  /* 's2' cannot be found after that */
+     while (l1 > 0 && (init = (const char *)memchr(s1, *s2, l1)) != NULL) {
++      tos_pattern_step(L);
+       init++;   /* 1st char is already checked */
+       if (memcmp(init, s2+1, l2) == 0)
+         return init-1;
+@@ -781,7 +788,7 @@
+   /* explicit request or no special characters? */
+   if (find && (lua_toboolean(L, 4) || nospecials(p, lp))) {
+     /* do a plain search */
+-    const char *s2 = lmemfind(s + init, ls - init, p, lp);
++    const char *s2 = lmemfind(L, s + init, ls - init, p, lp);
+     if (s2) {
+       lua_pushinteger(L, (s2 - s) + 1);
+       lua_pushinteger(L, (s2 - s) + lp);

@@ -1,0 +1,62 @@
+[
+  {
+    "name": "moe.kiwi.thinkos.ui.BindingTest",
+    "tests": "3",
+    "skipped": "0",
+    "failures": "0",
+    "errors": "0",
+    "timestamp": "2026-10-29T15:52:36.966Z",
+    "hostname": "Mac.lan",
+    "time": "0.003"
+  },
+  {
+    "name": "moe.kiwi.thinkos.plugin.RuntimePoliciesTest",
+    "tests": "9",
+    "skipped": "0",
+    "failures": "0",
+    "errors": "0",
+    "timestamp": "2026-10-29T15:52:36.959Z",
+    "hostname": "Mac.lan",
+    "time": "0.006"
+  },
+  {
+    "name": "moe.kiwi.thinkos.net.LocalNetworkPolicyTest",
+    "tests": "5",
+    "skipped": "0",
+    "failures": "0",
+    "errors": "0",
+    "timestamp": "2026-10-29T15:52:36.917Z",
+    "hostname": "Mac.lan",
+    "time": "0.023"
+  },
+  {
+    "name": "moe.kiwi.thinkos.core.PoliciesTest",
+    "tests": "4",
+    "skipped": "0",
+    "failures": "0",
+    "errors": "0",
+    "timestamp": "2026-10-29T15:52:36.915Z",
+    "hostname": "Mac.lan",
+    "time": "0.001"
+  },
+  {
+    "name": "moe.kiwi.thinkos.ui.CompiledBindingTest",
+    "tests": "4",
+    "skipped": "0",
+    "failures": "0",
+    "errors": "0",
+    "timestamp": "2026-10-29T15:52:36.970Z",
+    "hostname": "Mac.lan",
+    "time": "0.002"
+  },
+  {
+    "name": "moe.kiwi.thinkos.plugin.PluginSchemaTest",
+    "tests": "5",
+    "skipped": "0",
+    "failures": "0",
+    "errors": "0",
+    "timestamp": "2026-10-29T15:52:36.942Z",
+    "hostname": "Mac.lan",
+    "time": "0.016"
+  }
+]

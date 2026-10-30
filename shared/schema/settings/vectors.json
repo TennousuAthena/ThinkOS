@@ -1,0 +1,399 @@
+{
+ "description": "Setting declarations every implementation (Kotlin runtime, Python packager) must accept or reject identically.",
+ "valid": [
+  {
+   "key": "hour24",
+   "field": {
+    "type": "bool",
+    "label": "24h",
+    "default": true
+   }
+  },
+  {
+   "key": "unit",
+   "field": {
+    "type": "choice",
+    "label": "Unit",
+    "default": "c",
+    "choices": [
+     {
+      "value": "c",
+      "label": "C"
+     },
+     {
+      "value": "f",
+      "label": "F"
+     }
+    ]
+   }
+  },
+  {
+   "key": "lat",
+   "field": {
+    "type": "number",
+    "label": "Lat",
+    "default": 22.3,
+    "min": -90,
+    "max": 90,
+    "step": 0.1,
+    "unit": "°"
+   }
+  },
+  {
+   "key": "interval",
+   "field": {
+    "type": "number",
+    "label": "Every",
+    "default": 20,
+    "min": 5,
+    "max": 120
+   }
+  },
+  {
+   "key": "city",
+   "field": {
+    "type": "text",
+    "label": "City",
+    "default": "Hong Kong"
+   }
+  },
+  {
+   "key": "token",
+   "field": {
+    "type": "text",
+    "label": "Token",
+    "default": "",
+    "secret": true,
+    "maxLength": 64
+   }
+  },
+  {
+   "key": "zone1",
+   "field": {
+    "type": "choice",
+    "label": "Zone",
+    "default": "Asia/Hong_Kong",
+    "source": "timezone"
+   }
+  },
+  {
+   "key": "zone2",
+   "field": {
+    "type": "choice",
+    "label": "Zone",
+    "default": "",
+    "source": "timezone",
+    "allowEmpty": true
+   }
+  },
+  {
+   "key": "theme.mode",
+   "system": true,
+   "field": {
+    "type": "choice",
+    "label": "@setting.theme.mode",
+    "default": "auto",
+    "choices": [
+     {
+      "value": "auto",
+      "label": "A"
+     },
+     {
+      "value": "dark",
+      "label": "D"
+     }
+    ]
+   }
+  },
+  {
+   "key": "tuning",
+   "field": {
+    "type": "number",
+    "label": "Tuning",
+    "default": 50,
+    "min": 10,
+    "max": 200,
+    "hidden": true
+   }
+  },
+  {
+   "key": "shown",
+   "field": {
+    "type": "bool",
+    "label": "Shown",
+    "default": true,
+    "hidden": false
+   }
+  }
+ ],
+ "invalid": [
+  {
+   "why": "no default",
+   "key": "k",
+   "field": {
+    "type": "bool",
+    "label": "x"
+   }
+  },
+  {
+   "why": "default has the wrong type",
+   "key": "k",
+   "field": {
+    "type": "bool",
+    "label": "x",
+    "default": "yes"
+   }
+  },
+  {
+   "why": "property of another type",
+   "key": "k",
+   "field": {
+    "type": "bool",
+    "label": "x",
+    "default": true,
+    "min": 1
+   }
+  },
+  {
+   "why": "unknown type",
+   "key": "k",
+   "field": {
+    "type": "slider",
+    "label": "x",
+    "default": 1
+   }
+  },
+  {
+   "why": "number without a range",
+   "key": "k",
+   "field": {
+    "type": "number",
+    "label": "x",
+    "default": 5
+   }
+  },
+  {
+   "why": "default out of range",
+   "key": "k",
+   "field": {
+    "type": "number",
+    "label": "x",
+    "default": 50,
+    "min": 1,
+    "max": 10
+   }
+  },
+  {
+   "why": "inverted range",
+   "key": "k",
+   "field": {
+    "type": "number",
+    "label": "x",
+    "default": 5,
+    "min": 10,
+    "max": 1
+   }
+  },
+  {
+   "why": "zero step",
+   "key": "k",
+   "field": {
+    "type": "number",
+    "label": "x",
+    "default": 5,
+    "min": 1,
+    "max": 10,
+    "step": 0
+   }
+  },
+  {
+   "why": "choice with neither choices nor source",
+   "key": "k",
+   "field": {
+    "type": "choice",
+    "label": "x",
+    "default": "a"
+   }
+  },
+  {
+   "why": "choice with a single option",
+   "key": "k",
+   "field": {
+    "type": "choice",
+    "label": "x",
+    "default": "a",
+    "choices": [
+     {
+      "value": "a",
+      "label": "A"
+     }
+    ]
+   }
+  },
+  {
+   "why": "duplicate option values",
+   "key": "k",
+   "field": {
+    "type": "choice",
+    "label": "x",
+    "default": "a",
+    "choices": [
+     {
+      "value": "a",
+      "label": "A"
+     },
+     {
+      "value": "a",
+      "label": "B"
+     }
+    ]
+   }
+  },
+  {
+   "why": "default is not an option",
+   "key": "k",
+   "field": {
+    "type": "choice",
+    "label": "x",
+    "default": "c",
+    "choices": [
+     {
+      "value": "a",
+      "label": "A"
+     },
+     {
+      "value": "b",
+      "label": "B"
+     }
+    ]
+   }
+  },
+  {
+   "why": "choices and source together",
+   "key": "k",
+   "field": {
+    "type": "choice",
+    "label": "x",
+    "default": "a",
+    "source": "timezone",
+    "choices": [
+     {
+      "value": "a",
+      "label": "A"
+     },
+     {
+      "value": "b",
+      "label": "B"
+     }
+    ]
+   }
+  },
+  {
+   "why": "unknown source",
+   "key": "k",
+   "field": {
+    "type": "choice",
+    "label": "x",
+    "default": "a",
+    "source": "planets"
+   }
+  },
+  {
+   "why": "dynamic choice needs a non-empty default unless allowEmpty",
+   "key": "k",
+   "field": {
+    "type": "choice",
+    "label": "x",
+    "default": "",
+    "source": "timezone"
+   }
+  },
+  {
+   "why": "zero maxLength",
+   "key": "k",
+   "field": {
+    "type": "text",
+    "label": "x",
+    "default": "",
+    "maxLength": 0
+   }
+  },
+  {
+   "why": "text default longer than maxLength",
+   "key": "k",
+   "field": {
+    "type": "text",
+    "label": "x",
+    "default": "abcdef",
+    "maxLength": 3
+   }
+  },
+  {
+   "why": "empty label",
+   "key": "k",
+   "field": {
+    "type": "text",
+    "label": "",
+    "default": ""
+   }
+  },
+  {
+   "why": "unknown property",
+   "key": "k",
+   "field": {
+    "type": "text",
+    "label": "x",
+    "default": "",
+    "color": "red"
+   }
+  },
+  {
+   "why": "uppercase key",
+   "key": "Bad",
+   "field": {
+    "type": "bool",
+    "label": "x",
+    "default": true
+   }
+  },
+  {
+   "why": "dotted key in a plugin",
+   "key": "a.b",
+   "field": {
+    "type": "bool",
+    "label": "x",
+    "default": true
+   }
+  },
+  {
+   "why": "undotted key in the system scope",
+   "key": "plain",
+   "field": {
+    "type": "bool",
+    "label": "x",
+    "default": true
+   },
+   "system": true
+  },
+  {
+   "why": "hidden must be a boolean",
+   "key": "k",
+   "field": {
+    "type": "bool",
+    "label": "x",
+    "default": true,
+    "hidden": "yes"
+   }
+  },
+  {
+   "why": "hidden must be a boolean, not a number",
+   "key": "k",
+   "field": {
+    "type": "bool",
+    "label": "x",
+    "default": true,
+    "hidden": 1
+   }
+  }
+ ]
+}

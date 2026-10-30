@@ -1,0 +1,16 @@
+{
+ "name": "設定",
+ "title": "設定",
+ "done": "完成",
+ "system": "系統設定",
+ "plugins": "其他外掛程式",
+ "error.type": "這個值無效",
+ "error.min": "不能小於 {min}",
+ "error.max": "不能大於 {max}",
+ "error.length": "最多 {max} 個字元",
+ "error.chars": "包含不允許的字元",
+ "error.required": "請選擇一項",
+ "error.option": "沒有這個選項",
+ "error.order_below": "必須小於「{label}」",
+ "error.order_above": "必須大於「{label}」"
+}

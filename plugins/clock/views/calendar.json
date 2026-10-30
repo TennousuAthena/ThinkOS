@@ -1,0 +1,10 @@
+{
+  "template": "glance",
+  "children": [
+    { "type": "text", "value": "{{month}}", "style": "caption" },
+    { "type": "text", "value": "{{day}}", "style": "display" },
+    { "type": "text", "value": "{{weekday}}", "style": "body" },
+    { "type": "icon", "name": "calendar" }
+  ],
+  "relevance": 0.3
+}

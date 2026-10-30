@@ -1,0 +1,10 @@
+{
+  "id": "home",
+  "name": "首页",
+  "version": "0.1.0",
+  "api": 1,
+  "permissions": [],
+  "pages": [
+    { "id": "main", "view": "views/main.json", "title": "此刻", "roles": ["home", "ambient"] }
+  ]
+}

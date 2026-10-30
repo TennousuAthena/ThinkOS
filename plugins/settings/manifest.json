@@ -1,0 +1,11 @@
+{
+  "id": "settings",
+  "name": "@name",
+  "version": "0.1.0",
+  "api": 1,
+  "main": "main.lua",
+  "permissions": ["system.settings"],
+  "pages": [
+    { "id": "form", "view": "views/form.json", "title": "@title", "roles": ["settings"] }
+  ]
+}

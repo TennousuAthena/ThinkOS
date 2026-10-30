@@ -1,0 +1,29 @@
+{
+  "complete": true,
+  "passed": [
+    "an open settings page stays ENGAGED past the normal interaction timeout",
+    "Home exits settings and returns to the previous page",
+    "a horizontal slider gesture commits the chosen step on release",
+    "settings closes after 30 seconds without interaction",
+    "vertical scrolling across numeric rows does not change their values",
+    "typing in a native dialog keeps settings open for more than 30 seconds",
+    "Home closes a text dialog without saving its draft",
+    "UI session checks do not restart the application"
+  ],
+  "issues": [],
+  "quietSettingsState": {
+    "page": "settings.form",
+    "attention": "ENGAGED",
+    "theme": "NIGHT",
+    "orientation": "LANDSCAPE"
+  },
+  "idleExitSeconds": 30.57,
+  "typingSeconds": 40.13,
+  "typingState": {
+    "page": "settings.form",
+    "attention": "ENGAGED",
+    "theme": "DARK",
+    "orientation": "LANDSCAPE"
+  },
+  "settingsUnchanged": true
+}

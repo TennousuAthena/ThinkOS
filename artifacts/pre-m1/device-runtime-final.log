@@ -1,0 +1,7 @@
+PASS 59KB HTTP JSON, timer fairness, pcall await, ordinary error retention, LAN redirects, 1MiB cap, one store flush
+PASS hot replacement cancels HTTP and sleep continuations
+PASS asynchronous startup failure retains previous version
+PASS network permission enforced and asynchronous startup commits
+PASS removing a suspended startup cancels candidate and active instance
+PASS interrupted AtomicFile store write restores the backup before plugin startup
+PASS three persisted orphan markers quarantine only the failing digest; clock/home remain healthy

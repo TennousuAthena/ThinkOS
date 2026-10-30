@@ -1,0 +1,250 @@
+{
+  "pid": 7024,
+  "tick_hz": 100,
+  "unit": "percent of one CPU core",
+  "samples": [
+    {
+      "elapsed_s": 10.08,
+      "cpu_pct": 6.845
+    },
+    {
+      "elapsed_s": 20.16,
+      "cpu_pct": 1.984
+    },
+    {
+      "elapsed_s": 30.24,
+      "cpu_pct": 1.984
+    },
+    {
+      "elapsed_s": 40.33,
+      "cpu_pct": 1.784
+    },
+    {
+      "elapsed_s": 50.41,
+      "cpu_pct": 2.183
+    },
+    {
+      "elapsed_s": 60.5,
+      "cpu_pct": 1.685
+    },
+    {
+      "elapsed_s": 70.58,
+      "cpu_pct": 17.262
+    },
+    {
+      "elapsed_s": 80.66,
+      "cpu_pct": 2.083
+    },
+    {
+      "elapsed_s": 90.74,
+      "cpu_pct": 2.282
+    },
+    {
+      "elapsed_s": 100.83,
+      "cpu_pct": 2.18
+    },
+    {
+      "elapsed_s": 110.92,
+      "cpu_pct": 2.577
+    },
+    {
+      "elapsed_s": 121.0,
+      "cpu_pct": 2.083
+    },
+    {
+      "elapsed_s": 131.08,
+      "cpu_pct": 2.083
+    },
+    {
+      "elapsed_s": 141.14,
+      "cpu_pct": 2.087
+    },
+    {
+      "elapsed_s": 151.22,
+      "cpu_pct": 2.282
+    },
+    {
+      "elapsed_s": 161.3,
+      "cpu_pct": 2.083
+    },
+    {
+      "elapsed_s": 171.37,
+      "cpu_pct": 2.383
+    },
+    {
+      "elapsed_s": 181.46,
+      "cpu_pct": 2.081
+    },
+    {
+      "elapsed_s": 191.56,
+      "cpu_pct": 2.178
+    },
+    {
+      "elapsed_s": 201.64,
+      "cpu_pct": 1.984
+    },
+    {
+      "elapsed_s": 211.72,
+      "cpu_pct": 2.282
+    },
+    {
+      "elapsed_s": 221.8,
+      "cpu_pct": 2.083
+    },
+    {
+      "elapsed_s": 231.89,
+      "cpu_pct": 2.379
+    },
+    {
+      "elapsed_s": 241.98,
+      "cpu_pct": 2.081
+    },
+    {
+      "elapsed_s": 252.06,
+      "cpu_pct": 2.183
+    },
+    {
+      "elapsed_s": 262.14,
+      "cpu_pct": 2.083
+    },
+    {
+      "elapsed_s": 272.23,
+      "cpu_pct": 2.18
+    },
+    {
+      "elapsed_s": 282.32,
+      "cpu_pct": 1.982
+    },
+    {
+      "elapsed_s": 292.39,
+      "cpu_pct": 2.483
+    },
+    {
+      "elapsed_s": 302.48,
+      "cpu_pct": 2.279
+    },
+    {
+      "elapsed_s": 312.56,
+      "cpu_pct": 2.183
+    },
+    {
+      "elapsed_s": 322.64,
+      "cpu_pct": 2.083
+    },
+    {
+      "elapsed_s": 332.71,
+      "cpu_pct": 2.383
+    },
+    {
+      "elapsed_s": 342.8,
+      "cpu_pct": 2.081
+    },
+    {
+      "elapsed_s": 352.88,
+      "cpu_pct": 2.48
+    },
+    {
+      "elapsed_s": 362.96,
+      "cpu_pct": 1.984
+    },
+    {
+      "elapsed_s": 373.04,
+      "cpu_pct": 2.183
+    },
+    {
+      "elapsed_s": 383.12,
+      "cpu_pct": 16.865
+    },
+    {
+      "elapsed_s": 393.2,
+      "cpu_pct": 2.282
+    },
+    {
+      "elapsed_s": 403.29,
+      "cpu_pct": 2.081
+    },
+    {
+      "elapsed_s": 413.38,
+      "cpu_pct": 2.775
+    },
+    {
+      "elapsed_s": 423.45,
+      "cpu_pct": 1.986
+    },
+    {
+      "elapsed_s": 433.53,
+      "cpu_pct": 2.083
+    },
+    {
+      "elapsed_s": 443.62,
+      "cpu_pct": 2.18
+    },
+    {
+      "elapsed_s": 453.7,
+      "cpu_pct": 2.183
+    },
+    {
+      "elapsed_s": 463.78,
+      "cpu_pct": 14.087
+    },
+    {
+      "elapsed_s": 473.86,
+      "cpu_pct": 2.183
+    },
+    {
+      "elapsed_s": 483.94,
+      "cpu_pct": 1.984
+    },
+    {
+      "elapsed_s": 494.02,
+      "cpu_pct": 1.984
+    },
+    {
+      "elapsed_s": 504.11,
+      "cpu_pct": 1.982
+    },
+    {
+      "elapsed_s": 514.2,
+      "cpu_pct": 1.982
+    },
+    {
+      "elapsed_s": 524.28,
+      "cpu_pct": 1.984
+    },
+    {
+      "elapsed_s": 534.36,
+      "cpu_pct": 2.48
+    },
+    {
+      "elapsed_s": 544.44,
+      "cpu_pct": 1.885
+    },
+    {
+      "elapsed_s": 554.53,
+      "cpu_pct": 1.982
+    },
+    {
+      "elapsed_s": 564.62,
+      "cpu_pct": 1.982
+    },
+    {
+      "elapsed_s": 574.7,
+      "cpu_pct": 1.984
+    },
+    {
+      "elapsed_s": 584.78,
+      "cpu_pct": 1.885
+    },
+    {
+      "elapsed_s": 594.87,
+      "cpu_pct": 2.676
+    },
+    {
+      "elapsed_s": 600.07,
+      "cpu_pct": 1.923
+    }
+  ],
+  "elapsed_s": 600.07,
+  "mean_cpu_pct": 2.923,
+  "max_cpu_pct": 17.262
+}

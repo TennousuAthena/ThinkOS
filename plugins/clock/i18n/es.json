@@ -1,0 +1,14 @@
+{
+ "name": "Reloj",
+ "title": "Reloj",
+ "now": "Ahora",
+ "waiting": "Esperando sincronización de hora",
+ "calendar": "Calendario",
+ "group.display": "Pantalla",
+ "group.world": "Reloj mundial",
+ "setting.seconds": "Mostrar segundos",
+ "setting.zone1": "Ciudad 1",
+ "setting.zone2": "Ciudad 2",
+ "setting.zone3": "Ciudad 3",
+ "setting.zone4": "Ciudad 4"
+}

@@ -1,0 +1,9 @@
+{
+  "complete": false,
+  "passed": [],
+  "issues": [],
+  "controlled_inputs": "debug lux and presence; normal attention timing",
+  "failure": "page did not become home.main",
+  "settingsRestored": true,
+  "restoredKeys": []
+}

@@ -1,0 +1,4 @@
+Final APK: boot completed and ThinkOS automatically resumed
+mResumedActivity: ActivityRecord{e0cb772 u0 moe.kiwi.thinkos/.MainActivity t84}
+priority=0 preferredOrder=0 match=0x108000 specificIndex=-1 isDefault=true
+moe.kiwi.thinkos/.MainActivity

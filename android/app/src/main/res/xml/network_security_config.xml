@@ -1,0 +1,7 @@
+<network-security-config>
+    <!-- Android NSC has no CIDR matcher. PluginHttp validates and pins private
+         addresses before each HTTP connection; HTTPS retains system trust. -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors><certificates src="system" /></trust-anchors>
+    </base-config>
+</network-security-config>

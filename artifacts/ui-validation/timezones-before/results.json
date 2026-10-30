@@ -1,0 +1,112 @@
+{
+  "complete": false,
+  "passed": [
+    "a required timezone does not offer an empty selection",
+    "continent filtering reuses the native list and excludes other continents",
+    "search matches the IANA name and shows Kathmandu's fractional UTC offset",
+    "selecting a search result returns to the form and dismisses the keyboard",
+    "picker back returns without changing the selected timezone",
+    "an optional timezone can be cleared and reopens with its empty row selected",
+    "picker interactions do not restart the application"
+  ],
+  "issues": [
+    "the picker hides the covered form from accessibility navigation",
+    "landscape-dark: selected continent has a 48dp target, 4.5:1 text contrast and selected accessibility state",
+    "portrait-dark: selected continent has a 48dp target, 4.5:1 text contrast and selected accessibility state",
+    "portrait-light: selected continent has a 48dp target, 4.5:1 text contrast and selected accessibility state",
+    "landscape-light: selected continent has a 48dp target, 4.5:1 text contrast and selected accessibility state",
+    "typing in timezone search keeps settings open beyond its 30-second idle timeout"
+  ],
+  "chips": {
+    "landscape-dark": {
+      "size_px": [
+        88,
+        58
+      ],
+      "selected": "false",
+      "sampled_colors": [
+        [
+          124,
+          149,
+          255
+        ],
+        [
+          255,
+          255,
+          255
+        ]
+      ],
+      "contrast": 2.76,
+      "actual_theme": "DARK"
+    },
+    "portrait-dark": {
+      "size_px": [
+        88,
+        58
+      ],
+      "selected": "false",
+      "sampled_colors": [
+        [
+          124,
+          149,
+          255
+        ],
+        [
+          255,
+          255,
+          255
+        ]
+      ],
+      "contrast": 2.76,
+      "actual_theme": "DARK"
+    },
+    "portrait-light": {
+      "size_px": [
+        88,
+        58
+      ],
+      "selected": "false",
+      "sampled_colors": [
+        [
+          91,
+          124,
+          250
+        ],
+        [
+          255,
+          255,
+          255
+        ]
+      ],
+      "contrast": 3.68,
+      "actual_theme": "LIGHT"
+    },
+    "landscape-light": {
+      "size_px": [
+        88,
+        58
+      ],
+      "selected": "false",
+      "sampled_colors": [
+        [
+          91,
+          124,
+          250
+        ],
+        [
+          255,
+          255,
+          255
+        ]
+      ],
+      "contrast": 3.68,
+      "actual_theme": "LIGHT"
+    }
+  },
+  "apk_sha256": "8ce48ff15dbf2c7158d7de46405dfb8a8b9e6231a3c3e255608e2fa1a1033587",
+  "uiPid": "9771",
+  "activeTypingSeconds": 31.51,
+  "settingsRestored": true,
+  "developmentOverridesEmpty": true,
+  "privateBackupDeleted": true
+}

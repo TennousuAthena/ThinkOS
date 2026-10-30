@@ -1,0 +1,19 @@
+{
+  "id": "settings-ui-probe",
+  "name": "设置UI样例",
+  "version": "1.0.0",
+  "api": 1,
+  "permissions": [],
+  "settings": {
+    "enabled": { "type": "bool", "label": "开关演示", "default": false, "group": "基础选项" },
+    "level": { "type": "number", "label": "强度演示", "default": 5, "min": 0, "max": 10, "step": 1, "group": "基础选项" },
+    "mode": { "type": "choice", "label": "方案演示", "default": "first", "choices": [
+      { "value": "first", "label": "方案一" }, { "value": "second", "label": "方案二" }
+    ], "group": "基础选项" },
+    "name": { "type": "text", "label": "名称演示", "default": "UI-DEMO", "maxLength": 40, "group": "文字与隐私" },
+    "secret": { "type": "text", "label": "密钥演示", "default": "", "maxLength": 32, "secret": true, "group": "文字与隐私" },
+    "address": { "type": "text", "label": "很长的地址标签用于检查当前值是否挤占文字", "default": "https://example.invalid/a/long/address/for/layout/inspection", "maxLength": 160, "group": "文字与隐私" }
+  },
+  "pages": [{ "id": "main", "title": "无Lua设置样例", "view": "views/main.json" }],
+  "widgets": [{ "id": "preview", "view": "views/preview.json", "opens": "main" }]
+}

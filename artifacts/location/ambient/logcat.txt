@@ -1,0 +1,226 @@
+--------- beginning of main
+--------- beginning of system
+10-30 02:39:15.464 11902 11919 I ThinkOS : [plugin:runtime-probe] PROBE pending start armed
+10-30 02:39:18.558 11902 11902 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=NIGHT, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=32626, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=37158, disabled=false, error=null)]
+10-30 02:39:19.361 11902 11919 I ThinkOS : [plugin:runtime-probe] loaded 1.1.6; Lua 39443 bytes
+10-30 02:39:20.630 12213 12213 I ThinkOS : tzdata 2026e (419 zones)
+10-30 02:39:20.791 12213 12213 I ThinkOS : Runtime started; local mode, safe=false
+10-30 02:39:20.793 12213 12213 I ThinkOS : Activity created; orientation=1
+10-30 02:39:20.811 12213 12236 W ThinkOS : Unclean native execution attributed to plugin runtime-probe
+10-30 02:39:22.961 12213 12236 E ThinkOS : [plugin:clock] plugin CPU budget exceeded
+10-30 02:39:22.961 12213 12213 E ThinkOS : [plugin:clock] plugin CPU budget exceeded
+10-30 02:39:22.961 12213 12213 W ThinkOS : Plugin error shown in diagnostics: clock
+10-30 02:39:23.065 12213 12236 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-30 02:39:23.306 12213 12236 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 36238 bytes
+10-30 02:39:23.406 12213 12236 I ThinkOS : [plugin:runtime-probe] loaded 1.1.6; Lua 39443 bytes
+10-30 02:39:24.404 12293 12293 I ThinkOS : tzdata 2026e (419 zones)
+10-30 02:39:24.561 12293 12293 I ThinkOS : Runtime started; local mode, safe=false
+10-30 02:39:24.563 12293 12293 I ThinkOS : Activity created; orientation=1
+10-30 02:39:24.583 12293 12316 W ThinkOS : Unclean native execution attributed to plugin runtime-probe
+10-30 02:39:26.159 12341 12341 I ThinkOS : tzdata 2026e (419 zones)
+10-30 02:39:26.315 12341 12341 I ThinkOS : Runtime started; local mode, safe=false
+10-30 02:39:26.317 12341 12341 I ThinkOS : Activity created; orientation=1
+10-30 02:39:26.339 12341 12364 W ThinkOS : Unclean native execution attributed to plugin runtime-probe
+10-30 02:39:27.232 12341 12341 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[]
+10-30 02:39:28.465 12407 12407 I ThinkOS : tzdata 2026e (419 zones)
+10-30 02:39:28.625 12407 12407 I ThinkOS : Runtime started; local mode, safe=false
+10-30 02:39:28.627 12407 12407 I ThinkOS : Activity created; orientation=1
+10-30 02:39:30.755 12407 12424 E ThinkOS : [plugin:clock] plugin CPU budget exceeded
+10-30 02:39:30.756 12407 12407 E ThinkOS : [plugin:clock] plugin CPU budget exceeded
+10-30 02:39:30.756 12407 12407 W ThinkOS : Plugin error shown in diagnostics: clock
+10-30 02:39:30.865 12407 12424 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-30 02:39:31.102 12407 12424 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 36238 bytes
+10-30 02:39:32.859 12407 12424 I ThinkOS : [plugin:clock] loaded 0.3.0; Lua 45213 bytes
+10-30 02:39:39.707 12407 12407 I ThinkOS : theme=NIGHT lux=0.0
+10-30 02:40:08.614 12407 12424 I ThinkOS : [plugin:runtime-probe] loaded 1.1.0; Lua 37418 bytes
+10-30 02:40:08.660 12407 12424 E ThinkOS : [plugin:runtime-probe] runtime-probe/main.lua:9: expected ordinary event failure
+10-30 02:40:08.660 12407 12407 E ThinkOS : [plugin:runtime-probe] runtime-probe/main.lua:9: expected ordinary event failure
+10-30 02:40:08.660 12407 12407 W ThinkOS : Plugin error shown in diagnostics: runtime-probe
+10-30 02:40:08.971 12407 12424 I ThinkOS : [plugin:runtime-probe] PROBE 20 store updates returned without fsync
+10-30 02:40:09.612 12407 12424 I ThinkOS : [plugin:runtime-probe] PROBE HTTP+JSON+resume passed bytes=58928 ticks=10
+10-30 02:40:09.934 12407 12424 I ThinkOS : [plugin:runtime-probe] PROBE LAN redirects and 1MB response limit passed
+10-30 02:40:10.981 12407 12495 D ThinkOS : [store:runtime-probe] persisted coalesced snapshot
+10-30 02:40:12.540 12407 12424 I ThinkOS : [plugin:runtime-probe] PROBE ALL PASSED ticks=38 store=20
+10-30 02:40:13.256 12407 12424 I ThinkOS : [plugin:runtime-probe] loaded 1.1.1; Lua 40405 bytes
+10-30 02:40:13.288 12407 12424 I ThinkOS : [plugin:runtime-probe] PROBE old HTTP armed
+10-30 02:40:14.048 12407 12424 I ThinkOS : [plugin:runtime-probe] loaded 1.1.2; Lua 39289 bytes
+10-30 02:40:17.361 12407 12424 E ThinkOS : [plugin:runtime-probe] runtime-probe/main.lua:1: PROBE expected startup rollback
+10-30 02:40:17.361 12407 12407 E ThinkOS : [plugin:runtime-probe] runtime-probe/main.lua:1: PROBE expected startup rollback
+10-30 02:40:17.361 12407 12407 W ThinkOS : Plugin error shown in diagnostics: runtime-probe
+10-30 02:40:17.577 12407 12407 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=NIGHT, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=32626, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=37158, disabled=false, error=null), PluginDiagnostic(id=runtime-probe, version=1.1.2, bytes=39289, disabled=false, error=null)]
+10-30 02:40:18.504 12407 12424 I ThinkOS : [plugin:runtime-probe] PROBE permission and async start PASSED
+10-30 02:40:18.541 12407 12424 I ThinkOS : [plugin:runtime-probe] loaded 1.1.4; Lua 40166 bytes
+10-30 02:40:19.383 12407 12424 I ThinkOS : [plugin:runtime-probe] PROBE pending start armed
+10-30 02:40:22.519 12407 12407 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=NIGHT, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=32626, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=37158, disabled=false, error=null)]
+10-30 02:40:23.253 12407 12424 I ThinkOS : [plugin:runtime-probe] loaded 1.1.6; Lua 39443 bytes
+10-30 02:40:24.487 12713 12713 I ThinkOS : tzdata 2026e (419 zones)
+10-30 02:40:24.643 12713 12713 I ThinkOS : Runtime started; local mode, safe=false
+10-30 02:40:24.645 12713 12713 I ThinkOS : Activity created; orientation=1
+10-30 02:40:24.668 12713 12735 W ThinkOS : Unclean native execution attributed to plugin runtime-probe
+10-30 02:40:26.808 12713 12735 E ThinkOS : [plugin:clock] plugin CPU budget exceeded
+10-30 02:40:26.809 12713 12713 E ThinkOS : [plugin:clock] plugin CPU budget exceeded
+10-30 02:40:26.809 12713 12713 W ThinkOS : Plugin error shown in diagnostics: clock
+10-30 02:40:26.916 12713 12735 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-30 02:40:27.152 12713 12735 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 36238 bytes
+10-30 02:40:27.251 12713 12735 I ThinkOS : [plugin:runtime-probe] loaded 1.1.6; Lua 39443 bytes
+10-30 02:40:28.300 12798 12798 I ThinkOS : tzdata 2026e (419 zones)
+10-30 02:40:28.459 12798 12798 I ThinkOS : Runtime started; local mode, safe=false
+10-30 02:40:28.461 12798 12798 I ThinkOS : Activity created; orientation=1
+10-30 02:40:28.483 12798 12821 W ThinkOS : Unclean native execution attributed to plugin runtime-probe
+10-30 02:40:30.622 12798 12821 E ThinkOS : [plugin:clock] plugin CPU budget exceeded
+10-30 02:40:30.623 12798 12798 E ThinkOS : [plugin:clock] plugin CPU budget exceeded
+10-30 02:40:30.623 12798 12798 W ThinkOS : Plugin error shown in diagnostics: clock
+10-30 02:40:30.732 12798 12821 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-30 02:40:30.970 12798 12821 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 36238 bytes
+10-30 02:40:31.068 12798 12821 I ThinkOS : [plugin:runtime-probe] loaded 1.1.6; Lua 39443 bytes
+10-30 02:40:32.056 12876 12876 I ThinkOS : tzdata 2026e (419 zones)
+10-30 02:40:32.217 12876 12876 I ThinkOS : Runtime started; local mode, safe=false
+10-30 02:40:32.219 12876 12876 I ThinkOS : Activity created; orientation=1
+10-30 02:40:32.239 12876 12899 W ThinkOS : Unclean native execution attributed to plugin runtime-probe
+10-30 02:40:32.539 12876 12876 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[]
+10-30 02:40:32.939 12876 12876 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[]
+10-30 02:40:34.480 12876 12899 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-30 02:40:34.501 12876 12876 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=0, disabled=false, error=plugin CPU budget exceeded)]
+10-30 02:40:34.714 12876 12899 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 36238 bytes
+10-30 02:40:34.884 12876 12876 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=0, disabled=false, error=plugin CPU budget exceeded), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=36238, disabled=false, error=null), PluginDiagnostic(id=runtime-probe, version=1.1.6, bytes=0, disabled=true, error=Quarantined after repeated unclean native exits; retry in one hour)]
+10-30 02:40:35.081 12876 12876 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=0, disabled=false, error=plugin CPU budget exceeded), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=36238, disabled=false, error=null), PluginDiagnostic(id=runtime-probe, version=1.1.6, bytes=0, disabled=true, error=Quarantined after repeated unclean native exits; retry in one hour)]
+10-30 02:40:36.427 12996 12996 I ThinkOS : tzdata 2026e (419 zones)
+10-30 02:40:36.582 12996 12996 I ThinkOS : Runtime started; local mode, safe=false
+10-30 02:40:36.584 12996 12996 I ThinkOS : Activity created; orientation=1
+10-30 02:40:38.710 12996 13013 E ThinkOS : [plugin:clock] plugin CPU budget exceeded
+10-30 02:40:38.710 12996 12996 E ThinkOS : [plugin:clock] plugin CPU budget exceeded
+10-30 02:40:38.711 12996 12996 W ThinkOS : Plugin error shown in diagnostics: clock
+10-30 02:40:38.817 12996 13013 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-30 02:40:39.053 12996 13013 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 36238 bytes
+10-30 02:40:40.809 12996 13013 I ThinkOS : [plugin:clock] loaded 0.3.0; Lua 45213 bytes
+10-30 02:40:43.559 12996 13013 I ThinkOS : [plugin:directory-probe] DIR START 1.0.0
+10-30 02:40:43.574 12996 13013 I ThinkOS : [plugin:directory-probe] loaded 1.0.0; Lua 39748 bytes
+10-30 02:40:43.761 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 1
+10-30 02:40:43.962 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 2
+10-30 02:40:44.163 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 3
+10-30 02:40:44.365 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 4
+10-30 02:40:44.424 12996 13013 E ThinkOS : [plugin:directory-probe] file hash/size mismatch: main.lua
+10-30 02:40:44.424 12996 12996 E ThinkOS : [plugin:directory-probe] file hash/size mismatch: main.lua
+10-30 02:40:44.424 12996 12996 W ThinkOS : Plugin error shown in diagnostics: directory-probe
+10-30 02:40:44.521 12996 12996 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=45213, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=36238, disabled=false, error=null), PluginDiagnostic(id=directory-probe, version=1.0.0, bytes=44056, disabled=false, error=null)]
+10-30 02:40:44.569 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 5
+10-30 02:40:44.770 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 6
+10-30 02:40:44.971 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 7
+10-30 02:40:45.172 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 8
+10-30 02:40:45.373 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 9
+10-30 02:40:45.486 12996 13013 I ThinkOS : [plugin:directory-probe] DIR START 1.0.1
+10-30 02:40:45.503 12996 13013 I ThinkOS : [plugin:directory-probe] loaded 1.0.1; Lua 39748 bytes
+10-30 02:40:45.687 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 1
+10-30 02:40:45.888 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 2
+10-30 02:40:46.089 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 3
+10-30 02:40:46.291 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 4
+10-30 02:40:46.502 12996 13013 E ThinkOS : [plugin:directory-probe] plugin CPU budget exceeded
+10-30 02:40:46.502 12996 12996 E ThinkOS : [plugin:directory-probe] plugin CPU budget exceeded
+10-30 02:40:46.502 12996 12996 W ThinkOS : Plugin error shown in diagnostics: directory-probe
+10-30 02:40:46.521 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 5
+10-30 02:40:46.724 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 6
+10-30 02:40:46.778 12996 12996 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=45213, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=36238, disabled=false, error=null), PluginDiagnostic(id=directory-probe, version=1.0.1, bytes=44056, disabled=false, error=null)]
+10-30 02:40:46.925 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 7
+10-30 02:40:47.126 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 8
+10-30 02:40:47.328 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 9
+10-30 02:40:47.530 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 10
+10-30 02:40:47.656 12996 12996 I ThinkOS : theme=NIGHT lux=0.0
+10-30 02:40:47.703 12996 13013 I ThinkOS : [plugin:directory-trigger] DIR TRIGGER
+10-30 02:40:47.719 12996 13013 I ThinkOS : [plugin:directory-trigger] loaded 1.0.0; Lua 39099 bytes
+10-30 02:40:47.734 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 11
+10-30 02:40:47.935 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 12
+10-30 02:40:48.067 12996 12996 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=NIGHT, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=29315, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=37158, disabled=false, error=null), PluginDiagnostic(id=directory-probe, version=1.0.1, bytes=28913, disabled=false, error=null), PluginDiagnostic(id=directory-trigger, version=1.0.0, bytes=40019, disabled=false, error=null)]
+10-30 02:40:48.136 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 13
+10-30 02:40:48.337 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 14
+10-30 02:40:48.539 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 15
+10-30 02:40:48.741 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 16
+10-30 02:40:48.942 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 17
+10-30 02:40:49.138 12996 13013 I ThinkOS : [plugin:directory-probe] DIR START 1.0.3
+10-30 02:40:49.160 12996 13013 I ThinkOS : [plugin:directory-probe] loaded 1.0.3; Lua 39748 bytes
+10-30 02:40:49.339 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 1
+10-30 02:40:49.540 12996 13013 I ThinkOS : [plugin:directory-probe] DIR TICK 2
+10-30 02:40:50.223 13228 13228 I ThinkOS : tzdata 2026e (419 zones)
+10-30 02:40:50.380 13228 13228 I ThinkOS : Runtime started; local mode, safe=false
+10-30 02:40:50.382 13228 13228 I ThinkOS : Activity created; orientation=1
+10-30 02:40:52.523 13228 13251 E ThinkOS : [plugin:clock] plugin CPU budget exceeded
+10-30 02:40:52.524 13228 13228 E ThinkOS : [plugin:clock] plugin CPU budget exceeded
+10-30 02:40:52.524 13228 13228 W ThinkOS : Plugin error shown in diagnostics: clock
+10-30 02:40:52.644 13228 13251 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-30 02:40:52.885 13228 13251 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 36238 bytes
+10-30 02:40:52.971 13228 13251 I ThinkOS : [plugin:directory-probe] DIR START 1.0.3
+10-30 02:40:52.983 13228 13251 I ThinkOS : [plugin:directory-probe] loaded 1.0.3; Lua 39748 bytes
+10-30 02:40:53.057 13228 13251 I ThinkOS : [plugin:directory-trigger] DIR TRIGGER
+10-30 02:40:53.070 13228 13251 I ThinkOS : [plugin:directory-trigger] loaded 1.0.0; Lua 39099 bytes
+10-30 02:40:53.172 13228 13251 I ThinkOS : [plugin:directory-probe] DIR TICK 1
+10-30 02:40:53.374 13228 13251 I ThinkOS : [plugin:directory-probe] DIR TICK 2
+10-30 02:40:53.575 13228 13251 I ThinkOS : [plugin:directory-probe] DIR TICK 3
+10-30 02:40:53.777 13228 13251 I ThinkOS : [plugin:directory-probe] DIR TICK 4
+10-30 02:40:53.867 13228 13251 E ThinkOS : [plugin:directory-trigger] cannot read plugin directory
+10-30 02:40:53.868 13228 13228 E ThinkOS : [plugin:directory-trigger] cannot read plugin directory
+10-30 02:40:53.868 13228 13228 W ThinkOS : Plugin error shown in diagnostics: directory-trigger
+10-30 02:40:54.626 13228 13251 I ThinkOS : [plugin:clock] loaded 0.3.0; Lua 45213 bytes
+10-30 02:41:01.461 13228 13228 I ThinkOS : theme=NIGHT lux=0.0
+10-30 02:42:50.696 13228 13228 I ThinkOS : attention=AMBIENT
+10-30 02:43:50.837 13228 13228 I ThinkOS : attention=ASLEEP
+10-30 02:46:39.195 13474 13474 I ThinkOS : tzdata 2026e (419 zones)
+10-30 02:46:39.356 13474 13474 I ThinkOS : Runtime started; local mode, safe=false
+10-30 02:46:39.358 13474 13474 I ThinkOS : Activity created; orientation=1
+10-30 02:46:40.173 13474 13507 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-30 02:46:40.435 13474 13507 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 36747 bytes
+10-30 02:46:40.541 13474 13507 I ThinkOS : [plugin:location-probe-d679b4d7] LOCATION-PROBE-D679B4D7 DENIED PASSED
+10-30 02:46:40.553 13474 13507 I ThinkOS : [plugin:location-probe-d679b4d7] loaded 1.0.0; Lua 44853 bytes
+10-30 02:46:41.453 13474 13507 I ThinkOS : [plugin:location-probe-d679b4d7] LOCATION-PROBE-D679B4D7 LOCATION ms=2
+10-30 02:46:41.660 13474 13507 I ThinkOS : [plugin:clock] loaded 0.3.0; Lua 32109 bytes
+10-30 02:46:41.686 13474 13507 I ThinkOS : [plugin:location-probe-d679b4d7] loaded 1.0.1; Lua 42039 bytes
+10-30 02:46:43.239 13474 13507 I ThinkOS : [plugin:location-probe-d679b4d7] LOCATION-PROBE-D679B4D7 SUN COLD ms=1475
+10-30 02:46:43.243 13474 13507 I ThinkOS : [plugin:location-probe-d679b4d7] LOCATION-PROBE-D679B4D7 SUN CACHED ms=4
+10-30 02:46:43.607 13474 13507 I ThinkOS : [plugin:location-probe-d679b4d7] LOCATION-PROBE-D679B4D7 MOON ms=262
+10-30 02:46:43.608 13474 13507 I ThinkOS : [plugin:location-probe-d679b4d7] LOCATION-PROBE-D679B4D7 SEASONS ms=1
+10-30 02:46:43.608 13474 13507 I ThinkOS : [plugin:location-probe-d679b4d7] LOCATION-PROBE-D679B4D7 ASTRO PASSED
+10-30 02:46:50.441 13474 13474 I ThinkOS : theme=NIGHT lux=0.0
+10-30 02:46:50.484 13474 13507 I ThinkOS : [plugin:location-probe-d679b4d7] LOCATION-PROBE-D679B4D7 GEOCODING query=1 status=200 results=7
+10-30 02:46:50.762 13474 13507 I ThinkOS : [plugin:location-probe-d679b4d7] LOCATION-PROBE-D679B4D7 GEOCODING query=2 status=200 results=0
+10-30 02:46:50.762 13474 13507 I ThinkOS : [plugin:location-probe-d679b4d7] LOCATION-PROBE-D679B4D7 ALL PASSED
+10-30 02:47:17.151 13474 13474 I ThinkOS : Configuration changed without Activity recreation: 2
+10-30 02:47:17.509 13474 13474 I ThinkOS : theme=NIGHT lux=0.0
+10-30 02:50:16.811 13474 13474 I ThinkOS : Configuration changed without Activity recreation: 1
+10-30 02:53:32.488 14134 14134 I ThinkOS : tzdata 2026e (419 zones)
+10-30 02:53:32.657 14134 14134 I ThinkOS : Runtime started; local mode, safe=false
+10-30 02:53:32.659 14134 14134 I ThinkOS : Activity created; orientation=1
+10-30 02:53:33.983 14186 14186 I ThinkOS : tzdata 2026e (419 zones)
+10-30 02:53:34.152 14186 14186 I ThinkOS : Runtime started; local mode, safe=false
+10-30 02:53:34.155 14186 14186 I ThinkOS : Activity created; orientation=1
+10-30 02:53:34.979 14186 14203 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-30 02:53:35.248 14186 14203 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 36747 bytes
+10-30 02:53:36.486 14186 14203 I ThinkOS : [plugin:clock] loaded 0.3.0; Lua 32109 bytes
+10-30 02:53:45.235 14186 14186 I ThinkOS : theme=NIGHT lux=0.0
+10-30 02:55:18.743 14274 14274 I ThinkOS : tzdata 2026e (419 zones)
+10-30 02:55:18.915 14274 14274 I ThinkOS : Runtime started; local mode, safe=false
+10-30 02:55:18.917 14274 14274 I ThinkOS : Activity created; orientation=1
+10-30 02:55:19.219 14274 14274 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[]
+10-30 02:55:19.563 14274 14274 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[]
+10-30 02:55:19.705 14274 14292 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-30 02:55:19.891 14274 14274 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[]
+10-30 02:55:19.965 14274 14292 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 36747 bytes
+10-30 02:55:20.211 14274 14274 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=36747, disabled=false, error=null)]
+10-30 02:55:20.853 14274 14274 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=36747, disabled=false, error=null)]
+10-30 02:55:21.186 14274 14274 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=36747, disabled=false, error=null)]
+10-30 02:55:21.209 14274 14292 I ThinkOS : [plugin:clock] loaded 0.3.0; Lua 32109 bytes
+10-30 02:55:30.023 14274 14274 I ThinkOS : theme=NIGHT lux=0.0
+10-30 02:56:56.436 14274 14292 I ThinkOS : [plugin:clock] loaded 0.3.0; Lua 44899 bytes
+10-30 02:56:58.705 14531 14531 I ThinkOS : tzdata 2026e (419 zones)
+10-30 02:56:58.873 14531 14531 I ThinkOS : Runtime started; local mode, safe=false
+10-30 02:56:58.875 14531 14531 I ThinkOS : Activity created; orientation=1
+10-30 02:56:59.228 14531 14531 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[]
+10-30 02:56:59.595 14531 14531 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[]
+10-30 02:56:59.705 14531 14549 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-30 02:56:59.941 14531 14531 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[]
+10-30 02:56:59.978 14531 14549 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 36747 bytes
+10-30 02:57:00.322 14531 14531 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=36747, disabled=false, error=null)]
+10-30 02:57:00.325 14531 14549 I ThinkOS : [plugin:clock] loaded 0.3.0; Lua 44899 bytes
+10-30 02:57:00.664 14531 14531 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=36747, disabled=false, error=null), PluginDiagnostic(id=clock, version=0.3.0, bytes=31104, disabled=false, error=null)]
+10-30 02:57:09.956 14531 14531 I ThinkOS : theme=NIGHT lux=0.0
+10-30 02:57:53.554 14531 14531 I ThinkOS : Configuration changed without Activity recreation: 2
+10-30 02:57:53.761 14531 14531 I ThinkOS : attention=AMBIENT
+10-30 02:57:53.885 14531 14531 I ThinkOS : DEBUG state=DeviceState(attention=AMBIENT, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=NIGHT, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=38593, disabled=false, error=null), PluginDiagnostic(id=clock, version=0.3.0, bytes=35399, disabled=false, error=null)]
+10-30 02:58:04.093 14531 14531 I ThinkOS : theme=DARK lux=0.0

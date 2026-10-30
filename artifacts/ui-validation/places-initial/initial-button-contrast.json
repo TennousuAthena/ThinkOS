@@ -1,0 +1,34 @@
+[
+  {
+    "resource": "android:id/button2",
+    "sampled_colors": [
+      [
+        66,
+        66,
+        66
+      ],
+      [
+        22,
+        124,
+        128
+      ]
+    ],
+    "contrast": 2.02
+  },
+  {
+    "resource": "android:id/button1",
+    "sampled_colors": [
+      [
+        66,
+        66,
+        66
+      ],
+      [
+        22,
+        124,
+        128
+      ]
+    ],
+    "contrast": 2.02
+  }
+]

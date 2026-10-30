@@ -1,0 +1,11 @@
+{
+  "layout": "focus",
+  "slots": {
+    "over": { "type": "text", "value": "Derived daylight, no coordinates", "style": "body" },
+    "hero": { "children": [
+      { "type": "daylight", "path": "sun", "weight": 2 },
+      { "type": "chart", "style": "line", "values": "{{values}}", "highlight": "{{highlight}}", "weight": 1 }
+    ] },
+    "under": { "type": "text", "value": "{{lastTap}}", "style": "caption", "tap": "footer" }
+  }
+}

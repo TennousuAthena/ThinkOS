@@ -1,0 +1,14 @@
+{
+ "name": "时钟",
+ "title": "时钟",
+ "now": "此刻",
+ "waiting": "等待校时",
+ "calendar": "日历",
+ "group.display": "显示",
+ "group.world": "世界时钟",
+ "setting.seconds": "显示秒",
+ "setting.zone1": "城市 1",
+ "setting.zone2": "城市 2",
+ "setting.zone3": "城市 3",
+ "setting.zone4": "城市 4"
+}

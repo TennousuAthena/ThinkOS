@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "index.json",
+  "title": "SchemaPluginIndex",
+  "description": "Directory installation index (ADR-018). Digest hashes UTF-8 path + NUL + lowercase file SHA-256 + LF in UTF-8 path order; excludes index.json itself. Semantic path/hash/count/total checks also apply.",
+  "type": "object",
+  "required": [
+    "id",
+    "version",
+    "digest",
+    "files"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "$ref": "manifest.json#/properties/id"
+    },
+    "version": {
+      "$ref": "manifest.json#/properties/version"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 128,
+      "items": {
+        "$ref": "#/$defs/file"
+      }
+    }
+  },
+  "$defs": {
+    "file": {
+      "title": "SchemaPluginFile",
+      "type": "object",
+      "required": [
+        "path",
+        "sha256",
+        "size"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.{1,2}(?:/|$))[^/\\\\\\x00-\\x1f\\x7f]+(?:/[^/\\\\\\x00-\\x1f\\x7f]+)*$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1048576
+        }
+      }
+    }
+  }
+}

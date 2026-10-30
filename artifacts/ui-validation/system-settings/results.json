@@ -1,0 +1,298 @@
+{
+  "complete": true,
+  "passed": [
+    "turning night mode off updates the theme while settings remains ENGAGED",
+    "dark-low-lux: a pinned dark theme stays dark beyond the sensor dwell interval",
+    "dark-high-lux: a pinned dark theme stays dark beyond the sensor dwell interval",
+    "selecting portrait immediately rearranges the native UI",
+    "selecting landscape immediately rearranges the native UI",
+    "the next idle cycle reaches AWAKE using the edited timing",
+    "the next idle cycle reaches AMBIENT using the edited timing",
+    "the next idle cycle reaches ASLEEP using the edited timing",
+    "attention timing changes the actual window brightness and display backlight",
+    "system setting edits apply without restarting the application"
+  ],
+  "issues": [],
+  "controlled_inputs": "debug lux and presence; normal attention timing",
+  "dark-low-lux": {
+    "lux": 0.1,
+    "samples": [
+      {
+        "seconds": 0.21,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 1.41,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 2.56,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 3.76,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 4.97,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 6.18,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 7.38,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 8.59,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 9.8,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 11.02,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 12.23,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 13.44,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 14.64,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 15.83,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 17.02,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 18.23,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 19.43,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 20.6,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 21.8,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 23.01,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 24.19,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 25.38,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 26.57,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 27.75,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 28.94,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 30.14,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 31.34,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 32.54,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 33.75,
+        "theme": "DARK"
+      }
+    ]
+  },
+  "dark-high-lux": {
+    "lux": 10000,
+    "samples": [
+      {
+        "seconds": 0.2,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 1.39,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 2.59,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 3.8,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 5.0,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 6.2,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 7.41,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 8.62,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 9.83,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 11.02,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 12.22,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 13.42,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 14.62,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 15.83,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 17.02,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 18.23,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 19.43,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 20.64,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 21.84,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 23.03,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 24.24,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 25.45,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 26.64,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 27.83,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 29.02,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 30.23,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 31.42,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 32.62,
+        "theme": "DARK"
+      },
+      {
+        "seconds": 33.81,
+        "theme": "DARK"
+      }
+    ]
+  },
+  "orientations": {
+    "portrait": [
+      800,
+      1280
+    ],
+    "landscape": [
+      1280,
+      800
+    ]
+  },
+  "attentionTransitionsSeconds": {
+    "ENGAGED": 0.17,
+    "AWAKE": 6.4,
+    "AMBIENT": 31.6,
+    "ASLEEP": 61.56
+  },
+  "brightness": {
+    "ENGAGED": {
+      "window": 0.85,
+      "backlight": 216
+    },
+    "AMBIENT": {
+      "window": 0.3995,
+      "backlight": 101
+    },
+    "ASLEEP": {
+      "window": 0.030000001,
+      "backlight": 10
+    }
+  },
+  "settingsRestored": true,
+  "restoredKeys": [
+    "attention.awake_to_ambient_s",
+    "attention.engaged_idle_s",
+    "attention.to_asleep_s",
+    "display.orientation",
+    "theme.mode",
+    "theme.night"
+  ]
+}

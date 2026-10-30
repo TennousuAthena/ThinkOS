@@ -1,0 +1,3 @@
+Sampling 120 seconds; keep the device idle.
+CPU over 120.1s: mean 32.11%, max 33.50% (one core)
+Results: /Users/takuenn/Workspace/mobileApp/ThinkOS/artifacts/pre-m1/awake

@@ -1,0 +1,14 @@
+{
+ "name": "ঘড়ি",
+ "title": "ঘড়ি",
+ "now": "এখন",
+ "waiting": "সময় সিঙ্কের অপেক্ষায়",
+ "calendar": "ক্যালেন্ডার",
+ "group.display": "প্রদর্শন",
+ "group.world": "বিশ্ব ঘড়ি",
+ "setting.seconds": "সেকেন্ড দেখান",
+ "setting.zone1": "শহর 1",
+ "setting.zone2": "শহর 2",
+ "setting.zone3": "শহর 3",
+ "setting.zone4": "শহর 4"
+}

@@ -1,0 +1,22 @@
+{
+  "complete": false,
+  "passed": [
+    "long press on a home card opens its owner's generated settings without any Lua process",
+    "boolean editing and explicit reset update the existing settings store",
+    "stepper, choice and native text/password dialogs work; saved secrets stay masked",
+    "a pure declaration card and page update immediately and the page long press keeps the correct settings owner",
+    "long pressing a card with no declared settings falls back to system settings"
+  ],
+  "issues": [],
+  "initialPid": "22937",
+  "resetTargetPx": [
+    78,
+    78
+  ],
+  "longLabelPx": [
+    395,
+    68
+  ],
+  "settingsRestored": true,
+  "elapsedSeconds": 121.49
+}

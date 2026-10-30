@@ -1,0 +1,7 @@
+{
+  "layout": "focus",
+  "slots": {
+    "hero": { "type": "text", "value": "时区选择器 UI", "style": "title" },
+    "under": { "type": "text", "value": "长按测试搜索与选取", "style": "body" }
+  }
+}

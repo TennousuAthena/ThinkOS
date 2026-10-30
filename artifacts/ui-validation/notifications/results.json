@@ -1,0 +1,153 @@
+{
+  "complete": true,
+  "backend": "mock text only; no listener",
+  "cases": [
+    {
+      "name": "banner-landscape-dark",
+      "title": [
+        168,
+        61,
+        1135,
+        107
+      ],
+      "body": [
+        168,
+        116,
+        1135,
+        150
+      ],
+      "close": [
+        1151,
+        66,
+        1202,
+        144
+      ]
+    },
+    {
+      "name": "banner-portrait-light-long",
+      "title": [
+        168,
+        61,
+        655,
+        153
+      ],
+      "body": [
+        168,
+        162,
+        655,
+        230
+      ],
+      "close": [
+        671,
+        106,
+        749,
+        184
+      ]
+    },
+    {
+      "name": "takeover-landscape-dark-long",
+      "title": [
+        71,
+        337,
+        1202,
+        394
+      ],
+      "body": [
+        71,
+        413,
+        1202,
+        489
+      ],
+      "close": [
+        594,
+        515,
+        685,
+        606
+      ]
+    },
+    {
+      "name": "takeover-portrait-light",
+      "title": [
+        71,
+        623,
+        729,
+        687
+      ],
+      "body": [
+        71,
+        706,
+        729,
+        748
+      ],
+      "close": [
+        354,
+        774,
+        445,
+        865
+      ]
+    },
+    {
+      "name": "takeover-portrait-night",
+      "title": [
+        71,
+        623,
+        729,
+        687
+      ],
+      "body": [
+        71,
+        706,
+        729,
+        748
+      ],
+      "close": [
+        354,
+        774,
+        445,
+        865
+      ]
+    },
+    {
+      "name": "takeover-landscape-night-urgent",
+      "title": [
+        71,
+        356,
+        1202,
+        413
+      ],
+      "body": [
+        71,
+        432,
+        1202,
+        470
+      ],
+      "close": [
+        594,
+        496,
+        685,
+        587
+      ]
+    },
+    {
+      "name": "banner-portrait-arabic",
+      "title": [
+        158,
+        61,
+        645,
+        107
+      ],
+      "body": [
+        158,
+        116,
+        645,
+        184
+      ],
+      "close": [
+        64,
+        83,
+        142,
+        161
+      ]
+    }
+  ]
+}

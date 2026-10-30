@@ -1,0 +1,407 @@
+{
+  "complete": true,
+  "passed": [
+    "text-dark: all native dialog buttons meet 4.5:1 contrast and 48dp targets",
+    "DARK: confirm saves the probe's plain text",
+    "password-dark: all native dialog buttons meet 4.5:1 contrast and 48dp targets",
+    "DARK: the password editor keeps its synthetic draft masked",
+    "DARK: cancel discards the password draft",
+    "place-dark: all native dialog buttons meet 4.5:1 contrast and 48dp targets",
+    "DARK: cancelling coordinate entry preserves the configured location",
+    "maintenance-dark: all native dialog buttons meet 4.5:1 contrast and 48dp targets",
+    "diagnostics-dark: all native dialog buttons meet 4.5:1 contrast and 48dp targets",
+    "DARK: diagnostics and maintenance return buttons close their dialogs",
+    "text-light: all native dialog buttons meet 4.5:1 contrast and 48dp targets",
+    "LIGHT: confirm saves the probe's plain text",
+    "password-light: all native dialog buttons meet 4.5:1 contrast and 48dp targets",
+    "LIGHT: the password editor keeps its synthetic draft masked",
+    "LIGHT: cancel discards the password draft",
+    "place-light: all native dialog buttons meet 4.5:1 contrast and 48dp targets",
+    "LIGHT: cancelling coordinate entry preserves the configured location",
+    "maintenance-light: all native dialog buttons meet 4.5:1 contrast and 48dp targets",
+    "diagnostics-light: all native dialog buttons meet 4.5:1 contrast and 48dp targets",
+    "LIGHT: diagnostics and maintenance return buttons close their dialogs",
+    "native dialog checks do not restart the application"
+  ],
+  "issues": [],
+  "dialogs": {
+    "text-dark": [
+      {
+        "resource": "android:id/button2",
+        "bounds": [
+          737,
+          436,
+          841,
+          514
+        ],
+        "sampled_colors": [
+          [
+            66,
+            66,
+            66
+          ],
+          [
+            242,
+            243,
+            245
+          ]
+        ],
+        "contrast": 9.05
+      },
+      {
+        "resource": "android:id/button1",
+        "bounds": [
+          841,
+          436,
+          945,
+          514
+        ],
+        "sampled_colors": [
+          [
+            66,
+            66,
+            66
+          ],
+          [
+            242,
+            243,
+            245
+          ]
+        ],
+        "contrast": 9.05
+      }
+    ],
+    "password-dark": [
+      {
+        "resource": "android:id/button2",
+        "bounds": [
+          737,
+          436,
+          841,
+          514
+        ],
+        "sampled_colors": [
+          [
+            66,
+            66,
+            66
+          ],
+          [
+            242,
+            243,
+            245
+          ]
+        ],
+        "contrast": 9.05
+      },
+      {
+        "resource": "android:id/button1",
+        "bounds": [
+          841,
+          436,
+          945,
+          514
+        ],
+        "sampled_colors": [
+          [
+            66,
+            66,
+            66
+          ],
+          [
+            242,
+            243,
+            245
+          ]
+        ],
+        "contrast": 9.05
+      }
+    ],
+    "place-dark": [
+      {
+        "resource": "android:id/button2",
+        "bounds": [
+          737,
+          660,
+          841,
+          738
+        ],
+        "sampled_colors": [
+          [
+            66,
+            66,
+            66
+          ],
+          [
+            242,
+            243,
+            245
+          ]
+        ],
+        "contrast": 9.05
+      },
+      {
+        "resource": "android:id/button1",
+        "bounds": [
+          841,
+          660,
+          945,
+          738
+        ],
+        "sampled_colors": [
+          [
+            66,
+            66,
+            66
+          ],
+          [
+            242,
+            243,
+            245
+          ]
+        ],
+        "contrast": 9.05
+      }
+    ],
+    "maintenance-dark": [
+      {
+        "resource": "android:id/button2",
+        "bounds": [
+          841,
+          599,
+          945,
+          677
+        ],
+        "sampled_colors": [
+          [
+            66,
+            66,
+            66
+          ],
+          [
+            242,
+            243,
+            245
+          ]
+        ],
+        "contrast": 9.05
+      }
+    ],
+    "diagnostics-dark": [
+      {
+        "resource": "android:id/button1",
+        "bounds": [
+          841,
+          617,
+          945,
+          695
+        ],
+        "sampled_colors": [
+          [
+            66,
+            66,
+            66
+          ],
+          [
+            242,
+            243,
+            245
+          ]
+        ],
+        "contrast": 9.05
+      }
+    ],
+    "text-light": [
+      {
+        "resource": "android:id/button2",
+        "bounds": [
+          525,
+          637,
+          629,
+          715
+        ],
+        "sampled_colors": [
+          [
+            255,
+            255,
+            255
+          ],
+          [
+            27,
+            29,
+            33
+          ]
+        ],
+        "contrast": 16.88
+      },
+      {
+        "resource": "android:id/button1",
+        "bounds": [
+          629,
+          637,
+          733,
+          715
+        ],
+        "sampled_colors": [
+          [
+            255,
+            255,
+            255
+          ],
+          [
+            27,
+            29,
+            33
+          ]
+        ],
+        "contrast": 16.88
+      }
+    ],
+    "password-light": [
+      {
+        "resource": "android:id/button2",
+        "bounds": [
+          525,
+          637,
+          629,
+          715
+        ],
+        "sampled_colors": [
+          [
+            255,
+            255,
+            255
+          ],
+          [
+            27,
+            29,
+            33
+          ]
+        ],
+        "contrast": 16.88
+      },
+      {
+        "resource": "android:id/button1",
+        "bounds": [
+          629,
+          637,
+          733,
+          715
+        ],
+        "sampled_colors": [
+          [
+            255,
+            255,
+            255
+          ],
+          [
+            27,
+            29,
+            33
+          ]
+        ],
+        "contrast": 16.88
+      }
+    ],
+    "place-light": [
+      {
+        "resource": "android:id/button2",
+        "bounds": [
+          525,
+          861,
+          629,
+          939
+        ],
+        "sampled_colors": [
+          [
+            255,
+            255,
+            255
+          ],
+          [
+            27,
+            29,
+            33
+          ]
+        ],
+        "contrast": 16.88
+      },
+      {
+        "resource": "android:id/button1",
+        "bounds": [
+          629,
+          861,
+          733,
+          939
+        ],
+        "sampled_colors": [
+          [
+            255,
+            255,
+            255
+          ],
+          [
+            27,
+            29,
+            33
+          ]
+        ],
+        "contrast": 16.88
+      }
+    ],
+    "maintenance-light": [
+      {
+        "resource": "android:id/button2",
+        "bounds": [
+          629,
+          800,
+          733,
+          878
+        ],
+        "sampled_colors": [
+          [
+            255,
+            255,
+            255
+          ],
+          [
+            27,
+            29,
+            33
+          ]
+        ],
+        "contrast": 16.88
+      }
+    ],
+    "diagnostics-light": [
+      {
+        "resource": "android:id/button1",
+        "bounds": [
+          629,
+          818,
+          733,
+          896
+        ],
+        "sampled_colors": [
+          [
+            255,
+            255,
+            255
+          ],
+          [
+            27,
+            29,
+            33
+          ]
+        ],
+        "contrast": 16.88
+      }
+    ]
+  },
+  "mode": "full",
+  "apk_sha256": "d2010974571acfaf812a7648294ae0f0932111c6f0613752b8a24524eb9ae7db",
+  "uiPid": "27439",
+  "settingsRestored": true,
+  "developmentOverridesEmpty": true,
+  "privateBackupDeleted": true
+}

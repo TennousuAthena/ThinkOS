@@ -1,0 +1,3 @@
+lib/armeabi-v7a/libtos.so
+APK size: 1941935 bytes
+SHA256: 596392c960f549e24a6dfac63136e2912f9223b3953f2cc71646cb4937a5c031

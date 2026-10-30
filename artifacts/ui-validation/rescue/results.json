@@ -1,0 +1,26 @@
+{
+  "complete": true,
+  "passed": [
+    "valid test edits are saved through the generated native settings page",
+    "three orphan markers quarantine the real settings digest without crashing the application",
+    "long press falls back to native recovery when the settings Lua is disabled",
+    "menu-landscape: all native recovery actions fit and have at least 48dp touch targets",
+    "native diagnostics shows the disabled plugin and works without Server",
+    "menu-portrait: all native recovery actions fit and have at least 48dp touch targets",
+    "the native return button closes recovery",
+    "native reset clears device overrides with settings Lua disabled and preserves the Server layer",
+    "factory restore makes generated settings usable again without restarting the process"
+  ],
+  "issues": [],
+  "method": "three orphan flight markers; no real crash",
+  "apk_sha256": "8ce48ff15dbf2c7158d7de46405dfb8a8b9e6231a3c3e255608e2fa1a1033587",
+  "quarantinedSettings": {
+    "version": "0.1.0",
+    "bytes": 0,
+    "disabled": true
+  },
+  "uiPid": "7424",
+  "settingsRestored": true,
+  "failureHistoryRestored": true,
+  "privateBackupDeleted": true
+}

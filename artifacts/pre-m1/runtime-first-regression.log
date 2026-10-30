@@ -1,0 +1,186 @@
+--------- beginning of system
+--------- beginning of crash
+--------- beginning of main
+10-29 20:54:56.921  1782  1782 I ThinkOS : attention=ENGAGED
+10-29 20:55:17.664  1782  1782 I ThinkOS : attention=AWAKE
+10-29 20:55:23.522  1782  1782 I ThinkOS : attention=ENGAGED
+10-29 20:55:45.777  1782  1782 I ThinkOS : attention=AWAKE
+10-29 20:57:30.834  1782  1782 I ThinkOS : attention=AMBIENT
+10-29 20:58:24.007  1782  1782 I ThinkOS : attention=AWAKE
+10-29 21:04:56.122  1782  1782 I ThinkOS : attention=AMBIENT
+10-29 21:05:30.415  1782  1782 I ThinkOS : attention=ENGAGED
+10-29 21:05:46.199  1782  1782 I ThinkOS : attention=AWAKE
+10-29 21:08:12.283  1782  1782 I ThinkOS : attention=AMBIENT
+10-29 21:08:16.748  1782  1782 I ThinkOS : attention=AWAKE
+10-29 21:09:17.313  1782  1782 I ThinkOS : attention=ENGAGED
+10-29 21:09:36.399  1782  1782 I ThinkOS : attention=AWAKE
+10-29 21:17:08.679  1782  1782 I ThinkOS : attention=AMBIENT
+10-29 21:18:41.755  1782  1782 I ThinkOS : attention=ASLEEP
+10-29 21:20:11.081  1782  1782 I ThinkOS : attention=AWAKE
+10-29 21:25:08.918  1782  1782 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.1.0, bytes=37866, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null)]
+10-29 21:26:12.045  1782  1782 I ThinkOS : attention=AMBIENT
+10-29 21:27:17.133  1782  1782 I ThinkOS : attention=ASLEEP
+10-29 21:27:44.541  1782  1782 I ThinkOS : attention=AWAKE
+10-29 21:28:50.890  3660  3660 I ThinkOS : Runtime started; local mode, safe=false
+10-29 21:28:50.893  3660  3660 I ThinkOS : Activity created; orientation=1
+10-29 21:28:51.022  3660  3660 I ThinkOS : attention=AMBIENT
+10-29 21:28:51.140  3660  3688 I ThinkOS : [plugin:clock] loaded 0.1.0; Lua 38932 bytes
+10-29 21:28:51.220  3660  3688 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-29 21:29:21.458  3660  3660 I ThinkOS : DEBUG state=DeviceState(attention=AMBIENT, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.1.0, bytes=37866, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null)]
+10-29 21:30:58.440  3823  3823 I ThinkOS : Runtime started; local mode, safe=false
+10-29 21:30:58.443  3823  3823 I ThinkOS : Activity created; orientation=1
+10-29 21:30:58.593  3823  3823 I ThinkOS : attention=AMBIENT
+10-29 21:30:58.689  3823  3849 I ThinkOS : [plugin:clock] loaded 0.1.0; Lua 38932 bytes
+10-29 21:30:58.771  3823  3849 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-29 21:41:48.088  4187  4187 I ThinkOS : Runtime started; local mode, safe=false
+10-29 21:41:48.091  4187  4187 I ThinkOS : Activity created; orientation=1
+10-29 21:41:48.347  4187  4207 I ThinkOS : [plugin:clock] loaded 0.1.0; Lua 41339 bytes
+10-29 21:41:48.425  4187  4207 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-29 21:41:49.618  4187  4187 I ThinkOS : Configuration changed without Activity recreation: 2
+10-29 21:41:50.211  4187  4207 I ThinkOS : [plugin:clock] M0 sandbox, module, UTF8 storage probes passed
+10-29 21:41:50.238  4187  4207 I ThinkOS : [plugin:clock] loaded 0.1.3; Lua 41696 bytes
+10-29 21:42:04.877  4187  4187 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.1.3, bytes=40614, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null)]
+10-29 21:42:05.519  4187  4207 E ThinkOS : [plugin:clock] @clock/start: runtime/bootstrap:185: Lua patterns unavailable in M0; use string.find(subject, literal, start, true)
+10-29 21:42:05.520  4187  4187 E ThinkOS : [plugin:clock] @clock/start: runtime/bootstrap:185: Lua patterns unavailable in M0; use string.find(subject, literal, start, true)
+10-29 21:42:05.520  4187  4187 W ThinkOS : Plugin error shown in diagnostics: clock
+10-29 21:42:06.318  4187  4187 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.1.3, bytes=40614, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null)]
+10-29 21:42:06.815  4187  4207 I ThinkOS : [plugin:clock] loaded 0.1.0; Lua 41339 bytes
+10-29 21:42:54.678  4349  4349 I ThinkOS : Runtime started; local mode, safe=false
+10-29 21:42:54.681  4349  4349 I ThinkOS : Activity created; orientation=1
+10-29 21:42:54.967  4349  4370 I ThinkOS : [plugin:clock] loaded 0.1.0; Lua 41339 bytes
+10-29 21:42:55.047  4349  4370 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-29 21:42:55.627  4349  4349 I ThinkOS : Configuration changed without Activity recreation: 2
+10-29 21:42:55.714  4349  4349 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.1.0, bytes=41339, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null)]
+10-29 21:44:43.677  4497  4497 I ThinkOS : Runtime started; local mode, safe=false
+10-29 21:44:43.680  4497  4497 I ThinkOS : Activity created; orientation=1
+10-29 21:44:43.929  4497  4515 I ThinkOS : [plugin:clock] loaded 0.1.0; Lua 41339 bytes
+10-29 21:44:44.001  4497  4515 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-29 21:45:44.080  4497  4497 I ThinkOS : Configuration changed without Activity recreation: 2
+10-29 21:45:45.728  4497  4497 I ThinkOS : Configuration changed without Activity recreation: 1
+10-29 21:45:45.779  4497  4497 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.1.0, bytes=40257, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null)]
+10-29 21:46:14.776  4497  4497 I ThinkOS : attention=ENGAGED
+10-29 21:46:30.862  4497  4497 I ThinkOS : attention=AWAKE
+10-29 21:46:33.805  4497  4497 I ThinkOS : attention=ENGAGED
+10-29 21:46:54.066  4497  4497 I ThinkOS : attention=AWAKE
+10-29 21:48:15.040  4497  4497 I ThinkOS : attention=ENGAGED
+10-29 21:49:04.177  4497  4497 I ThinkOS : attention=AWAKE
+10-29 21:49:17.461  4497  4497 I ThinkOS : attention=ENGAGED
+10-29 21:49:36.213  4497  4497 I ThinkOS : attention=AWAKE
+10-29 21:54:16.541  4497  4497 I ThinkOS : attention=ENGAGED
+10-29 21:54:25.286  4497  4497 I ThinkOS : Configuration changed without Activity recreation: 2
+10-29 21:54:40.917  4497  4497 I ThinkOS : Configuration changed without Activity recreation: 1
+10-29 21:54:54.453  4497  4497 I ThinkOS : attention=AWAKE
+10-29 21:56:30.655  4497  4497 I ThinkOS : attention=ENGAGED
+10-29 21:57:10.550  4497  4497 I ThinkOS : attention=AWAKE
+10-29 22:01:00.684  4497  4497 I ThinkOS : attention=AMBIENT
+10-29 22:03:00.491  4497  4497 I ThinkOS : attention=AWAKE
+10-29 22:07:41.894  4497  4497 I ThinkOS : attention=AMBIENT
+10-29 22:13:48.100  4497  4497 I ThinkOS : attention=ASLEEP
+10-29 22:14:34.419  4497  4497 I ThinkOS : attention=AWAKE
+10-29 22:18:39.285  4497  4497 I ThinkOS : attention=AMBIENT
+10-29 22:18:55.158  4497  4497 I ThinkOS : attention=AWAKE
+10-29 22:20:55.373  4497  4497 I ThinkOS : attention=AMBIENT
+10-29 22:21:20.638  4497  4497 I ThinkOS : attention=AWAKE
+10-29 22:24:20.490  4497  4497 I ThinkOS : attention=AMBIENT
+10-29 22:26:36.808  4497  4497 I ThinkOS : attention=AWAKE
+10-29 22:28:37.632  4497  4497 I ThinkOS : attention=AMBIENT
+10-29 22:28:45.719  4497  4497 I ThinkOS : attention=AWAKE
+10-29 22:30:10.369  5028  5028 I ThinkOS : Runtime started; local mode, safe=false
+10-29 22:30:10.372  5028  5028 I ThinkOS : Activity created; orientation=1
+10-29 22:30:10.617  5028  5060 I ThinkOS : [plugin:clock] loaded 0.1.0; Lua 36427 bytes
+10-29 22:30:10.696  5028  5060 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-29 22:32:52.591  5028  5028 I ThinkOS : attention=AMBIENT
+10-29 22:34:11.944  5028  5028 I ThinkOS : attention=AWAKE
+10-29 22:37:05.646  5028  5028 I ThinkOS : attention=ENGAGED
+10-29 22:37:25.830  5028  5028 I ThinkOS : attention=AWAKE
+10-29 22:39:10.892  5028  5028 I ThinkOS : attention=AMBIENT
+10-29 22:40:11.959  5028  5028 I ThinkOS : attention=ASLEEP
+10-29 22:40:28.262  5028  5028 I ThinkOS : attention=AWAKE
+10-29 22:42:00.377  5028  5028 I ThinkOS : attention=ENGAGED
+10-29 22:42:25.136  5028  5028 I ThinkOS : attention=AWAKE
+10-29 22:44:10.191  5028  5028 I ThinkOS : attention=AMBIENT
+10-29 22:45:38.813  5028  5028 I ThinkOS : attention=AWAKE
+10-29 22:48:55.126  5028  5028 I ThinkOS : attention=ENGAGED
+10-29 22:49:07.768  5293  5293 I ThinkOS : Runtime started; local mode, safe=false
+10-29 22:49:07.771  5293  5293 I ThinkOS : Activity created; orientation=1
+10-29 22:49:08.049  5293  5316 I ThinkOS : [plugin:clock] loaded 0.1.0; Lua 36427 bytes
+10-29 22:49:08.131  5293  5316 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-29 22:49:09.074  5293  5293 I ThinkOS : attention=ENGAGED
+10-29 22:49:26.880  5293  5293 I ThinkOS : attention=AWAKE
+10-29 22:51:12.006  5293  5293 I ThinkOS : attention=AMBIENT
+10-29 22:51:47.142  5438  5438 I ThinkOS : Runtime started; local mode, safe=false
+10-29 22:51:47.145  5438  5438 I ThinkOS : Activity created; orientation=1
+10-29 22:51:47.405  5438  5461 I ThinkOS : [plugin:clock] loaded 0.1.0; Lua 36427 bytes
+10-29 22:51:47.475  5438  5461 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-29 22:51:47.586  5438  5461 I ThinkOS : [plugin:runtime-probe] loaded 1.0.0; Lua 43189 bytes
+10-29 22:51:47.690  5438  5461 E ThinkOS : [plugin:runtime-probe] runtime-probe/main.lua:9: expected ordinary event failure
+10-29 22:51:47.691  5438  5438 E ThinkOS : [plugin:runtime-probe] runtime-probe/main.lua:9: expected ordinary event failure
+10-29 22:51:47.691  5438  5438 W ThinkOS : Plugin error shown in diagnostics: runtime-probe
+10-29 22:51:48.031  5438  5461 E ThinkOS : [plugin:runtime-probe] plugin CPU budget exceeded
+10-29 22:51:48.033  5438  5438 E ThinkOS : [plugin:runtime-probe] plugin CPU budget exceeded
+10-29 22:51:48.034  5438  5438 W ThinkOS : Plugin error shown in diagnostics: runtime-probe
+10-29 22:51:48.044  5438  5484 D ThinkOS : [store:runtime-probe] persisted coalesced snapshot
+10-29 22:51:50.071  5438  5461 I ThinkOS : [plugin:runtime-probe] loaded 1.0.0; Lua 43189 bytes
+10-29 22:51:50.174  5438  5461 E ThinkOS : [plugin:runtime-probe] runtime-probe/main.lua:9: expected ordinary event failure
+10-29 22:51:50.174  5438  5438 E ThinkOS : [plugin:runtime-probe] runtime-probe/main.lua:9: expected ordinary event failure
+10-29 22:51:50.175  5438  5438 W ThinkOS : Plugin error shown in diagnostics: runtime-probe
+10-29 22:51:50.502  5438  5461 E ThinkOS : [plugin:runtime-probe] plugin CPU budget exceeded
+10-29 22:51:50.503  5438  5438 E ThinkOS : [plugin:runtime-probe] plugin CPU budget exceeded
+10-29 22:51:50.503  5438  5438 W ThinkOS : Plugin error shown in diagnostics: runtime-probe
+10-29 22:51:50.518  5438  5484 D ThinkOS : [store:runtime-probe] persisted coalesced snapshot
+10-29 22:51:54.595  5438  5461 I ThinkOS : [plugin:runtime-probe] loaded 1.0.0; Lua 43189 bytes
+10-29 22:51:54.653  5438  5461 E ThinkOS : [plugin:runtime-probe] runtime-probe/main.lua:9: expected ordinary event failure
+10-29 22:51:54.654  5438  5438 E ThinkOS : [plugin:runtime-probe] runtime-probe/main.lua:9: expected ordinary event failure
+10-29 22:51:54.654  5438  5438 W ThinkOS : Plugin error shown in diagnostics: runtime-probe
+10-29 22:51:54.986  5438  5461 E ThinkOS : [plugin:runtime-probe] plugin CPU budget exceeded
+10-29 22:51:54.987  5438  5438 E ThinkOS : [plugin:runtime-probe] plugin CPU budget exceeded
+10-29 22:51:54.987  5438  5438 W ThinkOS : Plugin error shown in diagnostics: runtime-probe
+10-29 22:51:54.998  5438  5484 D ThinkOS : [store:runtime-probe] persisted coalesced snapshot
+10-29 22:52:03.034  5438  5461 I ThinkOS : [plugin:runtime-probe] loaded 1.0.0; Lua 43189 bytes
+10-29 22:52:03.136  5438  5461 E ThinkOS : [plugin:runtime-probe] runtime-probe/main.lua:9: expected ordinary event failure
+10-29 22:52:03.137  5438  5438 E ThinkOS : [plugin:runtime-probe] runtime-probe/main.lua:9: expected ordinary event failure
+10-29 22:52:03.137  5438  5438 W ThinkOS : Plugin error shown in diagnostics: runtime-probe
+10-29 22:52:03.467  5438  5461 E ThinkOS : [plugin:runtime-probe] plugin CPU budget exceeded
+10-29 22:52:03.467  5438  5438 E ThinkOS : [plugin:runtime-probe] plugin CPU budget exceeded
+10-29 22:52:03.468  5438  5438 W ThinkOS : Plugin error shown in diagnostics: runtime-probe
+10-29 22:52:03.483  5438  5484 D ThinkOS : [store:runtime-probe] persisted coalesced snapshot
+10-29 22:52:19.587  5438  5461 I ThinkOS : [plugin:runtime-probe] loaded 1.0.0; Lua 43189 bytes
+10-29 22:52:19.629  5438  5461 E ThinkOS : [plugin:runtime-probe] runtime-probe/main.lua:9: expected ordinary event failure
+10-29 22:52:19.630  5438  5438 E ThinkOS : [plugin:runtime-probe] runtime-probe/main.lua:9: expected ordinary event failure
+10-29 22:52:19.630  5438  5438 W ThinkOS : Plugin error shown in diagnostics: runtime-probe
+10-29 22:52:19.960  5438  5461 E ThinkOS : [plugin:runtime-probe] plugin CPU budget exceeded
+10-29 22:52:19.961  5438  5438 E ThinkOS : [plugin:runtime-probe] plugin CPU budget exceeded
+10-29 22:52:19.961  5438  5438 W ThinkOS : Plugin error shown in diagnostics: runtime-probe
+10-29 22:52:19.979  5438  5484 D ThinkOS : [store:runtime-probe] persisted coalesced snapshot
+10-29 22:53:47.359  5438  5438 I ThinkOS : attention=AMBIENT
+10-29 22:53:47.681  5438  5438 I ThinkOS : attention=AWAKE
+10-29 22:53:49.002  5438  5461 I ThinkOS : [plugin:runtime-probe] loaded 1.0.1; Lua 43188 bytes
+10-29 22:53:49.060  5438  5461 E ThinkOS : [plugin:runtime-probe] runtime-probe/main.lua:9: expected ordinary event failure
+10-29 22:53:49.060  5438  5438 E ThinkOS : [plugin:runtime-probe] runtime-probe/main.lua:9: expected ordinary event failure
+10-29 22:53:49.060  5438  5438 W ThinkOS : Plugin error shown in diagnostics: runtime-probe
+10-29 22:53:49.361  5438  5461 I ThinkOS : [plugin:runtime-probe] PROBE 20 store updates returned without fsync
+10-29 22:53:49.985  5438  5461 I ThinkOS : [plugin:runtime-probe] PROBE HTTP+JSON+resume passed bytes=58928 ticks=9
+10-29 22:53:50.345  5438  5461 I ThinkOS : [plugin:runtime-probe] PROBE LAN redirects and 1MB response limit passed
+10-29 22:53:51.375  5438  5484 D ThinkOS : [store:runtime-probe] persisted coalesced snapshot
+10-29 22:53:52.944  5438  5461 I ThinkOS : [plugin:runtime-probe] PROBE ALL PASSED ticks=38 store=20
+10-29 22:54:40.969  5438  5438 I ThinkOS : Configuration changed without Activity recreation: 2
+10-29 22:54:41.618  5438  5438 I ThinkOS : attention=ENGAGED
+10-29 22:54:42.184  5438  5438 I ThinkOS : DEBUG state=DeviceState(attention=ENGAGED, deck=DeckState(page=clock.face, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.1.0, bytes=45350, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=runtime-probe, version=1.0.1, bytes=279728, disabled=false, error=runtime-probe/main.lua:9: expected ordinary event failure)]
+10-29 22:54:57.436  5438  5438 I ThinkOS : attention=AWAKE
+10-29 23:00:24.729  5683  5683 I ThinkOS : Runtime started; local mode, safe=false
+10-29 23:00:24.865  5683  5683 I ThinkOS : Activity created; orientation=1
+10-29 23:00:25.021  5683  5708 I ThinkOS : [plugin:clock] loaded 0.1.0; Lua 36427 bytes
+10-29 23:00:25.084  5683  5683 I ThinkOS : Configuration changed without Activity recreation: 2
+10-29 23:00:25.109  5683  5708 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-29 23:00:25.235  5683  5708 I ThinkOS : [plugin:runtime-probe] loaded 1.0.1; Lua 43188 bytes
+10-29 23:00:25.340  5683  5708 E ThinkOS : [plugin:runtime-probe] runtime-probe/main.lua:9: expected ordinary event failure
+10-29 23:00:25.435  5683  5683 E ThinkOS : [plugin:runtime-probe] runtime-probe/main.lua:9: expected ordinary event failure
+10-29 23:00:25.435  5683  5683 W ThinkOS : Plugin error shown in diagnostics: runtime-probe
+10-29 23:00:25.641  5683  5708 I ThinkOS : [plugin:runtime-probe] PROBE 20 store updates returned without fsync
+10-29 23:00:25.708  5683  5683 I ThinkOS : attention=ENGAGED
+10-29 23:00:26.267  5683  5708 I ThinkOS : [plugin:runtime-probe] PROBE HTTP+JSON+resume passed bytes=58928 ticks=10
+10-29 23:00:26.609  5683  5708 I ThinkOS : [plugin:runtime-probe] PROBE LAN redirects and 1MB response limit passed
+10-29 23:00:27.654  5683  5744 D ThinkOS : [store:runtime-probe] persisted coalesced snapshot
+10-29 23:00:29.224  5683  5708 I ThinkOS : [plugin:runtime-probe] PROBE ALL PASSED ticks=38 store=20
+10-29 23:00:29.821  5683  5683 I ThinkOS : DEBUG state=DeviceState(attention=ENGAGED, deck=DeckState(page=clock.face, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.1.0, bytes=38720, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=runtime-probe, version=1.0.1, bytes=277812, disabled=false, error=runtime-probe/main.lua:9: expected ordinary event failure)]
+10-29 23:00:40.940  5683  5683 I ThinkOS : attention=AWAKE

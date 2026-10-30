@@ -1,0 +1,1033 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "layouts.json",
+  "description": "Fixed OS render vocabulary. API 1: stacks/focus/form/glance and text/icon/clock. API 2: progress/chart/list/daylight/moon, groups, split/stage, tap and weight. No plugin styles or executable view expressions.",
+  "$defs": {
+    "component": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/text"
+        },
+        {
+          "$ref": "#/$defs/icon"
+        },
+        {
+          "$ref": "#/$defs/clock"
+        },
+        {
+          "$ref": "#/$defs/progress"
+        },
+        {
+          "$ref": "#/$defs/chart"
+        },
+        {
+          "$ref": "#/$defs/list"
+        },
+        {
+          "$ref": "#/$defs/daylight"
+        },
+        {
+          "$ref": "#/$defs/moon"
+        }
+      ]
+    },
+    "text": {
+      "title": "SchemaText",
+      "type": "object",
+      "required": [
+        "type",
+        "value"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "text"
+        },
+        "value": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "style": {
+          "enum": [
+            "display",
+            "title",
+            "body",
+            "caption"
+          ]
+        },
+        "tap": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+          "maxLength": 64
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "icon": {
+      "title": "SchemaIcon",
+      "type": "object",
+      "required": [
+        "type",
+        "name"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "icon"
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "tap": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+          "maxLength": 64
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "clock": {
+      "title": "SchemaClock",
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "clock"
+        },
+        "style": {
+          "type": "string",
+          "pattern": "^(digital|analog|solar|world|float|\\{\\{variant\\}\\})$"
+        },
+        "format": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "sun": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z0-9_]+)*$",
+          "maxLength": 64,
+          "description": "State path to tos.astro.sun() output for the solar dial. Derived data only; no coordinates."
+        },
+        "zones": {
+          "type": "array",
+          "maxItems": 4,
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/zone"
+          }
+        },
+        "tap": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+          "maxLength": 64
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "zone": {
+      "title": "SchemaClockZone",
+      "type": "object",
+      "required": [
+        "timezone"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "type": "string",
+          "maxLength": 40,
+          "description": "Optional. When absent the city name comes from the OS, localised."
+        },
+        "timezone": {
+          "type": "string",
+          "maxLength": 80
+        }
+      }
+    },
+    "widgetReference": {
+      "title": "SchemaWidgetReference",
+      "type": "object",
+      "required": [
+        "widget"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "widget": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*\\.[a-z][a-z0-9-]*$",
+          "maxLength": 130
+        }
+      }
+    },
+    "stacks": {
+      "title": "SchemaStacksView",
+      "type": "object",
+      "required": [
+        "layout",
+        "slots"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "variants": {
+          "type": "array",
+          "items": {
+            "title": "SchemaVariant",
+            "type": "object",
+            "required": [
+              "id",
+              "title"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "title": {
+                "type": "string",
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 1,
+          "maxItems": 16
+        },
+        "mood": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "layout": {
+          "const": "stacks"
+        },
+        "slots": {
+          "type": "object",
+          "required": [
+            "left",
+            "right"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "left": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 16,
+              "items": {
+                "$ref": "#/$defs/widgetReference"
+              }
+            },
+            "right": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 16,
+              "items": {
+                "$ref": "#/$defs/widgetReference"
+              }
+            }
+          }
+        }
+      },
+      "x-thinkos-slot-roles": {
+        "left": "stack",
+        "right": "stack"
+      }
+    },
+    "focus": {
+      "title": "SchemaFocusView",
+      "type": "object",
+      "required": [
+        "layout",
+        "slots"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "variants": {
+          "type": "array",
+          "items": {
+            "title": "SchemaVariant",
+            "type": "object",
+            "required": [
+              "id",
+              "title"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "title": {
+                "type": "string",
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 1,
+          "maxItems": 16
+        },
+        "mood": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "layout": {
+          "const": "focus"
+        },
+        "slots": {
+          "type": "object",
+          "required": [
+            "hero"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "hero": {
+              "$ref": "#/$defs/slotContent"
+            },
+            "under": {
+              "$ref": "#/$defs/slotContent"
+            },
+            "over": {
+              "$ref": "#/$defs/slotContent"
+            }
+          }
+        }
+      },
+      "x-thinkos-slot-roles": {
+        "over": "header",
+        "hero": "content",
+        "under": "footer"
+      }
+    },
+    "glance": {
+      "title": "SchemaGlanceView",
+      "type": "object",
+      "required": [
+        "template",
+        "children"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "template": {
+          "const": "glance"
+        },
+        "children": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "items": {
+            "$ref": "#/$defs/component"
+          }
+        },
+        "relevance": {
+          "type": [
+            "string",
+            "number"
+          ]
+        }
+      }
+    },
+    "formComponent": {
+      "title": "SchemaForm",
+      "type": "object",
+      "required": [
+        "type",
+        "path"
+      ],
+      "additionalProperties": false,
+      "description": "Native settings form. 'path' names the state array of field descriptors; the OS draws the controls.",
+      "properties": {
+        "type": {
+          "const": "form"
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z0-9_]+)*$",
+          "maxLength": 64
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "done": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "tap": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+          "maxLength": 64
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "formView": {
+      "title": "SchemaFormView",
+      "type": "object",
+      "required": [
+        "layout",
+        "slots"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "layout": {
+          "const": "form"
+        },
+        "slots": {
+          "type": "object",
+          "required": [
+            "body"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "body": {
+              "$ref": "#/$defs/formComponent"
+            }
+          }
+        }
+      },
+      "x-thinkos-slot-roles": {
+        "body": "content"
+      }
+    },
+    "progress": {
+      "title": "SchemaProgress",
+      "type": "object",
+      "required": [
+        "type",
+        "value"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "progress"
+        },
+        "style": {
+          "enum": [
+            "bar",
+            "ring"
+          ]
+        },
+        "value": {
+          "type": [
+            "string",
+            "number"
+          ]
+        },
+        "max": {
+          "type": [
+            "string",
+            "number"
+          ]
+        },
+        "tap": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+          "maxLength": 64
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "chart": {
+      "title": "SchemaChart",
+      "type": "object",
+      "required": [
+        "type",
+        "values"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "chart"
+        },
+        "style": {
+          "enum": [
+            "line",
+            "bar",
+            "area"
+          ]
+        },
+        "values": {
+          "oneOf": [
+            {
+              "type": "string",
+              "maxLength": 160
+            },
+            {
+              "type": "array",
+              "maxItems": 168,
+              "items": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            }
+          ]
+        },
+        "min": {
+          "type": [
+            "string",
+            "number"
+          ]
+        },
+        "max": {
+          "type": [
+            "string",
+            "number"
+          ]
+        },
+        "highlight": {
+          "type": [
+            "string",
+            "number"
+          ]
+        },
+        "tap": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+          "maxLength": 64
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "listRow": {
+      "title": "SchemaListRow",
+      "type": "object",
+      "required": [
+        "title"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "icon": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "subtitle": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "trailing": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "progress": {
+          "type": [
+            "string",
+            "number"
+          ]
+        },
+        "max": {
+          "type": [
+            "string",
+            "number"
+          ]
+        }
+      }
+    },
+    "list": {
+      "title": "SchemaList",
+      "type": "object",
+      "required": [
+        "type",
+        "items",
+        "item"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "list"
+        },
+        "items": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "item": {
+          "$ref": "#/$defs/listRow"
+        },
+        "tap": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+          "maxLength": 64
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "daylight": {
+      "title": "SchemaDaylight",
+      "type": "object",
+      "required": [
+        "type",
+        "path"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "daylight"
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z0-9_]+)*$",
+          "maxLength": 64
+        },
+        "tap": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+          "maxLength": 64
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "moon": {
+      "title": "SchemaMoon",
+      "type": "object",
+      "required": [
+        "type",
+        "path"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "moon"
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z0-9_]+)*$",
+          "maxLength": 64
+        },
+        "hemisphere": {
+          "type": "string",
+          "pattern": "^(north|south|\\{\\{[A-Za-z][A-Za-z0-9_.]*\\}\\})$",
+          "maxLength": 80
+        },
+        "tap": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+          "maxLength": 64
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "componentGroup": {
+      "title": "SchemaComponentGroup",
+      "type": "object",
+      "required": [
+        "children"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "children": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "items": {
+            "$ref": "#/$defs/component"
+          }
+        }
+      }
+    },
+    "slotContent": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/component"
+        },
+        {
+          "$ref": "#/$defs/componentGroup"
+        }
+      ]
+    },
+    "split": {
+      "title": "SchemaSplitView",
+      "type": "object",
+      "required": [
+        "layout",
+        "slots"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "layout": {
+          "const": "split"
+        },
+        "variants": {
+          "type": "array",
+          "items": {
+            "title": "SchemaVariant",
+            "type": "object",
+            "required": [
+              "id",
+              "title"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "title": {
+                "type": "string",
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 1,
+          "maxItems": 16
+        },
+        "mood": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "slots": {
+          "type": "object",
+          "required": [
+            "lead",
+            "main"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "lead": {
+              "$ref": "#/$defs/slotContent"
+            },
+            "main": {
+              "$ref": "#/$defs/slotContent"
+            }
+          }
+        }
+      },
+      "x-thinkos-slot-roles": {
+        "lead": "lead",
+        "main": "main"
+      }
+    },
+    "stage": {
+      "title": "SchemaStageView",
+      "type": "object",
+      "required": [
+        "layout",
+        "slots"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "layout": {
+          "const": "stage"
+        },
+        "variants": {
+          "type": "array",
+          "items": {
+            "title": "SchemaVariant",
+            "type": "object",
+            "required": [
+              "id",
+              "title"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "title": {
+                "type": "string",
+                "maxLength": 80
+              }
+            }
+          },
+          "minItems": 1,
+          "maxItems": 16
+        },
+        "mood": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "slots": {
+          "type": "object",
+          "required": [
+            "stage"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "stage": {
+              "$ref": "#/$defs/slotContent"
+            },
+            "over": {
+              "$ref": "#/$defs/slotContent"
+            },
+            "under": {
+              "$ref": "#/$defs/slotContent"
+            }
+          }
+        }
+      },
+      "x-thinkos-slot-roles": {
+        "stage": "stage",
+        "over": "over",
+        "under": "under"
+      }
+    },
+    "controls": {
+      "title": "SchemaControls",
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "controls"
+        },
+        "tap": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+          "maxLength": 64
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "description": "Deferred: renderer/host integration is not enabled in the current UI test build."
+    },
+    "video": {
+      "title": "SchemaVideo",
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "video"
+        },
+        "tap": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+          "maxLength": 64
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "fit": {
+          "enum": [
+            "contain",
+            "cover"
+          ]
+        }
+      },
+      "description": "Deferred: renderer/host integration is not enabled in the current UI test build."
+    },
+    "image": {
+      "title": "SchemaImage",
+      "type": "object",
+      "required": [
+        "type",
+        "src"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "image"
+        },
+        "src": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "fit": {
+          "type": "string",
+          "pattern": "^(cover|contain|smart|\\{\\{[A-Za-z][A-Za-z0-9_.]*\\}\\})$",
+          "maxLength": 160
+        },
+        "pan": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "^\\{\\{[A-Za-z][A-Za-z0-9_.]*\\}\\}$",
+              "maxLength": 160
+            }
+          ]
+        },
+        "tap": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+          "maxLength": 64
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "interval": {
+          "type": [
+            "number",
+            "string"
+          ],
+          "minimum": 0.1,
+          "maximum": 86400,
+          "maxLength": 160
+        }
+      },
+      "description": "Deferred: renderer/host integration is not enabled in the current UI test build."
+    },
+    "carousel": {
+      "title": "SchemaCarousel",
+      "type": "object",
+      "required": [
+        "type",
+        "items",
+        "interval",
+        "duration"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "carousel"
+        },
+        "items": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "interval": {
+          "type": [
+            "number",
+            "string"
+          ],
+          "minimum": 0.1,
+          "maximum": 86400,
+          "maxLength": 160
+        },
+        "duration": {
+          "type": [
+            "number",
+            "string"
+          ],
+          "minimum": 0,
+          "maximum": 10000,
+          "maxLength": 160
+        },
+        "transition": {
+          "type": "string",
+          "pattern": "^(fade|slide|zoom|random|\\{\\{[A-Za-z][A-Za-z0-9_.]*\\}\\})$",
+          "maxLength": 160
+        },
+        "fit": {
+          "type": "string",
+          "pattern": "^(cover|contain|smart|\\{\\{[A-Za-z][A-Za-z0-9_.]*\\}\\})$",
+          "maxLength": 160
+        },
+        "pan": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "^\\{\\{[A-Za-z][A-Za-z0-9_.]*\\}\\}$",
+              "maxLength": 160
+            }
+          ]
+        },
+        "shuffle": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "^\\{\\{[A-Za-z][A-Za-z0-9_.]*\\}\\}$",
+              "maxLength": 160
+            }
+          ]
+        },
+        "tap": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+          "maxLength": 64
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "description": "Deferred: renderer/host integration is not enabled in the current UI test build."
+    }
+  },
+  "x-thinkos-api": {
+    "current": 2,
+    "componentTypes": {
+      "text": 1,
+      "icon": 1,
+      "clock": 1,
+      "form": 1,
+      "progress": 2,
+      "chart": 2,
+      "list": 2,
+      "daylight": 2,
+      "moon": 2
+    },
+    "layouts": {
+      "stacks": 1,
+      "focus": 1,
+      "form": 1,
+      "split": 2,
+      "stage": 2
+    },
+    "componentProperties": {
+      "tap": 2,
+      "weight": 2
+    },
+    "componentGroups": 2
+  }
+}

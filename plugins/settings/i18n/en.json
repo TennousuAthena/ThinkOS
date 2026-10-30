@@ -1,0 +1,16 @@
+{
+ "name": "Settings",
+ "title": "Settings",
+ "done": "Done",
+ "system": "System settings",
+ "plugins": "Other plugins",
+ "error.type": "That value is not valid",
+ "error.min": "Must be at least {min}",
+ "error.max": "Must be at most {max}",
+ "error.length": "At most {max} characters",
+ "error.chars": "Contains characters that are not allowed",
+ "error.required": "Please choose an option",
+ "error.option": "That option is not available",
+ "error.order_below": "Must be below “{label}”",
+ "error.order_above": "Must be above “{label}”"
+}

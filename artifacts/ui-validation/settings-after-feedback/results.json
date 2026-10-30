@@ -1,0 +1,48 @@
+{
+  "complete": true,
+  "passed": [
+    "long press on a home card opens its owner's generated settings without any Lua process",
+    "boolean editing and explicit reset update the existing settings store",
+    "stepper, choice and native text/password dialogs work; saved secrets stay masked",
+    "long setting labels stay within two lines in landscape and portrait",
+    "a pure declaration card and page update immediately and the page long press keeps the correct settings owner",
+    "long pressing a card with no declared settings falls back to system settings",
+    "the generated settings and declaration-only card survive an application restart"
+  ],
+  "issues": [],
+  "initialPid": "31423",
+  "switchAccessibility": {
+    "index": "1",
+    "text": "",
+    "resource-id": "",
+    "class": "android.widget.Switch",
+    "package": "moe.kiwi.thinkos",
+    "content-desc": "开关演示",
+    "checkable": "true",
+    "checked": "true",
+    "clickable": "true",
+    "enabled": "true",
+    "focusable": "true",
+    "focused": "false",
+    "scrollable": "false",
+    "long-clickable": "false",
+    "password": "false",
+    "selected": "false",
+    "bounds": "[189,206][1087,297]"
+  },
+  "resetTargetPx": [
+    78,
+    78
+  ],
+  "longLabelPx": [
+    395,
+    68
+  ],
+  "portraitLongLabelPx": [
+    308,
+    68
+  ],
+  "restartedPid": "32276",
+  "settingsRestored": true,
+  "elapsedSeconds": 112.81
+}

@@ -1,0 +1,15 @@
+{
+  "seconds": 10.489126542001031,
+  "threads": [
+    [
+      "RenderThread",
+      305,
+      29.41
+    ],
+    [
+      "oe.kiwi.thinkos",
+      93,
+      8.97
+    ]
+  ]
+}

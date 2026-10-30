@@ -1,0 +1,137 @@
+{
+  "complete": true,
+  "passed": [
+    "picker-landscape-dark: offline guidance, 48dp back/manual targets and the search action are visible",
+    "active-search: continuous typing keeps settings open beyond 30 seconds",
+    "manual-landscape-dark: coordinate labels have at least 4.5:1 text contrast",
+    "manual-landscape-dark: confirm and cancel text each meet 4.5:1 contrast",
+    "active-manual: continuous typing keeps settings open beyond 30 seconds",
+    "editing an unsaved manual draft does not change the stored location",
+    "the invalid-place explanation has a full line visible above the action bar",
+    "out-of-range latitude shows an explanation without saving any field",
+    "an unknown IANA timezone leaves the complete stored location unchanged",
+    "offline save commits negative coordinates, elevation and an empty device-timezone choice together",
+    "reopening manual entry retains the saved negative latitude",
+    "Cancel discards a manual draft",
+    "Home closes the editor and discards its draft",
+    "picker-portrait-dark: offline guidance, 48dp back/manual targets and the search action are visible",
+    "picker-landscape-light: offline guidance, 48dp back/manual targets and the search action are visible",
+    "picker-portrait-light: offline guidance, 48dp back/manual targets and the search action are visible",
+    "manual-portrait-light: coordinate labels have at least 4.5:1 text contrast",
+    "manual-portrait-light: confirm and cancel text each meet 4.5:1 contrast",
+    "the portrait light editor keeps saved values reachable by scrolling",
+    "place UI interactions do not restart the application",
+    "place editing does not modify Android's system timezone"
+  ],
+  "issues": [],
+  "dialogs": {
+    "manual-landscape-dark": {
+      "sampled_colors": [
+        [
+          27,
+          29,
+          34
+        ],
+        [
+          141,
+          146,
+          155
+        ]
+      ],
+      "label_contrast": 5.39,
+      "buttons": [
+        {
+          "resource": "android:id/button2",
+          "sampled_colors": [
+            [
+              66,
+              66,
+              66
+            ],
+            [
+              242,
+              243,
+              245
+            ]
+          ],
+          "contrast": 9.05
+        },
+        {
+          "resource": "android:id/button1",
+          "sampled_colors": [
+            [
+              66,
+              66,
+              66
+            ],
+            [
+              242,
+              243,
+              245
+            ]
+          ],
+          "contrast": 9.05
+        }
+      ]
+    },
+    "manual-portrait-light": {
+      "sampled_colors": [
+        [
+          255,
+          255,
+          255
+        ],
+        [
+          107,
+          114,
+          128
+        ]
+      ],
+      "label_contrast": 4.83,
+      "buttons": [
+        {
+          "resource": "android:id/button2",
+          "sampled_colors": [
+            [
+              255,
+              255,
+              255
+            ],
+            [
+              27,
+              29,
+              33
+            ]
+          ],
+          "contrast": 16.88
+        },
+        {
+          "resource": "android:id/button1",
+          "sampled_colors": [
+            [
+              255,
+              255,
+              255
+            ],
+            [
+              27,
+              29,
+              33
+            ]
+          ],
+          "contrast": 16.88
+        }
+      ]
+    }
+  },
+  "scope": "offline place UI",
+  "apk_sha256": "710ea9045fbe73c6c8b94703256b647f9621f3fae50a168369a3ee27a2a01a55",
+  "uiPid": "17958",
+  "wifiDisabled": true,
+  "active-searchSeconds": 40.3,
+  "active-manualSeconds": 40.28,
+  "settingsRestored": true,
+  "wifiRestored": true,
+  "developmentOverridesEmpty": true,
+  "privateBackupDeleted": true
+}

@@ -1,0 +1,20 @@
+{
+  "complete": false,
+  "passed": [
+    "valid test edits are saved through the generated native settings page",
+    "three orphan markers quarantine the real settings digest without crashing the application"
+  ],
+  "issues": [],
+  "method": "three orphan flight markers; no real crash",
+  "apk_sha256": "cc293ee00376c47b0cd89a39940bc69cdfc72f281aee7272eaa8805aba098931",
+  "quarantinedSettings": {
+    "version": "0.1.0",
+    "bytes": 0,
+    "disabled": true
+  },
+  "uiPid": "5490",
+  "failure": "Missing native UI text: ThinkOS · 维护",
+  "settingsRestored": true,
+  "failureHistoryRestored": true,
+  "privateBackupDeleted": true
+}

@@ -1,0 +1,40 @@
+[
+  {
+    "source_report": "rescue/results.json",
+    "source_apk_sha256": "8ce48ff15dbf2c7158d7de46405dfb8a8b9e6231a3c3e255608e2fa1a1033587",
+    "dialog": "menu-landscape",
+    "resource": "android:id/button2",
+    "sampled_colors": [
+      [
+        66,
+        66,
+        66
+      ],
+      [
+        22,
+        124,
+        128
+      ]
+    ],
+    "contrast": 2.02
+  },
+  {
+    "source_report": "rescue/results.json",
+    "source_apk_sha256": "8ce48ff15dbf2c7158d7de46405dfb8a8b9e6231a3c3e255608e2fa1a1033587",
+    "dialog": "diagnostics",
+    "resource": "android:id/button1",
+    "sampled_colors": [
+      [
+        66,
+        66,
+        66
+      ],
+      [
+        22,
+        124,
+        128
+      ]
+    ],
+    "contrast": 2.02
+  }
+]

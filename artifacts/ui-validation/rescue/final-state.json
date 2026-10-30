@@ -1,0 +1,11 @@
+{
+  "apk_sha256": "8ce48ff15dbf2c7158d7de46405dfb8a8b9e6231a3c3e255608e2fa1a1033587",
+  "installed_apk_sha256": "8ce48ff15dbf2c7158d7de46405dfb8a8b9e6231a3c3e255608e2fa1a1033587",
+  "pid": "8126",
+  "original_settings_preserved": true,
+  "failure_history_absent": true,
+  "development_overrides_empty": true,
+  "safe_mode": false,
+  "factory_plugins_healthy": true,
+  "state": "DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=NIGHT, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=38031, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=38546, disabled=false, error=null)]"
+}

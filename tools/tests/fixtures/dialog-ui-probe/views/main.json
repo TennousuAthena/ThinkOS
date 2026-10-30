@@ -1,0 +1,7 @@
+{
+  "layout": "focus",
+  "slots": {
+    "hero": { "type": "text", "value": "原生弹窗 UI", "style": "title" },
+    "under": { "type": "text", "value": "长按检查文字与密码输入框", "style": "body" }
+  }
+}

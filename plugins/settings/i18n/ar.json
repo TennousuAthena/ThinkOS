@@ -1,0 +1,16 @@
+{
+ "name": "الإعدادات",
+ "title": "الإعدادات",
+ "done": "تم",
+ "system": "إعدادات النظام",
+ "plugins": "إضافات أخرى",
+ "error.type": "هذه القيمة غير صالحة",
+ "error.min": "يجب ألا يقل عن {min}",
+ "error.max": "يجب ألا يزيد عن {max}",
+ "error.length": "الحد الأقصى {max} حرفًا",
+ "error.chars": "يحتوي على أحرف غير مسموح بها",
+ "error.required": "يرجى اختيار أحد الخيارات",
+ "error.option": "هذا الخيار غير متاح",
+ "error.order_below": "يجب أن يكون أقل من «{label}»",
+ "error.order_above": "يجب أن يكون أكبر من «{label}»"
+}

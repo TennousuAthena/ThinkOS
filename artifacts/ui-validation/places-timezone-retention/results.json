@@ -1,0 +1,22 @@
+{
+  "complete": true,
+  "passed": [
+    "the automatic location editor offers device-timezone inheritance as a blank field",
+    "a manually saved blank timezone remains blank after reopening",
+    "saving an unchanged place does not pin the resolved device timezone",
+    "an explicit place timezone remains explicit after reopening",
+    "automatic location uses the device timezone despite an inactive manual timezone override",
+    "place UI interactions do not restart the application",
+    "place editing does not modify Android's system timezone"
+  ],
+  "issues": [],
+  "dialogs": {},
+  "scope": "timezone-retention UI",
+  "apk_sha256": "969a3df4bb7dab58565e8cff7084fae734e4f32d9c68d97b5aab5648fc83053e",
+  "uiPid": "22993",
+  "wifiDisabled": true,
+  "settingsRestored": true,
+  "wifiRestored": true,
+  "developmentOverridesEmpty": true,
+  "privateBackupDeleted": true
+}

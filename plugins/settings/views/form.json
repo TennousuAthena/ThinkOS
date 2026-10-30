@@ -1,0 +1,6 @@
+{
+  "layout": "form",
+  "slots": {
+    "body": { "type": "form", "path": "fields", "title": "{{title}}", "done": "{{done}}" }
+  }
+}

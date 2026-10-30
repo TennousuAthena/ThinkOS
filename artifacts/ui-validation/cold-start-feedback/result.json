@@ -1,0 +1,7 @@
+{
+  "total_ms": 719,
+  "content_ready_ms": 2156,
+  "wifi_disabled": true,
+  "server": "none",
+  "state": "DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=31104, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=37626, disabled=false, error=null)]"
+}

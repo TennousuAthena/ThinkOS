@@ -1,0 +1,3 @@
+Sampling 600 seconds; keep the device idle.
+CPU over 600.1s: mean 2.92%, max 17.26% (one core)
+Results: /Users/takuenn/Workspace/mobileApp/ThinkOS/artifacts/pre-m1/ambient

@@ -1,0 +1,18 @@
+{
+  "complete": false,
+  "passed": [
+    "vertical scrolling across numeric rows does not change their values",
+    "UI session checks do not restart the application"
+  ],
+  "issues": [
+    "typing in a native dialog keeps settings open for more than 30 seconds"
+  ],
+  "typingSeconds": 39.64,
+  "typingState": {
+    "page": "home.main",
+    "attention": "AWAKE",
+    "theme": "DARK",
+    "orientation": "LANDSCAPE"
+  },
+  "settingsUnchanged": true
+}

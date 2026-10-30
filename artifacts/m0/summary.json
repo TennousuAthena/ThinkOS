@@ -1,0 +1,19 @@
+{
+  "cold_start_ms": 502,
+  "fully_drawn_ms": 825,
+  "ambient_seconds": 600.08,
+  "ambient_cpu_one_core_mean_pct": 5.866,
+  "ambient_cpu_one_core_max_pct": 7.143,
+  "janky_pct": 0.11,
+  "pss_kib": 56203,
+  "tests": {
+    "kotlin": 12,
+    "packages": 14,
+    "native_jni": 21
+  },
+  "remaining_manual": [
+    "physical light/proximity actions",
+    "physical device rotation",
+    "72-hour stability"
+  ]
+}

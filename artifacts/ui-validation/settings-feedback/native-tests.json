@@ -1,0 +1,16 @@
+{
+  "command": "android/app/src/testNative/run.sh",
+  "status": "passed",
+  "interpreter": "repository-vendored Lua 5.4",
+  "settings_feedback_cases": [
+    "generated descriptors retain their help",
+    "refused edits roll back and clear after three seconds",
+    "a repeated refusal gets its own full display interval",
+    "a successful edit cancels old feedback",
+    "scope changes prevent stale error callbacks",
+    "reset and locale changes cancel feedback",
+    "leaving and reopening starts with clean feedback",
+    "stopping the plugin cancels pending feedback"
+  ],
+  "existing_budget_and_jni_suites": "passed"
+}

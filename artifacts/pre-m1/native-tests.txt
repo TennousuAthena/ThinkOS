@@ -1,0 +1,32 @@
+PASS basic Lua + forbidden libraries (0.05 ms, 16278 bytes)
+PASS infinite loop (17.37 ms, 15034 bytes)
+PASS pcall cannot swallow budget (14.96 ms, 15641 bytes)
+PASS xpcall cannot swallow budget (11.47 ms, 15848 bytes)
+PASS nested coroutine budget (9.86 ms, 16750 bytes)
+PASS wrapped coroutine budget (8.90 ms, 16431 bytes)
+PASS non-yieldable comparator pcall budget (8.38 ms, 16161 bytes)
+PASS nested non-yieldable xpcall budget (7.35 ms, 16939 bytes)
+PASS allocator rejects large string (0.01 ms, 15518 bytes)
+PASS caught allocator errors still bounded (0.01 ms, 16214 bytes)
+PASS binary load refused (0.01 ms, 15902 bytes)
+PASS bounded pattern backtracking (10.95 ms, 15759 bytes)
+PASS pattern pcall cannot swallow budget (10.05 ms, 16487 bytes)
+PASS pattern normal behavior (0.01 ms, 15780 bytes)
+PASS typed JNI Unicode and object values
+PASS native JSON null/empty arrays/int64/NUL and strict validation
+PASS sealed configuration, finalizers and hidden host functions
+PASS native Lua patterns restored and backtracking is uncatchably budgeted
+PASS cached function dispatch with typed arguments
+PASS async API yield has a retained task identity
+PASS async continuation can suspend a second time
+PASS resume budgets reset after wall time spent awaiting IO
+PASS normal async yield crosses protected pcall
+PASS unmanaged child coroutines cannot orphan async requests
+PASS CPU budget enforced on each continuation
+PASS cancelled async tasks cannot resurrect
+PASS 200ms wall cap and recovery after blocked synchronous host
+PASS ordinary script error classified separately from resource failure
+PASS cached timer callback
+PASS large JSON C decoder (53891 chars, CPU 1238us)
+PASS generational GC bounds repeated event allocations
+PASS aggregate 24MB cap includes native JSON allocations

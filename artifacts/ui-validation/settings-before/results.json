@@ -1,0 +1,26 @@
+{
+  "complete": false,
+  "passed": [
+    "long press on a home card opens its owner's generated settings without any Lua process",
+    "boolean editing and explicit reset update the existing settings store",
+    "stepper, choice and native text/password dialogs work; saved secrets stay masked",
+    "a pure declaration card and page update immediately and the page long press keeps the correct settings owner",
+    "long pressing a card with no declared settings falls back to system settings"
+  ],
+  "issues": [
+    "boolean setting does not expose its checked state to accessibility",
+    "reset hit target is smaller than 48dp on the 260dpi device",
+    "a long address value squeezes its setting label into a narrow or oversized column"
+  ],
+  "initialPid": "21464",
+  "resetTargetPx": [
+    13,
+    13
+  ],
+  "longLabelPx": [
+    232,
+    102
+  ],
+  "settingsRestored": true,
+  "elapsedSeconds": 120.21
+}

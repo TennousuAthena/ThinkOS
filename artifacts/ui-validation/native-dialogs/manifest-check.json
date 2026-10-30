@@ -1,0 +1,5 @@
+{
+  "minSdk": 27,
+  "targetSdk": 27,
+  "debug_receiver_permission": "android.permission.DUMP"
+}

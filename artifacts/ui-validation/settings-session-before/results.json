@@ -1,0 +1,23 @@
+{
+  "complete": false,
+  "passed": [
+    "Home exits settings and returns to the previous page",
+    "settings closes after 30 seconds without interaction"
+  ],
+  "issues": [
+    "an open settings page stays ENGAGED past the normal interaction timeout"
+  ],
+  "quietSettingsState": {
+    "page": "settings.form",
+    "attention": "AWAKE",
+    "theme": "DARK",
+    "orientation": "LANDSCAPE"
+  },
+  "idleExitSeconds": 30.18,
+  "failure": "Missing UI element: Server 地址（留空 = 自动发现）",
+  "settingsUnchanged": false,
+  "settingsRestoredAfterRecovery": true,
+  "restoredKeys": [
+    "theme.light_above_lux"
+  ]
+}

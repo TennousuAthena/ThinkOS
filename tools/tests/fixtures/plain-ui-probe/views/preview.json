@@ -1,0 +1,7 @@
+{
+  "template": "glance",
+  "children": [
+    { "type": "text", "value": "无设置的卡片", "style": "title" },
+    { "type": "text", "value": "长按应进入系统设置", "style": "body" }
+  ]
+}

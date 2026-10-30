@@ -1,0 +1,13 @@
+{
+  "id": "component-probe",
+  "name": "Native component validation",
+  "version": "1.0.0",
+  "api": 2,
+  "main": "main.lua",
+  "permissions": [],
+  "pages": [
+    { "id": "split", "title": "Components · split", "view": "views/split.json" },
+    { "id": "stage", "title": "Components · stage", "view": "views/stage.json" },
+    { "id": "focus", "title": "Components · focus", "view": "views/focus.json" }
+  ]
+}
