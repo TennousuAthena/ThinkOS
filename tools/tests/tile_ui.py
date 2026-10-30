@@ -31,9 +31,12 @@ def main():
         subprocess.run(adb+['install','-r',str(ROOT/'android/app/build/outputs'/apk)],check=True)
     with tempfile.TemporaryDirectory(prefix='tile-ui-') as tmp:
         folder,_=package_plugin(ROOT/'tools/tests/fixtures/tile-probe',tmp);publish_directory(folder,args.serial)
+        if args.plugins:
+            folder,_=package_plugin(ROOT/'tools/tests/fixtures/legacy-three',tmp);publish_directory(folder,args.serial)
     subprocess.run(adb+['shell','run-as','moe.kiwi.thinkos','rm','-rf','files/tiles-validation'],check=True)
     scale=subprocess.check_output(adb+['shell','settings','get','global','animator_duration_scale']).decode().strip()
     try:
+        subprocess.run(adb+['shell','settings','put','global','animator_duration_scale','1.0'],check=True)
         command=adb+['shell','am','instrument','-w']
         if args.live:command+=['-e','live','true']
         if args.plugins:command+=['-e','plugins','true']
@@ -48,7 +51,9 @@ def main():
         assert report['complete'],report.get('error',report)
         for item in report['passed']:print('PASS '+item)
     finally:
-        subprocess.run(adb+['shell','settings','put','global','animator_duration_scale',scale],check=True)
+        restore=['delete','global','animator_duration_scale'] if scale=='null' else ['put','global','animator_duration_scale',scale]
+        subprocess.run(adb+['shell','settings']+restore,check=True)
+        if args.plugins:remove_plugin('legacy-three',args.serial)
         if not args.keep_fixture:remove_plugin('tile-probe',args.serial)
 
 if __name__=='__main__':main()

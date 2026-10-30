@@ -222,6 +222,7 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
                     } catch (e: Exception) { report(id, e) }
                 }
                 loading = false
+                persistInstalled(); cleanupVersions()
                 publishCatalog()
                 if (BuildConfig.DEBUG && !safe) {
                     @Suppress("DEPRECATION")
@@ -686,11 +687,13 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
         diagnosticSnapshot = active.values.map { PluginDiagnostic(it.bundle.id, it.bundle.version, it.lua?.bytes() ?: 0, it.disabled, it.error) }
     }
     private fun persistInstalled(candidate: Instance? = null) {
+        if (loading) return // Initial catalog is committed once, after all bundled candidates.
         val doc = JSONObject()
         (if (candidate == null) active else active + (candidate.bundle.id to candidate)).forEach { (id, instance) -> doc.put(id, JSONObject().put("version", instance.bundle.version).put("directory", instance.bundle.directory.name).put("sha256", instance.bundle.digest)) }
         writeAtomic(File(root, "installed.json"), doc.toString().toByteArray())
     }
     private fun cleanupVersions() {
+        if (loading) return
         val keep = (factory.values.map { it.directory } + pending.values.map { it.bundle.directory } + active.values.map { it.bundle.directory } + previousDirectories.values).map { it.absolutePath }.toSet()
         root.listFiles()?.filter { it.isDirectory && !it.name.startsWith(".") }?.forEach { plugin ->
             plugin.listFiles()?.filter { it.isDirectory && it.absolutePath !in keep }?.forEach(PluginFiles::deleteTree)

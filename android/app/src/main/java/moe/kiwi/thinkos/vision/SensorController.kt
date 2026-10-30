@@ -33,6 +33,7 @@ class SensorController(
     private val theme = ThemePolicy(store.current.theme, daylight) { system.themeThresholds }
     private var light: Float? = null
     private var injectedLux: Float? = null
+    private var heldTheme: Theme? = null
     private var heldAttention: Attention? = null
     private var brightnessAnimator: ValueAnimator? = null
     private var displayedBrightness = 0.85f
@@ -55,6 +56,7 @@ class SensorController(
         heldAttention = value
         evaluate()
     }
+    fun debugHoldTheme(value: Theme?) { if (BuildConfig.DEBUG) { heldTheme = value; evaluate() } }
     fun debugInjectLux(value: Float?) { injectedLux = value; evaluate() }
     fun debugPresence(value: Boolean) { attention.presence(value, SystemClock.elapsedRealtime()); onPluginEvent("presence", JSONArray().put(value)); evaluate() }
     fun touch() { attention.touch(SystemClock.elapsedRealtime()); evaluate() }
@@ -73,7 +75,7 @@ class SensorController(
     private fun evaluate() {
         val now = SystemClock.elapsedRealtime()
         val level = heldAttention ?: attention.level(now, settingsOpen())
-        val nextTheme = (injectedLux ?: light)?.let { theme.sample(it, now, level == Attention.ENGAGED) } ?: run {
+        val nextTheme = heldTheme ?: (injectedLux ?: light)?.let { theme.sample(it, now, level == Attention.ENGAGED) } ?: run {
             // No usable light sensor: a pinned or sun-scheduled mode still applies, otherwise fall back to the clock.
             theme.scheduled() ?: if (Calendar.getInstance().get(Calendar.HOUR_OF_DAY) in 7..18) Theme.LIGHT else Theme.DARK
         }

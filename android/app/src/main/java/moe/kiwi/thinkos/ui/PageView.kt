@@ -392,7 +392,7 @@ internal class PageView(
         if (previousLayout.isNotEmpty() && previousLayout != layout) {
             groups.values.forEach { it.active(false) }; stacks.values.forEach { it.active(false) }; tiles.values.forEach { it.active(false) }
             removeAllViews()
-            tiles.clear()
+            tiles.clear(); tileItems = JSONArray(); tileBoxes = emptyList()
             groups.clear()
             stacks.clear()
             definitions.clear()
@@ -506,6 +506,7 @@ internal class PageView(
     fun tapAt(x: Float, y: Float): Boolean = groups.values.toList().asReversed().any {
         it.tapAt(x - it.left - it.translationX, y - it.top - it.translationY)
     }
+    // Tile content is presentation only: stage-owned taps and long press reach opens/ownerAt.
     /** Native controls and lists own taps/vertical scrolling; the stage can still claim a horizontal page swipe. */
     fun interactiveAt(x: Float, y: Float): Boolean {
         for (group in groups.values.toList().asReversed()) {

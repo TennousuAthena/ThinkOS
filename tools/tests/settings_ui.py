@@ -14,6 +14,7 @@ import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools"))
+from device_hierarchy import dump_hierarchy
 from package_plugins import package_plugin
 from plugin_push import publish_directory, remove_plugin
 
@@ -61,7 +62,7 @@ def main():
     def snapshot():
         path = "/sdcard/thinkos-settings-ui.xml"
         try:
-            shell("uiautomator", "dump", path)
+            dump_hierarchy(args.serial, path)
             data = shell("cat", path, check=False)
             if not data:
                 raise AssertionError("The native UI tree is not ready yet")
@@ -158,7 +159,9 @@ def main():
 
         debug("hold_attention", "AWAKE")
         debug("orientation", 0, "--ei")
+        debug("theme", "DARK")
         debug("lux", 20, "--ef")
+        debug("page", "home.main")
         wait_text("有设置的卡片")
         shot("home-card-owners")
         open_owner_settings()
@@ -231,7 +234,7 @@ def main():
         open_owner_settings()
         passed("a pure declaration card and page update immediately and the page long press keeps the correct settings owner")
         go_home()
-        shell("input", "swipe", 1100, 400, 150, 400, 600)
+        debug("page", "home.main")
         time.sleep(.7)
         wait_text("有设置的卡片")
         open_owner_settings(950)
@@ -241,6 +244,7 @@ def main():
 
         shell("am", "force-stop", "moe.kiwi.thinkos")
         shell("am", "start", "-W", "-n", "moe.kiwi.thinkos/.MainActivity")
+        debug("theme", "DARK")
         debug("hold_attention", "AWAKE")
         debug("orientation", 0, "--ei")
         debug("lux", 20, "--ef")

@@ -1,1 +1,23 @@
-{"layout": "tiles", "slots": {"tiles": [{"widget": "tile-probe.empty", "size": "medium"}, {"widget": "tile-probe.no-opens", "size": "medium"}, {"widget": "tile-probe.bound", "size": "medium"}]}}
+{
+  "layout": "tiles",
+  "slots": {
+    "tiles": [
+      {
+        "widget": "tile-probe.empty",
+        "size": "medium"
+      },
+      {
+        "widget": "tile-probe.no-opens",
+        "size": "medium"
+      },
+      {
+        "widget": "tile-probe.bound",
+        "size": "medium"
+      },
+      {
+        "widget": "tile-probe.empty",
+        "size": "small"
+      }
+    ]
+  }
+}

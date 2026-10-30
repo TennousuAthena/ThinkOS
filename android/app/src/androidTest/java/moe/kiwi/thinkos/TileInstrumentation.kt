@@ -78,7 +78,7 @@ class TileInstrumentation : Instrumentation() {
         val live=read { host.settings.resolved("system","tiles.live") }
         val interval=read { host.settings.resolved("system","tiles.interval") }
         try {
-            main { host.settings.setMany("system",mapOf("tiles.live" to true,"tiles.interval" to 5));activity.requestedOrientation=0 }
+            main { host.settings.setMany("system",mapOf("tiles.live" to true,"tiles.interval" to 5));activity.requestedOrientation=moe.kiwi.thinkos.core.DeviceOrientation.LANDSCAPE }
             debugTheme(Theme.DARK);page("tile-probe.grid")
             val changes=JSONArray();var last=emptyList<Int>();var maxMoving=0
             val until=SystemClock.uptimeMillis()+11500
@@ -105,7 +105,7 @@ class TileInstrumentation : Instrumentation() {
             waitFor("Wake did not resume",8000) { read { tiles().any { it.flipping } } }
             val oldTiles=read { tiles() };page("tile-probe.detail")
             check(read { oldTiles.none { it.flipping } });SystemClock.sleep(5500);check(read { oldTiles.none { it.flipping } });pass("waking resumes; leaving cancels")
-            page("tile-probe.behavior");check(read { !tiles()[0].canFlip && (field(tiles()[0],"label") as TextView).text=="Label only" });screenshot("all-empty-label")
+            page("tile-probe.behavior");check(read { !tiles()[0].canFlip && (field(tiles()[0],"label") as TextView).text=="Label only" });check(read { (field(tiles().last(),"value") as TextView).text=="Label only" });screenshot("all-empty-label")
             val xy=read { val t=tiles()[1];floatArrayOf(t.left+t.width/2f,t.top+t.height/2f) };touch(xy[0],xy[1]);check(read { host.store.current.deck.page=="tile-probe.behavior" });pass("all-empty faces retain label; no opens is a no-op")
             // Android's global animator setting is restored by the host script, including failure.
             uiAutomation.executeShellCommand("settings put global animator_duration_scale 0").close();SystemClock.sleep(200)
@@ -146,10 +146,15 @@ class TileInstrumentation : Instrumentation() {
                 @Suppress("UNCHECKED_CAST") val active=field(runtime,"active") as MutableMap<String,Any>
                 removed?.let { active["weather"]=it }
                 runtime.javaClass.getDeclaredMethod("publishCatalog").also { it.isAccessible=true }.invoke(runtime)
+                removed?.let { instance -> runtime.javaClass.declaredMethods.first { it.name=="publishState" }.also { it.isAccessible=true }.invoke(runtime,instance) }
             }
         }
         waitFor("Weather did not recover") { read { tiles().any { it.owner=="weather" } } }
         screenshot("weather-restored");pass("weather catalog reinstall restores tile")
+        page("legacy-three.main")
+        waitFor("API 3 image did not decode") { read { all().filterIsInstance<android.widget.ImageView>().any { it.drawable!=null } } }
+        check(read { all().filterIsInstance<TextView>().any { it.text.toString()=="API 3 loaded" } })
+        screenshot("legacy-api-three");pass("API 3 plugin runs Lua and decodes its local image through public vocabulary")
     }
     override fun onCreate(arguments: Bundle?) { super.onCreate(arguments); this.arguments=arguments?:Bundle(); start() }
     override fun onStart() {
@@ -166,7 +171,7 @@ class TileInstrumentation : Instrumentation() {
             if(arguments.getString("live")=="true") { liveChecks();success=true;return }
             page("tile-probe.grid")
             for (orientation in listOf(0,1)) {
-                main { activity.requestedOrientation=orientation };SystemClock.sleep(1000)
+                main { activity.requestedOrientation=moe.kiwi.thinkos.core.DeviceOrientation.forced(orientation) };SystemClock.sleep(1000)
                 for (theme in listOf(Theme.LIGHT,Theme.DARK,Theme.NIGHT)) {
                     debugTheme(theme);check(read { host.store.current.theme==theme }) { "Theme overridden" };page("tile-probe.grid");screenshot("${if(orientation==0)"landscape" else "portrait"}-${theme.name.lowercase()}")
                     page("tile-probe.large");screenshot("${if(orientation==0)"landscape" else "portrait"}-${theme.name.lowercase()}-large")
@@ -176,7 +181,7 @@ class TileInstrumentation : Instrumentation() {
             main { activity.requestedOrientation=1 };SystemClock.sleep(800);debugTheme(Theme.LIGHT)
             for (l in listOf("zh-Hans","en","ar","hi")) { locale(l);page("tile-probe.grid");screenshot("locale-$l") }
             pass("zh-Hans/en/ar/hi; native RTL and no clipped glyphs")
-            locale("en");main { activity.requestedOrientation=0 };SystemClock.sleep(800);page("tile-probe.grid")
+            locale("en");main { activity.requestedOrientation=moe.kiwi.thinkos.core.DeviceOrientation.LANDSCAPE };SystemClock.sleep(800);page("tile-probe.grid")
             val stable=read { tiles().map { System.identityHashCode(it) } }
             val before=read { tiles().map { field(it,"fill") } }
             var intermediate=false;var changed=false
@@ -188,6 +193,7 @@ class TileInstrumentation : Instrumentation() {
                     if(tiles().any { field(it,"colorAnimation")?.let { a -> (a as android.animation.ValueAnimator).isRunning } == true })intermediate=true
                 };SystemClock.sleep(30)
             }
+            result.put("colorChanged",changed).put("colorAnimationObserved",intermediate).put("animatorsEnabled",read { android.animation.ValueAnimator.areAnimatorsEnabled() }).put("tilesActive",read { JSONArray(tiles().map { field(it,"active") }) })
             check(changed && intermediate) { "No smooth bound color change" };pass("Lua color changes animate without rebuilding views; invalid values fall back")
             val xy=read { val t=tiles().first();floatArrayOf(t.left+t.width/2f,t.top+t.height/2f) }
             touch(xy[0],xy[1]);check(read { host.store.current.deck.page=="tile-probe.detail" });pass("tap opens widget page")
@@ -216,6 +222,7 @@ class TileInstrumentation : Instrumentation() {
             touch(1100f,400f,dx=-850f);check(read { host.store.current.deck.page!=beforePage });pass("horizontal swipe changes page")
             page("tile-probe.grid");val beforeVariant=read { host.store.current.deck.variant };touch(640f,650f,dy=-500f)
             check(read { host.store.current.deck.variant!=beforeVariant });pass("vertical swipe changes variant")
+            page("tile-probe.icons");screenshot("twelve-icons");check(read { tiles().size==12 });pass("all twelve additional native icons render")
             page("tile-probe.stack");screenshot("tile-in-stack");check(read { tiles().isNotEmpty() });pass("tile in stacks uses large template")
             page("tile-probe.glance");screenshot("glance-and-missing-placeholder");pass("glance and missing references show safe empty tiles")
             success=true

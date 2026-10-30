@@ -91,7 +91,7 @@ APK 根索引 `assets/plugins/index.json` 为 `{plugins:[上述完整索引…]}
 
 | 层 | 可选值 |
 |---|---|
-| 页面版式 `layout` | API 1：`stacks` / `focus` / 设置专用 `form`（§11.3）；API 2：`split` / `stage` |
+| 页面版式 `layout` | API 1：`stacks` / `focus` / 设置专用 `form`（§11.3）；API 2：`split` / `stage`；API 4：`tiles` |
 | 卡片模板 `template` | 已实现 `glance`；M1 媒体与列表模板待实现 |
 | 组件 `type` | API 1：`text` / `icon` / `clock`，`form` 只用于设置版式；API 2：`progress` / `chart` / `list` / `daylight` / `moon`；API 3：`image` / `carousel` |
 | `clock.style` | `digital` / `analog` / `solar` / `world` / `float` |

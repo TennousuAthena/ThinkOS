@@ -37,6 +37,15 @@ class PluginSchemaTest {
         rejected { PluginSchema.validateView(page, 4) }
     }
 
+    @Test fun schemaBranchPrefilterRetainsStrictValidation() {
+        for (declaration in listOf(
+            """{"template":"tile","layout":"tiles","faces":[{"label":"A"}],"slots":{"tiles":[{"widget":"clock.tile","size":"wide"}]}}""",
+            """{"template":4,"faces":[{"label":"A"}]}""",
+            """{"template":"tile","faces":[{}]}""",
+            """{"template":"glance","faces":[{"label":"A"}],"children":[]}"""
+        )) rejected { PluginSchema.validateView(JSONObject(declaration),4) }
+    }
+
     @Test fun directoryIndexAndCatalogUseTheSharedContract() {
         val index = JSONObject("""{"id":"probe","version":"1.0.0","digest":"e52ad792c9cfdd084aa054903dd13150c03cd8b751c24acfe4a8e12172633490","files":[{"path":"manifest.json","size":3,"sha256":"ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"}]}""")
         PluginSchema.validateIndex(index)

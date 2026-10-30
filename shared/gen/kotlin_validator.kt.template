@@ -72,6 +72,31 @@ object PluginSchema {
         else -> error("Unknown schema type $type")
     }
 
+    private val patterns = java.util.concurrent.ConcurrentHashMap<String, Regex>()
+
+    /** Eliminate impossible branches before validation; preserves oneOf uniqueness without exception-driven dispatch. */
+    private fun possible(value: Any?, schema: JSONObject, document: String, depth: Int = 0): Boolean {
+        if (depth > 32) return true // The validator reports excessive nesting.
+        if (schema.has("\$ref")) {
+            val parts = schema.getString("\$ref").split('#', limit = 2)
+            val doc = parts[0].ifEmpty { document }
+            var target: Any = documents.getValue(doc)
+            if (parts.size > 1) for (part in parts[1].split('/').drop(1)) target = (target as JSONObject).get(part.replace("~1", "/").replace("~0", "~"))
+            return possible(value, target as JSONObject, doc, depth + 1)
+        }
+        if (schema.has("const") && !equivalent(value, schema.get("const"))) return false
+        if (value is JSONObject) {
+            schema.optJSONArray("required")?.let { keys -> for (i in 0 until keys.length()) if (!value.has(keys.getString(i))) return false }
+            schema.optJSONObject("properties")?.let { properties ->
+                for (key in properties.keys()) {
+                    val field = properties.getJSONObject(key)
+                    if (value.has(key) && field.has("const") && !equivalent(value.get(key), field.get("const"))) return false
+                }
+            }
+        }
+        return true
+    }
+
     private fun validate(value: Any?, schema: JSONObject, document: String, path: String, depth: Int) {
         require(depth <= 32) { "$path: maximum nesting exceeded" }
         if (schema.has("\$ref")) {
@@ -87,6 +112,7 @@ object PluginSchema {
         for (keyword in listOf("oneOf", "anyOf")) schema.optJSONArray(keyword)?.let { alternatives ->
             var matches = 0
             for (i in 0 until alternatives.length()) {
+                if (!possible(value, alternatives.getJSONObject(i), document)) continue
                 try { validate(value, alternatives.getJSONObject(i), document, path, depth + 1); matches++ }
                 catch (_: IllegalArgumentException) { }
             }
@@ -130,7 +156,7 @@ object PluginSchema {
             }
             is String -> {
                 require(value.length >= schema.optInt("minLength", 0) && value.length <= schema.optInt("maxLength", Int.MAX_VALUE)) { "$path: invalid string length" }
-                if (schema.has("pattern")) require(Regex(schema.getString("pattern")).containsMatchIn(value)) { "$path: invalid string format" }
+                if (schema.has("pattern")) require(patterns.getOrPut(schema.getString("pattern")) { Regex(schema.getString("pattern")) }.containsMatchIn(value)) { "$path: invalid string format" }
             }
             is Number -> require(value.toDouble() >= schema.optDouble("minimum", Double.NEGATIVE_INFINITY) && value.toDouble() <= schema.optDouble("maximum", Double.POSITIVE_INFINITY)) { "$path: number outside allowed range" }
         }

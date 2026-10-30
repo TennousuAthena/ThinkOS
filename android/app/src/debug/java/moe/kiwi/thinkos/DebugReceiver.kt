@@ -16,6 +16,7 @@ class DebugReceiver : BroadcastReceiver() {
         when (intent.getStringExtra("command")) {
             "orientation" -> host.debugOrientation(intent.getIntExtra("value", 10))
             "maintenance" -> host.debugMaintenance()
+            "page" -> intent.getStringExtra("value")?.let { host.router.closeSettings(); host.router.open(it) }
             "state" -> Log.i("ThinkOS", "DEBUG state=${host.store.current} plugins=${host.plugins.diagnostics()}")
             "locale" -> {
                 // Process-local locale for native UI tests; never changes Android's saved language.
@@ -31,9 +32,7 @@ class DebugReceiver : BroadcastReceiver() {
             "lux" -> host.sensors.debugInjectLux(if (intent.hasExtra("value")) intent.getFloatExtra("value", 20f) else null)
             "presence" -> host.sensors.debugPresence(intent.getBooleanExtra("value", false))
             "hold_attention" -> host.sensors.debugHoldAttention(Attention.entries.firstOrNull { it.name == intent.getStringExtra("value") })
-            "theme" -> intent.getStringExtra("value")?.let { name ->
-                Theme.entries.firstOrNull { it.name == name }?.let { theme -> host.store.update { it.copy(theme = theme) } }
-            }
+            "theme" -> host.sensors.debugHoldTheme(Theme.entries.firstOrNull { it.name == intent.getStringExtra("value") })
             "attention" -> intent.getStringExtra("value")?.let { name ->
                 Attention.entries.firstOrNull { it.name == name }?.let { attention -> host.store.update { it.copy(attention = attention) } }
             }

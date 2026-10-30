@@ -10,6 +10,8 @@
 
 `progress` 支持条/环，`chart` 支持线/柱/面积并为缺值断段；`list` 的 `items` 绑定数组，`item` 内 `{{.title}}` 引用行元素。`daylight/moon` 的 `path` 只接收派生天文数据，不读取设备位置。组件点击统一发 `tap(name, index?)`，列表索引从 1 开始。完整字段见 schema 与 `docs/06-plugins.md` §4.1。
 
+新增磁贴图标：music/photo/bell/settings/home/folder/list/star/heart/message/play/battery。
+
 `icon.name` 为可绑定的字符串，不是枚举，无需为新图标修改生成器。原生精确词汇含 `calendar/moon/clock/sun/unknown`，天气增加 `clear-day/clear-night/partly-day/partly-night/cloud/fog/rain/shower/snow/thunder`；未知名称显示占位。
 
 `clock.zones` 是世界表盘的城市列表，每项含 `label` 和 IANA `timezone`。`clock.style` 可为 `digital`、`analog`、`solar`、`world`、`float` 或 `{{variant}}`。

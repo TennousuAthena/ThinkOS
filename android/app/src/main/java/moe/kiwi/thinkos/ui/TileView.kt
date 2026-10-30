@@ -117,9 +117,10 @@ internal class TileView(
     private fun eligible(): List<Int> = rendered.indices.filter { i -> rendered[i]["value"].orEmpty().isNotBlank() || rendered[i]["detail"].orEmpty().isNotBlank() }
     private fun showFace() {
         val f = rendered.getOrNull(faceIndex).orEmpty()
-        icon.name = f["icon"].orEmpty()
-        value.text = f["value"].orEmpty(); label.text = f["label"].orEmpty(); detail.text = f["detail"].orEmpty()
-        contentDescription = listOf(label.text, value.text, detail.text).filter { it.isNotBlank() }.joinToString(" · ")
+        val labelOnly = size == "small" && rendered.isNotEmpty() && eligible().isEmpty()
+        icon.name = if (labelOnly) "" else f["icon"].orEmpty()
+        value.text = if (labelOnly) f["label"].orEmpty() else f["value"].orEmpty(); label.text = f["label"].orEmpty(); detail.text = f["detail"].orEmpty()
+        contentDescription = listOf(label.text, value.text, detail.text).filter { it.isNotBlank() }.distinct().joinToString(" · ")
         requestLayout()
     }
     private fun color(template: Binding.Template?, id: String, source: String): Int? {

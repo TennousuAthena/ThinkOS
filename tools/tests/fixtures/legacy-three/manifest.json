@@ -1,0 +1,1 @@
+{"id":"legacy-three","name":"API 3 compatibility","version":"1.0.0","api":3,"main":"main.lua","permissions":[],"pages":[{"id":"main","title":"API 3","view":"views/main.json"}]}

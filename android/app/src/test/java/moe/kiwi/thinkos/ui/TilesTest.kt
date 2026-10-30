@@ -5,6 +5,16 @@ import org.junit.Test
 import kotlin.random.Random
 
 class TilesTest {
+    @Test fun metroSquareSizesStaySquareAndWideKeepsTwoToOneModules() {
+        for ((w,h) in listOf(1280 to 800,800 to 1280)) {
+            for (size in listOf("small","medium","large")) {
+                val box=RenderGeometry.tiles(listOf(size),w,h,1.625f).single()!!
+                assertEquals(box.width,box.height)
+            }
+            val wide=RenderGeometry.tiles(listOf("wide"),w,h,1.625f).single()!!
+            assertEquals(wide.height*2+13,wide.width)
+        }
+    }
     @Test fun firstFitDropAndPortraitCapacity() {
         assertNull(RenderGeometry.tiles(listOf("large", "wide"), 1280, 800, 1.625f)[1])
         assertTrue(RenderGeometry.tiles(listOf("large", "wide"), 800, 1280, 1.625f).all { it != null })

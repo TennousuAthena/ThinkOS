@@ -74,7 +74,7 @@ class MainActivity : Activity(), RuntimeHost.Observer {
         // The Home key always means "take me home": it also leaves the settings page.
         if (intent.hasCategory(Intent.CATEGORY_HOME)) host.router.closeSettings()
         if (BuildConfig.DEBUG && intent.hasExtra("debug.orientation")) {
-            requestedOrientation = intent.getIntExtra("debug.orientation", android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR)
+            requestedOrientation = moe.kiwi.thinkos.core.DeviceOrientation.forced(intent.getIntExtra("debug.orientation", android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR))
         }
     }
     override fun onWindowFocusChanged(hasFocus: Boolean) {

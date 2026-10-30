@@ -51,6 +51,54 @@
     {
       "id": "no-opens",
       "view": "views/no-opens.json"
+    },
+    {
+      "id": "icon-music",
+      "view": "views/icon-music.json"
+    },
+    {
+      "id": "icon-photo",
+      "view": "views/icon-photo.json"
+    },
+    {
+      "id": "icon-bell",
+      "view": "views/icon-bell.json"
+    },
+    {
+      "id": "icon-settings",
+      "view": "views/icon-settings.json"
+    },
+    {
+      "id": "icon-home",
+      "view": "views/icon-home.json"
+    },
+    {
+      "id": "icon-folder",
+      "view": "views/icon-folder.json"
+    },
+    {
+      "id": "icon-list",
+      "view": "views/icon-list.json"
+    },
+    {
+      "id": "icon-star",
+      "view": "views/icon-star.json"
+    },
+    {
+      "id": "icon-heart",
+      "view": "views/icon-heart.json"
+    },
+    {
+      "id": "icon-message",
+      "view": "views/icon-message.json"
+    },
+    {
+      "id": "icon-play",
+      "view": "views/icon-play.json"
+    },
+    {
+      "id": "icon-battery",
+      "view": "views/icon-battery.json"
     }
   ],
   "pages": [
@@ -88,6 +136,11 @@
       "id": "behavior",
       "title": "Behavior",
       "view": "views/behavior.json"
+    },
+    {
+      "id": "icons",
+      "title": "Icon vocabulary",
+      "view": "views/icons.json"
     }
   ]
 }

@@ -250,7 +250,7 @@
 | `theme.light_above_lux` | number | 50–1000，步长 10，lux | 120 | 深色 → 浅色，必须大于 `dark_below_lux` |
 | `theme.night_below_lux` | number | 1–20，lux | 5 | 进入夜间模式 |
 | `theme.night_above_lux` | number | 5–50，lux | 15 | 退出夜间模式，必须大于 `night_below_lux` |
-| `display.orientation` | choice | `auto` 跟随 / `landscape` 锁定横屏 / `portrait` 锁定竖屏 | `auto` | 立即生效，不重建 Activity |
+| `display.orientation` | choice | `auto` 跟随 / `landscape` 按设备摆放方向锁定反向横屏 / `portrait` 锁定竖屏 | `auto` | 立即生效，不重建 Activity |
 | `display.brightness_max` | number | 20–100，步长 5，% | 85 | AWAKE / ENGAGED 亮度；AMBIENT 约为其 47%，ASLEEP 固定最低（3%） |
 | `attention.awake_to_ambient_s` | number | 30–600，步长 10，秒 | 120 | 有人但没在看多久后进入 AMBIENT |
 | `attention.to_asleep_s` | number | 60–1800，步长 30，秒 | 180 | 无人多久后进入 ASLEEP |

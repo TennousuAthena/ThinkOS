@@ -1,0 +1,1 @@
+{"layout":"stage","slots":{"stage":{"type":"image","src":"asset:assets/sample.png","fit":"contain","pan":false},"over":{"type":"text","value":"{{label}}"}}}

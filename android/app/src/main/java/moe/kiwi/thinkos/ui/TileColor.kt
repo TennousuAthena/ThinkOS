@@ -4,7 +4,8 @@ import kotlin.math.pow
 
 /** Opaque sRGB only. No Android dependency: validation and contrast are tested on the JVM. */
 object TileColor {
-    fun parse(value: String?): Int? = value?.takeIf { it.matches(Regex("#[0-9A-Fa-f]{6}")) }
+    private val pattern = Regex("#[0-9A-Fa-f]{6}")
+    fun parse(value: String?): Int? = value?.takeIf { pattern.matches(it) }
         ?.substring(1)?.toInt(16)?.or(0xff000000.toInt())
 
     fun resolve(page: String?, card: String?, accent: Int): Int = parse(page) ?: parse(card) ?: accent
@@ -20,7 +21,10 @@ object TileColor {
         val x = luminance(a); val y = luminance(b)
         return (maxOf(x, y) + .05) / (minOf(x, y) + .05)
     }
-    fun foreground(background: Int): Int = if (contrast(background, 0xff000000.toInt()) >= contrast(background, -1)) 0xff000000.toInt() else -1
+    fun foreground(background: Int): Int {
+        val l = luminance(background) + .05
+        return if (l / .05 >= 1.05 / l) 0xff000000.toInt() else -1
+    }
 
     /** Same matrix as ThinkStage. Black/white are chosen after composition in night mode. */
     fun filtered(color: Int, night: Float): Int {
@@ -30,7 +34,12 @@ object TileColor {
         fun channel(c: Int, tint: Double) = (c * (1-n) + gray * tint * n).toInt().coerceIn(0,255)
         return 0xff000000.toInt() or (channel(r, 1.0) shl 16) or (channel(g, 59/255.0) shl 8) or channel(b, 47/255.0)
     }
-    fun nightForeground(color: Int, night: Float): Int = if (contrast(filtered(color, night), filtered(0xff000000.toInt(), night)) >= contrast(filtered(color, night), filtered(-1, night))) 0xff000000.toInt() else -1
+    fun nightForeground(color: Int, night: Float): Int {
+        if (night <= 0) return foreground(color)
+        val l = luminance(filtered(color, night)) + .05
+        val white = luminance(filtered(-1, night)) + .05
+        return if (l / .05 >= white / l) 0xff000000.toInt() else -1
+    }
 
     /** The red matrix compresses contrast. Adjust only when neither composed foreground is readable. */
     fun nightSafe(color: Int, night: Float): Int {

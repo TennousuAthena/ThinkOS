@@ -119,9 +119,9 @@ class RuntimeHost(private val context: Context) : PluginRuntime.Callbacks {
         }
     }
 
-    /** `display.orientation`: follow the sensor, or stay in landscape / portrait (either way up). */
+    /** `display.orientation`: follow the sensor, or stay upright in the mounted landscape position / sensor portrait. */
     private fun orientationCode() = when (system.orientation) {
-        "landscape" -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        "landscape" -> moe.kiwi.thinkos.core.DeviceOrientation.LANDSCAPE
         "portrait" -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
         else -> ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR
     }
@@ -166,7 +166,7 @@ class RuntimeHost(private val context: Context) : PluginRuntime.Callbacks {
     }
 
     fun debugOrientation(value: Int) {
-        if (BuildConfig.DEBUG) observers.toList().forEach { it.onOrientationRequest(value) }
+        if (BuildConfig.DEBUG) observers.toList().forEach { it.onOrientationRequest(moe.kiwi.thinkos.core.DeviceOrientation.forced(value)) }
     }
 
     /** Only the DUMP-protected debug receiver exposes this UI test entry. */

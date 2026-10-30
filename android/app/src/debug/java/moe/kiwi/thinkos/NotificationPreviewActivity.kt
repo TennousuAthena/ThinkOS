@@ -31,7 +31,7 @@ class NotificationPreviewActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requestedOrientation = intent.getIntExtra("orientation", android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR)
+        requestedOrientation = moe.kiwi.thinkos.core.DeviceOrientation.forced(intent.getIntExtra("orientation", android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR))
         val locale = intent.getStringExtra("locale")?.let(java.util.Locale::forLanguageTag) ?: java.util.Locale.getDefault()
         val config = android.content.res.Configuration(resources.configuration).apply {
             setLocale(locale); setLayoutDirection(locale)

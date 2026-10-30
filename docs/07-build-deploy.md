@@ -236,3 +236,12 @@ android/app/src/testNative/run.sh
 `ExpiredTargetSdkVersion` 的 Play 发布检查按 ADR-010 显式排除，其余 lint 错误仍阻断构建。`testNative/run.sh` 用本机 JDK/clang 测试实际 JNI 与沙箱；真机帧率与 CPU 仍以 `tools/bench.sh 600` 为准。
 
 维护入口：左上区域双指长按 5 秒，可查看诊断、恢复出厂插件、退出安全模式或打开系统设置（暂停看门狗 5 分钟）。调试接收器仅在 debug APK 存在，并要求 shell 的 `android.permission.DUMP` 权限；不要把调试 APK 当作公开分发版。
+
+### ThinkSmart View 的横屏方向
+
+本机面板相对 Android 默认横屏倒装 180°。以设备正确摆放的方向为准，锁定横屏使用 `SCREEN_ORIENTATION_REVERSE_LANDSCAPE`（8，SurfaceOrientation=3 / 270°）。`display.orientation=landscape` 与开发方向入口已统一；旧 debug `value=0` 自动映射为 8。竖屏与自动跟随保持原语义。无线调试示例：
+
+```bash
+adb connect 192.168.3.167:5555
+adb -s 192.168.3.167:5555 shell am broadcast -n moe.kiwi.thinkos/.DebugReceiver --es command orientation --ei value 8
+```

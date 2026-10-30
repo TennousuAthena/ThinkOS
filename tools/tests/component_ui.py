@@ -13,6 +13,7 @@ import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools"))
+from device_hierarchy import dump_hierarchy
 from package_plugins import package_plugin
 from plugin_push import publish_directory, remove_plugin
 
@@ -85,11 +86,18 @@ def main():
 
     def nodes():
         path = "/sdcard/thinkos-ui-validation.xml"
+        paused = False
         try:
-            shell("uiautomator", "dump", path)
-            return list(ET.fromstring(shell("cat", path)).iter("node"))
+            for attempt in range(3):
+                dump_hierarchy(args.serial, path)
+                data = adb("shell", "cat", path, check=False)
+                if data:
+                    return list(ET.fromstring(data).iter("node"))
+                debug("hold_attention", "AMBIENT"); paused = True; time.sleep(.3)
+            raise AssertionError("UIAutomator did not publish a hierarchy")
         finally:
             shell("rm", "-f", path)
+            if paused: debug("hold_attention", "AWAKE")
 
     def rows():
         return [node for node in nodes() if re.fullmatch(r"Row \d+", node.attrib.get("text", ""))]
@@ -109,6 +117,7 @@ def main():
         # Publishing an identical digest is intentionally a no-op; navigate to it if already loaded.
         debug("orientation", 0, "--ei")
         debug("hold_attention", "AWAKE")
+        debug("theme", "DARK")
         debug("lux", 20, "--ef")
         wait_state("theme", "DARK", seconds=45)
         navigate("component-probe.split")
@@ -157,10 +166,12 @@ def main():
         shot("split-portrait-dark")
         passed("focus, stage and split reflow in portrait without restarting the application")
 
+        debug("theme", "LIGHT")
         debug("lux", 10_000, "--ef")
         wait_state("theme", "LIGHT", seconds=45)
         time.sleep(2)
         shot("split-portrait-light")
+        debug("theme", "NIGHT")
         debug("lux", .1, "--ef")
         wait_state("theme", "NIGHT", seconds=30)
         time.sleep(2)
@@ -174,6 +185,7 @@ def main():
         (args.output / "logcat.txt").write_text(logs())
         remove_plugin("component-probe", args.serial)
         debug("hold_attention")
+        debug("theme")
         debug("lux")
         debug("orientation", 10, "--ei")
         (args.output / "results.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n")

@@ -51,6 +51,8 @@ ThinkOS 是运行在 ThinkSmart View 上的 **Kiosk 主应用（设备外壳）*
 | [docs/18-notification-http-proposal.md](docs/18-notification-http-proposal.md) | HTTP 通知候选方案，当前仅做 UI 预览 |
 | [docs/19-provisioning-for-agent.md](docs/19-provisioning-for-agent.md) | **新机刷机与设置**：Agent 全自动手册（EDL → LineageOS → Magisk → 系统设置 → ThinkOS） |
 
+磁贴已接入 API 4：直角 Metro 网格、自定义底色与动态翻面，设备可离线使用。实现与实测结果见 [磁贴验收](docs/24-tiles-validation.md)。
+
 ## 一句话架构
 
 ```
