@@ -71,6 +71,11 @@
       "id": "tile",
       "view": "views/tile.json",
       "opens": "face"
+    },
+    {
+      "id": "desktop",
+      "view": "views/desktop.json",
+      "opens": "face"
     }
   ]
 }

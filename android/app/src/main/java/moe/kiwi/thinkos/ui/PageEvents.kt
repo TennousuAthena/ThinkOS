@@ -12,6 +12,9 @@ interface PageEvents {
 
     /** Leave the settings page and return to where the user was. */
     fun closeSettings()
+    /** OS chrome can open the same settings destination as a long press. */
+    fun openSettings(owner: String) = Unit
+    fun openPage(key: String) = Unit
 
     /** Native dialogs and IME edits count as activity even outside the page's touch window. */
     fun settingsInteraction()

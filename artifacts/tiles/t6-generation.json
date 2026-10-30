@@ -1,0 +1,7 @@
+{
+  "deterministic": true,
+  "sha256": {
+    "android/app/src/main/java/moe/kiwi/thinkos/plugin/PluginSchema.kt": "2c8fe667da370a655c285f4c567397cf4d12f5d311fd58270bc232e171fa71ad",
+    "server/internal/protocol/plugin_generated.go": "5ccec524e6f48a4be3638b565e4189b62c3cde251ea3b5dfa79a627bf86ea49f"
+  }
+}

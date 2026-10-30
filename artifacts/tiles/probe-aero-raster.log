@@ -1,0 +1,10 @@
+Sampling aero for 60 seconds
+{"seconds": 61.43071695900289, "frames": 3619, "jankyFrames": 195, "jankyPercent": 5.388228792484111, "maxDrawMs": 3.233125, "maxFrameMs": 32.612689, "sampledFrames": 3618, "frameCoverage": 0.9997236805747444, "peakPssMiB": 73.5126953125, "peakLuaMiB": 0.2931528091430664, "sameProcess": true, "frameWarnings": 0, "initialState": {"page": "aero.main", "attention": "AWAKE", "theme": "DARK", "orientation": "LANDSCAPE", "pid": "11193", "touches": "0", "navigationReason": "open", "luaBytes": "298503", "navigationGeneration": "2"}, "finalState": {"page": "aero.main", "attention": "AWAKE", "theme": "DARK", "orientation": "LANDSCAPE", "pid": "11193", "touches": "0", "navigationReason": "open", "luaBytes": "273657", "navigationGeneration": "2"}, "flaggedFrames": 0, "inputFrames": 0}
+Traceback (most recent call last):
+  File "/Users/takuenn/Workspace/mobileApp/ThinkOS/tools/tests/tile_perf.py", line 170, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/Users/takuenn/Workspace/mobileApp/ThinkOS/tools/tests/tile_perf.py", line 169, in main
+    assert report.get('probePassed',report['complete']),report
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'complete': False, 'scenes': {'aero': {'seconds': 61.43071695900289, 'frames': 3619, 'jankyFrames': 195, 'jankyPercent': 5.388228792484111, 'maxDrawMs': 3.233125, 'maxFrameMs': 32.612689, 'sampledFrames': 3618, 'frameCoverage': 0.9997236805747444, 'peakPssMiB': 73.5126953125, 'peakLuaMiB': 0.2931528091430664, 'sameProcess': True, 'frameWarnings': 0, 'initialState': {'page': 'aero.main', 'attention': 'AWAKE', 'theme': 'DARK', 'orientation': 'LANDSCAPE', 'pid': '11193', 'touches': '0', 'navigationReason': 'open', 'luaBytes': '298503', 'navigationGeneration': '2'}, 'finalState': {'page': 'aero.main', 'attention': 'AWAKE', 'theme': 'DARK', 'orientation': 'LANDSCAPE', 'pid': '11193', 'touches': '0', 'navigationReason': 'open', 'luaBytes': '273657', 'navigationGeneration': '2'}, 'flaggedFrames': 0, 'inputFrames': 0}}, 'failures': ['aero'], 'probePassed': False, 'settingsRestored': True}

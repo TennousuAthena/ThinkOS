@@ -1,0 +1,10 @@
+Sampling sixteen for 35 seconds
+{"seconds": 36.15709712498938, "frames": 1221, "jankyFrames": 1027, "jankyPercent": 84.11138411138411, "maxDrawMs": 23.801094, "maxFrameMs": 58.809591, "sampledFrames": 1217, "frameCoverage": 0.9967239967239967, "peakPssMiB": 54.3271484375, "peakLuaMiB": 0.31565380096435547, "sameProcess": true, "frameWarnings": 0, "flaggedFrames": 0, "inputFrames": 0}
+Traceback (most recent call last):
+  File "/Users/takuenn/Workspace/mobileApp/ThinkOS/tools/tests/tile_perf.py", line 159, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/Users/takuenn/Workspace/mobileApp/ThinkOS/tools/tests/tile_perf.py", line 158, in main
+    assert report['complete'],report
+           ~~~~~~^^^^^^^^^^^^
+AssertionError: {'complete': False, 'scenes': {'sixteen': {'seconds': 36.15709712498938, 'frames': 1221, 'jankyFrames': 1027, 'jankyPercent': 84.11138411138411, 'maxDrawMs': 23.801094, 'maxFrameMs': 58.809591, 'sampledFrames': 1217, 'frameCoverage': 0.9967239967239967, 'peakPssMiB': 54.3271484375, 'peakLuaMiB': 0.31565380096435547, 'sameProcess': True, 'frameWarnings': 0, 'flaggedFrames': 0, 'inputFrames': 0}}, 'failures': ['sixteen'], 'stressFixtureDigest': 'a1f59bbaa91340af243df090b14991cfb86b317b1c8d4627d60bd32e7ba52772', 'settingsRestored': True}

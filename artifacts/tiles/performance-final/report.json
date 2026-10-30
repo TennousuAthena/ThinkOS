@@ -1,0 +1,40 @@
+{
+  "complete": true,
+  "scenes": {
+    "builtin": {
+      "seconds": 600.622072750004,
+      "frames": 10976,
+      "jankyFrames": 309,
+      "jankyPercent": 2.8152332361516033,
+      "maxDrawMs": 11.355469,
+      "maxFrameMs": 79.227978,
+      "sampledFrames": 10976,
+      "frameCoverage": 1.0,
+      "peakPssMiB": 100.7197265625,
+      "peakLuaMiB": 0.2959165573120117,
+      "sameProcess": true,
+      "frameWarnings": 0,
+      "flaggedFrames": 1,
+      "inputFrames": 0
+    },
+    "sixteen": {
+      "seconds": 601.0263480420108,
+      "frames": 20533,
+      "jankyFrames": 573,
+      "jankyPercent": 2.7906297180149027,
+      "maxDrawMs": 6.678437,
+      "maxFrameMs": 42.327056,
+      "sampledFrames": 20533,
+      "frameCoverage": 1.0,
+      "peakPssMiB": 158.0029296875,
+      "peakLuaMiB": 0.34773826599121094,
+      "sameProcess": true,
+      "frameWarnings": 0,
+      "flaggedFrames": 3,
+      "inputFrames": 0
+    }
+  },
+  "failures": [],
+  "stressFixtureDigest": "c566612212070457ebac8ec5e60768b36a12cf86cfb661342370f51c4f706841",
+  "settingsRestored": true
+}

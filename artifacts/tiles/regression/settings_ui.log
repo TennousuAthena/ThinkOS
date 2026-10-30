@@ -1,0 +1,7 @@
+PASS long press on a home card opens its owner's generated settings without any Lua process
+PASS boolean editing and explicit reset update the existing settings store
+PASS stepper, choice and native text/password dialogs work; saved secrets stay masked
+PASS long setting labels stay within two lines in landscape and portrait
+PASS a pure declaration card and page update immediately and the page long press keeps the correct settings owner
+PASS long pressing a card with no declared settings falls back to system settings
+PASS the generated settings and declaration-only card survive an application restart

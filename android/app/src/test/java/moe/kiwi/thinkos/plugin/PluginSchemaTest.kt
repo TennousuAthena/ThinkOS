@@ -6,6 +6,13 @@ import org.junit.Test
 import org.junit.Assert.fail
 
 class PluginSchemaTest {
+    @Test fun aeroRequiresApiFiveAndKeepsOsOwnedAppearance() {
+        val page = JSONObject("""{"layout":"aero","slots":{"windows":[{"widget":"clock.desktop"}]}}""")
+        PluginSchema.validateView(page,5)
+        for(api in 1..4) rejected { PluginSchema.validateView(page,api) }
+        page.getJSONObject("slots").getJSONArray("windows").getJSONObject(0).put("color","#FFFFFF")
+        rejected { PluginSchema.validateView(page,5) }
+    }
     private fun manifest() = JSONObject("""{"id":"example","name":"示例","version":"0.1.0","api":1,"pages":[{"id":"main","title":"示例","view":"views/main.json"}]}""")
     private fun rejected(block: () -> Unit) {
         try { block(); fail("Unsupported plugin declaration must be rejected") }
@@ -71,7 +78,7 @@ class PluginSchemaTest {
     }
 
     @Test fun rejectsNewApiAndPrivateFields() {
-        rejected { PluginSchema.validateManifest(manifest().put("api", 5)) }
+        rejected { PluginSchema.validateManifest(manifest().put("api", 6)) }
         rejected { PluginSchema.validateManifest(manifest().put("privateBridge", true)) }
         rejected { PluginSchema.validateManifest(manifest().put("main", "../escape.lua")) }
     }

@@ -1,0 +1,242 @@
+--------- beginning of system
+--------- beginning of crash
+--------- beginning of main
+10-31 01:22:15.121 12620 12734 D ThinkOS : [store:gallery] persisted coalesced snapshot
+10-31 01:22:17.952 12620 12620 I ThinkOS : Configuration changed without Activity recreation: 1
+10-31 01:22:18.076 12620 12620 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=weather.detail, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=40724, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=88288, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=53469, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=84289, disabled=false, error=null)]
+10-31 01:22:19.265 12620 12620 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=weather.detail, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=37984, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=96714, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=53433, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=90488, disabled=false, error=null)]
+10-31 01:22:19.603 12620 12620 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=weather.detail, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=37984, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=96714, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=53433, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=90488, disabled=false, error=null)]
+10-31 01:22:22.853 12620 12659 I ThinkOS : [plugin:gallery] Bing gallery refreshed zh-CN 13 photos
+10-31 01:22:23.621 12620 12620 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 01:22:23.733 12620 12620 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=weather.detail, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=36474, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=134822, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=53393, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=82542, disabled=false, error=null)]
+10-31 01:22:24.866 12620 12734 D ThinkOS : [store:gallery] persisted coalesced snapshot
+10-31 01:22:24.906 12620 12620 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=weather.detail, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=40600, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=111008, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=62508, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=88789, disabled=false, error=null)]
+10-31 01:22:25.246 12620 12620 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=weather.detail, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=40600, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=111008, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=62508, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=88789, disabled=false, error=null)]
+10-31 01:22:28.023 12620 12620 I ThinkOS : Configuration changed without Activity recreation: 1
+10-31 01:22:28.125 12620 12620 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=weather.detail, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=40600, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=111008, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=62508, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=88789, disabled=false, error=null)]
+10-31 01:22:29.279 12620 12620 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=weather.detail, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=36570, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=119191, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=53669, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=94692, disabled=false, error=null)]
+10-31 01:22:29.623 12620 12620 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=weather.detail, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=36570, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=119191, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=53669, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=94692, disabled=false, error=null)]
+10-31 01:22:32.659 12620 12620 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 01:22:32.757 12620 12620 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=weather.detail, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=40696, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=127292, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=62876, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=84636, disabled=false, error=null)]
+10-31 01:22:33.885 12620 12620 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=weather.detail, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=40696, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=127292, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=62876, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=84636, disabled=false, error=null)]
+10-31 01:22:34.244 12620 12620 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=weather.detail, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=40696, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=127292, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=62876, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=84636, disabled=false, error=null)]
+10-31 01:22:43.153 12620 12620 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=weather.detail, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=40696, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=127292, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=62876, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=84636, disabled=false, error=null)]
+10-31 01:24:27.476 16128 16128 I ThinkOS : tzdata 2026e (419 zones)
+10-31 01:24:27.897 16128 16128 I ThinkOS : Runtime started; local mode, safe=false
+10-31 01:24:27.900 16128 16128 I ThinkOS : Activity created; orientation=1
+10-31 01:24:28.241 16128 16128 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 01:24:28.694 16128 16163 I ThinkOS : time sync: 0.pool.ntp.org 120.236.184.252 offset=124ms rtt=35ms
+10-31 01:24:28.743 16128 16164 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 01:24:29.161 16128 16164 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 01:24:29.211 16128 16164 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 01:24:29.381 16128 16164 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 01:24:29.506 16128 16164 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 01:24:29.778 16128 16164 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99679 bytes
+10-31 01:24:34.370 16128 16164 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 01:24:36.387 16128 16189 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-31 01:24:39.173 16316 16316 I ThinkOS : tzdata 2026e (419 zones)
+10-31 01:24:39.635 16316 16316 I ThinkOS : Runtime started; local mode, safe=false
+10-31 01:24:39.898 16316 16316 I ThinkOS : Activity created; orientation=2
+10-31 01:24:40.543 16316 16360 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 01:24:40.953 16316 16360 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 01:24:41.003 16316 16360 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 01:24:41.183 16316 16360 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 01:24:41.307 16316 16360 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 01:24:41.579 16316 16360 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99679 bytes
+10-31 01:24:42.162 16316 16360 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 41786 bytes
+10-31 01:24:43.078 16471 16471 I ThinkOS : tzdata 2026e (419 zones)
+10-31 01:24:43.405 16471 16471 I ThinkOS : Runtime started; local mode, safe=false
+10-31 01:24:43.407 16471 16471 I ThinkOS : Activity created; orientation=1
+10-31 01:24:43.568 16471 16471 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 01:24:44.195 16471 16490 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 01:24:44.603 16471 16490 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 01:24:44.651 16471 16490 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 01:24:44.823 16471 16490 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 01:24:44.954 16471 16490 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 01:24:45.243 16471 16490 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99679 bytes
+10-31 01:24:45.843 16471 16490 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 41786 bytes
+10-31 01:24:46.634 16471 16489 I ThinkOS : time sync: 1.pool.ntp.org 139.199.215.251 offset=125ms rtt=29ms
+10-31 01:24:48.499 16471 16490 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 01:24:50.584 16471 16509 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-31 01:24:52.696 16471 16471 I ThinkOS : theme=DARK lux=4.5
+10-31 01:24:59.914 16471 16471 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+10-31 01:25:02.254 16471 16471 I ThinkOS : Configuration changed without Activity recreation: 1
+10-31 01:25:03.234 16471 16471 I ThinkOS : theme=DARK lux=4.5
+10-31 01:25:07.861 16471 16471 I ThinkOS : theme=DARK lux=4.5
+10-31 01:25:10.280 16471 16471 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+10-31 01:25:17.815 16471 16471 I ThinkOS : theme=DARK lux=4.5
+10-31 01:25:21.964 16471 16471 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+10-31 01:25:22.674 16471 16490 I ThinkOS : [plugin:gallery] Bing gallery refreshed en-US 13 photos
+10-31 01:25:24.700 16471 16509 D ThinkOS : [store:gallery] persisted coalesced snapshot
+10-31 01:25:27.143 16471 16471 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 01:25:33.980 16471 16471 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+10-31 01:25:38.164 16471 16490 I ThinkOS : [plugin:gallery] Bing gallery refreshed zh-CN 13 photos
+10-31 01:25:38.232 16471 16471 I ThinkOS : theme=DARK lux=4.5
+10-31 01:25:38.883 16532 16532 I ThinkOS : tzdata 2026e (419 zones)
+10-31 01:25:44.004 16532 16532 I ThinkOS : Runtime started; local mode, safe=false
+10-31 01:25:44.225 16532 16532 I ThinkOS : Activity created; orientation=2
+10-31 01:25:44.820 16532 16595 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 01:25:45.217 16532 16595 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 78406 bytes
+10-31 01:25:45.268 16532 16595 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 01:25:45.441 16532 16595 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 01:25:45.574 16532 16595 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 01:25:45.847 16532 16595 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99679 bytes
+10-31 01:25:47.060 16532 16595 I ThinkOS : [plugin:gallery] Bing gallery refreshed zh-CN 13 photos
+10-31 01:25:47.096 16532 16594 I ThinkOS : time sync: 1.pool.ntp.org 139.199.215.251 offset=125ms rtt=26ms
+10-31 01:25:49.088 16532 16617 D ThinkOS : [store:gallery] persisted coalesced snapshot
+10-31 01:25:49.352 16532 16595 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 01:25:51.381 16532 16617 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-31 01:25:56.435 16532 16532 I ThinkOS : theme=NIGHT lux=4.949997
+10-31 01:27:38.882 16770 16770 I ThinkOS : tzdata 2026e (419 zones)
+10-31 01:27:39.179 16770 16770 I ThinkOS : Runtime started; local mode, safe=false
+10-31 01:27:39.503 16770 16770 I ThinkOS : Activity created; orientation=1
+10-31 01:27:39.669 16770 16770 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 01:27:39.894 16770 16821 I ThinkOS : time sync: 0.pool.ntp.org 120.236.184.252 offset=127ms rtt=35ms
+10-31 01:27:40.023 16770 16822 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 01:27:40.458 16770 16822 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 01:27:40.507 16770 16822 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 01:27:40.689 16770 16822 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 01:27:40.815 16770 16822 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 01:27:41.086 16770 16822 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99679 bytes
+10-31 01:27:41.918 16770 16822 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 41786 bytes
+10-31 01:27:42.909 16941 16941 I ThinkOS : tzdata 2026e (419 zones)
+10-31 01:27:43.224 16941 16941 I ThinkOS : Runtime started; local mode, safe=false
+10-31 01:27:43.226 16941 16941 I ThinkOS : Activity created; orientation=1
+10-31 01:27:43.373 16941 16941 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 01:27:43.973 16941 16960 I ThinkOS : time sync: 0.pool.ntp.org 120.236.184.252 offset=127ms rtt=30ms
+10-31 01:27:44.010 16941 16961 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 01:27:44.414 16941 16961 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 01:27:44.463 16941 16961 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 01:27:44.630 16941 16961 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 01:27:44.764 16941 16961 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 01:27:45.053 16941 16961 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99679 bytes
+10-31 01:27:45.639 16941 16961 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 41786 bytes
+10-31 01:27:45.764 16941 16941 W ThinkOS : tile color invalid (tile-probe/card): ''; falling back
+10-31 01:27:45.855 16941 16941 W ThinkOS : tile color invalid (tile-probe/card): ''; falling back
+10-31 01:27:45.879 16941 16941 W ThinkOS : tile color invalid (tile-probe/reference): ''; falling back
+10-31 01:27:48.573 16941 16961 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 01:27:50.604 16941 16979 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-31 01:27:52.438 16941 16941 I ThinkOS : theme=DARK lux=3.300003
+10-31 01:27:59.599 16941 16941 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+10-31 01:28:01.899 16941 16941 I ThinkOS : Configuration changed without Activity recreation: 1
+10-31 01:28:02.876 16941 16941 I ThinkOS : theme=DARK lux=3.300003
+10-31 01:28:07.446 16941 16941 I ThinkOS : theme=DARK lux=3.300003
+10-31 01:28:09.839 16941 16941 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+10-31 01:28:17.273 16941 16941 I ThinkOS : theme=DARK lux=3.300003
+10-31 01:28:21.737 16941 16941 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+10-31 01:28:22.121 16941 16961 I ThinkOS : [plugin:gallery] Bing gallery refreshed en-US 13 photos
+10-31 01:28:24.141 16941 16979 D ThinkOS : [store:gallery] persisted coalesced snapshot
+10-31 01:28:26.548 16941 16941 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 01:28:33.766 16941 16941 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+10-31 01:28:37.096 16941 16941 I ThinkOS : theme=DARK lux=3.300003
+10-31 01:28:45.760 16941 16941 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+10-31 01:28:45.764 16941 16941 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+10-31 01:28:48.639 16941 16941 W ThinkOS : glance in tiles: clock; displaying empty tile
+10-31 01:28:50.174 16941 16961 I ThinkOS : [plugin:gallery] Bing gallery refreshed zh-CN 13 photos
+10-31 01:28:50.246 16941 16941 I ThinkOS : attention=ENGAGED
+10-31 01:28:50.871 17004 17004 I ThinkOS : tzdata 2026e (419 zones)
+10-31 01:28:59.561 17197 17197 I ThinkOS : tzdata 2026e (419 zones)
+10-31 01:29:00.100 17197 17197 I ThinkOS : Runtime started; local mode, safe=false
+10-31 01:29:00.377 17197 17197 I ThinkOS : Activity created; orientation=2
+10-31 01:29:01.019 17197 17242 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 01:29:01.100 17197 17241 I ThinkOS : time sync: 0.pool.ntp.org 120.236.184.252 offset=125ms rtt=35ms
+10-31 01:29:01.426 17197 17242 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 78406 bytes
+10-31 01:29:01.476 17197 17242 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 01:29:01.651 17197 17242 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 01:29:01.777 17197 17242 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 01:29:02.048 17197 17242 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99679 bytes
+10-31 01:29:02.645 17197 17242 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 41786 bytes
+10-31 01:29:03.647 17363 17363 I ThinkOS : tzdata 2026e (419 zones)
+10-31 01:29:03.910 17363 17363 I ThinkOS : Runtime started; local mode, safe=false
+10-31 01:29:03.914 17363 17363 I ThinkOS : Activity created; orientation=1
+10-31 01:29:04.276 17363 17363 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 01:29:04.662 17363 17383 I ThinkOS : time sync: 0.pool.ntp.org 120.236.184.252 offset=125ms rtt=31ms
+10-31 01:29:04.719 17363 17384 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 01:29:05.122 17363 17384 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 78406 bytes
+10-31 01:29:05.176 17363 17384 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 01:29:05.341 17363 17384 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 01:29:05.468 17363 17384 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 01:29:05.754 17363 17384 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99679 bytes
+10-31 01:29:06.368 17363 17384 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 41786 bytes
+10-31 01:29:07.247 17363 17384 I ThinkOS : [plugin:gallery] Bing gallery refreshed zh-CN 13 photos
+10-31 01:29:08.594 17363 17384 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 01:29:09.267 17363 17409 D ThinkOS : [store:gallery] persisted coalesced snapshot
+10-31 01:29:10.617 17363 17409 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-31 01:29:18.440 17363 17363 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+10-31 01:29:29.674 17363 17363 I ThinkOS : attention=AMBIENT
+10-31 01:29:30.441 17363 17363 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+10-31 01:29:35.702 17363 17363 I ThinkOS : attention=AWAKE
+10-31 01:29:51.403 17363 17363 I ThinkOS : attention=ENGAGED
+10-31 01:29:52.010 17425 17425 I ThinkOS : tzdata 2026e (419 zones)
+10-31 01:29:59.021 17582 17582 I ThinkOS : tzdata 2026e (419 zones)
+10-31 01:29:59.564 17582 17582 I ThinkOS : Runtime started; local mode, safe=false
+10-31 01:29:59.822 17582 17582 I ThinkOS : Activity created; orientation=2
+10-31 01:30:00.361 17582 17629 I ThinkOS : time sync: 0.pool.ntp.org 120.236.184.252 offset=127ms rtt=30ms
+10-31 01:30:00.463 17582 17630 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 01:30:00.879 17582 17630 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 01:30:00.935 17582 17630 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 01:30:01.110 17582 17630 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 01:30:01.235 17582 17630 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 01:30:01.506 17582 17630 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99679 bytes
+10-31 01:30:02.110 17582 17630 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 41786 bytes
+10-31 01:30:02.257 17582 17630 I ThinkOS : [plugin:legacy-three] loaded 1.0.0; Lua 40551 bytes
+10-31 01:30:03.594 17766 17766 I ThinkOS : tzdata 2026e (419 zones)
+10-31 01:30:03.869 17766 17766 I ThinkOS : Runtime started; local mode, safe=false
+10-31 01:30:03.872 17766 17766 I ThinkOS : Activity created; orientation=1
+10-31 01:30:04.232 17766 17766 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 01:30:04.660 17766 17785 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 01:30:05.072 17766 17785 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 01:30:05.122 17766 17785 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 01:30:05.284 17766 17785 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 01:30:05.418 17766 17785 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 01:30:05.709 17766 17785 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99679 bytes
+10-31 01:30:05.899 17766 17785 I ThinkOS : [plugin:legacy-three] loaded 1.0.0; Lua 40551 bytes
+10-31 01:30:06.405 17766 17785 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 41786 bytes
+10-31 01:30:09.530 17766 17785 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 01:30:10.938 17766 17784 I ThinkOS : time sync: 1.pool.ntp.org 119.28.206.193 offset=113ms rtt=63ms
+10-31 01:30:11.396 17766 17766 D ThinkOS : [image:legacy-three] displayed asset:assets/sample.png
+10-31 01:30:11.556 17766 17807 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-31 01:30:12.455 17766 17766 D ThinkOS : [image:legacy-three] displayed asset:assets/sample.png
+10-31 01:30:12.961 17766 17766 I ThinkOS : attention=ENGAGED
+10-31 01:30:13.581 17811 17811 I ThinkOS : tzdata 2026e (419 zones)
+10-31 01:30:34.422 17811 17811 I ThinkOS : Runtime started; local mode, safe=false
+10-31 01:30:34.652 17811 17811 I ThinkOS : Activity created; orientation=2
+10-31 01:30:35.250 17811 17852 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 01:30:35.664 17811 17852 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 01:30:35.716 17811 17852 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 01:30:35.892 17811 17852 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 01:30:36.018 17811 17852 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 01:30:36.294 17811 17852 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99679 bytes
+10-31 01:30:39.339 17811 17851 I ThinkOS : time sync: 1.pool.ntp.org 139.199.215.251 offset=126ms rtt=26ms
+10-31 01:30:40.160 17811 17852 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 01:30:42.215 17811 17873 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-31 01:30:44.866 17811 17811 I ThinkOS : theme=NIGHT lux=3.0
+10-31 01:31:29.757 17896 17896 I ThinkOS : tzdata 2026e (419 zones)
+10-31 01:31:30.811 17896 17896 I ThinkOS : Runtime started; local mode, safe=false
+10-31 01:31:30.818 17896 17896 I ThinkOS : Activity created; orientation=2
+10-31 01:31:30.891 17896 17976 W ThinkOS : time sync failed (1); retry in 30s
+10-31 01:31:31.666 17896 17977 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 01:31:32.094 17896 17977 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 01:31:32.143 17896 17977 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 01:31:32.304 17896 17977 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 01:31:32.434 17896 17977 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 01:31:32.709 17896 17977 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99679 bytes
+10-31 01:31:35.744 17896 17896 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=36894, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=101266, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=100555, disabled=false, error=null)]
+10-31 01:31:35.783 17896 17977 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/188.40.99.226:443
+10-31 01:31:37.748 17896 17896 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=clock.face, variant=solar, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=40937, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=101266, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=106979, disabled=false, error=null)]
+10-31 01:31:39.081 17896 17896 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 01:31:39.083 17896 17896 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 01:31:39.691 17896 17896 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=41840, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=102219, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=106979, disabled=false, error=null)]
+10-31 01:31:41.747 17896 17896 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=tiles.main, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=41840, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=103122, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=106979, disabled=false, error=null)]
+10-31 01:31:48.201 17896 17896 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=tiles.main, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=41840, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=103122, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=106979, disabled=false, error=null)]
+10-31 01:32:00.970 17896 17976 W ThinkOS : time sync failed (2); retry in 60s
+10-31 01:32:20.487 17896 17896 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=tiles.main, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=45846, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=103122, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=111863, disabled=false, error=null)]
+10-31 01:32:37.894 17896 17977 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/188.40.99.226:443
+10-31 01:32:52.763 17896 17896 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=tiles.main, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=45846, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=103122, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=78958, disabled=false, error=null)]
+10-31 01:33:01.086 17896 17976 W ThinkOS : time sync failed (3); retry in 120s
+10-31 01:33:25.123 17896 17896 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=tiles.main, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=49852, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=103122, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=83842, disabled=false, error=null)]
+10-31 01:33:57.383 17896 17896 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=tiles.main, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=49852, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=103122, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=83842, disabled=false, error=null)]
+10-31 01:34:29.743 17896 17896 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=tiles.main, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=53858, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=103122, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=88726, disabled=false, error=null)]
+10-31 01:34:40.014 17896 17977 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/188.40.99.226:443
+10-31 01:35:01.210 17896 17976 W ThinkOS : time sync failed (4); retry in 240s
+10-31 01:35:02.104 17896 17896 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=tiles.main, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=57864, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=103122, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=99904, disabled=false, error=null)]

@@ -21,6 +21,7 @@ plugins/<id>/
 | `weather` | 天气卡片 + 详情页 |
 | `gallery` | 默认 Bing 每日一图，可选本地/混合；API 3 平移轮播、预览和离线缓存，无需 Server |
 | `tiles` | API 4 纯声明磁贴页面，引用时钟、天气与相册的 tile |
+| `aero` | API 5 纯声明原生 Aero 桌面，引用 clock.desktop、weather.now、gallery.preview |
 | `settings` | 原生设置页 |
 | `music` | 待实现 |
 | `notify` | 待实现 |

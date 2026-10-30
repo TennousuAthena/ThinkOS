@@ -94,6 +94,14 @@ class PluginPackageTests(unittest.TestCase):
             with self.assertRaises(tools.ValidationError): tools.validate_view(dict(tile, content=content), 4)
         with self.assertRaises(tools.ValidationError): tools.validate_view({'layout': 'tiles', 'slots': {'tiles': [{'widget': 'clock.tile', 'size': 'huge'}]}}, 4)
 
+    def test_api_five_aero_is_fixed_bounded_vocabulary(self):
+        page = {'layout': 'aero', 'slots': {'windows': [{'widget': 'clock.desktop'}]}}
+        tools.validate_view(page, 5)
+        for api in range(1, 5):
+            with self.assertRaises(tools.ValidationError): tools.validate_view(page, api)
+        for windows in [[], [{'widget': 'clock.desktop'}] * 4, [{'widget': 'clock.desktop', 'color': '#ffffff'}]]:
+            with self.assertRaises(tools.ValidationError): tools.validate_view({'layout': 'aero', 'slots': {'windows': windows}}, 5)
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
@@ -108,7 +116,7 @@ class PluginPackageTests(unittest.TestCase):
         path.write_text(json.dumps(data))
 
     def test_builtin_packages_validate_and_are_reproducible(self):
-        for name in ('home', 'clock', 'weather', 'gallery', 'tiles', 'settings'):
+        for name in ('home', 'clock', 'weather', 'gallery', 'tiles', 'aero', 'settings'):
             first, digest = packages.package_plugin(ROOT / 'plugins' / name, self.root / 'a')
             second, again = packages.package_plugin(ROOT / 'plugins' / name, self.root / 'b')
             self.assertEqual(digest, again)
@@ -197,7 +205,7 @@ class PluginPackageTests(unittest.TestCase):
         self.assertEqual(list((device / 'files/dev-plugins').iterdir()), [device / 'files/dev-plugins/clock'])
 
     def test_new_api_is_rejected(self):
-        self.manifest(lambda data: data.update(api=5))
+        self.manifest(lambda data: data.update(api=6))
         with self.assertRaises(packages.ValidationError): packages.validate_plugin(self.plugin)
 
     def test_traversal_reference_is_rejected(self):

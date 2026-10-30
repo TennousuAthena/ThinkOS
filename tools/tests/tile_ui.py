@@ -22,6 +22,7 @@ def main():
     p.add_argument('--keep-fixture',action='store_true')
     p.add_argument('--live',action='store_true')
     p.add_argument('--plugins',action='store_true')
+    p.add_argument('--aero',action='store_true')
     args=p.parse_args();args.output.mkdir(parents=True,exist_ok=True)
     adb=['adb','-s',args.serial]
     if not args.skip_build:
@@ -40,6 +41,7 @@ def main():
         command=adb+['shell','am','instrument','-w']
         if args.live:command+=['-e','live','true']
         if args.plugins:command+=['-e','plugins','true']
+        if args.aero:command+=['-e','aero','true']
         completed=subprocess.run(command+['moe.kiwi.thinkos.test/moe.kiwi.thinkos.TileInstrumentation'],capture_output=True,timeout=300)
         (args.output/'instrumentation.txt').write_bytes(completed.stdout+completed.stderr)
         raw=read_app_file(args.serial,'files/tiles-validation/report.json')

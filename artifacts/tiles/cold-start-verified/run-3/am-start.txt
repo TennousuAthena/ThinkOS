@@ -1,0 +1,7 @@
+Starting: Intent { cmp=moe.kiwi.thinkos/.MainActivity }
+Status: ok
+Activity: moe.kiwi.thinkos/.MainActivity
+ThisTime: 853
+TotalTime: 853
+WaitTime: 918
+Complete

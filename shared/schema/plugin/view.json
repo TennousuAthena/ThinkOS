@@ -26,6 +26,9 @@
     },
     {
       "$ref": "layouts.json#/$defs/tile"
+    },
+    {
+      "$ref": "layouts.json#/$defs/aero"
     }
   ]
 }

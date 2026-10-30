@@ -251,7 +251,9 @@ class ThinkStage(
     private fun position(view: View, value: Float, vertical: Boolean) {
         if (vertical) view.translationY = value else view.translationX = value
     }
+    private fun syncAmbient() { ambient.covered(current?.opaque == true && neighbor == null && axis == 0) }
     private fun prepareNeighbor(direction: Int, vertical: Boolean) {
+        ambient.covered(false)
         if (dragDirection == direction && neighbor != null) return
         neighbor?.let(pageHost::removeView)
         neighbor = null
@@ -287,6 +289,7 @@ class ThinkStage(
             applyNight()
             themeAnimating = t < 1
         }
+        syncAmbient()
         ambient.tick(now)
         current?.tick(now, governor.attention)
         neighbor?.tick(now, governor.attention)
@@ -501,6 +504,13 @@ private class AmbientLayer(context: Context) : FrameLayout(context) {
     private val breath = PropertyBreath(disk, .38f, 1f, 1.025f)
     private var attention = Attention.AMBIENT
     private var reduced = false
+    private var covered = false
+    fun covered(value: Boolean) {
+        if (covered == value) return
+        covered = value
+        disk.visibility = if (value) INVISIBLE else VISIBLE
+        mode(attention, reduced)
+    }
     init { clipChildren = true; addView(disk) }
     fun colors(value: Palette) {
         setBackgroundColor(value.bg)
@@ -510,10 +520,10 @@ private class AmbientLayer(context: Context) : FrameLayout(context) {
     fun mode(level: Attention, reducedMotion: Boolean) {
         attention = level
         reduced = reducedMotion
-        val active = level in setOf(Attention.AWAKE, Attention.ENGAGED) && !reducedMotion && ValueAnimator.areAnimatorsEnabled()
+        val active = !covered && level in setOf(Attention.AWAKE, Attention.ENGAGED) && !reducedMotion && ValueAnimator.areAnimatorsEnabled()
         if (active && isAttachedToWindow) breath.start() else pause()
     }
-    fun tick(now: Long) { if (!breath.running && !reduced) applyPhase(now.mod(Motion.BREATH).toFloat() / Motion.BREATH) }
+    fun tick(now: Long) { if (!covered && !breath.running && !reduced) applyPhase(now.mod(Motion.BREATH).toFloat() / Motion.BREATH) }
     private fun applyPhase(phase: Float) {
         val breath = ((sin(phase * Math.PI * 2) + 1) / 2).toFloat()
         disk.scaleX = 1f + .025f * breath

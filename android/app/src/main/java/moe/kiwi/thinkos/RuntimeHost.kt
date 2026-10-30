@@ -77,6 +77,8 @@ class RuntimeHost(private val context: Context) : PluginRuntime.Callbacks {
         override val tilesIntervalMillis get() = system.tilesIntervalMillis
         override fun send(pluginId: String, name: String, args: List<Any?>) = plugins.event(pluginId, name, JSONArray(args))
         override fun closeSettings() = router.closeSettings()
+        override fun openSettings(owner: String) = this@RuntimeHost.openSettings(owner)
+        override fun openPage(key: String) = router.open(key)
         override fun settingsInteraction() { router.noteInteraction(); sensors.touch() }
         override fun text(pluginId: String, key: String): String? = plugins.text(pluginId, key)
         override fun component(context: Context, pluginId: String, definition: JSONObject) = images.create(context, pluginId, definition)

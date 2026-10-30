@@ -1,0 +1,14 @@
+{
+  "id": "aero",
+  "name": "Aero",
+  "version": "0.1.0",
+  "api": 5,
+  "permissions": [],
+  "pages": [
+    {
+      "id": "main",
+      "title": "Aero",
+      "view": "views/main.json"
+    }
+  ]
+}

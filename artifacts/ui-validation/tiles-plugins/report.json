@@ -4,11 +4,13 @@
     "pure declaration tiles page resolves all three API 4 plugins",
     "cross-plugin long press opens weather settings, not tiles settings",
     "weather removal publishes empty placeholder without crashing",
-    "weather catalog reinstall restores tile"
+    "weather catalog reinstall restores tile",
+    "API 3 plugin runs Lua and decodes its local image through public vocabulary"
   ],
   "screens": [
     "builtin-tiles",
     "weather-removed",
-    "weather-restored"
+    "weather-restored",
+    "legacy-api-three"
   ]
 }

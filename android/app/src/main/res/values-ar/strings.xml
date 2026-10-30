@@ -98,4 +98,7 @@
     <string name="setting_group_tiles">المربعات الحية</string>
     <string name="setting_tiles_live">تبديل محتوى المربعات تلقائيًا</string>
     <string name="setting_tiles_interval">الفاصل بين تحديثات المربعات</string>
+    <string name="aero_desktop">سطح المكتب</string>
+    <string name="aero_start">ابدأ</string>
+    <string name="aero_open">فتح</string>
 </resources>

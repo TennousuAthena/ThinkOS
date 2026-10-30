@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "layouts.json",
-  "description": "Fixed OS render vocabulary. API 1: stacks/focus/form/glance and text/icon/clock. API 2: progress/chart/list/daylight/moon, groups, split/stage, tap and weight. No plugin styles or executable view expressions. API 3: local/asset/HTTP(S) image and carousel with lossless framing and native panning. API 4: tiles grid and tile template; only tile backgrounds allow plugin colors (ADR-025).",
+  "description": "Fixed OS render vocabulary. API 1: stacks/focus/form/glance and text/icon/clock. API 2: progress/chart/list/daylight/moon, groups, split/stage, tap and weight. No plugin styles or executable view expressions. API 3: local/asset/HTTP(S) image and carousel with lossless framing and native panning. API 4: tiles grid and tile template; only tile backgrounds allow plugin colors (ADR-025). API 5: fixed Aero desktop with up to three referenced widget windows; all chrome belongs to OS.",
   "$defs": {
     "component": {
       "oneOf": [
@@ -1243,10 +1243,45 @@
       "x-thinkos-slot-roles": {
         "tiles": "tiles"
       }
+    },
+    "aero": {
+      "title": "SchemaAero",
+      "type": "object",
+      "required": [
+        "layout",
+        "slots"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "layout": {
+          "const": "aero"
+        },
+        "slots": {
+          "title": "SchemaAeroSlots",
+          "type": "object",
+          "required": [
+            "windows"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "windows": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 3,
+              "items": {
+                "$ref": "#/$defs/widgetReference"
+              }
+            }
+          }
+        }
+      },
+      "x-thinkos-slot-roles": {
+        "windows": "aero"
+      }
     }
   },
   "x-thinkos-api": {
-    "current": 4,
+    "current": 5,
     "componentTypes": {
       "text": 1,
       "icon": 1,
@@ -1266,7 +1301,8 @@
       "form": 1,
       "split": 2,
       "stage": 2,
-      "tiles": 4
+      "tiles": 4,
+      "aero": 5
     },
     "componentProperties": {
       "tap": 2,

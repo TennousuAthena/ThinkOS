@@ -16,6 +16,8 @@ class DeckRouter(
     private val ambientDelayMillis: () -> Long = { 300_000L },
 ) {
     private val preferences = context.getSharedPreferences("deck", Context.MODE_PRIVATE)
+    var lastNavigationReason = "initial"; private set
+    var navigationGeneration = 0L; private set
     var pages: List<PluginPage> = emptyList(); private set
     private var lastLocal = Long.MIN_VALUE
     private var previousLive: DeckState? = null
@@ -104,14 +106,14 @@ class DeckRouter(
         lastLocal = SystemClock.elapsedRealtime()
         previousLive = null; livePage = null
         val index = deck.indexOfFirst { it.key == store.current.deck.page }.coerceAtLeast(0)
-        select(deck[Math.floorMod(index + delta, deck.size)], delta, false)
+        select(deck[Math.floorMod(index + delta, deck.size)], delta, false, reason = "swipe")
     }
     fun open(pageKey: String) {
         if (settingsOpen) return
         val page = pages.firstOrNull { it.key == pageKey } ?: return
         lastLocal = SystemClock.elapsedRealtime()
         previousLive = null; livePage = null
-        select(page, 1, false)
+        select(page, 1, false, reason = "open")
     }
     fun changeVariant(delta: Int) {
         if (settingsOpen) return
@@ -155,12 +157,13 @@ class DeckRouter(
             wasAsleep -> pages.firstOrNull { "home" in it.roles }?.let { select(it, 0, false) }
         }
     }
-    private fun select(page: PluginPage, direction: Int, vertical: Boolean, forcedVariant: String? = null, params: JSONObject? = null) {
+    private fun select(page: PluginPage, direction: Int, vertical: Boolean, forcedVariant: String? = null, params: JSONObject? = null, reason: String = "system") {
         if (store.current.theme == Theme.NIGHT && "ambient" in page.roles) {
             pages.firstOrNull { "sleep" in it.roles && "ambient" !in it.roles }?.let { select(it, direction, false) }
             return
         }
         val old = currentPage
+        if (old?.key != page.key) { lastNavigationReason = reason; navigationGeneration++ }
         val stored = forcedVariant ?: preferences.getString(page.key, null)
         val variant = stored?.takeIf { it in page.variants } ?: page.variants.firstOrNull() ?: "digital"
         if (old?.key != page.key) old?.let { onPageEvent(it.pluginId, "page.leave", JSONArray().put(it.id)) }

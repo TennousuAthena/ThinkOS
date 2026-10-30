@@ -1,0 +1,16 @@
+Performing Streamed Install
+Success
+Performing Streamed Install
+Success
+Deleted 1 rows
+PASS six orientation/theme groups; four sizes; square corners; glyph bounds
+PASS zh-Hans/en/ar/hi; native RTL and no clipped glyphs
+PASS Lua color changes animate without rebuilding views; invalid values fall back
+PASS tap opens widget page
+PASS long press opens owning plugin settings
+PASS editing color in native settings immediately changes tile
+PASS horizontal swipe changes page
+PASS vertical swipe changes variant
+PASS all twelve additional native icons render
+PASS tile in stacks uses large template
+PASS glance and missing references show safe empty tiles

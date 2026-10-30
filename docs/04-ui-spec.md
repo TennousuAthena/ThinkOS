@@ -303,3 +303,10 @@
 用户补充（2026-10-31）：以 Windows Phone / Windows 8.1 的 Metro 磁贴为参照。磁贴必须直角、平面、无阴影；网格基础单元保持正方形；信息以大号轻字重数字为主、标签锚定底部起始侧、纯色留白，不沿用普通圆角卡片的排版。RTL 镜像网格和内容。参考微软 [Windows Phone 设计建议](https://blogs.windows.com/windowsdeveloper/2013/01/18/8-tips-for-designing-windows-phone-apps/) 与 [Windows/Phone 8.1 磁贴模板目录](https://learn.microsoft.com/en-us/previous-versions/windows/apps/hh761491(v=win.10))。使用现有 Android 字体，不分发 Segoe。当前沿用 Windows 8.1 的垂直 peek 方向，不采用 Phone 的 3D 翻转。
 
 真机发现夜间红色矩阵会压低中灰底的对比度。磁贴按合成后的颜色选择黑白前景；两者都低于 4.5:1 时，仅在夜间把底色向最近的可读亮/暗端补偿。浅色/深色完全保留插件底色；夜间仍经过统一根层滤镜。
+
+
+## 原生 Aero 桌面（API 5 / ADR-026）
+
+`aero` 是独立的固定 OS 版式。原创蓝色丝带桌面、玻璃窗口双边线、高光、微小景深、52dp 底部任务栏与原生开始菜单构成整体。窗口 5dp 圆角只用于 Aero；tiles 一律 0dp。桌面与玻璃通过缓存的 Canvas 渐变绘制，不实时模糊。原生模拟钟、天气和完整照片来自普通 widget 引用，横竖屏自动重排；菜单和任务栏均有实际导航，保留所属插件长按设置与横向翻页。
+
+窗口标题、菜单与时间日期跟随系统语言/格式；夜间标题按合成后颜色选前景。此版式不增加插件外观选项，现有 ambient/sleep/home 角色继续沿用。设计与来源见 `25-windows-design.md`。

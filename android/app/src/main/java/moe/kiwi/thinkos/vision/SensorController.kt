@@ -59,7 +59,8 @@ class SensorController(
     fun debugHoldTheme(value: Theme?) { if (BuildConfig.DEBUG) { heldTheme = value; evaluate() } }
     fun debugInjectLux(value: Float?) { injectedLux = value; evaluate() }
     fun debugPresence(value: Boolean) { attention.presence(value, SystemClock.elapsedRealtime()); onPluginEvent("presence", JSONArray().put(value)); evaluate() }
-    fun touch() { attention.touch(SystemClock.elapsedRealtime()); evaluate() }
+    var debugTouchCount = 0L; private set
+    fun touch() { if (BuildConfig.DEBUG) debugTouchCount++; attention.touch(SystemClock.elapsedRealtime()); evaluate() }
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
     override fun onSensorChanged(event: SensorEvent) {
         when (event.sensor.type) {

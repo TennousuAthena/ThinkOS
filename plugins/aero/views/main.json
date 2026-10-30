@@ -1,0 +1,16 @@
+{
+  "layout": "aero",
+  "slots": {
+    "windows": [
+      {
+        "widget": "clock.desktop"
+      },
+      {
+        "widget": "weather.now"
+      },
+      {
+        "widget": "gallery.preview"
+      }
+    ]
+  }
+}

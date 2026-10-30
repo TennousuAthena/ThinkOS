@@ -1,0 +1,15 @@
+Chain OUTPUT (policy ACCEPT 2013 packets, 2271K bytes)
+ pkts bytes target     prot opt in     out     source               destination         
+   40  2912 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            owner UID match 10074 reject-with icmp-port-unreachable
+ 233K  123M oem_out    all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+ 233K  123M fw_OUTPUT  all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+ 233K  123M st_OUTPUT  all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+ 233K  123M bw_OUTPUT  all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+
+Chain OUTPUT (policy ACCEPT 10 packets, 728 bytes)
+ pkts bytes target     prot opt in     out     source               destination         
+    0     0 REJECT     all      *      *       ::/0                 ::/0                 owner UID match 10074 reject-with icmp6-port-unreachable
+  864 68185 oem_out    all      *      *       ::/0                 ::/0                
+  864 68185 fw_OUTPUT  all      *      *       ::/0                 ::/0                
+  864 68185 st_OUTPUT  all      *      *       ::/0                 ::/0                
+  864 68185 bw_OUTPUT  all      *      *       ::/0                 ::/0                

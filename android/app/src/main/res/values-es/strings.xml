@@ -98,4 +98,7 @@
     <string name="setting_group_tiles">Mosaicos dinámicos</string>
     <string name="setting_tiles_live">Cambiar el contenido automáticamente</string>
     <string name="setting_tiles_interval">Intervalo entre cambios</string>
+    <string name="aero_desktop">Escritorio</string>
+    <string name="aero_start">Inicio</string>
+    <string name="aero_open">Abrir</string>
 </resources>

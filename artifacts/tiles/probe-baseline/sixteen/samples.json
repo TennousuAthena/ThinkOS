@@ -1,0 +1,474 @@
+[
+  {
+    "elapsed": 0.09495654198690318,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "337595"
+    },
+    "pssKiB": 53908,
+    "luaBytes": 337595
+  },
+  {
+    "elapsed": 1.6245867919933517,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "322340"
+    }
+  },
+  {
+    "elapsed": 2.8572267499985173,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "322340"
+    }
+  },
+  {
+    "elapsed": 4.144946166983573,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "322340"
+    }
+  },
+  {
+    "elapsed": 5.428714167006547,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "323404"
+    }
+  },
+  {
+    "elapsed": 6.671893916995032,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "323404"
+    }
+  },
+  {
+    "elapsed": 7.874656667001545,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "323404"
+    }
+  },
+  {
+    "elapsed": 9.109504332998767,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "324468"
+    }
+  },
+  {
+    "elapsed": 10.333972291991813,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "324468"
+    }
+  },
+  {
+    "elapsed": 11.571263874997385,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "324468"
+    }
+  },
+  {
+    "elapsed": 12.789925166987814,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "325532"
+    }
+  },
+  {
+    "elapsed": 14.029489082982764,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "325532"
+    }
+  },
+  {
+    "elapsed": 15.22926829199423,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "325532"
+    }
+  },
+  {
+    "elapsed": 16.47641050000675,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "326596"
+    }
+  },
+  {
+    "elapsed": 17.70770933298627,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "326596"
+    }
+  },
+  {
+    "elapsed": 18.94569862500066,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "326596"
+    }
+  },
+  {
+    "elapsed": 20.17669254197972,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "326596"
+    }
+  },
+  {
+    "elapsed": 21.50313820800511,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "327660"
+    }
+  },
+  {
+    "elapsed": 22.734039999981178,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "327660"
+    }
+  },
+  {
+    "elapsed": 23.95268429198768,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "327660"
+    }
+  },
+  {
+    "elapsed": 25.195751582999947,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "328724"
+    }
+  },
+  {
+    "elapsed": 26.40806104199146,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "328724"
+    }
+  },
+  {
+    "elapsed": 27.660099917004118,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "328724"
+    }
+  },
+  {
+    "elapsed": 28.984361957991496,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "329788"
+    }
+  },
+  {
+    "elapsed": 30.20324333300232,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "329788"
+    },
+    "pssKiB": 57713,
+    "luaBytes": 329788
+  },
+  {
+    "elapsed": 31.634111207997194,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "329788"
+    }
+  },
+  {
+    "elapsed": 32.868476917006774,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "330852"
+    }
+  },
+  {
+    "elapsed": 34.099326458002906,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "330852"
+    }
+  },
+  {
+    "elapsed": 35.33252583298599,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "330852"
+    }
+  },
+  {
+    "elapsed": 36.57004108300316,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "331916"
+    }
+  },
+  {
+    "elapsed": 37.78178404198843,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "331916"
+    }
+  },
+  {
+    "elapsed": 39.012285624979995,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "331916"
+    }
+  },
+  {
+    "elapsed": 40.24871174999862,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "331916"
+    }
+  },
+  {
+    "elapsed": 41.474752042006,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "332980"
+    }
+  },
+  {
+    "elapsed": 42.68985837500077,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "332980"
+    }
+  },
+  {
+    "elapsed": 43.919959833001485,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22048",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "332980"
+    }
+  }
+]

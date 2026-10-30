@@ -1,4 +1,15 @@
 {
+  "colorChanged": true,
+  "colorAnimationObserved": true,
+  "animatorsEnabled": true,
+  "tilesActive": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+  ],
   "complete": true,
   "passed": [
     "six orientation\/theme groups; four sizes; square corners; glyph bounds",
@@ -9,6 +20,7 @@
     "editing color in native settings immediately changes tile",
     "horizontal swipe changes page",
     "vertical swipe changes variant",
+    "all twelve additional native icons render",
     "tile in stacks uses large template",
     "glance and missing references show safe empty tiles"
   ],
@@ -31,6 +43,7 @@
     "locale-hi",
     "long-press-settings",
     "settings-color-orange",
+    "twelve-icons",
     "tile-in-stack",
     "glance-and-missing-placeholder"
   ]

@@ -1,0 +1,11 @@
+PASS native card and detail fit both orientations in LIGHT
+PASS native card and detail fit both orientations in DARK
+PASS native card and detail fit both orientations in NIGHT
+PASS native detail rebinds ar with localized dates and layout direction
+PASS native detail rebinds zh-CN with localized dates and layout direction
+PASS native forecast list scrolls to the fifth day
+PASS long press on weather card opens its schema settings and unit changes immediately
+PASS three offline cold starts display cached Fahrenheit weather within 3 seconds without budget errors
+PASS long press on detail opens the same persisted unit settings
+PASS all 10 native weather icons render in three themes
+PASS production weather automatically recovers after actual Wi-Fi restoration

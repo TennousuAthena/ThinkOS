@@ -17,6 +17,12 @@ class DebugReceiver : BroadcastReceiver() {
             "orientation" -> host.debugOrientation(intent.getIntExtra("value", 10))
             "maintenance" -> host.debugMaintenance()
             "page" -> intent.getStringExtra("value")?.let { host.router.closeSettings(); host.router.open(it) }
+            "benchmark_state" -> {
+                val s = host.store.current
+                resultData = listOf(s.deck.page, s.attention.name, s.theme.name, s.orientation.name,
+                    android.os.Process.myPid().toString(), host.sensors.debugTouchCount.toString(), host.router.lastNavigationReason,
+                    host.plugins.diagnostics().sumOf { it.bytes }.toString(), host.router.navigationGeneration.toString()).joinToString("|")
+            }
             "state" -> Log.i("ThinkOS", "DEBUG state=${host.store.current} plugins=${host.plugins.diagnostics()}")
             "locale" -> {
                 // Process-local locale for native UI tests; never changes Android's saved language.

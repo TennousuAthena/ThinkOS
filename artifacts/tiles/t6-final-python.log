@@ -1,0 +1,39 @@
+test_missing_file_is_absence_instead_of_error_text_to_restore (test_device_app_files.DeviceAppFilesTest.test_missing_file_is_absence_instead_of_error_text_to_restore) ... ok
+test_offline_device_cannot_be_mistaken_for_missing_data (test_device_app_files.DeviceAppFilesTest.test_offline_device_cannot_be_mistaken_for_missing_data) ... ok
+test_permission_failure_cannot_be_mistaken_for_empty_data (test_device_app_files.DeviceAppFilesTest.test_permission_failure_cannot_be_mistaken_for_empty_data) ... ok
+test_valid_bytes_are_preserved_using_shell_exit_status (test_device_app_files.DeviceAppFilesTest.test_valid_bytes_are_preserved_using_shell_exit_status) ... ok
+test_api_five_aero_is_fixed_bounded_vocabulary (test_plugin_packages.PluginPackageTests.test_api_five_aero_is_fixed_bounded_vocabulary) ... ok
+test_api_four_tiles_contract (test_plugin_packages.PluginPackageTests.test_api_four_tiles_contract) ... ok
+test_api_three_gallery_exposes_bing_and_local_through_shared_interfaces (test_plugin_packages.PluginPackageTests.test_api_three_gallery_exposes_bing_and_local_through_shared_interfaces) ... ok
+test_api_two_rejects_styles_coordinates_and_invalid_weights (test_plugin_packages.PluginPackageTests.test_api_two_rejects_styles_coordinates_and_invalid_weights) ... ok
+test_api_two_vocabulary_is_gated_by_manifest_api (test_plugin_packages.PluginPackageTests.test_api_two_vocabulary_is_gated_by_manifest_api) ... ok
+test_builtin_packages_validate_and_are_reproducible (test_plugin_packages.PluginPackageTests.test_builtin_packages_validate_and_are_reproducible) ... ok
+test_case_collisions_are_rejected (test_plugin_packages.PluginPackageTests.test_case_collisions_are_rejected) ... ok
+test_directory_index_schema_rejects_invalid_metadata (test_plugin_packages.PluginPackageTests.test_directory_index_schema_rejects_invalid_metadata) ... ok
+test_directory_publisher_treats_paths_and_content_as_data (test_plugin_packages.PluginPackageTests.test_directory_publisher_treats_paths_and_content_as_data) ... ok
+test_duplicate_json_keys_are_rejected (test_plugin_packages.PluginPackageTests.test_duplicate_json_keys_are_rejected) ... ok
+test_duplicate_page_ids_are_rejected (test_plugin_packages.PluginPackageTests.test_duplicate_page_ids_are_rejected) ... ok
+test_file_count_matches_runtime_budget (test_plugin_packages.PluginPackageTests.test_file_count_matches_runtime_budget) ... ok
+test_legacy_archive_is_removed (test_plugin_packages.PluginPackageTests.test_legacy_archive_is_removed) ... ok
+test_lua_file_cannot_exceed_runtime_load_limit (test_plugin_packages.PluginPackageTests.test_lua_file_cannot_exceed_runtime_load_limit) ... ok
+test_missing_view_is_rejected (test_plugin_packages.PluginPackageTests.test_missing_view_is_rejected) ... ok
+test_native_component_fixture_uses_api_two_without_location_permission (test_plugin_packages.PluginPackageTests.test_native_component_fixture_uses_api_two_without_location_permission) ... ok
+test_new_api_is_rejected (test_plugin_packages.PluginPackageTests.test_new_api_is_rejected) ... ok
+test_non_runtime_files_are_not_distributed (test_plugin_packages.PluginPackageTests.test_non_runtime_files_are_not_distributed) ... ok
+test_old_config_field_is_gone (test_plugin_packages.PluginPackageTests.test_old_config_field_is_gone) ... ok
+test_plugin_id_system_is_reserved (test_plugin_packages.PluginPackageTests.test_plugin_id_system_is_reserved) ... ok
+test_setting_default_must_satisfy_its_declaration (test_plugin_packages.PluginPackageTests.test_setting_default_must_satisfy_its_declaration) ... ok
+test_shared_setting_vectors_agree_with_the_runtime (test_plugin_packages.PluginPackageTests.test_shared_setting_vectors_agree_with_the_runtime) ... ok
+test_size_budget (test_plugin_packages.PluginPackageTests.test_size_budget) ... ok
+test_symlink_cannot_export_external_data (test_plugin_packages.PluginPackageTests.test_symlink_cannot_export_external_data) ... ok
+test_tile_packer_uses_first_fit_in_both_orientations (test_plugin_packages.PluginPackageTests.test_tile_packer_uses_first_fit_in_both_orientations) ... ok
+test_traversal_reference_is_rejected (test_plugin_packages.PluginPackageTests.test_traversal_reference_is_rejected) ... ok
+test_unknown_fields_fail_closed (test_plugin_packages.PluginPackageTests.test_unknown_fields_fail_closed) ... ok
+test_unsupported_component_is_rejected (test_plugin_packages.PluginPackageTests.test_unsupported_component_is_rejected) ... ok
+test_valid_settings_are_accepted (test_plugin_packages.PluginPackageTests.test_valid_settings_are_accepted) ... ok
+test_widget_open_must_point_to_declared_page (test_plugin_packages.PluginPackageTests.test_widget_open_must_point_to_declared_page) ... ok
+
+----------------------------------------------------------------------
+Ran 34 tests in 0.243s
+
+OK

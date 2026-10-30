@@ -1,0 +1,25 @@
+{
+  "complete": false,
+  "scenes": {
+    "sixteen": {
+      "seconds": 60.514245875005145,
+      "frames": 2073,
+      "jankyFrames": 64,
+      "jankyPercent": 3.087313072841293,
+      "maxDrawMs": 4.000937,
+      "maxFrameMs": 33.621239,
+      "sampledFrames": 2073,
+      "frameCoverage": 1.0,
+      "peakPssMiB": 137.6318359375,
+      "peakLuaMiB": 0.31496524810791016,
+      "sameProcess": true,
+      "frameWarnings": 0,
+      "flaggedFrames": 0,
+      "inputFrames": 0
+    }
+  },
+  "failures": [],
+  "stressFixtureDigest": "c566612212070457ebac8ec5e60768b36a12cf86cfb661342370f51c4f706841",
+  "probePassed": true,
+  "settingsRestored": true
+}

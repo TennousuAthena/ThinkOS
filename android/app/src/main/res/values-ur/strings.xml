@@ -98,4 +98,7 @@
     <string name="setting_group_tiles">لائیو ٹائلیں</string>
     <string name="setting_tiles_live">ٹائل کا مواد خودکار طور پر بدلیں</string>
     <string name="setting_tiles_interval">ٹائل بدلنے کا وقفہ</string>
+    <string name="aero_desktop">ڈیسک ٹاپ</string>
+    <string name="aero_start">شروع</string>
+    <string name="aero_open">کھولیں</string>
 </resources>

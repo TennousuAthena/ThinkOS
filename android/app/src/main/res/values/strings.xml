@@ -98,4 +98,7 @@
     <string name="setting_group_tiles">Live tiles</string>
     <string name="setting_tiles_live">Animate tile content</string>
     <string name="setting_tiles_interval">Time between tile updates</string>
+    <string name="aero_desktop">Desktop</string>
+    <string name="aero_start">Start</string>
+    <string name="aero_open">Open</string>
 </resources>

@@ -95,5 +95,8 @@
   "media.video": "影片",
   "setting_group_tiles": "動態磚",
   "setting_tiles_live": "自動切換動態磚內容",
-  "setting_tiles_interval": "動態磚切換間隔"
+  "setting_tiles_interval": "動態磚切換間隔",
+  "aero.desktop": "桌面",
+  "aero.start": "開始",
+  "aero.open": "開啟"
 }

@@ -98,4 +98,7 @@
     <string name="setting_group_tiles">Blocos dinâmicos</string>
     <string name="setting_tiles_live">Mudar o conteúdo automaticamente</string>
     <string name="setting_tiles_interval">Intervalo entre mudanças</string>
+    <string name="aero_desktop">Ambiente de trabalho</string>
+    <string name="aero_start">Iniciar</string>
+    <string name="aero_open">Abrir</string>
 </resources>

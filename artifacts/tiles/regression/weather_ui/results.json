@@ -1,0 +1,141 @@
+{
+  "complete": true,
+  "passed": [
+    "native card and detail fit both orientations in LIGHT",
+    "native card and detail fit both orientations in DARK",
+    "native card and detail fit both orientations in NIGHT",
+    "native detail rebinds ar with localized dates and layout direction",
+    "native detail rebinds zh-CN with localized dates and layout direction",
+    "native forecast list scrolls to the fifth day",
+    "long press on weather card opens its schema settings and unit changes immediately",
+    "three offline cold starts display cached Fahrenheit weather within 3 seconds without budget errors",
+    "long press on detail opens the same persisted unit settings",
+    "all 10 native weather icons render in three themes",
+    "production weather automatically recovers after actual Wi-Fi restoration"
+  ],
+  "screens": {
+    "home-landscape-light": [
+      1280,
+      800
+    ],
+    "detail-landscape-light": [
+      1280,
+      800
+    ],
+    "home-portrait-light": [
+      800,
+      1280
+    ],
+    "detail-portrait-light": [
+      800,
+      1280
+    ],
+    "home-landscape-dark": [
+      1280,
+      800
+    ],
+    "detail-landscape-dark": [
+      1280,
+      800
+    ],
+    "home-portrait-dark": [
+      800,
+      1280
+    ],
+    "detail-portrait-dark": [
+      800,
+      1280
+    ],
+    "sleep-landscape-night": [
+      1280,
+      800
+    ],
+    "detail-landscape-night": [
+      1280,
+      800
+    ],
+    "sleep-portrait-night": [
+      800,
+      1280
+    ],
+    "detail-portrait-night": [
+      800,
+      1280
+    ],
+    "detail-landscape-ar": [
+      1280,
+      800
+    ],
+    "detail-portrait-ar": [
+      800,
+      1280
+    ],
+    "detail-landscape-zh-CN": [
+      1280,
+      800
+    ],
+    "detail-portrait-zh-CN": [
+      800,
+      1280
+    ],
+    "detail-day-five": [
+      1280,
+      800
+    ],
+    "card-settings": [
+      1280,
+      800
+    ],
+    "home-fahrenheit": [
+      1280,
+      800
+    ],
+    "offline-fahrenheit-cache": [
+      1280,
+      800
+    ],
+    "detail-settings": [
+      1280,
+      800
+    ],
+    "detail-celsius": [
+      1280,
+      800
+    ],
+    "icons-dark": [
+      1280,
+      800
+    ],
+    "icons-light": [
+      1280,
+      800
+    ],
+    "icons-night": [
+      1280,
+      800
+    ]
+  },
+  "matrixSkipped": false,
+  "uiPid": "20244",
+  "offlineColdStart": {
+    "attempts": [
+      {
+        "activityMs": 808,
+        "contentMs": 2631
+      },
+      {
+        "activityMs": 789,
+        "contentMs": 2625
+      },
+      {
+        "activityMs": 788,
+        "contentMs": 2595
+      }
+    ],
+    "wifiDisabled": false,
+    "appNetworkBlocked": true,
+    "server": "none"
+  },
+  "settingsRestored": true,
+  "wifiRestored": true
+}

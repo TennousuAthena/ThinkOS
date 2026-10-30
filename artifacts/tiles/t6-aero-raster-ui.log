@@ -1,0 +1,8 @@
+Performing Streamed Install
+Success
+Performing Streamed Install
+Success
+Deleted 1 rows
+PASS Aero native desktop; three widget windows; six orientation/theme scenes; no WebView
+PASS Aero visible hands move between UI clock ticks; static cache retains live native content
+PASS Aero native start menu opens settings; widget click/owner long press and horizontal page swipe

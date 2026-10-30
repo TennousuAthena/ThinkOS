@@ -19,7 +19,7 @@
 
 ## 2. 现状核对（已核对，2026-10-30）
 
-2026-10-31 补记：下表现状保留核对当时的快照；API 4 / ADR-025 现已用于 tiles/tile，播放器提议顺延为 API 5 / ADR-026。
+2026-10-31 补记：下表现状保留核对当时的快照；API 4 / ADR-025 现已用于 tiles/tile，API 5 / ADR-026 用于用户已批准的 Aero；播放器提议顺延为 API 6 / ADR-027。
 
 | 项 | 现状 | 依据 |
 |---|---|---|
@@ -133,7 +133,7 @@ OS 保留：左右滑翻页、长按进设置。点封面 = 播放/暂停；点�
 
 不新增权限名：`media`（会话与 `media` 状态）、`library`（本地读取）、`network`（流、歌词、封面）。**运行时读共享存储（READ_EXTERNAL_STORAGE）是个决定**（§13 #4）：用户的音乐就在 `/sdcard/Music`。
 
-### 4.5 词汇（提议 API 5）
+### 4.5 词汇（提议 API 6）
 
 | 词汇 | 说明 |
 |---|---|
@@ -267,7 +267,7 @@ plugins/player/
 
 | 阶段 | 内容 | 验证 |
 |---|---|---|
-| **P0 契约与决策（S）** | 新 ADR（建议 ADR-026；08 里 ADR-023 留给 HTTP 通知提案、024 已用）；`layouts.json` 加 `nowplaying` 与新组件，`controls/video` 解除 Deferred，`list.current`，`x-thinkos-api` → 5；跑 `gen_kotlin.py` / `gen_go.py`，**不手改生成文件** | `PluginSchemaTest`、`test_plugin_packages.py` |
+| **P0 契约与决策（S）** | 新 ADR（建议 ADR-027；08 里 ADR-023 留给 HTTP 通知提案、024 已用）；`layouts.json` 加 `nowplaying` 与新组件，`controls/video` 解除 Deferred，`list.current`，`x-thinkos-api` → 6；跑 `gen_kotlin.py` / `gen_go.py`，**不手改生成文件** | `PluginSchemaTest`、`test_plugin_packages.py` |
 | **P1 渲染器 + 假会话（L）** | `nowplaying` 版式与补间；`lyrics / spectrum / seekbar / volume`；横向拖动接管、帧率提示、`mood` 染色；`list.current`、`embedded:` 封面；debug 假会话 + 推送测试插件 | 设备截图矩阵；**假频谱 30/60fps 的 CPU 基线** |
 | **P2 引擎接线（L）** | `RuntimeHost` 实例化引擎；摘取草稿的 `MediaCapability` 等；`tos.media.*`、`tos.audio.*`、`tos.library.read`；`media` 状态与事件；`MediaClock`、`LoadControl`、`jump`；存储权限路径 | JVM + 原生 Lua 测试；权限拒绝、迟到结果丢弃 |
 | **P3 player 插件·音频（L）** | §5 的文件；扫描、文件名解析、队列、live 接管、歌词（同名 `.lrc` + LRCLIB）、封面链、11 种语言、首页卡片；`package_plugins.py` 默认列表加入 | Lua 单测、armv7 预算、`--validate-only` |

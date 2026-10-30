@@ -1,4 +1,4 @@
-# 插件契约（API 1 / 2 / 3 / 4）
+# 插件契约（API 1 / 2 / 3 / 4 / 5）
 
 `manifest.json` 定义包元信息；`view.json` 引用 `layouts.json` 中已经实现的固定渲染词汇。API 1 接受 `stacks` / `focus` / `form` 页面、`glance` 卡片、`text` / `icon` / `clock` / `form` 组件。API 2 增加 `split` / `stage`、组件组和 `progress` / `chart` / `list` / `daylight` / `moon`。API 3 增加本地/包内/HTTP(S) `image` / `carousel` 与 `tos.library.list`；`tos.state.set` 同时接受对象 JSON 文本以承载大清单。
 
@@ -36,3 +36,5 @@ python3 -m unittest discover -s tools/tests -v
 Lua 语法和运行安全由设备的 Lua 5.4 文本加载器与预算检查；Python 打包器不执行 Lua，也不调用主机上可能版本不同的 `lua` / `luac`。
 
 API 4 新增 `tiles.slots.tiles` 引用数组（1–16 项；widget、size 必填），size 为 small=1×1、medium=2×2、wide=4×2、large=4×4。`tile` 模板含 faces（1–4 面，每面 label 必填，icon/value/detail 可选）、可选 badge/content/color；content 仅 clock/progress/chart/daylight/moon。颜色只能是不透明 #RRGGBB 或 {{绑定}}，页面引用 > 卡片 > 系统 accent；非法绑定逐级回退并记 warn，前景由 OS 选黑/白（ADR-025）。glance 放入 tiles 显示空占位，tile 放入 stacks 按 large 显示。横屏 6×4、竖屏 4×6 首次适配网格，无滚动，放不下丢弃。版本闸门同时检查 layout、template、component。
+
+API 5 新增固定原生桌面 `aero.slots.windows`（1–3 个普通 widgetReference）。OS 绘制窗口、玻璃光泽、任务栏、开始菜单和原创背景；不接受颜色、尺寸或样式字段。横竖屏自动重排，点击 opens、长按卡片所属插件设置。示例见 `plugins/aero`，设计见 `docs/25-windows-design.md`。

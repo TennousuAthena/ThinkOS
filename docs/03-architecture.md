@@ -902,3 +902,15 @@ Server： thinkos-server plugin add https://github.com/alice/thinkos-stocks --ta
 ### API 4 磁贴补充
 
 `tiles` 是原生固定网格，`tile` 是原生卡片模板；页面引用决定尺寸，Lua 只通过 tos.* 提供数据。底色是 ADR-025 对 ADR-017 的唯一外观例外，前景色与所有排版仍由 OS 决定。PageView 维护单个翻面调度器，失活或 AMBIENT 停止。系统设置 tiles.live/tiles.interval 仍经过共享 schema 和 SettingsStore；不引入新偏好文件。契约、代码和真机结果见 `24-tiles-validation.md`。
+
+
+### API 5 Aero 与磁贴缓存
+
+`aero` 由 `AeroHomeView` 承载固定原生桌面，复用普通 widget 引用、ComponentGroup、Binding 与图片生命周期。所有玻璃/背景仅为静态 Canvas 渐变，任务栏/开始菜单属于 OS，不给插件增加私有能力。API 与 ADR 见 `25-windows-design.md`。
+
+磁贴天气使用工作线程构建的完整透明帧图集；相同名称、尺寸与相位共享 ALPHA_8 像素，每个循环 View 用缓存的 HARDWARE sheet 与裁剪/平移显示帧，避免每帧重绘 mask 或刷新硬件层。图集缓存上限 10 项 / 12MiB；超大图标保留缓存 mask 的属性合成，避免过大纹理。旧 Bitmap 仅释放引用，不改写或 recycle 渲染线程仍可能使用的像素。纯磁贴文字复用 2MiB / 128 项 alpha 字形缓存，保留 TextView 的原生 shaping、自动字号与无障碍。
+
+整页遮挡 Ambient 时仅暂停 disk 呼吸及 fallback tick，保留静态底色供防烧屏位移边缘使用；翻页预览时恢复。磁贴 AMBIENT 保持 alpha=1，避免破坏前景对比度。所有缓存和合成参数是固定渲染实现，不构成插件样式接口。
+
+
+Aero 的静态窗口和文字由单一后台 raster worker 绘制。UI 只传不可变几何/颜色/字符串和 TextPaint 副本，每窗仅一个待处理任务；新结果按代际/尺寸校验后发布，旧 Bitmap 等渲染引用释放。Image/Clock/Icon/其它 RenderComponent 保留原生动态节点。模拟钟的表盘和窄指针为独立硬件缓存，实际扫秒由 RenderThread 属性动画执行；UI 不为扫秒升至 60Hz。普通 ClockView 与 TileView 不改变，缓存不会冻结动态内容。

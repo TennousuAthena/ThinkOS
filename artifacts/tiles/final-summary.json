@@ -1,0 +1,105 @@
+{
+  "complete": true,
+  "ui": {
+    "tiles": true,
+    "tiles-live": true,
+    "tiles-plugins": true,
+    "aero": true
+  },
+  "jvm": {
+    "tests": 227,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "performance": {
+    "builtin": {
+      "seconds": 600.622072750004,
+      "frames": 10976,
+      "jankyFrames": 309,
+      "jankyPercent": 2.8152332361516033,
+      "maxDrawMs": 11.355469,
+      "maxFrameMs": 79.227978,
+      "sampledFrames": 10976,
+      "frameCoverage": 1.0,
+      "peakPssMiB": 100.7197265625,
+      "peakLuaMiB": 0.2959165573120117,
+      "sameProcess": true,
+      "frameWarnings": 0,
+      "flaggedFrames": 1,
+      "inputFrames": 0
+    },
+    "sixteen": {
+      "seconds": 601.0263480420108,
+      "frames": 20533,
+      "jankyFrames": 573,
+      "jankyPercent": 2.7906297180149027,
+      "maxDrawMs": 6.678437,
+      "maxFrameMs": 42.327056,
+      "sampledFrames": 20533,
+      "frameCoverage": 1.0,
+      "peakPssMiB": 158.0029296875,
+      "peakLuaMiB": 0.34773826599121094,
+      "sameProcess": true,
+      "frameWarnings": 0,
+      "flaggedFrames": 3,
+      "inputFrames": 0
+    }
+  },
+  "aeroPerformance": {
+    "aero": {
+      "seconds": 601.2092535419797,
+      "frames": 35718,
+      "jankyFrames": 726,
+      "jankyPercent": 2.032588610784478,
+      "maxDrawMs": 11.541979,
+      "maxFrameMs": 35.358359,
+      "sampledFrames": 35717,
+      "frameCoverage": 0.9999720029116972,
+      "peakPssMiB": 73.4150390625,
+      "peakLuaMiB": 0.29547786712646484,
+      "sameProcess": true,
+      "frameWarnings": 0,
+      "frameCountSkew": -1,
+      "initialState": {
+        "page": "aero.main",
+        "attention": "AWAKE",
+        "theme": "DARK",
+        "orientation": "LANDSCAPE",
+        "pid": "16974",
+        "touches": "0",
+        "navigationReason": "open",
+        "luaBytes": "280365",
+        "navigationGeneration": "2"
+      },
+      "finalState": {
+        "page": "aero.main",
+        "attention": "AWAKE",
+        "theme": "DARK",
+        "orientation": "LANDSCAPE",
+        "pid": "16974",
+        "touches": "0",
+        "navigationReason": "open",
+        "luaBytes": "309831",
+        "navigationGeneration": "2"
+      },
+      "flaggedFrames": 0,
+      "inputFrames": 0
+    }
+  },
+  "offlineColdContentMs": [
+    2696,
+    2705,
+    2672
+  ],
+  "regression": {
+    "component_ui": true,
+    "weather_ui": true,
+    "settings_ui": true,
+    "settingsRestored": true
+  },
+  "apkSha256": "e66a8877d7e19fff7e849d2a47668c3e2f4b8f457c59f27f1f5435c0836fcb3e",
+  "nativeLibraries": [
+    "lib/armeabi-v7a/libtos.so"
+  ]
+}

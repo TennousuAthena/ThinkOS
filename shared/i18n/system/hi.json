@@ -95,5 +95,8 @@
   "media.video": "वीडियो",
   "setting_group_tiles": "लाइव टाइलें",
   "setting_tiles_live": "टाइल की सामग्री अपने आप बदलें",
-  "setting_tiles_interval": "टाइल बदलने का अंतराल"
+  "setting_tiles_interval": "टाइल बदलने का अंतराल",
+  "aero.desktop": "डेस्कटॉप",
+  "aero.start": "प्रारंभ",
+  "aero.open": "खोलें"
 }

@@ -95,5 +95,8 @@
   "media.video": "Vidéo",
   "setting_group_tiles": "Vignettes dynamiques",
   "setting_tiles_live": "Changer le contenu automatiquement",
-  "setting_tiles_interval": "Intervalle entre les changements"
+  "setting_tiles_interval": "Intervalle entre les changements",
+  "aero.desktop": "Bureau",
+  "aero.start": "Démarrer",
+  "aero.open": "Ouvrir"
 }

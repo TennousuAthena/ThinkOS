@@ -1,0 +1,232 @@
+--------- beginning of system
+--------- beginning of crash
+--------- beginning of main
+10-31 02:49:26.816 32432 32432 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+10-31 02:49:27.028 32432 32432 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+10-31 02:49:30.571 32432 32432 W ThinkOS : glance in tiles: clock; displaying empty tile
+10-31 02:49:32.025 32432 32452 I ThinkOS : [plugin:gallery] Bing gallery refreshed zh-CN 13 photos
+10-31 02:49:32.131 32432 32432 I ThinkOS : attention=ENGAGED
+10-31 02:49:32.728 32495 32495 I ThinkOS : tzdata 2026e (419 zones)
+10-31 02:49:37.786 32634 32634 I ThinkOS : tzdata 2026e (419 zones)
+10-31 02:49:38.051 32634 32634 I ThinkOS : Runtime started; local mode, safe=false
+10-31 02:49:38.054 32634 32634 I ThinkOS : Activity created; orientation=2
+10-31 02:49:38.112 32634 32683 W ThinkOS : time sync failed (1); retry in 30s
+10-31 02:49:38.408 32634 32684 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 02:49:38.938 32634 32684 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 02:49:39.303 32634 32684 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 78406 bytes
+10-31 02:49:39.346 32634 32684 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 02:49:39.500 32634 32684 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 02:49:39.627 32634 32684 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 02:49:39.899 32634 32684 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99679 bytes
+10-31 02:49:42.345 32634 32684 W ThinkOS : [plugin:gallery] Bing gallery refresh failed gallery/main.lua:131: Failed to connect to www.bing.com/202.89.233.101:443
+10-31 02:49:42.950 32634 32684 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/167.114.211.86:443
+10-31 02:49:45.382 32634 32684 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 41786 bytes
+10-31 02:49:52.556 32634 32634 I ThinkOS : attention=AMBIENT
+10-31 02:49:54.721 32634 32634 I ThinkOS : attention=AWAKE
+10-31 02:50:08.162 32634 32683 W ThinkOS : time sync failed (2); retry in 60s
+10-31 02:50:44.380 32634 32684 W ThinkOS : [plugin:gallery] Bing gallery refresh failed gallery/main.lua:131: Failed to connect to www.bing.com/202.89.233.101:443
+10-31 02:50:45.020 32634 32684 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/167.114.211.86:443
+10-31 02:51:01.018  1074  1074 I ThinkOS : tzdata 2026e (419 zones)
+10-31 02:51:01.567  1074  1074 I ThinkOS : Runtime started; local mode, safe=false
+10-31 02:51:01.570  1074  1074 I ThinkOS : Activity created; orientation=1
+10-31 02:51:01.707  1074  1074 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 02:51:01.960  1074  1178 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 02:51:02.329  1074  1177 I ThinkOS : time sync: 0.pool.ntp.org 119.28.183.184 offset=138ms rtt=44ms
+10-31 02:51:02.508  1074  1178 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 02:51:03.461  1305  1305 I ThinkOS : tzdata 2026e (419 zones)
+10-31 02:51:03.694  1305  1305 I ThinkOS : Runtime started; local mode, safe=false
+10-31 02:51:03.697  1305  1305 I ThinkOS : Activity created; orientation=1
+10-31 02:51:03.754  1305  1386 W ThinkOS : time sync failed (1); retry in 30s
+10-31 02:51:04.056  1305  1387 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 02:51:04.553  1305  1305 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 02:51:04.601  1305  1387 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 02:51:04.991  1305  1387 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 78406 bytes
+10-31 02:51:05.034  1305  1387 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 02:51:05.195  1305  1387 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 02:51:05.322  1305  1387 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 02:51:05.607  1305  1387 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99679 bytes
+10-31 02:51:06.127  1305  1305 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=aero, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=clock, version=0.4.0, bytes=34881, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=79376, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=100555, disabled=false, error=null)]
+10-31 02:51:08.840  1305  1387 I ThinkOS : [plugin:gallery] Bing gallery refreshed zh-CN 13 photos
+10-31 02:51:09.177  1305  1387 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 02:51:11.412  1658  1658 I ThinkOS : tzdata 2026e (419 zones)
+10-31 02:51:11.655  1658  1658 I ThinkOS : Runtime started; local mode, safe=false
+10-31 02:51:11.661  1658  1658 I ThinkOS : Activity created; orientation=1
+10-31 02:51:11.711  1658  1718 W ThinkOS : time sync failed (1); retry in 30s
+10-31 02:51:12.009  1658  1719 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 02:51:12.524  1658  1658 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 02:51:12.549  1658  1719 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 02:51:12.926  1658  1719 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 78406 bytes
+10-31 02:51:12.970  1658  1719 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 02:51:13.131  1658  1719 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 02:51:13.262  1658  1719 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 02:51:13.543  1658  1719 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99679 bytes
+10-31 02:51:13.931  1658  1658 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=aero, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=clock, version=0.4.0, bytes=34881, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=79376, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=100555, disabled=false, error=null)]
+10-31 02:51:16.759  1658  1719 I ThinkOS : [plugin:gallery] Bing gallery refreshed zh-CN 13 photos
+10-31 02:51:17.075  1658  1719 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 02:51:19.198  1977  1977 I ThinkOS : tzdata 2026e (419 zones)
+10-31 02:51:19.424  1977  1977 I ThinkOS : Runtime started; local mode, safe=false
+10-31 02:51:19.428  1977  1977 I ThinkOS : Activity created; orientation=1
+10-31 02:51:19.472  1977  2029 W ThinkOS : time sync failed (1); retry in 30s
+10-31 02:51:19.778  1977  2030 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 02:51:20.306  1977  1977 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 02:51:20.314  1977  2030 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 02:51:20.690  1977  2030 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 78406 bytes
+10-31 02:51:20.735  1977  2030 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 02:51:20.895  1977  2030 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 02:51:21.024  1977  2030 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 02:51:21.305  1977  2030 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99679 bytes
+10-31 02:51:21.713  1977  1977 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=aero, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=clock, version=0.4.0, bytes=34881, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=79376, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=100555, disabled=false, error=null)]
+10-31 02:51:24.515  1977  2030 I ThinkOS : [plugin:gallery] Bing gallery refreshed zh-CN 13 photos
+10-31 02:51:24.813  1977  2030 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 02:51:25.970  2200  2200 I ThinkOS : tzdata 2026e (419 zones)
+10-31 02:51:27.047  2200  2200 I ThinkOS : Runtime started; local mode, safe=false
+10-31 02:51:27.050  2200  2200 I ThinkOS : Activity created; orientation=2
+10-31 02:51:27.116  2200  2319 W ThinkOS : time sync failed (1); retry in 30s
+10-31 02:51:27.460  2200  2320 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 02:51:28.004  2200  2320 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 02:51:28.384  2200  2320 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 78406 bytes
+10-31 02:51:28.426  2200  2320 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 02:51:28.586  2200  2320 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 02:51:28.708  2200  2320 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 02:51:28.979  2200  2320 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99679 bytes
+10-31 02:51:31.435  2200  2320 W ThinkOS : [plugin:gallery] Bing gallery refresh failed gallery/main.lua:131: Failed to connect to www.bing.com/202.89.233.101:443
+10-31 02:51:32.010  2200  2320 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/167.114.211.86:443
+10-31 02:51:37.528  2200  2200 I ThinkOS : attention=AMBIENT
+10-31 02:51:39.670  2200  2200 I ThinkOS : attention=AWAKE
+10-31 02:51:57.202  2200  2319 W ThinkOS : time sync failed (2); retry in 60s
+10-31 02:52:33.506  2200  2320 W ThinkOS : [plugin:gallery] Bing gallery refresh failed gallery/main.lua:131: Failed to connect to www.bing.com/202.89.233.101:443
+10-31 02:52:34.070  2200  2320 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/167.114.211.86:443
+10-31 02:52:57.326  2200  2319 W ThinkOS : time sync failed (3); retry in 120s
+10-31 02:54:35.580  2200  2320 W ThinkOS : [plugin:gallery] Bing gallery refresh failed gallery/main.lua:131: Failed to connect to www.bing.com/202.89.233.101:443
+10-31 02:54:36.146  2200  2320 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/167.114.211.86:443
+10-31 02:54:57.505  2200  2319 W ThinkOS : time sync failed (4); retry in 240s
+10-31 02:58:37.635  2200  2320 W ThinkOS : [plugin:gallery] Bing gallery refresh failed gallery/main.lua:131: Failed to connect to www.bing.com/202.89.233.101:443
+10-31 02:58:57.588  2200  2319 W ThinkOS : time sync failed (5); retry in 480s
+10-31 02:59:38.284  2200  2320 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/167.114.211.86:443
+10-31 03:01:46.475  2200  2320 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 41786 bytes
+10-31 03:01:53.663  2200  2200 I ThinkOS : attention=AMBIENT
+10-31 03:01:55.829  2200  2200 I ThinkOS : attention=AWAKE
+10-31 03:06:39.660  2200  2320 W ThinkOS : [plugin:gallery] Bing gallery refresh failed gallery/main.lua:131: Failed to connect to www.bing.com/202.89.233.101:443
+10-31 03:07:02.757  2200  2319 W ThinkOS : time sync failed (6); retry in 960s
+10-31 03:12:02.582  7310  7310 I ThinkOS : tzdata 2026e (419 zones)
+10-31 03:12:03.096  7310  7310 I ThinkOS : Runtime started; local mode, safe=false
+10-31 03:12:03.101  7310  7310 I ThinkOS : Activity created; orientation=1
+10-31 03:12:03.259  7310  7310 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 03:12:03.465  7310  7372 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 03:12:04.227  7399  7399 I ThinkOS : tzdata 2026e (419 zones)
+10-31 03:12:05.307  7399  7399 I ThinkOS : Runtime started; local mode, safe=false
+10-31 03:12:05.309  7399  7399 I ThinkOS : Activity created; orientation=2
+10-31 03:12:05.404  7399  7487 W ThinkOS : time sync failed (1); retry in 30s
+10-31 03:12:05.707  7399  7488 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 03:12:06.246  7399  7488 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 03:12:06.622  7399  7488 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 78406 bytes
+10-31 03:12:06.665  7399  7488 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 03:12:06.826  7399  7488 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 03:12:06.948  7399  7488 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 03:12:07.220  7399  7488 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99682 bytes
+10-31 03:12:09.660  7399  7488 W ThinkOS : [plugin:gallery] Bing gallery refresh failed gallery/main.lua:131: Failed to connect to www.bing.com/202.89.233.101:443
+10-31 03:12:10.280  7399  7488 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/167.114.211.86:443
+10-31 03:12:15.866  7399  7399 I ThinkOS : attention=AMBIENT
+10-31 03:12:18.008  7399  7399 I ThinkOS : attention=AWAKE
+10-31 03:12:35.486  7399  7487 W ThinkOS : time sync failed (2); retry in 60s
+10-31 03:13:11.714  7399  7488 W ThinkOS : [plugin:gallery] Bing gallery refresh failed gallery/main.lua:131: Failed to connect to www.bing.com/202.89.233.101:443
+10-31 03:13:12.364  7399  7488 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/167.114.211.86:443
+10-31 03:13:35.573  7399  7487 W ThinkOS : time sync failed (3); retry in 120s
+10-31 03:15:13.783  7399  7488 W ThinkOS : [plugin:gallery] Bing gallery refresh failed gallery/main.lua:131: Failed to connect to www.bing.com/202.89.233.101:443
+10-31 03:15:14.465  7399  7488 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/167.114.211.86:443
+10-31 03:15:35.727  7399  7487 W ThinkOS : time sync failed (4); retry in 240s
+10-31 03:16:28.390  8528  8528 I ThinkOS : tzdata 2026e (419 zones)
+10-31 03:16:28.897  8528  8528 I ThinkOS : Runtime started; local mode, safe=false
+10-31 03:16:28.899  8528  8528 I ThinkOS : Activity created; orientation=1
+10-31 03:16:29.028  8528  8528 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 03:16:29.267  8528  8590 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 03:16:29.742  8528  8589 I ThinkOS : time sync: 0.pool.ntp.org 119.28.183.184 offset=145ms rtt=40ms
+10-31 03:16:29.820  8528  8590 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 03:16:30.200  8528  8590 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 78406 bytes
+10-31 03:16:30.244  8528  8590 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 03:16:30.407  8528  8590 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 03:16:30.529  8528  8590 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 03:16:30.795  8528  8590 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99682 bytes
+10-31 03:16:32.027  8528  8590 I ThinkOS : [plugin:gallery] Bing gallery refreshed zh-CN 13 photos
+10-31 03:16:33.452  8528  8590 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 03:16:34.053  8528  8610 D ThinkOS : [store:gallery] persisted coalesced snapshot
+10-31 03:16:35.480  8528  8610 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-31 03:16:39.238  8528  8528 I ThinkOS : theme=NIGHT lux=0.0
+10-31 03:17:26.482  8749  8749 I ThinkOS : tzdata 2026e (419 zones)
+10-31 03:17:26.722  8749  8749 I ThinkOS : Runtime started; local mode, safe=false
+10-31 03:17:26.944  8749  8749 I ThinkOS : Activity created; orientation=1
+10-31 03:17:27.051  8749  8749 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 03:17:27.121  8749  8774 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 03:17:27.599  8749  8773 I ThinkOS : time sync: 0.pool.ntp.org 119.28.183.184 offset=149ms rtt=45ms
+10-31 03:17:27.661  8749  8774 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 03:17:28.050  8749  8774 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 03:17:28.095  8749  8774 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 03:17:28.260  8749  8774 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 03:17:28.380  8749  8774 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 03:17:28.646  8749  8774 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99411 bytes
+10-31 03:17:31.528  8749  8774 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 03:17:32.684  8809  8809 I ThinkOS : tzdata 2026e (419 zones)
+10-31 03:17:33.835  8809  8809 I ThinkOS : Runtime started; local mode, safe=false
+10-31 03:17:33.840  8809  8809 I ThinkOS : Activity created; orientation=2
+10-31 03:17:33.915  8809  8892 W ThinkOS : time sync failed (1); retry in 30s
+10-31 03:17:34.221  8809  8893 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 03:17:34.754  8809  8893 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 03:17:35.140  8809  8893 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 03:17:35.182  8809  8893 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 03:17:35.341  8809  8893 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 03:17:35.461  8809  8893 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 03:17:35.731  8809  8893 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99411 bytes
+10-31 03:17:38.781  8809  8893 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/167.114.211.86:443
+10-31 03:17:39.423  8809  8809 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 03:17:44.467  8809  8809 I ThinkOS : attention=AMBIENT
+10-31 03:17:46.623  8809  8809 I ThinkOS : attention=AWAKE
+10-31 03:18:03.991  8809  8892 W ThinkOS : time sync failed (2); retry in 60s
+10-31 03:18:40.904  8809  8893 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/167.114.211.86:443
+10-31 03:18:53.940  9282  9282 I ThinkOS : tzdata 2026e (419 zones)
+10-31 03:18:54.450  9282  9282 I ThinkOS : Runtime started; local mode, safe=false
+10-31 03:18:54.455  9282  9282 I ThinkOS : Activity created; orientation=1
+10-31 03:18:54.617  9282  9282 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 03:18:54.846  9282  9345 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 03:18:55.358  9282  9344 I ThinkOS : time sync: 0.pool.ntp.org 119.28.183.184 offset=147ms rtt=41ms
+10-31 03:18:55.375  9282  9345 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 03:18:55.770  9282  9345 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 03:18:55.814  9282  9345 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 03:18:55.977  9282  9345 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 03:18:56.099  9282  9345 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 03:18:56.370  9282  9345 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99411 bytes
+10-31 03:18:59.179  9282  9345 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 03:19:01.268  9282  9364 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-31 03:19:04.806  9282  9282 I ThinkOS : theme=NIGHT lux=0.0
+10-31 03:20:55.142  9282  9282 I ThinkOS : attention=AMBIENT
+10-31 03:21:55.285  9282  9282 I ThinkOS : attention=ASLEEP
+10-31 03:26:15.762  9550  9550 I ThinkOS : tzdata 2026e (419 zones)
+10-31 03:26:16.027  9550  9550 I ThinkOS : Runtime started; local mode, safe=false
+10-31 03:26:16.228  9550  9550 I ThinkOS : Activity created; orientation=2
+10-31 03:26:16.430  9550  9574 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 03:26:16.976  9550  9574 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 03:26:17.016  9550  9573 I ThinkOS : time sync: 0.pool.ntp.org 119.28.183.184 offset=145ms rtt=49ms
+10-31 03:26:17.365  9550  9574 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 03:26:17.412  9550  9574 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 03:26:17.571  9550  9574 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 03:26:17.694  9550  9574 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 03:26:17.961  9550  9574 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99411 bytes
+10-31 03:26:20.839  9550  9574 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 03:26:22.866  9550  9595 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-31 03:26:26.465  9550  9550 I ThinkOS : theme=NIGHT lux=0.0
+10-31 03:26:41.437  9616  9616 I ThinkOS : tzdata 2026e (419 zones)
+10-31 03:26:42.547  9616  9616 I ThinkOS : Runtime started; local mode, safe=false
+10-31 03:26:42.550  9616  9616 I ThinkOS : Activity created; orientation=2
+10-31 03:26:42.628  9616  9693 W ThinkOS : time sync failed (1); retry in 30s
+10-31 03:26:42.975  9616  9694 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 03:26:43.508  9616  9694 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 03:26:43.897  9616  9694 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 03:26:43.939  9616  9694 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 03:26:44.098  9616  9694 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 03:26:44.217  9616  9694 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 03:26:44.490  9616  9694 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99411 bytes
+10-31 03:26:47.543  9616  9694 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/167.114.211.86:443
+10-31 03:26:48.038  9616  9616 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 03:26:53.144  9616  9616 I ThinkOS : attention=AMBIENT
+10-31 03:26:55.279  9616  9616 I ThinkOS : attention=AWAKE
+10-31 03:27:12.723  9616  9693 W ThinkOS : time sync failed (2); retry in 60s
+10-31 03:27:49.694  9616  9694 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/167.114.211.86:443

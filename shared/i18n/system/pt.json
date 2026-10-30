@@ -95,5 +95,8 @@
   "media.video": "Vídeo",
   "setting_group_tiles": "Blocos dinâmicos",
   "setting_tiles_live": "Mudar o conteúdo automaticamente",
-  "setting_tiles_interval": "Intervalo entre mudanças"
+  "setting_tiles_interval": "Intervalo entre mudanças",
+  "aero.desktop": "Ambiente de trabalho",
+  "aero.start": "Iniciar",
+  "aero.open": "Abrir"
 }

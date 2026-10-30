@@ -238,6 +238,15 @@ type SchemaTilesSlots struct {
 	Tiles []SchemaTileReference `json:"tiles"`
 }
 
+type SchemaAero struct {
+	Layout string `json:"layout"`
+	Slots SchemaAeroSlots `json:"slots"`
+}
+
+type SchemaAeroSlots struct {
+	Windows []SchemaWidgetReference `json:"windows"`
+}
+
 type SchemaManifest struct {
 	Id string `json:"id"`
 	Name string `json:"name"`
@@ -297,11 +306,11 @@ type SchemaCommand struct {
 	Gesture *string `json:"gesture,omitempty"`
 }
 
-const PluginAPI = 4
+const PluginAPI = 5
 
 var renderComponentTypes = map[string]int{"text": 1, "icon": 1, "clock": 1, "form": 1, "progress": 2, "chart": 2, "list": 2, "daylight": 2, "moon": 2, "image": 3, "carousel": 3}
 
-var renderLayouts = map[string]int{"stacks": 1, "focus": 1, "form": 1, "split": 2, "stage": 2, "tiles": 4}
+var renderLayouts = map[string]int{"stacks": 1, "focus": 1, "form": 1, "split": 2, "stage": 2, "tiles": 4, "aero": 5}
 
 var renderComponentProperties = map[string]int{"tap": 2, "weight": 2}
 

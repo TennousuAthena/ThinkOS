@@ -98,4 +98,7 @@
     <string name="setting_group_tiles">动态磁贴</string>
     <string name="setting_tiles_live">自动切换磁贴内容</string>
     <string name="setting_tiles_interval">磁贴切换间隔</string>
+    <string name="aero_desktop">桌面</string>
+    <string name="aero_start">开始</string>
+    <string name="aero_open">打开</string>
 </resources>

@@ -1,0 +1,113 @@
+[
+  {
+    "elapsed": 0.2336747910012491,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22770",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "314760"
+    },
+    "pssKiB": 51366,
+    "luaBytes": 314760
+  },
+  {
+    "elapsed": 1.8218023749941494
+  },
+  {
+    "elapsed": 3.0509890409884974
+  },
+  {
+    "elapsed": 4.31416325000464
+  },
+  {
+    "elapsed": 5.498628290981287
+  },
+  {
+    "elapsed": 6.634668540995335
+  },
+  {
+    "elapsed": 7.7661667079955805
+  },
+  {
+    "elapsed": 8.992685000004712
+  },
+  {
+    "elapsed": 10.222879207984079
+  },
+  {
+    "elapsed": 11.439760915993247
+  },
+  {
+    "elapsed": 12.586155832977965
+  },
+  {
+    "elapsed": 13.801091332978103
+  },
+  {
+    "elapsed": 15.024306457984494
+  },
+  {
+    "elapsed": 16.193128749990137
+  },
+  {
+    "elapsed": 17.394933332980145
+  },
+  {
+    "elapsed": 18.60886529099662
+  },
+  {
+    "elapsed": 19.73569316600333
+  },
+  {
+    "elapsed": 20.871778540982632
+  },
+  {
+    "elapsed": 22.105260582990013
+  },
+  {
+    "elapsed": 23.317909082979895
+  },
+  {
+    "elapsed": 24.488881750003202
+  },
+  {
+    "elapsed": 25.678010457981145
+  },
+  {
+    "elapsed": 26.803948749991832
+  },
+  {
+    "elapsed": 27.938295207975898
+  },
+  {
+    "elapsed": 29.16821316597634
+  },
+  {
+    "elapsed": 30.387470874993596,
+    "state": {
+      "page": "tile-probe.stress",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "22770",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "322208"
+    },
+    "pssKiB": 55228,
+    "luaBytes": 322208
+  },
+  {
+    "elapsed": 31.917960082995705
+  },
+  {
+    "elapsed": 33.0554693749873
+  },
+  {
+    "elapsed": 34.32137287498335
+  }
+]

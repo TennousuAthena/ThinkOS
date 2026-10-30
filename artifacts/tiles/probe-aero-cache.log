@@ -1,0 +1,10 @@
+Sampling aero for 60 seconds
+{"seconds": 60.60646045798785, "frames": 76, "jankyFrames": 62, "jankyPercent": 81.57894736842105, "maxDrawMs": 9.764948, "maxFrameMs": 38.264597, "sampledFrames": 76, "frameCoverage": 1.0, "peakPssMiB": 65.337890625, "peakLuaMiB": 0.2930316925048828, "sameProcess": true, "frameWarnings": 0, "initialState": {"page": "aero.main", "attention": "AWAKE", "theme": "DARK", "orientation": "LANDSCAPE", "pid": "8809", "touches": "0", "navigationReason": "open", "luaBytes": "298503", "navigationGeneration": "2"}, "finalState": {"page": "aero.main", "attention": "AWAKE", "theme": "DARK", "orientation": "LANDSCAPE", "pid": "8809", "touches": "0", "navigationReason": "open", "luaBytes": "273579", "navigationGeneration": "2"}, "flaggedFrames": 0, "inputFrames": 0}
+Traceback (most recent call last):
+  File "/Users/takuenn/Workspace/mobileApp/ThinkOS/tools/tests/tile_perf.py", line 170, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/Users/takuenn/Workspace/mobileApp/ThinkOS/tools/tests/tile_perf.py", line 169, in main
+    assert report.get('probePassed',report['complete']),report
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'complete': False, 'scenes': {'aero': {'seconds': 60.60646045798785, 'frames': 76, 'jankyFrames': 62, 'jankyPercent': 81.57894736842105, 'maxDrawMs': 9.764948, 'maxFrameMs': 38.264597, 'sampledFrames': 76, 'frameCoverage': 1.0, 'peakPssMiB': 65.337890625, 'peakLuaMiB': 0.2930316925048828, 'sameProcess': True, 'frameWarnings': 0, 'initialState': {'page': 'aero.main', 'attention': 'AWAKE', 'theme': 'DARK', 'orientation': 'LANDSCAPE', 'pid': '8809', 'touches': '0', 'navigationReason': 'open', 'luaBytes': '298503', 'navigationGeneration': '2'}, 'finalState': {'page': 'aero.main', 'attention': 'AWAKE', 'theme': 'DARK', 'orientation': 'LANDSCAPE', 'pid': '8809', 'touches': '0', 'navigationReason': 'open', 'luaBytes': '273579', 'navigationGeneration': '2'}, 'flaggedFrames': 0, 'inputFrames': 0}}, 'failures': ['aero'], 'probePassed': False, 'settingsRestored': True}

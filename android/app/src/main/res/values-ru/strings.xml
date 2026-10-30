@@ -98,4 +98,7 @@
     <string name="setting_group_tiles">Живые плитки</string>
     <string name="setting_tiles_live">Автоматически менять содержимое</string>
     <string name="setting_tiles_interval">Интервал смены содержимого</string>
+    <string name="aero_desktop">Рабочий стол</string>
+    <string name="aero_start">Пуск</string>
+    <string name="aero_open">Открыть</string>
 </resources>

@@ -95,5 +95,8 @@
   "media.video": "فيديو",
   "setting_group_tiles": "المربعات الحية",
   "setting_tiles_live": "تبديل محتوى المربعات تلقائيًا",
-  "setting_tiles_interval": "الفاصل بين تحديثات المربعات"
+  "setting_tiles_interval": "الفاصل بين تحديثات المربعات",
+  "aero.desktop": "سطح المكتب",
+  "aero.start": "ابدأ",
+  "aero.open": "فتح"
 }

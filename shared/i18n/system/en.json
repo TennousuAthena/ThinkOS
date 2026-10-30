@@ -95,5 +95,8 @@
   "media.video": "Video",
   "setting_group_tiles": "Live tiles",
   "setting_tiles_live": "Animate tile content",
-  "setting_tiles_interval": "Time between tile updates"
+  "setting_tiles_interval": "Time between tile updates",
+  "aero.desktop": "Desktop",
+  "aero.start": "Start",
+  "aero.open": "Open"
 }

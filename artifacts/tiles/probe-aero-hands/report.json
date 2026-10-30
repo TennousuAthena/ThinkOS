@@ -1,0 +1,48 @@
+{
+  "complete": false,
+  "scenes": {
+    "aero": {
+      "seconds": 61.00589737499831,
+      "frames": 3601,
+      "jankyFrames": 150,
+      "jankyPercent": 4.165509580672035,
+      "maxDrawMs": 28.199895,
+      "maxFrameMs": 62.108222,
+      "sampledFrames": 3601,
+      "frameCoverage": 1.0,
+      "peakPssMiB": 70.3037109375,
+      "peakLuaMiB": 0.28737354278564453,
+      "sameProcess": true,
+      "frameWarnings": 0,
+      "initialState": {
+        "page": "aero.main",
+        "attention": "AWAKE",
+        "theme": "DARK",
+        "orientation": "LANDSCAPE",
+        "pid": "10402",
+        "touches": "0",
+        "navigationReason": "open",
+        "luaBytes": "301333",
+        "navigationGeneration": "2"
+      },
+      "finalState": {
+        "page": "aero.main",
+        "attention": "AWAKE",
+        "theme": "DARK",
+        "orientation": "LANDSCAPE",
+        "pid": "10402",
+        "touches": "0",
+        "navigationReason": "open",
+        "luaBytes": "276487",
+        "navigationGeneration": "2"
+      },
+      "flaggedFrames": 0,
+      "inputFrames": 0
+    }
+  },
+  "failures": [
+    "aero"
+  ],
+  "probePassed": false,
+  "settingsRestored": true
+}

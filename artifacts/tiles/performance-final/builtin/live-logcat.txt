@@ -1,0 +1,12 @@
+--------- beginning of main
+10-31 02:51:39.670  2200  2200 I ThinkOS : attention=AWAKE
+10-31 02:51:57.202  2200  2319 W ThinkOS : time sync failed (2); retry in 60s
+10-31 02:52:33.506  2200  2320 W ThinkOS : [plugin:gallery] Bing gallery refresh failed gallery/main.lua:131: Failed to connect to www.bing.com/202.89.233.101:443
+10-31 02:52:34.070  2200  2320 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/167.114.211.86:443
+10-31 02:52:57.326  2200  2319 W ThinkOS : time sync failed (3); retry in 120s
+10-31 02:54:35.580  2200  2320 W ThinkOS : [plugin:gallery] Bing gallery refresh failed gallery/main.lua:131: Failed to connect to www.bing.com/202.89.233.101:443
+10-31 02:54:36.146  2200  2320 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/167.114.211.86:443
+10-31 02:54:57.505  2200  2319 W ThinkOS : time sync failed (4); retry in 240s
+10-31 02:58:37.635  2200  2320 W ThinkOS : [plugin:gallery] Bing gallery refresh failed gallery/main.lua:131: Failed to connect to www.bing.com/202.89.233.101:443
+10-31 02:58:57.588  2200  2319 W ThinkOS : time sync failed (5); retry in 480s
+10-31 02:59:38.284  2200  2320 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/167.114.211.86:443

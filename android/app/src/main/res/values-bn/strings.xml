@@ -98,4 +98,7 @@
     <string name="setting_group_tiles">লাইভ টাইল</string>
     <string name="setting_tiles_live">টাইলের বিষয়বস্তু স্বয়ংক্রিয়ভাবে বদলান</string>
     <string name="setting_tiles_interval">টাইল বদলানোর বিরতি</string>
+    <string name="aero_desktop">ডেস্কটপ</string>
+    <string name="aero_start">শুরু</string>
+    <string name="aero_open">খুলুন</string>
 </resources>

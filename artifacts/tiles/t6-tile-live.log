@@ -1,0 +1,11 @@
+Performing Streamed Install
+Success
+Performing Streamed Install
+Success
+Deleted 1 rows
+PASS single page scheduler; interval >=5s; round robin; empty faces skipped
+PASS live switch cancels a running animation and stops subsequent flips
+PASS AMBIENT stops and retains face
+PASS waking resumes; leaving cancels
+PASS all-empty faces retain label; no opens is a no-op
+PASS reduced motion switches immediately without an animation

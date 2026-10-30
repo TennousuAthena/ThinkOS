@@ -46,6 +46,12 @@ def main():
     def logs():
         return adb("logcat", "-d", "-s", "ThinkOS:V", "AndroidRuntime:E").decode()
 
+    def since(before):
+        # logcat is a ring: old lines can disappear between snapshots.
+        marker=next((line for line in reversed(before.splitlines()) if line.strip()), '')
+        current=logs();position=current.rfind(marker) if marker else -1
+        return current[position+len(marker):] if position>=0 else current
+
     def state():
         debug("state")
         text = logs().split("DEBUG state=")[-1]
@@ -127,9 +133,9 @@ def main():
 
         before = logs()
         gesture("tap", 280, 610)
-        assert "COMPONENT PROBE TAP ring" in logs()[len(before):]
+        assert "COMPONENT PROBE TAP ring" in since(before)
         gesture("tap", 800, 345)
-        assert "COMPONENT PROBE TAP row 1" in logs()[len(before):]
+        assert "COMPONENT PROBE TAP row 1" in since(before)
         passed("native ring and list row taps reach the owning Lua plugin")
 
         gesture("swipe", 1000, 720, 1000, 360, 800)
@@ -139,7 +145,7 @@ def main():
         before = logs()
         tap_node(visible[0])
         index = int(visible[0].attrib["text"].split()[1])
-        assert f"COMPONENT PROBE TAP row {index}" in logs()[len(before):]
+        assert f"COMPONENT PROBE TAP row {index}" in since(before)
         shot("list-scrolled-and-tapped")
         passed("vertical scrolling retains the page and recycled rows emit their actual 1-based index")
 
@@ -151,7 +157,7 @@ def main():
         wait_state("page", "component-probe.focus")
         before = logs()
         gesture("tap", 640, 725)
-        assert "COMPONENT PROBE TAP footer" in logs()[len(before):]
+        assert "COMPONENT PROBE TAP footer" in since(before)
         shot("focus-landscape-dark")
         passed("focus groups render derived daylight and line charts without location permission; footer tap works")
 
@@ -178,7 +184,7 @@ def main():
         shot("split-portrait-night")
         passed("the same mock components render in light, dark and red night themes")
         assert initial_pid == adb("shell", "pidof", "moe.kiwi.thinkos").strip()
-        delta = logs()[len(baseline):]
+        delta = since(baseline)
         assert "FATAL EXCEPTION" not in delta
         result["complete"] = True
     finally:

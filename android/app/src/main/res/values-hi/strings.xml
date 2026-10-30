@@ -98,4 +98,7 @@
     <string name="setting_group_tiles">लाइव टाइलें</string>
     <string name="setting_tiles_live">टाइल की सामग्री अपने आप बदलें</string>
     <string name="setting_tiles_interval">टाइल बदलने का अंतराल</string>
+    <string name="aero_desktop">डेस्कटॉप</string>
+    <string name="aero_start">प्रारंभ</string>
+    <string name="aero_open">खोलें</string>
 </resources>

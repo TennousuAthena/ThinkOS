@@ -1,0 +1,10 @@
+{
+  "libraries": [
+    "lib/armeabi-v7a/libtos.so"
+  ],
+  "apkSha256": "dcd8b8616ed55d6d653094bcdba66eb9e1969b17a2a00ac8f1995c501795c28a",
+  "bytes": 7400596,
+  "minSdk": 27,
+  "targetSdk": 27,
+  "nativeCode": "native-code: 'armeabi-v7a'"
+}

@@ -1,0 +1,4 @@
+--------- beginning of main
+10-31 02:29:51.912 28009 28009 I ThinkOS : attention=AWAKE
+10-31 02:30:04.982 28009 28091 W ThinkOS : time sync failed (2); retry in 60s
+10-31 02:30:41.909 28009 28092 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/167.114.211.86:443

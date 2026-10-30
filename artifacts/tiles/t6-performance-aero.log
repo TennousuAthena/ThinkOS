@@ -1,0 +1,9 @@
+Sampling aero for 600 seconds
+Traceback (most recent call last):
+  File "/Users/takuenn/Workspace/mobileApp/ThinkOS/tools/tests/tile_perf.py", line 169, in <module>
+    assert report.get('probePassed',report['complete']),report
+                        ^^^^^^
+  File "/Users/takuenn/Workspace/mobileApp/ThinkOS/tools/tests/tile_perf.py", line 115, in main
+    samples.append(sample);time.sleep(1)
+                           ^^^^^^^^^^^^^
+KeyboardInterrupt

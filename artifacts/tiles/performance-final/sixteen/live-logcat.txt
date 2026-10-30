@@ -1,0 +1,4 @@
+--------- beginning of main
+10-31 03:01:55.829  2200  2200 I ThinkOS : attention=AWAKE
+10-31 03:06:39.660  2200  2320 W ThinkOS : [plugin:gallery] Bing gallery refresh failed gallery/main.lua:131: Failed to connect to www.bing.com/202.89.233.101:443
+10-31 03:07:02.757  2200  2319 W ThinkOS : time sync failed (6); retry in 960s

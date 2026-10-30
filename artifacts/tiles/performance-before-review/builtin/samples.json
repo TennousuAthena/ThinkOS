@@ -1,0 +1,617 @@
+[
+  {
+    "elapsed": 0.10529587502242066,
+    "pssKiB": 76381,
+    "state": "DeviceState(attention=AWAKE, deck=DeckState(page=tiles.main, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=45846, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=103122, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=111736, disabled=false, error=null)]\n",
+    "luaBytes": 300853
+  },
+  {
+    "elapsed": 3.863030542008346
+  },
+  {
+    "elapsed": 7.039942083996721
+  },
+  {
+    "elapsed": 10.224521958996775
+  },
+  {
+    "elapsed": 13.421431124996161
+  },
+  {
+    "elapsed": 16.580171125009656
+  },
+  {
+    "elapsed": 19.74654824999743
+  },
+  {
+    "elapsed": 22.929797667020466
+  },
+  {
+    "elapsed": 26.101620667002862
+  },
+  {
+    "elapsed": 29.276484250003705
+  },
+  {
+    "elapsed": 32.44006675001583,
+    "pssKiB": 63571,
+    "state": "DeviceState(attention=AWAKE, deck=DeckState(page=tiles.main, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=45846, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=103122, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=111736, disabled=false, error=null)]\n",
+    "luaBytes": 300853
+  },
+  {
+    "elapsed": 36.24743929199758
+  },
+  {
+    "elapsed": 39.407296667021
+  },
+  {
+    "elapsed": 42.583984917000635
+  },
+  {
+    "elapsed": 45.767609959002584
+  },
+  {
+    "elapsed": 48.9429365840042
+  },
+  {
+    "elapsed": 52.10851466702297
+  },
+  {
+    "elapsed": 55.28377558401553
+  },
+  {
+    "elapsed": 58.45961583399912
+  },
+  {
+    "elapsed": 61.644090084009804
+  },
+  {
+    "elapsed": 64.8053723339981,
+    "pssKiB": 64097,
+    "state": "DeviceState(attention=AWAKE, deck=DeckState(page=tiles.main, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=49852, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=103122, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=83715, disabled=false, error=null)]\n",
+    "luaBytes": 276838
+  },
+  {
+    "elapsed": 68.5873115840077
+  },
+  {
+    "elapsed": 71.76454520900734
+  },
+  {
+    "elapsed": 74.94288020901149
+  },
+  {
+    "elapsed": 78.12441541699809
+  },
+  {
+    "elapsed": 81.30236104200594
+  },
+  {
+    "elapsed": 84.46209241700126
+  },
+  {
+    "elapsed": 87.65607395902043
+  },
+  {
+    "elapsed": 90.81827754201367
+  },
+  {
+    "elapsed": 93.98374491700088
+  },
+  {
+    "elapsed": 97.16040787499514,
+    "pssKiB": 63992,
+    "state": "DeviceState(attention=AWAKE, deck=DeckState(page=tiles.main, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=49852, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=103122, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=83715, disabled=false, error=null)]\n",
+    "luaBytes": 276838
+  },
+  {
+    "elapsed": 100.96224091699696
+  },
+  {
+    "elapsed": 104.1407299170096
+  },
+  {
+    "elapsed": 107.30925933399703
+  },
+  {
+    "elapsed": 110.48815849999664
+  },
+  {
+    "elapsed": 113.64676929201232
+  },
+  {
+    "elapsed": 116.82134616700932
+  },
+  {
+    "elapsed": 119.99958550001611
+  },
+  {
+    "elapsed": 123.17701325000962
+  },
+  {
+    "elapsed": 126.34526129200822
+  },
+  {
+    "elapsed": 129.5239823340089,
+    "pssKiB": 64309,
+    "state": "DeviceState(attention=AWAKE, deck=DeckState(page=tiles.main, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=53858, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=103122, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=88599, disabled=false, error=null)]\n",
+    "luaBytes": 285728
+  },
+  {
+    "elapsed": 133.32198624999728
+  },
+  {
+    "elapsed": 136.4887210839952
+  },
+  {
+    "elapsed": 139.66999795901938
+  },
+  {
+    "elapsed": 142.84945875001722
+  },
+  {
+    "elapsed": 146.13048675001482
+  },
+  {
+    "elapsed": 149.29485191701679
+  },
+  {
+    "elapsed": 152.47346741700312
+  },
+  {
+    "elapsed": 155.64396087502246
+  },
+  {
+    "elapsed": 158.8265462090203
+  },
+  {
+    "elapsed": 162.00950516702142,
+    "pssKiB": 64153,
+    "state": "DeviceState(attention=AWAKE, deck=DeckState(page=tiles.main, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=53858, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=103122, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=88599, disabled=false, error=null)]\n",
+    "luaBytes": 285728
+  },
+  {
+    "elapsed": 165.78678424999816
+  },
+  {
+    "elapsed": 168.9529961250082
+  },
+  {
+    "elapsed": 172.12485841699527
+  },
+  {
+    "elapsed": 175.3090181669977
+  },
+  {
+    "elapsed": 178.48285620901152
+  },
+  {
+    "elapsed": 181.64469766701222
+  },
+  {
+    "elapsed": 184.867873375013
+  },
+  {
+    "elapsed": 188.09735270901
+  },
+  {
+    "elapsed": 191.2816383340105
+  },
+  {
+    "elapsed": 194.45665291699697,
+    "pssKiB": 64777,
+    "state": "DeviceState(attention=AWAKE, deck=DeckState(page=tiles.main, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=57864, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=103122, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=99777, disabled=false, error=null)]\n",
+    "luaBytes": 300912
+  },
+  {
+    "elapsed": 198.24411466700258
+  },
+  {
+    "elapsed": 201.4302476250159
+  },
+  {
+    "elapsed": 204.5912807919958
+  },
+  {
+    "elapsed": 207.774886084022
+  },
+  {
+    "elapsed": 210.94632183399517
+  },
+  {
+    "elapsed": 214.1072554590064
+  },
+  {
+    "elapsed": 217.286278375017
+  },
+  {
+    "elapsed": 220.46970825002063
+  },
+  {
+    "elapsed": 223.64506233402062
+  },
+  {
+    "elapsed": 226.8138765420008,
+    "pssKiB": 64534,
+    "state": "DeviceState(attention=AWAKE, deck=DeckState(page=tiles.main, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=57864, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=103122, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=99777, disabled=false, error=null)]\n",
+    "luaBytes": 300912
+  },
+  {
+    "elapsed": 230.59299674999784
+  },
+  {
+    "elapsed": 233.76832058400032
+  },
+  {
+    "elapsed": 236.9475112920045
+  },
+  {
+    "elapsed": 240.1206973340013
+  },
+  {
+    "elapsed": 243.30421579201357
+  },
+  {
+    "elapsed": 246.46708554201177
+  },
+  {
+    "elapsed": 249.6437480839959
+  },
+  {
+    "elapsed": 252.82895012499648
+  },
+  {
+    "elapsed": 255.98746929201297
+  },
+  {
+    "elapsed": 259.17269812501036,
+    "pssKiB": 64815,
+    "state": "DeviceState(attention=AWAKE, deck=DeckState(page=tiles.main, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=61870, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=103122, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=104661, disabled=false, error=null)]\n",
+    "luaBytes": 309802
+  },
+  {
+    "elapsed": 262.96936020901194
+  },
+  {
+    "elapsed": 266.1341449590109
+  },
+  {
+    "elapsed": 269.3112779170042
+  },
+  {
+    "elapsed": 272.49259999999776
+  },
+  {
+    "elapsed": 275.65310083399527
+  },
+  {
+    "elapsed": 278.84093187502003
+  },
+  {
+    "elapsed": 282.01575987500837
+  },
+  {
+    "elapsed": 285.18387341700145
+  },
+  {
+    "elapsed": 288.3475192920014
+  },
+  {
+    "elapsed": 291.52575641701696,
+    "pssKiB": 64567,
+    "state": "DeviceState(attention=AWAKE, deck=DeckState(page=tiles.main, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=61870, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=103122, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=104661, disabled=false, error=null)]\n",
+    "luaBytes": 309802
+  },
+  {
+    "elapsed": 295.3334972920129
+  },
+  {
+    "elapsed": 298.4936931669945
+  },
+  {
+    "elapsed": 301.6745284589997
+  },
+  {
+    "elapsed": 304.8596366250131
+  },
+  {
+    "elapsed": 308.0170926669962
+  },
+  {
+    "elapsed": 311.1863420419977
+  },
+  {
+    "elapsed": 314.371083792008
+  },
+  {
+    "elapsed": 317.54941862501437
+  },
+  {
+    "elapsed": 320.71076179199736
+  },
+  {
+    "elapsed": 323.89045612499467,
+    "pssKiB": 64852,
+    "state": "DeviceState(attention=AWAKE, deck=DeckState(page=tiles.main, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=34090, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=103122, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=109545, disabled=false, error=null)]\n",
+    "luaBytes": 286906
+  },
+  {
+    "elapsed": 327.67024841700913
+  },
+  {
+    "elapsed": 330.85244795901235
+  },
+  {
+    "elapsed": 334.0294787090097
+  },
+  {
+    "elapsed": 337.1973780420085
+  },
+  {
+    "elapsed": 340.376792791998
+  },
+  {
+    "elapsed": 343.55117654200876
+  },
+  {
+    "elapsed": 346.7386405840225
+  },
+  {
+    "elapsed": 349.90170995899825
+  },
+  {
+    "elapsed": 353.07245695899474
+  },
+  {
+    "elapsed": 356.2487997090211,
+    "pssKiB": 64760,
+    "state": "DeviceState(attention=AWAKE, deck=DeckState(page=tiles.main, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=38216, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=103122, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=114429, disabled=false, error=null)]\n",
+    "luaBytes": 295916
+  },
+  {
+    "elapsed": 360.03842125000665
+  },
+  {
+    "elapsed": 363.20480637499713
+  },
+  {
+    "elapsed": 366.3905478340166
+  },
+  {
+    "elapsed": 369.55875812500017
+  },
+  {
+    "elapsed": 372.7373788340192
+  },
+  {
+    "elapsed": 375.91873912501615
+  },
+  {
+    "elapsed": 379.085694459005
+  },
+  {
+    "elapsed": 382.2543367500184
+  },
+  {
+    "elapsed": 385.42716250001104
+  },
+  {
+    "elapsed": 388.60816612502094,
+    "pssKiB": 79140,
+    "state": "DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=-1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=36010, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=109254, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=125769, disabled=false, error=null)]\n",
+    "luaBytes": 311182
+  },
+  {
+    "elapsed": 392.3918397090165
+  },
+  {
+    "elapsed": 395.56458645901876
+  },
+  {
+    "elapsed": 398.74546941701556
+  },
+  {
+    "elapsed": 401.920384209021
+  },
+  {
+    "elapsed": 405.0955054590013
+  },
+  {
+    "elapsed": 408.26153208399774
+  },
+  {
+    "elapsed": 411.445588750008
+  },
+  {
+    "elapsed": 414.60760891699465
+  },
+  {
+    "elapsed": 417.79289358400274
+  },
+  {
+    "elapsed": 420.96301216701977,
+    "pssKiB": 99135,
+    "state": "DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=-1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=35050, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=109254, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=130653, disabled=false, error=null)]\n",
+    "luaBytes": 315106
+  },
+  {
+    "elapsed": 424.7565324169991
+  },
+  {
+    "elapsed": 427.93314312500297
+  },
+  {
+    "elapsed": 431.107101208996
+  },
+  {
+    "elapsed": 434.2745489170193
+  },
+  {
+    "elapsed": 437.4517324590124
+  },
+  {
+    "elapsed": 440.6278188340075
+  },
+  {
+    "elapsed": 443.80366587502067
+  },
+  {
+    "elapsed": 446.9710245000024
+  },
+  {
+    "elapsed": 450.15073870899505
+  },
+  {
+    "elapsed": 453.3469904590165,
+    "pssKiB": 99312,
+    "state": "DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=-1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=35050, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=109254, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=130653, disabled=false, error=null)]\n",
+    "luaBytes": 315106
+  },
+  {
+    "elapsed": 457.1149832920055
+  },
+  {
+    "elapsed": 460.29184158399585
+  },
+  {
+    "elapsed": 463.4596094590088
+  },
+  {
+    "elapsed": 466.62967808402027
+  },
+  {
+    "elapsed": 469.813148834015
+  },
+  {
+    "elapsed": 472.9879472920147
+  },
+  {
+    "elapsed": 476.152137875004
+  },
+  {
+    "elapsed": 479.3310322500183
+  },
+  {
+    "elapsed": 482.5120908750105
+  },
+  {
+    "elapsed": 485.68797433399595,
+    "pssKiB": 99808,
+    "state": "DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=-1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=39176, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=109254, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=141653, disabled=false, error=null)]\n",
+    "luaBytes": 330232
+  },
+  {
+    "elapsed": 489.48506508400897
+  },
+  {
+    "elapsed": 492.6451070840121
+  },
+  {
+    "elapsed": 495.82672241699765
+  },
+  {
+    "elapsed": 498.99520816700533
+  },
+  {
+    "elapsed": 502.17205066699535
+  },
+  {
+    "elapsed": 505.3447153340094
+  },
+  {
+    "elapsed": 508.52175975000137
+  },
+  {
+    "elapsed": 511.6914083750162
+  },
+  {
+    "elapsed": 514.8633636250161
+  },
+  {
+    "elapsed": 518.0409270420205,
+    "pssKiB": 100034,
+    "state": "DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=-1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=39176, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=109254, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=141653, disabled=false, error=null)]\n",
+    "luaBytes": 330232
+  },
+  {
+    "elapsed": 521.8323989170021
+  },
+  {
+    "elapsed": 525.0051672499976
+  },
+  {
+    "elapsed": 528.1800406670081
+  },
+  {
+    "elapsed": 531.35019770902
+  },
+  {
+    "elapsed": 534.5230504590145
+  },
+  {
+    "elapsed": 537.708407209022
+  },
+  {
+    "elapsed": 540.885073625017
+  },
+  {
+    "elapsed": 544.0478461669991
+  },
+  {
+    "elapsed": 547.2337395420182
+  },
+  {
+    "elapsed": 550.3989576669992,
+    "pssKiB": 100380,
+    "state": "DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=-1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=35050, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=109254, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=146537, disabled=false, error=null)]\n",
+    "luaBytes": 330990
+  },
+  {
+    "elapsed": 554.1935056250077
+  },
+  {
+    "elapsed": 557.3641543340054
+  },
+  {
+    "elapsed": 560.5350800839951
+  },
+  {
+    "elapsed": 563.7085401670192
+  },
+  {
+    "elapsed": 566.8859565840103
+  },
+  {
+    "elapsed": 570.0644122500089
+  },
+  {
+    "elapsed": 573.2348535420024
+  },
+  {
+    "elapsed": 576.4085232920188
+  },
+  {
+    "elapsed": 579.5826714590075
+  },
+  {
+    "elapsed": 582.7669518339972,
+    "pssKiB": 113413,
+    "state": "DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=-1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.4.0, bytes=35050, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.4.0, bytes=109254, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.2.0, bytes=146537, disabled=false, error=null)]\n",
+    "luaBytes": 330990
+  },
+  {
+    "elapsed": 586.5495527090097
+  },
+  {
+    "elapsed": 589.7294569170044
+  },
+  {
+    "elapsed": 592.9096108750091
+  },
+  {
+    "elapsed": 596.0656778750126
+  },
+  {
+    "elapsed": 599.2428952089977
+  }
+]

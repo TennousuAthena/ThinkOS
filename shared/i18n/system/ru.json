@@ -95,5 +95,8 @@
   "media.video": "Видео",
   "setting_group_tiles": "Живые плитки",
   "setting_tiles_live": "Автоматически менять содержимое",
-  "setting_tiles_interval": "Интервал смены содержимого"
+  "setting_tiles_interval": "Интервал смены содержимого",
+  "aero.desktop": "Рабочий стол",
+  "aero.start": "Пуск",
+  "aero.open": "Открыть"
 }

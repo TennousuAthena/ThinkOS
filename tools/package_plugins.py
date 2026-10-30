@@ -188,12 +188,12 @@ def package_plugin(source, output):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--plugin', action='append', type=Path,
-                        help='Plugin source directory; repeat to package multiple. Defaults to built-in home, clock, weather, gallery, tiles and settings.')
+                        help='Plugin source directory; repeat to package multiple. Defaults to built-in home, clock, weather, gallery, tiles, aero and settings.')
     parser.add_argument('--output', type=Path, default=ROOT / 'android/app/src/main/assets/plugins',
                         help='Output directory for <id>/ files and index.json.')
     parser.add_argument('--validate-only', action='store_true', help='Validate without writing directories.')
     args = parser.parse_args()
-    sources = args.plugin or [ROOT / 'plugins/home', ROOT / 'plugins/clock', ROOT / 'plugins/weather', ROOT / 'plugins/gallery', ROOT / 'plugins/tiles', ROOT / 'plugins/settings']
+    sources = args.plugin or [ROOT / 'plugins/home', ROOT / 'plugins/clock', ROOT / 'plugins/weather', ROOT / 'plugins/gallery', ROOT / 'plugins/tiles', ROOT / 'plugins/aero', ROOT / 'plugins/settings']
     try:
         ids = [validate_plugin(source)[0]['id'] for source in sources]
         if len(set(ids)) != len(ids):

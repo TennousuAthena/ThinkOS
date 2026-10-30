@@ -1,0 +1,3 @@
+--------- beginning of main
+10-31 02:11:52.392 24377 24377 I ThinkOS : attention=AWAKE
+10-31 02:12:05.694 24377 24460 W ThinkOS : time sync failed (2); retry in 60s

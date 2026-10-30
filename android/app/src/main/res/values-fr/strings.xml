@@ -98,4 +98,7 @@
     <string name="setting_group_tiles">Vignettes dynamiques</string>
     <string name="setting_tiles_live">Changer le contenu automatiquement</string>
     <string name="setting_tiles_interval">Intervalle entre les changements</string>
+    <string name="aero_desktop">Bureau</string>
+    <string name="aero_start">Démarrer</string>
+    <string name="aero_open">Ouvrir</string>
 </resources>

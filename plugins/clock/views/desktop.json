@@ -1,0 +1,15 @@
+{
+  "template": "glance",
+  "children": [
+    {
+      "type": "clock",
+      "style": "analog",
+      "weight": 1
+    },
+    {
+      "type": "text",
+      "value": "{{date}}",
+      "style": "caption"
+    }
+  ]
+}

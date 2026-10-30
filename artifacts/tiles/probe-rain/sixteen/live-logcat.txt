@@ -1,0 +1,2 @@
+--------- beginning of main
+10-31 02:09:53.958 23329 23402 W ThinkOS : time sync failed (2); retry in 60s

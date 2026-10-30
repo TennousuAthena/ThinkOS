@@ -95,5 +95,8 @@
   "media.video": "ভিডিও",
   "setting_group_tiles": "লাইভ টাইল",
   "setting_tiles_live": "টাইলের বিষয়বস্তু স্বয়ংক্রিয়ভাবে বদলান",
-  "setting_tiles_interval": "টাইল বদলানোর বিরতি"
+  "setting_tiles_interval": "টাইল বদলানোর বিরতি",
+  "aero.desktop": "ডেস্কটপ",
+  "aero.start": "শুরু",
+  "aero.open": "খুলুন"
 }

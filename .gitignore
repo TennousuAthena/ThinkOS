@@ -37,3 +37,7 @@ __pycache__/
 *.pyc
 .venv/
 
+# 原始逐帧/内存采样由 performance-raw.tar.gz + SHA-256 索引保留；本地解包可直接分析。
+artifacts/tiles/**/frames-*.txt
+artifacts/tiles/**/memory-*.txt
+

@@ -98,4 +98,7 @@
     <string name="setting_group_tiles">動態磚</string>
     <string name="setting_tiles_live">自動切換動態磚內容</string>
     <string name="setting_tiles_interval">動態磚切換間隔</string>
+    <string name="aero_desktop">桌面</string>
+    <string name="aero_start">開始</string>
+    <string name="aero_open">開啟</string>
 </resources>

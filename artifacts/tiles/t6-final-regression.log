@@ -1,0 +1,11 @@
+component_ui: FAIL
+weather_ui: PASS
+settings_ui: PASS
+Traceback (most recent call last):
+  File "/Users/takuenn/Workspace/mobileApp/ThinkOS/tools/tests/tile_regression.py", line 49, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/Users/takuenn/Workspace/mobileApp/ThinkOS/tools/tests/tile_regression.py", line 48, in main
+    assert results.get(args.only,False) if args.only else all(results.values()),results
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'component_ui': False, 'weather_ui': True, 'settings_ui': True, 'settingsRestored': True}

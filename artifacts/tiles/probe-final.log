@@ -1,0 +1,2 @@
+Sampling sixteen for 60 seconds
+{"seconds": 60.514245875005145, "frames": 2073, "jankyFrames": 64, "jankyPercent": 3.087313072841293, "maxDrawMs": 4.000937, "maxFrameMs": 33.621239, "sampledFrames": 2073, "frameCoverage": 1.0, "peakPssMiB": 137.6318359375, "peakLuaMiB": 0.31496524810791016, "sameProcess": true, "frameWarnings": 0, "flaggedFrames": 0, "inputFrames": 0}

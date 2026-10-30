@@ -91,7 +91,7 @@ APK 根索引 `assets/plugins/index.json` 为 `{plugins:[上述完整索引…]}
 
 | 层 | 可选值 |
 |---|---|
-| 页面版式 `layout` | API 1：`stacks` / `focus` / 设置专用 `form`（§11.3）；API 2：`split` / `stage`；API 4：`tiles` |
+| 页面版式 `layout` | API 1：`stacks` / `focus` / 设置专用 `form`（§11.3）；API 2：`split` / `stage`；API 4：`tiles`；API 5：`aero` |
 | 卡片模板 `template` | API 1：`glance`；API 4：`tile`；M1 媒体与列表模板待实现 |
 | 组件 `type` | API 1：`text` / `icon` / `clock`，`form` 只用于设置版式；API 2：`progress` / `chart` / `list` / `daylight` / `moon`；API 3：`image` / `carousel` |
 | `clock.style` | `digital` / `analog` / `solar` / `world` / `float` |
@@ -121,13 +121,17 @@ API 2 的固定组件与内容字段：
 
 `clock.sun` 为状态路径，例如 `"sun": "sun"`，读取插件通过 `tos.astro.sun()` 取得的派生数据。solar 表盘以真实太阳中天为圆环顶部，用真实日出日落和三层曙暮光标出白昼区间；无有效天文数据时只显示空环与时间，不推测日出日落。OS 绘图只接收派生事件，不把位置反向暴露给插件。
 
+### 4.1.0a API 5：Aero 桌面
+
+`{"layout":"aero","slots":{"windows":[{"widget":"clock.desktop"},{"widget":"weather.now"},{"widget":"gallery.preview"}]}}`。1–3 扇窗口，共用普通跨插件卡片引用；窗口标题取所属插件的 name 文案。横屏并排错落，竖屏上方主窗、下方副窗；开始菜单与任务栏打开卡片的 opens 和系统设置。所有外观归 OS，无 CSS/颜色/像素/模糊接口。Aero 作为普通页面加入 deck，不替换现有角色。API 1–4 不得使用此版式。见 ADR-026 与 `25-windows-design.md`。
+
 ### 4.1.0 API 4：磁贴
 
 `{"layout":"tiles","slots":{"tiles":[{"widget":"clock.tile","size":"wide","color":"#D24726"}]}}`。1–16 项，size 必填：small 1×1、medium 2×2、wide 4×2、large 4×4。横屏 6×4、竖屏 4×6，按声明顺序首次适配，RTL 镜像，不滚动；放不下丢弃并 warn（横屏 large+wide 放不下 wide，竖屏可同时容纳）。打包器对两个方向都放不下的引用给警告。
 
 `{"template":"tile","color":"{{config.color}}","faces":[{"icon":"clock","value":"{{time}}","label":"@name","detail":"{{date}}"}],"badge":"{{count}}"}`。faces 1–4 面，label 必填；value/detail 都空的面跳过，全空时显示第一面的 label。color 可为 #RRGGBB 或 {{绑定}}，引用颜色在页面状态中求值，卡片颜色在所属插件状态中求值。引用 > 卡片 > 系统 accent；非法运行时值回退并 warn。OS 自动取黑白前景色，插件不能指定。可绑定配置项给用户选颜色（ADR-025）。
 
-small 只显示 icon（无 icon 时 value）与角标；medium 显示 icon/value/label；wide 左侧 icon/value/label，右侧 content 或 detail；large 上部 content，下部 icon/value/label/detail。content 仅接受 clock/progress/chart/daylight/moon（仅 wide/large 显示）。tile 在 stacks 中按 large 显示；glance 在 tiles 中为空占位。点击 opens，长按进入卡片所属插件设置。页面 active 且 AWAKE/ENGAGED 时逐张翻面，同一时间最多一张，受系统 tiles.live/tiles.interval 控制；减少动画直接换面。离线沿用本地状态。
+small 只显示 icon（无 icon 时 value）与角标；medium 显示 icon/value/label；wide 左侧 icon/value/label，右侧 content 或 detail；large 上部 content，下部 icon/value/label/detail。content 仅接受 clock/progress/chart/daylight/moon（仅 wide/large 显示）。tile 在 stacks 中按 large 显示；glance 在 tiles 中为空占位。点击 opens，长按进入卡片所属插件设置。页面 active 且 AWAKE/ENGAGED 时逐张翻面，同一时间最多一张，受系统 tiles.live/tiles.interval 控制；减少动画直接换面。离线沿用本地状态。所有 value/detail 均为空时不翻面，首面的图标仍可作为静态入口；没有图标则回退 label。
 
 新增图标 music/photo/bell/settings/home/folder/list/star/heart/message/play/battery。
 

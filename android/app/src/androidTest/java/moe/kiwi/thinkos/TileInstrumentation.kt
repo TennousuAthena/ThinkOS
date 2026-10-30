@@ -119,6 +119,52 @@ class TileInstrumentation : Instrumentation() {
             }
         }
     }
+    private fun aeroChecks() {
+        for (orientation in listOf(0,1)) {
+            main { activity.requestedOrientation=moe.kiwi.thinkos.core.DeviceOrientation.forced(orientation) };SystemClock.sleep(1000)
+            for(theme in listOf(Theme.LIGHT,Theme.DARK,Theme.NIGHT)) {
+                debugTheme(theme);page("aero.main")
+                check(read { all().count { it.javaClass.simpleName=="AeroWindow" }==3 })
+                check(read { all().none { it.javaClass.name.contains("WebView") } })
+                screenshot("aero-${if(orientation==0) "landscape" else "portrait"}-${theme.name.lowercase()}")
+            }
+        }
+        pass("Aero native desktop; three widget windows; six orientation/theme scenes; no WebView")
+        main { activity.requestedOrientation=moe.kiwi.thinkos.core.DeviceOrientation.LANDSCAPE };SystemClock.sleep(800);debugTheme(Theme.DARK)
+        for(l in listOf("zh-Hans","en","ar","hi")) { locale(l);page("aero.main");screenshot("aero-locale-$l") }
+        locale("en");page("aero.main")
+        val clock=read { all().first { it.javaClass.simpleName=="AeroClockView" } }
+        val prior=read { field(clock,"lastSecond") }
+        waitFor("Aero clock did not tick") { read { field(clock,"lastSecond")!=prior } }
+        val bucket=read { field(clock,"lastSecond") }
+        val clockRect=read { android.graphics.Rect().also { clock.getGlobalVisibleRect(it) } }
+        fun clockPixels():IntArray {
+            val image=uiAutomation.takeScreenshot()
+            return IntArray(clockRect.width()*clockRect.height()).also {
+                image.getPixels(it,0,clockRect.width(),clockRect.left,clockRect.top,clockRect.width(),clockRect.height());image.recycle()
+            }
+        }
+        val firstClock=clockPixels();SystemClock.sleep(180);val nextClock=clockPixels()
+        check(read { field(clock,"lastSecond")==bucket }) { "Clock tick crossed the sampling window" }
+        check(firstClock.indices.count { firstClock[it]!=nextClock[it] }>5) { "Static cache froze the analogue clock" }
+        pass("Aero visible hands move between UI clock ticks; static cache retains live native content")
+        val desktop=read { all().first { it.javaClass.simpleName=="AeroHomeView" } }
+        val start=read { field(desktop,"start") as View }
+        val point=read { IntArray(2).also { start.getLocationOnScreen(it) }.let { it[0]+start.width/2f to it[1]+start.height/2f } }
+        touch(point.first,point.second);check(read { (field(desktop,"menu") as View).visibility==View.VISIBLE });screenshot("aero-start-menu")
+        val menu=read { field(desktop,"menu") as ViewGroup }
+        val setting=read { menu.getChildAt(menu.childCount-1) }
+        val settingPoint=read { IntArray(2).also { setting.getLocationOnScreen(it) }.let { it[0]+setting.width/2f to it[1]+setting.height/2f } }
+        touch(settingPoint.first,settingPoint.second);check(read { host.router.settingsOpen });main { host.router.closeSettings() }
+        page("aero.main")
+        val frames=read { all().filter { it.javaClass.simpleName=="AeroWindow" } }
+        val weather=frames[1];val xy=read { IntArray(2).also { weather.getLocationOnScreen(it) }.let { it[0]+weather.width/2f to it[1]+weather.height/2f } }
+        touch(xy.first,xy.second,true);check(read { host.router.settingsOpen });main { host.router.closeSettings() };page("aero.main")
+        touch(xy.first,xy.second);check(read { host.store.current.deck.page=="weather.detail" });page("aero.main")
+        touch(read { stage.width*.8f },read { stage.height*.6f },dx=read { -stage.width*.65f })
+        check(read { host.store.current.deck.page!="aero.main" })
+        pass("Aero native start menu opens settings; widget click/owner long press and horizontal page swipe")
+    }
     private fun pluginChecks() {
         page("tiles.main")
         check(read { tiles().size==3 && tiles().all { it.owner in setOf("clock","weather","gallery") } })
@@ -167,6 +213,7 @@ class TileInstrumentation : Instrumentation() {
             initialOrientation=read { activity.requestedOrientation }
             waitFor("Fixture missing") { read { host.router.pages.any { it.key=="tile-probe.grid" } } }
             main { host.sensors.debugHoldAttention(Attention.AWAKE); host.sensors.stop() }
+            if(arguments.getString("aero")=="true") { aeroChecks();success=true;return }
             if(arguments.getString("plugins")=="true") { pluginChecks();success=true;return }
             if(arguments.getString("live")=="true") { liveChecks();success=true;return }
             page("tile-probe.grid")
@@ -222,7 +269,7 @@ class TileInstrumentation : Instrumentation() {
             touch(1100f,400f,dx=-850f);check(read { host.store.current.deck.page!=beforePage });pass("horizontal swipe changes page")
             page("tile-probe.grid");val beforeVariant=read { host.store.current.deck.variant };touch(640f,650f,dy=-500f)
             check(read { host.store.current.deck.variant!=beforeVariant });pass("vertical swipe changes variant")
-            page("tile-probe.icons");screenshot("twelve-icons");check(read { tiles().size==12 });pass("all twelve additional native icons render")
+            page("tile-probe.icons");screenshot("twelve-icons");check(read { tiles().size==12 && tiles().all { tile -> (field(tile,"icon") as View).let { it.isShown && it.width>0 && it.height>0 } } });pass("all twelve additional native icons render")
             page("tile-probe.stack");screenshot("tile-in-stack");check(read { tiles().isNotEmpty() });pass("tile in stacks uses large template")
             page("tile-probe.glance");screenshot("glance-and-missing-placeholder");pass("glance and missing references show safe empty tiles")
             success=true

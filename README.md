@@ -53,6 +53,8 @@ ThinkOS 是运行在 ThinkSmart View 上的 **Kiosk 主应用（设备外壳）*
 
 磁贴已接入 API 4：直角 Metro 网格、自定义底色与动态翻面，设备可离线使用。实现与实测结果见 [磁贴验收](docs/24-tiles-validation.md)。
 
+API 5 增加可横滑切换的原生 Aero 桌面：玻璃窗口、任务栏、开始菜单，以及公开时钟/天气/相册卡片。设计参考与实现边界见 [Windows 设计](docs/25-windows-design.md)。
+
 ## 一句话架构
 
 ```

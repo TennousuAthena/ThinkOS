@@ -1,0 +1,11 @@
+Sampling builtin for 600 seconds
+{"seconds": 602.5507035840128, "frames": 12877, "jankyFrames": 338, "jankyPercent": 2.6248349770909374, "maxDrawMs": 28.919948, "maxFrameMs": 435.607478, "sampledFrames": 10984, "peakPssMiB": 110.7548828125, "peakLuaMiB": 0.3156566619873047, "sameProcess": true, "frameWarnings": 0}
+Sampling sixteen for 600 seconds
+Traceback (most recent call last):
+  File "/Users/takuenn/Workspace/mobileApp/ThinkOS/tools/tests/tile_perf.py", line 125, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/Users/takuenn/Workspace/mobileApp/ThinkOS/tools/tests/tile_perf.py", line 84, in main
+    samples.append(sample);time.sleep(3)
+                           ^^^^^^^^^^^^^
+KeyboardInterrupt
