@@ -23,14 +23,26 @@ class DeckRouter(
     private var previousAttention = store.current.attention
     private val handler = Handler(Looper.getMainLooper())
     private val ambientRole = Runnable {
-        if (store.current.attention == Attention.AMBIENT && livePage == null) {
+        if (store.current.attention == Attention.AMBIENT && store.current.theme != Theme.NIGHT && livePage == null && !settingsOpen) {
             pages.firstOrNull { "ambient" in it.roles }?.let { select(it, 0, false) }
         }
     }
     val currentPage get() = pages.firstOrNull { it.key == store.current.deck.page }
 
     /** Pages reachable by swiping. The settings page is entered by long press and is never in the sequence. */
-    val navigablePages: List<PluginPage> get() = pages.filter { "settings" !in it.roles }
+    val navigablePages: List<PluginPage> get() = pages.filter { "settings" !in it.roles && (store.current.theme != Theme.NIGHT || "ambient" !in it.roles) }
+
+    private var previousTheme = store.current.theme
+    fun applyTheme(theme: Theme) {
+        if (theme == previousTheme) return
+        previousTheme = theme
+        handler.removeCallbacks(ambientRole)
+        if (theme == Theme.NIGHT) {
+            if (!settingsOpen && currentPage?.roles?.contains("ambient") == true) {
+                pages.firstOrNull { "sleep" in it.roles }?.let { select(it, 0, false) }
+            }
+        } else if (store.current.attention == Attention.AMBIENT && !settingsOpen) handler.postDelayed(ambientRole, ambientDelayMillis())
+    }
 
     // ---- settings (ADR-017) ----
     private var settingsReturn: DeckState? = null
@@ -144,6 +156,10 @@ class DeckRouter(
         }
     }
     private fun select(page: PluginPage, direction: Int, vertical: Boolean, forcedVariant: String? = null, params: JSONObject? = null) {
+        if (store.current.theme == Theme.NIGHT && "ambient" in page.roles) {
+            pages.firstOrNull { "sleep" in it.roles && "ambient" !in it.roles }?.let { select(it, direction, false) }
+            return
+        }
         val old = currentPage
         val stored = forcedVariant ?: preferences.getString(page.key, null)
         val variant = stored?.takeIf { it in page.variants } ?: page.variants.firstOrNull() ?: "digital"

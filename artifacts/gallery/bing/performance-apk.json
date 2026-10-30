@@ -1,0 +1,4 @@
+{
+  "apkSha256": "acd90c4eebfcdd3d14fe58cea9737ee4cb077c83e04e1c24e01adab59b01cf4f",
+  "note": "Performance sampled before the final Lua source-change generation ordering fix; OS image pipeline is identical."
+}

@@ -1,14 +1,16 @@
-# 插件契约（API 1 / 2）
+# 插件契约（API 1 / 2 / 3）
 
-`manifest.json` 定义包元信息；`view.json` 引用 `layouts.json` 中已经实现的固定渲染词汇。API 1 接受 `stacks` / `focus` / `form` 页面、`glance` 卡片、`text` / `icon` / `clock` / `form` 组件。API 2 增加 `split` / `stage`、组件组和 `progress` / `chart` / `list` / `daylight` / `moon`。
+`manifest.json` 定义包元信息；`view.json` 引用 `layouts.json` 中已经实现的固定渲染词汇。API 1 接受 `stacks` / `focus` / `form` 页面、`glance` 卡片、`text` / `icon` / `clock` / `form` 组件。API 2 增加 `split` / `stage`、组件组和 `progress` / `chart` / `list` / `daylight` / `moon`。API 3 增加本地/包内/HTTP(S) `image` / `carousel` 与 `tos.library.list`；`tos.state.set` 同时接受对象 JSON 文本以承载大清单。
 
-用户指定本轮先做 UI 测试。`controls/video/image/carousel` 的候选定义保留作设计记录，尚未进入 `component.oneOf` 和可安装词汇；安装器必须拒绝这些未接线的组件，不能让其进入主线程渲染后崩溃。
+天气已接入网络与缓存；相册默认直连 Bing，支持本地/混合；通用 OS 图片管线负责下载和有界磁盘缓存，Server 下发/管理暂不实现。`image/carousel` 仅允许 API 3，完整平移或 contain，无 cover 裁切。`controls/video` 继续暂缓，安装器仍拒绝。字段、权限、生命周期和示例见 `docs/06-plugins.md` §4.1.1、§6.6。
 
-`stacks.slots.left` / `right` 为卡片引用数组，例如 `[{"widget":"clock.now"}]`。这些引用解析到对应插件的 widget 和状态。`focus.slots.hero` 为主组件，`under` / `over` 为可选组件。API 2 槽位也可用 `{"children":[组件…]}`，不允许任意嵌套。`split` 使用固定 40/60 的 `lead/main`；`stage` 使用全出血 `stage` 与叠加的 `over/under`。组件不提供像素、颜色或动画参数；`weight` 是组内剩余高度的相对分配。
+`stacks.slots.left` / `right` 为卡片引用数组，例如 `[{"widget":"clock.now"}]`。这些引用解析到对应插件的 widget 和状态。`focus.slots.hero` 为主组件，`under` / `over` 为可选组件。API 2 槽位也可用 `{"children":[组件…]}`，不允许任意嵌套。`split` 使用固定 40/60 的 `lead/main`；`stage` 使用全出血 `stage` 与叠加的 `over/under`。组件不提供像素、颜色或自定义动画；API 3 只开放固定转场名称、时长和完整画面的平移速度；`weight` 是组内剩余高度的相对分配。
 
 版本门槛来自 `layouts.json` 的 `x-thinkos-api`。Python `validate_view(view, api)`、Android `PluginSchema.validateView(view, api)` 和 Go 生成的 `ValidateRenderAPI` 读取相同版本表；打包器/安装器传入 manifest 中的 API。API 1 不能使用新增类型、组、版式或 `tap/weight`。
 
 `progress` 支持条/环，`chart` 支持线/柱/面积并为缺值断段；`list` 的 `items` 绑定数组，`item` 内 `{{.title}}` 引用行元素。`daylight/moon` 的 `path` 只接收派生天文数据，不读取设备位置。组件点击统一发 `tap(name, index?)`，列表索引从 1 开始。完整字段见 schema 与 `docs/06-plugins.md` §4.1。
+
+`icon.name` 为可绑定的字符串，不是枚举，无需为新图标修改生成器。原生精确词汇含 `calendar/moon/clock/sun/unknown`，天气增加 `clear-day/clear-night/partly-day/partly-night/cloud/fog/rain/shower/snow/thunder`；未知名称显示占位。
 
 `clock.zones` 是世界表盘的城市列表，每项含 `label` 和 IANA `timezone`。`clock.style` 可为 `digital`、`analog`、`solar`、`world`、`float` 或 `{{variant}}`。
 

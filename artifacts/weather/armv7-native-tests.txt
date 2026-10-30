@@ -1,0 +1,37 @@
+/Users/takuenn/Workspace/mobileApp/ThinkOS/android/app/src/main/cpp/lua/loslib.c:174:3: warning: 'tmpnam' is deprecated: tmpnam is unsafe, use mkstemp or tmpfile instead [-Wdeprecated-declarations]
+  lua_tmpnam(buff, err);
+  ^
+/Users/takuenn/Workspace/mobileApp/ThinkOS/android/app/src/main/cpp/lua/loslib.c:124:33: note: expanded from macro 'lua_tmpnam'
+#define lua_tmpnam(b,e)         { e = (tmpnam(b) == NULL); }
+                                       ^
+/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/../sysroot/usr/include/stdio.h:159:5: note: 'tmpnam' has been explicitly marked deprecated here
+    __warnattr("tmpnam is unsafe, use mkstemp or tmpfile instead");
+    ^
+/opt/homebrew/share/android-commandlinetools/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/../sysroot/usr/include/sys/cdefs.h:143:40: note: expanded from macro '__warnattr'
+#define __warnattr(msg) __attribute__((deprecated(msg)))
+                                       ^
+1 warning generated.
+/tmp/thinkos-weather-native.PNn86N/weather-test: 1 file pushed, 0 skipped. 2673.7 MB/s (619112 bytes in 0.000s)
+/Users/takuenn/Workspace/mobileApp/ThinkOS/tools/tests/weather_test.lua: 1 file pushed, 0 skipped. 269.5 MB/s (10419 bytes in 0.000s)
+/Users/takuenn/Workspace/mobileApp/ThinkOS/plugins/weather/main.lua: 1 file pushed, 0 skipped. 307.1 MB/s (10330 bytes in 0.000s)
+/Users/takuenn/Workspace/mobileApp/ThinkOS/plugins/weather/forecast.lua: 1 file pushed, 0 skipped. 127.3 MB/s (4326 bytes in 0.000s)
+/Users/takuenn/Workspace/mobileApp/ThinkOS/plugins/weather/codes.lua: 1 file pushed, 0 skipped. 40.7 MB/s (1082 bytes in 0.000s)
+/Users/takuenn/Workspace/mobileApp/ThinkOS/tools/tests/fixtures/weather/forecast.json: 1 file pushed, 0 skipped. 164.4 MB/s (6753 bytes in 0.000s)
+/Users/takuenn/Workspace/mobileApp/ThinkOS/plugins/weather/manifest.json: 1 file pushed, 0 skipped. 75.6 MB/s (2960 bytes in 0.000s)
+/Users/takuenn/Workspace/mobileApp/ThinkOS/plugins/weather/i18n/en.json: 1 file pushed, 0 skipped. 60.4 MB/s (1981 bytes in 0.000s)
+8 files pushed, 0 skipped. 19.3 MB/s (656963 bytes in 0.032s)
+PASS weather start publishes immediately; network deferred; bounded full forecast (4.963 ms, 182480 bytes retained, 202084 bytes peak)
+PASS weather unit, language and minute changes only render; relevance remains stable (7.124 ms, 235932 bytes retained, 239413 bytes peak)
+PASS weather cache starts offline immediately; timestamp and raw Celsius survive (9.543 ms, 285762 bytes retained, 301849 bytes peak)
+PASS weather HTTP, timeout, non JSON and missing fields preserve complete cache (28.366 ms, 184898 bytes retained, 370614 bytes peak)
+PASS weather backoff 1, 2, 5, 15 minutes; success resets retry cycle (5.788 ms, 242020 bytes retained, 258592 bytes peak)
+PASS weather sleep stops refresh; wake and changed interval resume (12.173 ms, 305854 bytes retained, 325525 bytes peak)
+PASS weather untrusted clock retries at 30s; sync pulls next minute without relative age (4.724 ms, 227454 bytes retained, 249396 bytes peak)
+PASS weather an inflight success during sleep stays fresh on wake (4.967 ms, 223286 bytes retained, 240883 bytes peak)
+PASS weather expired data and clock moving backwards never appear freshly updated (5.396 ms, 225351 bytes retained, 238677 bytes peak)
+PASS weather location race discards late result and fetches newest coordinates (6.497 ms, 239692 bytes retained, 261586 bytes peak)
+PASS weather inflight overlap coalesces; stop suppresses late writes (3.550 ms, 202209 bytes retained, 208594 bytes peak)
+PASS weather invalid cache and malformed full arrays are rejected atomically (5.750 ms, 262302 bytes retained, 287747 bytes peak)
+PASS weather all WMO groups, night icons, hazards and unknown codes (5.107 ms, 217345 bytes retained, 237844 bytes peak)
+PASS weather fractional time zones select local current hour and nominal local date (5.038 ms, 241514 bytes retained, 263303 bytes peak)
+PASS weather daily date labels retain fixed API boundaries across a DST transition (5.044 ms, 241413 bytes retained, 263245 bytes peak)

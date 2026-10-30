@@ -1,0 +1,10 @@
+{
+  "complete": false,
+  "passed": [
+    "512-item native library result and 300-photo Lua state stay within runtime budgets",
+    "local library, hot replacement, sampled decode and gallery page render without restarting",
+    "tap advances; native carousel leaves page gestures to the OS",
+    "landscape and portrait render in LIGHT and DARK",
+    "NIGHT exits ambient photo pages"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "complete": true,
+  "passed": [
+    "a second swipe advances past a downloading image; late HTTP completion cannot replace it",
+    "oldest history boundary does not wrap to newest",
+    "cancelled preview stays on the selected image after decoding",
+    "download cancellation releases the URL lock; reverse browsing subsequently loads the same image"
+  ],
+  "displayed": [
+    "A",
+    "C",
+    "B",
+    "A"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "template": "glance",
+  "relevance": "{{relevance}}",
+  "children": [
+    {
+      "type": "icon",
+      "name": "{{icon}}",
+      "weight": 1
+    },
+    {
+      "type": "text",
+      "value": "{{temperature}}",
+      "style": "display"
+    },
+    {
+      "type": "text",
+      "value": "{{summary}}",
+      "style": "body"
+    },
+    {
+      "type": "text",
+      "value": "{{cardInfo}}",
+      "style": "caption"
+    },
+    {
+      "type": "text",
+      "value": "{{source}}",
+      "style": "caption"
+    }
+  ]
+}

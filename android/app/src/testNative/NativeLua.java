@@ -28,18 +28,24 @@ public class NativeLua {
     private int awaited;
     private boolean slowTime;
     private int burnMillis;
+    private Map<String,Object> config;
+    private String bingModule;
+    private Object saved;
     public Object call(String method,Object[] args,int taskId) {
         switch(method) {
-            case "config": return Map.of("city","香港😀","nested",Map.of("x",1L));
+            case "config": return config!=null?config:Map.of("city","香港😀","nested",Map.of("x",1L));
             case "time.now":
                 if(burnMillis>0)burnCpu(burnMillis);
                 if(slowTime) try{Thread.sleep(250);}catch(InterruptedException e){throw new RuntimeException(e);}
                 return 1704067200000L;
             case "state.set": state=args[0];return null;
             case "timer.add": timer=args;return null;
-            case "store.get": return Map.of("a",1L);
-            case "module": return "return {answer=42}";
-            case "sleep": case "http.get": awaited=taskId;return null;
+            case "store.get": return saved!=null?saved:Map.of("a",1L);
+            case "store.set": saved=args[1];return null;
+            case "locale": return Map.of("language","zh","region","CN","script","Hans");
+            case "i18n.t": return args[0];
+            case "module": return bingModule!=null && args[0].equals("sources.bing")?bingModule:"return {answer=42}";
+            case "sleep": case "http.get": case "library.list": awaited=taskId;return null;
             default:return null;
         }
     }
@@ -58,6 +64,8 @@ public class NativeLua {
         NativeLua lua=new NativeLua();lua.handle=lua.create();lua.run(bootstrap);lua.bind(lua.handle);
         lua.run("assert(tos.config.city=='香港😀');tos.state.set({hello='香港😀',nested={a=true,b=false}});assert(require('sample').answer==42)");
         ok(((Map<?,?>)lua.state).get("hello").equals("香港😀"),"typed JNI Unicode and object values");
+        lua.run("assert(assert(load('return math.abs(-3)','module','t'))()==3);assert(assert(load('return x','module','t',{x=9}))()==9);assert(assert(load('return _ENV','module','t',nil))()==nil)");
+        ok(true,"three-argument module load keeps globals; an explicit fourth environment is preserved");
         lua.run("local text=[=[[null,{},[],\"x\\u0000y\",9007199254740993]]=];assert(tos.json.encode(tos.json.decode(text))==text);assert(tos.json.decode('null')==tos.json.null)");
         lua.fail("return tos.json.decode('[1,]')",2);
         lua.fail("local t={};t.x=t;return tos.json.encode(t)",2);
@@ -81,6 +89,18 @@ public class NativeLua {
         ok(again.status==1 && again.taskId==wait.taskId,"async continuation can suspend a second time");
         Step done=lua.resume(lua.handle,again.taskId,new Object[]{});
         ok(done.status==0 && ((Map<?,?>)lua.state).get("resumed").equals(true),"resume budgets reset after wall time spent awaiting IO");
+        lua.run("tos.on('library',function()local result,err=tos.library.list{kind='image',recursive=true};assert(not err);assert(#result.items==300);tos.state.set{last=result.items[300].src}end)");
+        Step library=lua.event("library");
+        List<Object> photos=new ArrayList<>();
+        for(int n=0;n<300;n++)photos.add(Map.of("src","file:///Pictures/"+n+".jpg","title","Photo "+n));
+        StringBuilder libraryJson=new StringBuilder("{\"items\":[");
+        for(int n=0;n<300;n++){if(n>0)libraryJson.append(',');libraryJson.append("{\"src\":\"file:///Pictures/").append(n).append(".jpg\",\"title\":\"Photo ").append(n).append("\"}");}
+        libraryJson.append("],\"truncated\":false,\"scanned\":300,\"directory\":\"/Pictures\"}");
+        Step libraryDone=lua.resume(lua.handle,library.taskId,new Object[]{libraryJson.toString(),null});
+        ok(library.status==1 && libraryDone.status==0 && ((Map<?,?>)lua.state).get("last").equals("file:///Pictures/299.jpg"),"tos.library.list returns a table using the async JSON transport for 300 photos");
+        lua.run("tos.on('library',function()local result,err=tos.library.list{kind='image'};assert(result==nil and err=='denied')end)");
+        library=lua.event("library");
+        ok(lua.resume(lua.handle,library.taskId,new Object[]{null,"denied"}).status==0,"library failures return nil and an error");
         lua.run("tos.on('command',function()local ok,value=pcall(function()tos.timer.sleep(.01);return 'done'end);assert(ok and value=='done')end)");
         wait=lua.event("command");
         ok(wait.status==1 && lua.resume(lua.handle,wait.taskId,new Object[]{}).status==0,"normal async yield crosses protected pcall");
@@ -118,6 +138,32 @@ public class NativeLua {
         for(int i=0;i<1000;i++)if(lua.event("command","[]").status!=2)throw new AssertionError("wrong malformed data handler");
         ok(lua.memory(lua.handle)<4*1024*1024,"generational GC bounds repeated event allocations");
         lua.destroy(lua.handle);
+        NativeLua gallery=new NativeLua();gallery.config=Map.of("local_dir","","scan_seconds",300L);
+        gallery.handle=gallery.create();gallery.run(bootstrap);gallery.bind(gallery.handle);
+        gallery.run(Files.readString(Path.of(args[2])));
+        ok(gallery.event("start").status==0,"gallery starts with the exact production bootstrap and codec");
+        ok(gallery.event("attention","AWAKE").status==0,"initial attention preserves the deferred first scan");
+        Step scan=gallery.start(gallery.handle,"timer",new Object[]{1L,false},null,null);
+        Step scanned=gallery.resume(gallery.handle,scan.taskId,new Object[]{libraryJson.toString(),null});
+        ok(scan.status==1 && scanned.status==0 && gallery.state instanceof String && ((String)gallery.state).split("\"src\":",-1).length==301,
+            "full gallery script publishes 300 photos through production JSON transport (CPU "+scanned.cpuMicros+"us)");
+        gallery.destroy(gallery.handle);
+        NativeLua daily=new NativeLua();daily.bingModule=Files.readString(Path.of(args[3]));
+        daily.config=Map.of("source","bing","market","auto","endpoint","https://www.bing.com/HPImageArchive.aspx",
+            "history",30L,"wallpaper_only",true,"refresh_hours","6","retry_initial",60L,"retry_max",900L,"clock_retry",30L);
+        daily.handle=daily.create();daily.run(bootstrap);daily.bind(daily.handle);
+        daily.run(Files.readString(Path.of(args[2])));
+        ok(daily.event("start").status==0,"Bing starts through the production sandbox module loader");
+        Step archive=daily.start(daily.handle,"timer",new Object[]{1L,false},null,null);
+        String archiveJson="{\"images\":[{\"urlbase\":\"/th?id=OHR.Cranes_ZH-CN1234567890\",\"fullstartdate\":\"202610291600\",\"title\":\"展翅高飞\",\"copyright\":\"沙丘鹤 (© Author)\",\"wp\":true}]}";
+        Object[] archiveResponse=new Object[]{Map.of("status",200L,"body",archiveJson),null};
+        Step firstBatch=daily.resume(daily.handle,archive.taskId,archiveResponse);
+        Step secondBatch=daily.resume(daily.handle,firstBatch.taskId,archiveResponse);
+        ok(archive.status==1 && firstBatch.status==1 && secondBatch.status==0 && daily.saved instanceof String &&
+            daily.state instanceof String && ((String)daily.state).contains("OHR.Cranes_ZH-CN1234567890_1920x1080.jpg") &&
+            ((String)daily.state).contains("沙丘鹤 (© Author)"),
+            "Bing HTTP continuations parse, deduplicate, persist and publish through production JSON/JNI (CPU "+secondBatch.cpuMicros+"us)");
+        daily.destroy(daily.handle);
         ArrayList<NativeLua> all=new ArrayList<>();int rejected=0;
         for(int i=0;i<8;i++){
             NativeLua other=new NativeLua();other.handle=other.create();all.add(other);

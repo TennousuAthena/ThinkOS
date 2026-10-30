@@ -1,0 +1,18 @@
+{
+  "complete": false,
+  "passed": [
+    "512-item native library result and 300-photo Lua state stay within runtime budgets",
+    "local library, hot replacement, sampled decode and gallery page render without restarting",
+    "tap advances; native carousel leaves page gestures to the OS",
+    "landscape and portrait render in LIGHT and DARK",
+    "NIGHT exits ambient photo pages",
+    "50 photo changes and malformed-image skipping without process restart",
+    "repeated metadata scans keep file descriptor usage bounded",
+    "reduced motion switches from pan to whole-image contain",
+    "leaving the page stops carousel decode and timers",
+    "offline cold launch <3s; local photos render with no Server"
+  ],
+  "fileDescriptorsBefore": 66,
+  "fileDescriptorsAfter": 70,
+  "offlineColdStartMs": 725
+}

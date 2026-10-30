@@ -50,6 +50,9 @@ def check(tables):
                 problems.append(f'{name}: placeholders of {key} differ from English')
             if not text.strip():
                 problems.append(f'{name}: empty text for {key}')
+            # System UI takes no brackets; the sunrise/sunset theme label is the one exception.
+            if key != 'setting_theme_mode_sun' and re.search(r'[()（）]', text):
+                problems.append(f'{name}: brackets in {key}')
     return problems
 
 

@@ -2,6 +2,7 @@ package moe.kiwi.thinkos.ui
 
 import android.animation.ValueAnimator
 import android.content.Context
+import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
@@ -43,6 +44,7 @@ internal class ComponentGroup(
     private val bound = mutableListOf<Bound>()
     private val shape = GradientDrawable().apply { cornerRadius = 32f * resources.displayMetrics.density }
     private var palette = Palette.DARK
+    private var photoNotice = false
     private var allocation = RenderGeometry.VerticalAllocation(emptyList(), 0, 0)
     private val formHost = object : FormHost {
         override fun emit(name: String, args: List<Any?>) = events.send(pluginId, name, args)
@@ -50,14 +52,18 @@ internal class ComponentGroup(
         override fun interacted() = events.settingsInteraction()
     }
     val owner: String get() = pluginId
+    val floatingClock: Boolean get() = bound.singleOrNull()?.view.let { it is ClockView && it.clockStyle == "float" }
     var opens: String? = null
     val activeAnimations: Boolean get() = bound.any { it.renderer?.animating == true }
+    val bottomOverlayInset: Int get() = bound.maxOfOrNull { it.renderer?.bottomOverlayInset ?: 0 } ?: 0
+    val ambientAnimations: Boolean get() = bound.any { (it.view as? IconView)?.animating == true }
     private var signature = ""
+    private var active = false
 
     init {
         clipChildren = true
         clipToPadding = true
-        if (card) background = shape
+        if (card) { background = shape; clipToOutline = true }
         update(pluginId, declaration)
     }
     private fun children(definition: JSONObject): List<JSONObject> = definition.optJSONArray("children")?.let { array ->
@@ -125,6 +131,7 @@ internal class ComponentGroup(
                 }
                 bound += item
                 addView(view)
+                renderer?.active(active)
             }
             signature = nextSignature
             requestLayout()
@@ -171,18 +178,43 @@ internal class ComponentGroup(
         bound.forEach { item ->
             item.renderer?.colors(value)
             when (val view = item.view) {
-                is TextView -> view.setTextColor(if (item.definition.optString("style") in setOf("body", "caption")) value.secondary else value.primary)
+                is TextView -> {
+                    view.setTextColor(if (photoNotice) Color.WHITE else if (item.definition.optString("style") in setOf("body", "caption")) value.secondary else value.primary)
+                    view.gravity = if (photoNotice) Gravity.START or Gravity.CENTER_VERTICAL else Gravity.CENTER
+                    if (photoNotice) view.setShadowLayer(2 * resources.displayMetrics.density, 0f, 1f, 0x99000000.toInt())
+                    else view.paint.clearShadowLayer()
+                }
                 is ClockView -> view.palette = value
                 is FormView -> view.colors(value)
                 is IconView -> view.palette = value
             }
         }
     }
+    fun photoNotice(value: Boolean) {
+        if (photoNotice == value) return
+        photoNotice = value
+        colors(palette)
+    }
     fun tick(now: Long, attention: Attention) {
         bound.forEach { item ->
             item.renderer?.tick(now, attention)
             (item.view as? ClockView)?.tick(now, attention)
+            (item.view as? IconView)?.tick(now, attention)
         }
+    }
+    fun active(value: Boolean) { active = value; bound.forEach { it.renderer?.active(value) } }
+    fun tapAt(x: Float, y: Float): Boolean = bound.asReversed().any { item ->
+        val v = item.view
+        val hit = v.visibility == VISIBLE && x >= v.left && x < v.right && y >= v.top && y < v.bottom
+        hit && (item.renderer?.tap() == true || item.definition.optString("tap").isNotBlank() && v.performClick())
+    }
+    fun dragVerticalAt(x: Float, y: Float, offset: Float): RenderComponent? {
+        for (item in bound.asReversed()) {
+            val v = item.view
+            if (v.visibility == VISIBLE && x >= v.left && x < v.right && y >= v.top && y < v.bottom &&
+                item.renderer?.dragVertical(offset) == true) return item.renderer
+        }
+        return null
     }
     fun localeChanged() {
         bound.forEach { item -> item.renderer?.localeChanged(); (item.view as? ClockView)?.refreshLocale() }
@@ -198,14 +230,23 @@ internal class ComponentGroup(
         val w = MeasureSpec.getSize(widthMeasureSpec); val h = MeasureSpec.getSize(heightMeasureSpec)
         val padding = if (card) (24 * resources.displayMetrics.density).toInt() else 0
         val innerW = (w - 2 * padding).coerceAtLeast(0); val innerH = (h - 2 * padding).coerceAtLeast(0)
+        val dense = innerH / resources.displayMetrics.density < 340 && bound.size >= 4
         val weights = bound.map { item -> (item.definition.opt("weight") as? Number)?.toDouble() ?: item.renderer?.defaultWeight
             ?: if (item.view is ClockView || item.view is FormView) 1.0 else 0.0 }
         bound.forEach { item ->
+            (item.view as? TextView)?.let { text ->
+                text.textSize = when (item.definition.optString("style", "body")) {
+                    "display" -> if (dense) 56f else 72f
+                    "title" -> if (dense) 24f else 32f
+                    "caption" -> 14f
+                    else -> if (dense) 18f else 22f
+                }
+            }
             val maxH = if (item.view is IconView) minOf(innerH, (52 * resources.displayMetrics.density).toInt()) else innerH
             item.view.measure(MeasureSpec.makeMeasureSpec(innerW, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(maxH,
                 if (item.view is IconView) MeasureSpec.EXACTLY else MeasureSpec.AT_MOST))
         }
-        allocation = RenderGeometry.verticalHeights(innerH, bound.map { it.view.measuredHeight }, weights, (12 * resources.displayMetrics.density).toInt())
+        allocation = RenderGeometry.verticalHeights(innerH, bound.map { it.view.measuredHeight }, weights, ((if (dense) 6 else 12) * resources.displayMetrics.density).toInt())
         bound.forEachIndexed { index, item -> item.view.measure(MeasureSpec.makeMeasureSpec(innerW, MeasureSpec.EXACTLY),
             MeasureSpec.makeMeasureSpec(allocation.heights[index], MeasureSpec.EXACTLY)) }
         setMeasuredDimension(w, h)
@@ -223,6 +264,8 @@ internal class ComponentGroup(
 
 /** A stack keeps the adjacent card alive while dragging; the other stack is untouched. */
 private class StackSlot(context: Context, private val group: (Int) -> ComponentGroup) : FrameLayout(context) {
+    private var active = false
+    fun active(value: Boolean) { active = value; current?.active(value); preview?.active(false) }
     var index = 0
     var count = 0
     var current: ComponentGroup? = null
@@ -230,6 +273,7 @@ private class StackSlot(context: Context, private val group: (Int) -> ComponentG
     private var direction = 0
     private val springs = mutableListOf<ValueAnimator>()
     val activeAnimations: Boolean get() = current?.activeAnimations == true || preview?.activeAnimations == true
+    val ambientAnimations: Boolean get() = current?.ambientAnimations == true || preview?.ambientAnimations == true
 
     init { clipChildren = true; clipToPadding = true }
     fun refresh() {
@@ -238,6 +282,7 @@ private class StackSlot(context: Context, private val group: (Int) -> ComponentG
         current?.let { removeView(it) }
         current = replacement
         addView(replacement, LayoutParams(-1, -1))
+        replacement.active(active)
     }
     fun drag(offset: Float): Boolean {
         if (count < 2) return false
@@ -259,6 +304,8 @@ private class StackSlot(context: Context, private val group: (Int) -> ComponentG
         if (commit) {
             index = Math.floorMod(index + direction, count)
             current = incoming
+            old.active(false)
+            incoming.active(active)
             preview = null
             springs += Motion.spring(old.translationY, -direction * height.toFloat(), velocity, { old.translationY = it }) { removeView(old) }
             springs += Motion.spring(incoming.translationY, 0f, velocity, { incoming.translationY = it })
@@ -299,10 +346,13 @@ internal class PageView(
     private val stackItems = mutableMapOf<String, JSONArray>()
     private var dragging: StackSlot? = null
     private var previousLayout = ""
+    private var active = false
+    fun active(value: Boolean) { active = value; groups.values.forEach { it.active(value) }; stacks.values.forEach { it.active(value) } }
     private val layout get() = page.view.optString("layout")
     private val slotNames get() = LayoutVocabulary.slots[layout].orEmpty()
     private val roles get() = LayoutVocabulary.roles[layout].orEmpty()
     val activeAnimations: Boolean get() = groups.values.any { it.activeAnimations } || stacks.values.any { it.activeAnimations }
+    val ambientAnimations: Boolean get() = groups.values.any { it.ambientAnimations } || stacks.values.any { it.ambientAnimations }
 
     init { clipChildren = false; clipToPadding = false; update(page, widgets) }
     private fun resolve(name: String, index: Int): Triple<String, JSONObject, String?> {
@@ -353,6 +403,7 @@ internal class PageView(
             }
         }
         requestLayout()
+        active(active)
     }
     fun bind(pluginId: String, paths: Set<String>) {
         groups.values.forEach { it.bind(pluginId, paths) }
@@ -369,6 +420,23 @@ internal class PageView(
                 .setStartDelay((i * 50).coerceAtMost(200).toLong()).setDuration(if (waking) 340 else 260).setInterpolator(Motion.EASE).start()
         }
     }
+    private var draggingComponent: RenderComponent? = null
+    fun dragVertical(x: Float, y: Float, offset: Float): Boolean {
+        draggingComponent?.let { return it.dragVertical(offset) }
+        for (group in groups.values.toList().asReversed()) {
+            val renderer = group.dragVerticalAt(x - group.left - group.translationX, y - group.top - group.translationY, offset)
+            if (renderer != null) { draggingComponent = renderer; return true }
+        }
+        return dragStack(x, y, offset)
+    }
+    fun releaseVertical(offset: Float, velocity: Float): Boolean {
+        draggingComponent?.let {
+            draggingComponent = null
+            it.releaseVertical(offset, velocity)
+            return true
+        }
+        return releaseStack(offset, velocity)
+    }
     fun dragStack(x: Float, y: Float, offset: Float): Boolean {
         val slot = dragging ?: stacks.values.firstOrNull { x >= it.left && x <= it.right && y >= it.top && y <= it.bottom }?.also { dragging = it }
         return slot?.drag(offset) == true
@@ -384,6 +452,9 @@ internal class PageView(
     fun ownerAt(x: Float, y: Float): String =
         stacks.values.firstOrNull { x >= it.left && x <= it.right && y >= it.top && y <= it.bottom }?.current?.owner ?: page.pluginId
     fun openAt(x: Float, y: Float): String? = stacks.values.firstOrNull { x >= it.left && x <= it.right && y >= it.top && y <= it.bottom }?.current?.opens
+    fun tapAt(x: Float, y: Float): Boolean = groups.values.toList().asReversed().any {
+        it.tapAt(x - it.left - it.translationX, y - it.top - it.translationY)
+    }
     /** Native controls and lists own taps/vertical scrolling; the stage can still claim a horizontal page swipe. */
     fun interactiveAt(x: Float, y: Float): Boolean {
         for (group in groups.values.toList().asReversed()) {
@@ -396,6 +467,20 @@ internal class PageView(
     private fun rectangle(name: String, spec: LayoutSpec): Rect {
         val role = roles[name]
         if (role == "stack") return spec.stack(slotNames.indexOf(name))
+        if (layout == "stage" && role in setOf("header", "over") && groups[name]?.floatingClock == true) {
+            val box = RenderGeometry.photoClock(spec.width, spec.height, spec.density)
+            return Rect(box.left, box.top, box.right, box.bottom)
+        }
+        if (layout == "stage" && role == "under") {
+            val inset = groups.filterKeys { roles[it] == "stage" }.values.maxOfOrNull { it.bottomOverlayInset } ?: 0
+            groups[name]?.photoNotice(inset > 0)
+            if (inset > 0) {
+                val edge = minOf((24 * spec.density).toInt(), spec.width / 2, spec.height / 2)
+                val bottom = (spec.height - inset - (8 * spec.density).toInt()).coerceAtLeast(edge)
+                val top = (bottom - (32 * spec.density).toInt()).coerceAtLeast(edge)
+                return Rect(edge, top, spec.width - edge, bottom)
+            }
+        }
         val header = groups.keys.any { roles[it] == "header" }
         val footer = groups.keys.any { roles[it] == "footer" }
         val box = RenderGeometry.slot(layout, role ?: "content", spec.width, spec.height, spec.density, header, footer)

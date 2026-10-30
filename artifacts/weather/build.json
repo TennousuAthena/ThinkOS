@@ -1,0 +1,39 @@
+{
+  "apkSha256": "96c9b48b8f0dc87fdb3f40bac98abedd95394df4e4ef7937c8c5648d947bc9d0",
+  "apkBytes": 7397507,
+  "nativeLibraries": [
+    "lib/armeabi-v7a/libtos.so"
+  ],
+  "jvmTests": 195,
+  "pluginPackages": [
+    {
+      "id": "clock",
+      "digest": "fee8f98cbde853f82cf543ead5b56eaeee83c347da95e551aca9b35cc8512cf2"
+    },
+    {
+      "id": "home",
+      "digest": "7de97f8d899434c4de8c55a253b4c5d15ee26f3832fda586770faf9090467e44"
+    },
+    {
+      "id": "settings",
+      "digest": "3f52c598b1a4dc5ff6cbdb5c239e1cde7b427e5809306aced9da56b14298f0b1"
+    },
+    {
+      "id": "weather",
+      "digest": "5d168c7448e4b4af1069717be2957a04a9623095f3943ad72a7655ba79053869"
+    }
+  ],
+  "weatherTranslations": {
+    "languages": 11,
+    "keys": 56
+  },
+  "gradle": "testDebugUnitTest lintDebug assembleDebug: passed; gradle.txt",
+  "nativeHost": "passed: native-tests.txt",
+  "nativeArmv7": "passed: armv7-native-tests.txt",
+  "pythonTests": 30,
+  "minSdk": 27,
+  "targetSdk": 27,
+  "weatherNativeGroups": 15,
+  "deviceIntegrationChecks": 19,
+  "weatherNativePeakBytes": 370614
+}

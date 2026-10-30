@@ -1,0 +1,75 @@
+{
+  "complete": true,
+  "date": "2026-10-30",
+  "device": "HUA0BWUT",
+  "scope": "W0-W2",
+  "apkSha256": "96c9b48b8f0dc87fdb3f40bac98abedd95394df4e4ef7937c8c5648d947bc9d0",
+  "jvmTests": 195,
+  "pythonTests": 30,
+  "nativeWeatherGroups": 15,
+  "deviceIntegrationChecks": 19,
+  "matrixChecks": 6,
+  "matrixEvidence": "ui/results.json",
+  "matrixContinuation": "ui-final/results.json",
+  "matrixInterruption": "UIAutomator returned without an XML hierarchy after three successful cold launches; remaining checks resumed on the same APK.",
+  "nativeMaxGroupCpuMs": 28.366,
+  "nativeMaxObservedAllocatorBytes": 370614,
+  "offlineColdStarts": [
+    {
+      "activityMs": 701,
+      "contentMs": 2483
+    },
+    {
+      "activityMs": 689,
+      "contentMs": 2444
+    },
+    {
+      "activityMs": 713,
+      "contentMs": 2455
+    }
+  ],
+  "performance": {
+    "weather-awake": {
+      "durationSeconds": 120.08,
+      "meanCpuPercent": 29.255,
+      "frames": 3625,
+      "jankyFrames": 2,
+      "jankyPercent": 0.055,
+      "pssMiB": 70.54,
+      "pid": "31599"
+    },
+    "awake": {
+      "durationSeconds": 120.08,
+      "meanCpuPercent": 32.095,
+      "frames": 7214,
+      "jankyFrames": 2,
+      "jankyPercent": 0.028,
+      "pssMiB": 67.41,
+      "pid": "31599",
+      "baselineCpuPercent": 32.112,
+      "cpuGrowthPercent": -0.053
+    },
+    "ambient": {
+      "durationSeconds": 600.07,
+      "meanCpuPercent": 2.916,
+      "frames": 2172,
+      "jankyFrames": 17,
+      "jankyPercent": 0.783,
+      "pssMiB": 73.64,
+      "pid": "31599",
+      "baselineCpuPercent": 2.923,
+      "cpuGrowthPercent": -0.239
+    }
+  },
+  "restored": {
+    "installedApkSha256": "96c9b48b8f0dc87fdb3f40bac98abedd95394df4e4ef7937c8c5648d947bc9d0",
+    "matchesLocalBuild": true,
+    "currentPid": "2037",
+    "wifiOn": "1",
+    "defaultHome": "priority=0 preferredOrder=0 match=0x108000 specificIndex=-1 isDefault=true\nmoe.kiwi.thinkos/.MainActivity",
+    "developmentOverridesEmpty": true,
+    "probeReversePortRemoved": true,
+    "probeStoreRemoved": true,
+    "runtimeErrors": false
+  }
+}

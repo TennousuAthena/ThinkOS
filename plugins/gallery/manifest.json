@@ -1,0 +1,327 @@
+{
+  "id": "gallery",
+  "name": "@name",
+  "version": "0.3.0",
+  "api": 3,
+  "main": "main.lua",
+  "permissions": [
+    "library",
+    "network"
+  ],
+  "settings": {
+    "source": {
+      "type": "choice",
+      "label": "@setting.source",
+      "default": "bing",
+      "choices": [
+        {
+          "value": "bing",
+          "label": "@source.bing"
+        },
+        {
+          "value": "local",
+          "label": "@source.local"
+        },
+        {
+          "value": "all",
+          "label": "@source.all"
+        }
+      ],
+      "group": "@group.source"
+    },
+    "market": {
+      "type": "choice",
+      "label": "@setting.market",
+      "default": "auto",
+      "choices": [
+        {
+          "value": "auto",
+          "label": "@market.auto"
+        },
+        {
+          "value": "en-US",
+          "label": "en-US"
+        },
+        {
+          "value": "en-GB",
+          "label": "en-GB"
+        },
+        {
+          "value": "zh-CN",
+          "label": "zh-CN"
+        },
+        {
+          "value": "ja-JP",
+          "label": "ja-JP"
+        },
+        {
+          "value": "de-DE",
+          "label": "de-DE"
+        },
+        {
+          "value": "fr-FR",
+          "label": "fr-FR"
+        },
+        {
+          "value": "es-ES",
+          "label": "es-ES"
+        },
+        {
+          "value": "pt-BR",
+          "label": "pt-BR"
+        }
+      ],
+      "group": "@group.source"
+    },
+    "endpoint": {
+      "type": "text",
+      "label": "@setting.endpoint",
+      "default": "https://www.bing.com/HPImageArchive.aspx",
+      "maxLength": 512,
+      "hidden": true,
+      "group": "@group.source"
+    },
+    "refresh_hours": {
+      "type": "choice",
+      "label": "@setting.refresh_hours",
+      "default": "6",
+      "choices": [
+        {
+          "value": "3",
+          "label": "3 h"
+        },
+        {
+          "value": "6",
+          "label": "6 h"
+        },
+        {
+          "value": "12",
+          "label": "12 h"
+        },
+        {
+          "value": "24",
+          "label": "24 h"
+        }
+      ],
+      "group": "@group.source"
+    },
+    "history": {
+      "type": "number",
+      "label": "@setting.history",
+      "default": 30,
+      "min": 1,
+      "max": 90,
+      "step": 1,
+      "group": "@group.source"
+    },
+    "wallpaper_only": {
+      "type": "bool",
+      "label": "@setting.wallpaper_only",
+      "default": true,
+      "hidden": true,
+      "group": "@group.source"
+    },
+    "retry_initial": {
+      "type": "number",
+      "label": "@setting.retry_initial",
+      "default": 60,
+      "min": 10,
+      "max": 300,
+      "step": 1,
+      "unit": "s",
+      "hidden": true,
+      "group": "@group.source"
+    },
+    "retry_max": {
+      "type": "number",
+      "label": "@setting.retry_max",
+      "default": 900,
+      "min": 60,
+      "max": 3600,
+      "step": 1,
+      "unit": "s",
+      "hidden": true,
+      "group": "@group.source"
+    },
+    "clock_retry": {
+      "type": "number",
+      "label": "@setting.clock_retry",
+      "default": 30,
+      "min": 10,
+      "max": 60,
+      "step": 1,
+      "unit": "s",
+      "hidden": true,
+      "group": "@group.source"
+    },
+    "local_dir": {
+      "type": "text",
+      "label": "@setting.local_dir",
+      "default": "",
+      "maxLength": 512,
+      "help": "@help.local_dir",
+      "group": "@group.source"
+    },
+    "interval": {
+      "type": "number",
+      "label": "@setting.interval",
+      "default": 30,
+      "min": 5,
+      "max": 3600,
+      "step": 1,
+      "unit": "s",
+      "group": "@group.display"
+    },
+    "duration": {
+      "type": "number",
+      "label": "@setting.duration",
+      "default": 800,
+      "min": 0,
+      "max": 3000,
+      "step": 1,
+      "unit": "ms",
+      "group": "@group.display"
+    },
+    "transition": {
+      "type": "choice",
+      "label": "@setting.transition",
+      "default": "fade",
+      "choices": [
+        {
+          "value": "fade",
+          "label": "@transition.fade"
+        },
+        {
+          "value": "slide",
+          "label": "@transition.slide"
+        },
+        {
+          "value": "zoom",
+          "label": "@transition.zoom"
+        },
+        {
+          "value": "random",
+          "label": "@transition.random"
+        }
+      ],
+      "group": "@group.display"
+    },
+    "pan": {
+      "type": "bool",
+      "label": "@setting.pan",
+      "default": true,
+      "help": "@help.pan",
+      "group": "@group.display"
+    },
+    "pan_speed": {
+      "type": "number",
+      "label": "@setting.pan_speed",
+      "default": 45,
+      "min": 1,
+      "max": 120,
+      "step": 1,
+      "unit": "dp/s",
+      "group": "@group.display"
+    },
+    "shuffle": {
+      "type": "bool",
+      "label": "@setting.shuffle",
+      "default": false,
+      "group": "@group.display"
+    },
+    "caption": {
+      "type": "choice",
+      "label": "@setting.caption",
+      "default": "auto",
+      "choices": [
+        {
+          "value": "auto",
+          "label": "@caption.auto"
+        },
+        {
+          "value": "tap",
+          "label": "@caption.tap"
+        },
+        {
+          "value": "off",
+          "label": "@caption.off"
+        }
+      ],
+      "group": "@group.display",
+      "help": "@help.caption"
+    },
+    "caption_hold": {
+      "type": "number",
+      "label": "@setting.caption_hold",
+      "default": 6,
+      "min": 1,
+      "max": 60,
+      "step": 1,
+      "unit": "s",
+      "group": "@group.display"
+    },
+    "scan_seconds": {
+      "type": "number",
+      "label": "@setting.scan_seconds",
+      "default": 300,
+      "min": 15,
+      "max": 86400,
+      "step": 1,
+      "unit": "s",
+      "group": "@group.source"
+    },
+    "pan_seconds": {
+      "type": "number",
+      "label": "@setting.pan_seconds",
+      "default": 12,
+      "min": 1,
+      "max": 120,
+      "step": 1,
+      "unit": "s",
+      "help": "@help.pan_seconds",
+      "group": "@group.display"
+    },
+    "pan_direction": {
+      "type": "choice",
+      "label": "@setting.pan_direction",
+      "default": "random",
+      "choices": [
+        {
+          "value": "random",
+          "label": "@direction.random"
+        },
+        {
+          "value": "forward",
+          "label": "@direction.forward"
+        },
+        {
+          "value": "reverse",
+          "label": "@direction.reverse"
+        }
+      ],
+      "group": "@group.display"
+    }
+  },
+  "pages": [
+    {
+      "id": "slideshow",
+      "view": "views/slideshow.json",
+      "title": "@name",
+      "roles": [
+        "ambient"
+      ]
+    }
+  ],
+  "widgets": [
+    {
+      "id": "preview",
+      "view": "views/preview.json",
+      "opens": "slideshow"
+    }
+  ],
+  "commands": [
+    {
+      "id": "refresh"
+    }
+  ]
+}

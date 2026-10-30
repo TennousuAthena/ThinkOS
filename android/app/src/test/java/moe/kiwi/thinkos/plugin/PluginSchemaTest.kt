@@ -37,7 +37,7 @@ class PluginSchemaTest {
     }
 
     @Test fun rejectsNewApiAndPrivateFields() {
-        rejected { PluginSchema.validateManifest(manifest().put("api", 3)) }
+        rejected { PluginSchema.validateManifest(manifest().put("api", 4)) }
         rejected { PluginSchema.validateManifest(manifest().put("privateBridge", true)) }
         rejected { PluginSchema.validateManifest(manifest().put("main", "../escape.lua")) }
     }
@@ -80,6 +80,20 @@ class PluginSchemaTest {
             """{"type":"carousel","items":"photos","interval":10,"duration":800}""",
             """{"type":"image","src":"{{art}}","fit":"contain"}"""
         )) rejected { PluginSchema.validateView(JSONObject("""{"layout":"focus","slots":{"hero":$component}}"""), 2) }
+    }
+
+    @Test fun apiThreeImageContractKeepsAllFramingAndMediaRemainsDeferred() {
+        PluginSchema.validateManifest(manifest().put("api", 3))
+        val view = JSONObject("""{"layout":"stage","slots":{"stage":{"type":"carousel","items":"photos","interval":"{{config.interval}}","duration":800,"fit":"pan","pan_speed":45,"caption":"auto","caption_hold":6}}}""")
+        PluginSchema.validateView(view, 3)
+        rejected { PluginSchema.validateView(view, 2) }
+        for (component in listOf(
+            """{"type":"image","src":"asset:assets/photo.png","fit":"cover"}""",
+            """{"type":"carousel","items":"photos","interval":30,"duration":800,"caption":"always"}""",
+            """{"type":"image","src":"{{cover}}","pan_speed":0}""",
+            """{"type":"carousel","items":"photos","interval":30,"duration":800,"tap":"private"}""",
+            """{"type":"video"}""", """{"type":"controls"}"""
+        )) rejected { PluginSchema.validateView(JSONObject("""{"layout":"focus","slots":{"hero":$component}}"""), 3) }
     }
 
     @Test fun apiOneCannotSilentlyUseApiTwoVocabulary() {

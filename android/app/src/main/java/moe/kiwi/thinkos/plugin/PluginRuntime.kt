@@ -62,12 +62,15 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
     private var observer: FileObserver? = null
     private var crashTracker: NativeCrashTracker? = null
     private var loading = false
+    private var currentAttention: Array<Any?> = arrayOf("AWAKE")
     @Volatile private var closed = false
     @Volatile private var safe = false
     @Volatile private var diagnosticSnapshot = emptyList<PluginDiagnostic>()
     /** Immutable copy of every active plugin's translated strings, safe to read from the UI thread. */
     @Volatile private var stringTables = emptyMap<String, StringTable>()
     fun text(pluginId: String, key: String): String? = stringTables[pluginId]?.format(key, Locale.getDefault())
+    @Volatile private var imageOwners = emptyMap<String, moe.kiwi.thinkos.image.ImageOwner>()
+    internal fun imageOwner(pluginId: String) = imageOwners[pluginId]
     private val refreshDev = Runnable { scanDev() }
     private val systemStrings = SystemStrings(app.resources, app.packageName)
     private val labels = Labels(
@@ -131,6 +134,8 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
         JSONObject()
     }
     private inner class Instance(val bundle: Bundle, previous: Instance? = null) {
+        val imageOwner = moe.kiwi.thinkos.image.ImageOwner(bundle.directory,
+            arrayValues(bundle.manifest.optJSONArray("permissions")).map(Any::toString).toSet())
         var lua: NativeLua? = null
         val state: JsonDocument = previous?.state ?: JsonDocument()
         val strings: StringTable = StringTable.load(bundle.directory)
@@ -238,6 +243,7 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
     fun event(pluginId: String?, name: String, args: JSONArray = JSONArray()) {
         val values = (JsonDocument.toHost(args) as List<*>).toTypedArray()
         worker.post {
+            if (pluginId == null && name == "attention") currentAttention = values
             val targets = if (pluginId == null) active.values.toList() else listOfNotNull(active[pluginId])
             targets.forEach { instance ->
                 if (name in setOf("presence", "gesture") && !arrayValues(instance.bundle.manifest.optJSONArray("permissions")).contains("presence")) return@forEach
@@ -265,6 +271,7 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
     }
     fun close() {
         closed = true
+        imageOwners = emptyMap()
         settings.removeListener(settingsListener)
         observer?.stopWatching()
         worker.post {
@@ -324,6 +331,11 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
         val previous = active.put(instance.bundle.id, instance)
         if (previous != null && previous.bundle.directory != instance.bundle.directory) previousDirectories[instance.bundle.id] = previous.bundle.directory
         previous?.terminate(true)
+        // A plugin installed/replaced while already asleep must learn that state before
+        // its deferred work starts, even when the sensors have no new transition to emit.
+        worker.post {
+            if (active[instance.bundle.id] === instance) execute(instance) { it.dispatch("attention", currentAttention) }
+        }
         publishCatalog()
         publishState(instance)
         cleanupVersions()
@@ -402,8 +414,7 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
         return when (method) {
             "config" -> LinkedHashMap(settings.snapshot(bundle.id))
             "state.set" -> {
-                val patch = JsonDocument.fromHost(arg(0)) as JSONObject
-                require(!patch.has("config")) { "'config' is reserved for the plugin's settings" }
+                val patch = statePatch(arg(0))
                 instance.state.merge(patch); publishState(instance); null
             }
             "settings.list" -> { requireSettingsAdmin(instance); describer.list(Locale.getDefault()) }
@@ -496,6 +507,25 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
                 require(instance.awaits.size < 8)
                 instance.awaits[taskId] = null
                 worker.postDelayed({ resume(instance, taskId, emptyArray()) }, (number(0) * 1000).toLong())
+                null
+            }
+            "library.list" -> {
+                require(arrayValues(bundle.manifest.optJSONArray("permissions")).contains("library")) { "library permission required" }
+                require(taskId != 0 && instance.awaits.size < 8 && (active.values + pending.values).sumOf { it.awaits.size } < 32)
+                val options = arg(0) as? Map<*, *> ?: error("Library options must be a table")
+                instance.awaits[taskId] = null
+                instance.awaits[taskId] = io.submit {
+                    // Large metadata arrays cross JNI once as text; the budgeted C codec
+                    // reconstructs the same public table without thousands of JNI calls.
+                    val result = runCatching {
+                        val value = moe.kiwi.thinkos.media.MediaLibrary(app).list(options).toHost()
+                        JsonDocument.fromHost(value).toString().also {
+                            require(it.toByteArray(Charsets.UTF_8).size <= 1024 * 1024) { "Library response exceeds 1 MiB" }
+                        }
+                    }
+                    worker.post { resume(instance, taskId, if (result.isSuccess) arrayOf(result.getOrThrow(), null)
+                        else arrayOf(null, result.exceptionOrNull()?.message ?: "Library scan failed")) }
+                }
                 null
             }
             "http.get", "http.post" -> {
@@ -613,6 +643,8 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
         val widgets = active.values.flatMap { it.widgets }
         updateDiagnostics()
         stringTables = active.values.associate { it.bundle.id to it.strings }
+        imageOwners = active.values.filter { !it.disabled && (!it.bundle.manifest.has("main") || it.lua != null) }
+            .associate { it.bundle.id to it.imageOwner }
         main.post { if (!closed) callbacks.onCatalog(pages, widgets) }
     }
     private fun publishState(instance: Instance) {
@@ -667,6 +699,9 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
     private fun report(id: String, error: Exception) {
         val message = error.message ?: error.javaClass.simpleName
         Log.e(TAG, "[plugin:$id] $message")
+        if (error is LuaFailure && error.step.resourceFailure) {
+            Log.e(TAG, "[plugin:$id] slice cpu=${error.step.cpuMicros}us wall=${error.step.wallMicros}us")
+        }
         main.post { if (!closed) callbacks.onError(id, message) }
     }
     companion object {
@@ -690,6 +725,15 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
         private fun readObject(file: File): JSONObject {
             require(file.isFile && file.length() <= MAX_STATE) { "missing or oversized JSON: ${file.name}" }
             return parseObject(file.readText())
+        }
+        /** API 3 also accepts an encoded object to avoid large typed-JNI patches on armv7. */
+        internal fun statePatch(value: Any?): JSONObject {
+            val patch = if (value is String) {
+                require(value.toByteArray(Charsets.UTF_8).size <= MAX_STATE) { "State patch exceeds 256 KiB" }
+                parseObject(value)
+            } else JsonDocument.fromHost(value) as JSONObject
+            require(!patch.has("config")) { "'config' is reserved for the plugin's settings" }
+            return patch
         }
         private fun parseObject(text: String): JSONObject {
             var depth = 0; var quoted = false; var escaped = false

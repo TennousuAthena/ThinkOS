@@ -10,7 +10,7 @@
     <string name="maintenance_diagnostics">Diagnostic</string>
     <string name="maintenance_restore_plugins">Restaurer les modules intégrés</string>
     <string name="maintenance_reset_settings">Réinitialiser les réglages</string>
-    <string name="maintenance_android_settings">Ouvrir les réglages Android (surveillance suspendue 5 minutes)</string>
+    <string name="maintenance_android_settings">Ouvrir les réglages Android, surveillance suspendue 5 minutes</string>
     <string name="maintenance_exit_safe_mode">Quitter le mode sans échec et redémarrer</string>
     <string name="maintenance_back">Retour</string>
     <string name="maintenance_restored">Modules intégrés restaurés</string>
@@ -43,7 +43,7 @@
     <string name="setting_group_kiosk">Kiosque</string>
     <string name="setting_group_time">Heure</string>
     <string name="setting_theme_mode">Thème</string>
-    <string name="setting_theme_mode_auto">Automatique (lumière ambiante)</string>
+    <string name="setting_theme_mode_auto">Automatique, lumière ambiante</string>
     <string name="setting_theme_mode_sun">Automatique (lever et coucher du soleil)</string>
     <string name="setting_theme_mode_light">Toujours clair</string>
     <string name="setting_theme_mode_dark">Toujours sombre</string>
@@ -56,19 +56,26 @@
     <string name="setting_display_orientation_auto">Suivre le capteur</string>
     <string name="setting_display_orientation_landscape">Paysage</string>
     <string name="setting_display_orientation_portrait">Portrait</string>
+    <string name="setting_motion_clock">Animation de l\'horloge</string>
+    <string name="setting_motion_clock_none">Aucune</string>
+    <string name="setting_motion_clock_roll">Défilement</string>
+    <string name="setting_motion_clock_fade">Fondu</string>
+    <string name="setting_motion_clock_drop">Chute</string>
+    <string name="setting_motion_clock_flip">Retournement</string>
+    <string name="setting_motion_clock_zoom">Zoom</string>
     <string name="setting_display_brightness_max">Luminosité maximale</string>
     <string name="setting_attention_awake_to_ambient_s">Atténuer après inactivité de</string>
     <string name="setting_attention_to_asleep_s">Veille quand personne n’est là depuis</string>
     <string name="setting_attention_engaged_idle_s">Terminer l’interaction après inactivité de</string>
     <string name="setting_attention_ambient_page_after_s">Afficher les photos après atténuation de</string>
-    <string name="setting_server_url">Adresse du Server (vide = détection automatique)</string>
+    <string name="setting_server_url">Adresse du Server, vide = détection automatique</string>
     <string name="setting_server_token">Jeton d’appairage</string>
-    <string name="setting_kiosk_lock">Verrouiller l\'interface système (barre d\'état, gestes, applications récentes)</string>
-    <string name="setting_time_ntp_servers">Serveurs NTP (séparés par des virgules)</string>
+    <string name="setting_kiosk_lock">Verrouiller l\'interface système</string>
+    <string name="setting_time_ntp_servers">Serveurs NTP, séparés par des virgules</string>
     <string name="setting_time_sync_hour">Synchronisation quotidienne de l\'heure à</string>
     <string name="setting_group_location">Lieu</string>
     <string name="setting_location_mode">Source du lieu</string>
-    <string name="setting_location_mode_auto">Ville du fuseau horaire (approximative)</string>
+    <string name="setting_location_mode_auto">Ville du fuseau horaire, approximative</string>
     <string name="setting_location_mode_manual">Choisir un lieu / coordonnées</string>
     <string name="setting_location_name">Ville, arrondissement ou commune</string>
     <string name="setting_location_latitude">Latitude</string>
@@ -82,7 +89,7 @@
     <string name="form_place_empty">Aucun lieu trouvé. Essayez un autre nom.</string>
     <string name="form_place_error">Recherche en ligne indisponible. Seules les villes de fuseaux horaires de l’appareil sont affichées.</string>
     <string name="form_place_invalid">Ce lieu n’a pas de fuseau horaire utilisable.</string>
-    <string name="form_place_attribution">Recherche : Open-Meteo · Lieux : GeoNames (CC BY 4.0)</string>
+    <string name="form_place_attribution">Recherche : Open-Meteo · Lieux : GeoNames, CC BY 4.0</string>
     <string name="media_previous">Piste précédente</string>
     <string name="media_play">Lire</string>
     <string name="media_pause">Mettre en pause</string>

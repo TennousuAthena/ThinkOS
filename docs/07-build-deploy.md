@@ -50,7 +50,7 @@ unzip -l app/build/outputs/apk/debug/app-debug.apk | grep 'lib/'
 
 **内置插件**
 
-- Gradle 任务在 `preBuild` 前生成插件 Schema Kotlin 校验器，并调用 `tools/package_plugins.py` 处理 `plugins/home`、`plugins/clock`、`plugins/settings`，输出到 `app/src/main/assets/plugins/`（生成物，不提交）
+- Gradle 任务在 `preBuild` 前生成插件 Schema Kotlin 校验器，并调用 `tools/package_plugins.py` 处理 `plugins/home`、`plugins/clock`、`plugins/weather`、`plugins/settings`，输出到 `app/src/main/assets/plugins/`（生成物，不提交）
 - 校验后把每个插件复制为目录 `assets/plugins/<id>/…`，并生成 `assets/plugins/index.json`（每个插件的 `digest` 与 `{path, sha256, size}` 文件清单）；各插件目录也有独立 `index.json`。不再生成 zip / `.tpk`（ADR-018）
 - 校验规则与 Server 的 registry 模块一致（同一份 `shared/schema/plugin/`）
 

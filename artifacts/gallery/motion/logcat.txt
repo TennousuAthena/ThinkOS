@@ -1,0 +1,119 @@
+--------- beginning of main
+10-30 21:38:49.132 21182 21182 I ThinkOS : tzdata 2026e (419 zones)
+10-30 21:38:49.356 21182 21182 I ThinkOS : Runtime started; local mode, safe=false
+10-30 21:38:49.360 21182 21182 I ThinkOS : Activity created; orientation=1
+10-30 21:38:49.986 21182 21182 I ThinkOS : Configuration changed without Activity recreation: 2
+10-30 21:38:50.075 21182 21182 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[]
+10-30 21:38:50.197 21182 21224 I ThinkOS : [plugin:clock] loaded 0.3.0; Lua 32228 bytes
+10-30 21:38:50.620 21182 21224 I ThinkOS : [plugin:gallery] loaded 0.3.0; Lua 100302 bytes
+10-30 21:38:50.684 21182 21224 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-30 21:38:50.865 21182 21224 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-30 21:38:51.174 21182 21224 I ThinkOS : [plugin:weather] loaded 0.1.0; Lua 99603 bytes
+10-30 21:38:51.885 21182 21182 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=clock.face, variant=solar, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=36909, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=109419, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=50679, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=106326, disabled=false, error=null)]
+10-30 21:38:53.196 21182 21182 D ThinkOS : [image:gallery] displayed OHR.AutumnCranes
+10-30 21:38:53.198 21182 21182 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-30 21:38:53.582 21182 21182 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=41369, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=110372, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=50679, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=108346, disabled=false, error=null)]
+10-30 21:38:54.121 21182 21182 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=41369, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=110372, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=50679, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=108346, disabled=false, error=null)]
+10-30 21:38:54.824 21182 21224 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-30 21:38:55.983 21182 21222 I ThinkOS : time sync: 0.pool.ntp.org 111.230.189.174 offset=90ms rtt=45ms
+10-30 21:38:56.563 21182 21224 I ThinkOS : [plugin:gallery] loaded 0.3.0; Lua 100302 bytes
+10-30 21:38:56.737 21182 21182 D ThinkOS : [image:gallery] displayed OHR.AutumnCranes
+10-30 21:38:56.739 21182 21182 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-30 21:38:56.840 21182 21392 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-30 21:38:57.084 21182 21182 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=41369, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=101272, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=50679, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=106976, disabled=false, error=null)]
+10-30 21:39:00.637 21182 21182 D ThinkOS : [image:gallery] displayed OHR.AveburyStones
+10-30 21:39:00.640 21182 21182 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-30 21:39:03.977 21182 21182 D ThinkOS : [image:gallery] displayed OHR.AutumnCranes
+10-30 21:39:03.985 21182 21182 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-30 21:39:04.319 21182 21182 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=45273, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=101272, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=50679, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=111723, disabled=false, error=null)]
+10-30 21:39:07.665 21182 21182 D ThinkOS : [image:gallery] displayed OHR.AveburyStones
+10-30 21:39:07.673 21182 21182 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-30 21:39:08.895 21182 21182 D ThinkOS : [image:gallery] displayed OHR.AutumnCranes
+10-30 21:39:08.902 21182 21182 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-30 21:39:10.144 21182 21182 D ThinkOS : [image:gallery] displayed OHR.AveburyStones
+10-30 21:39:10.151 21182 21182 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-30 21:39:11.346 21182 21182 D ThinkOS : [image:gallery] displayed OHR.AutumnCranes
+10-30 21:39:11.353 21182 21182 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-30 21:39:12.563 21182 21182 D ThinkOS : [image:gallery] displayed OHR.AveburyStones
+10-30 21:39:12.571 21182 21182 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-30 21:39:13.797 21182 21182 D ThinkOS : [image:gallery] displayed OHR.AutumnCranes
+10-30 21:39:13.803 21182 21182 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-30 21:39:14.828 21182 21182 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=45273, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=101272, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=50679, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=111723, disabled=false, error=null)]
+10-30 21:39:15.057 21182 21182 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=45273, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=101272, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=50679, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=111723, disabled=false, error=null)]
+10-30 21:39:17.021 21182 21182 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=weather.detail, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=45273, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=102201, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=50679, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=116517, disabled=false, error=null)]
+10-30 21:39:17.232 21182 21182 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=weather.detail, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=45273, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=102201, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=50679, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=116517, disabled=false, error=null)]
+10-30 21:39:18.906 21182 21182 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=45273, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=102201, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=50679, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=117420, disabled=false, error=null)]
+10-30 21:39:20.602 21182 21182 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=clock.face, variant=solar, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=49161, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=102201, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=50679, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=117420, disabled=false, error=null)]
+10-30 21:39:21.881 21182 21182 D ThinkOS : [image:gallery] displayed OHR.AutumnCranes
+10-30 21:39:21.883 21182 21182 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-30 21:39:22.313 21182 21182 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=50037, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=103128, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=50679, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=117420, disabled=false, error=null)]
+10-30 21:39:24.465 21182 21182 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=settings.form, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=50037, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=104004, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=64196, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=117420, disabled=false, error=null)]
+10-30 21:39:28.373 21182 21182 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=-1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=50037, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=104880, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=65072, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=117420, disabled=false, error=null)]
+10-30 21:39:28.398 21182 21182 D ThinkOS : [image:gallery] displayed OHR.AutumnCranes
+10-30 21:39:28.399 21182 21182 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-30 21:39:28.652 21182 21182 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=-1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=50037, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=104880, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=65072, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=117420, disabled=false, error=null)]
+10-30 21:39:28.963 21182 21182 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=-1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=50037, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=104880, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=65072, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=117420, disabled=false, error=null)]
+10-30 21:39:30.750 21182 21182 D ThinkOS : [image:gallery] displayed OHR.AveburyStones
+10-30 21:39:30.755 21182 21182 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-30 21:39:31.305 21182 21182 I ThinkOS : theme=DARK lux=51.600006
+10-30 21:39:36.794 21182 21182 I ThinkOS : Configuration changed without Activity recreation: 1
+10-30 21:39:36.908 21182 21182 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=-1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=50037, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=104880, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=65072, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=117420, disabled=false, error=null)]
+10-30 21:39:36.967 21182 21182 D ThinkOS : [image:gallery] displayed OHR.AveburyStones
+10-30 21:39:36.969 21182 21182 D ThinkOS : [image:gallery] native-pan -1476.0,0.0->0.0,0.0 31706ms
+10-30 21:39:38.677 21182 21182 D ThinkOS : [image:gallery] displayed OHR.KuneticeCastle
+10-30 21:39:38.681 21182 21182 D ThinkOS : [image:gallery] native-pan -1476.0,0.0->0.0,0.0 31706ms
+10-30 21:39:39.320 21182 21182 I ThinkOS : theme=DARK lux=51.600006
+10-30 21:39:44.869 21182 21182 I ThinkOS : Configuration changed without Activity recreation: 2
+10-30 21:39:45.018 21182 21182 D ThinkOS : [image:gallery] displayed OHR.KuneticeCastle
+10-30 21:39:45.020 21182 21182 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-30 21:39:46.356 21182 21224 I ThinkOS : [plugin:gallery] loaded 0.3.0; Lua 100302 bytes
+10-30 21:39:46.531 21182 21182 D ThinkOS : [image:gallery] displayed OHR.KuneticeCastle
+10-30 21:39:46.532 21182 21182 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-30 21:39:47.217 21182 21182 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=-1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=51832, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=101272, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=66867, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=119215, disabled=false, error=null)]
+10-30 21:39:48.142 21182 21182 D ThinkOS : [image:gallery] displayed OHR.PondCypress
+10-30 21:39:48.144 21182 21182 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-30 21:40:07.615 21182 21182 I ThinkOS : Configuration changed without Activity recreation: 1
+10-30 21:40:07.781 21182 21182 D ThinkOS : [image:gallery] displayed OHR.PondCypress
+10-30 21:40:07.782 21182 21182 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-1476.0,0.0 31706ms
+10-30 21:40:08.871 21182 21182 D ThinkOS : [image:gallery] displayed OHR.SitovoWaterfall
+10-30 21:40:08.873 21182 21182 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-1476.0,0.0 31706ms
+10-30 21:40:09.412 21182 21182 I ThinkOS : attention=AMBIENT
+10-30 21:40:25.693 21182 21182 I ThinkOS : Configuration changed without Activity recreation: 2
+10-30 21:40:25.869 21182 21182 D ThinkOS : [image:gallery] displayed OHR.SitovoWaterfall
+10-30 21:40:25.871 21182 21182 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-30 21:40:56.020 21182 21182 D ThinkOS : [image:gallery] displayed OHR.MaligneFest
+10-30 21:40:56.022 21182 21182 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-30 21:41:26.973 21182 21182 D ThinkOS : [image:gallery] displayed OHR.YellowstoneWolves
+10-30 21:41:26.974 21182 21182 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-30 21:41:57.923 21182 21182 D ThinkOS : [image:gallery] displayed OHR.NaejangsanNP
+10-30 21:41:57.925 21182 21182 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-30 21:42:28.876 21182 21182 D ThinkOS : [image:gallery] displayed OHR.VietnamBridge
+10-30 21:42:28.877 21182 21182 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-30 21:42:59.832 21182 21182 D ThinkOS : [image:gallery] displayed OHR.BrownSloth
+10-30 21:42:59.833 21182 21182 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-30 21:43:26.263 21182 21182 D ThinkOS : [image:gallery] displayed OHR.VeniceSunrise
+10-30 21:43:26.264 21182 21182 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-30 21:43:27.258 21182 21182 D ThinkOS : [image:gallery] displayed OHR.BrownSloth
+10-30 21:43:27.260 21182 21182 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-30 21:43:28.080 21182 21182 D ThinkOS : [image:gallery] displayed OHR.VeniceSunrise
+10-30 21:43:28.082 21182 21182 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-30 21:43:28.864 21182 21182 D ThinkOS : [image:gallery] displayed OHR.BrownSloth
+10-30 21:43:28.866 21182 21182 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-30 21:43:29.509 21182 21182 D ThinkOS : [image:gallery] displayed OHR.VietnamBridge
+10-30 21:43:29.510 21182 21182 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-30 21:43:30.450 21182 21182 D ThinkOS : [image:gallery] displayed OHR.NaejangsanNP
+10-30 21:43:30.451 21182 21182 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-30 21:43:31.391 21182 21182 D ThinkOS : [image:gallery] displayed OHR.VietnamBridge
+10-30 21:43:31.395 21182 21182 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-30 21:43:33.243 21182 21182 D ThinkOS : [image:gallery] displayed OHR.NaejangsanNP
+10-30 21:43:33.246 21182 21182 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-30 21:43:37.063 21182 21182 D ThinkOS : [image:gallery] displayed OHR.YellowstoneWolves
+10-30 21:43:37.067 21182 21182 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-30 21:43:38.598 21182 21182 D ThinkOS : [image:gallery] displayed OHR.MaligneFest
+10-30 21:43:38.600 21182 21182 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-30 21:44:09.548 21182 21182 D ThinkOS : [image:gallery] displayed OHR.YellowstoneWolves
+10-30 21:44:09.549 21182 21182 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-30 21:44:40.491 21182 21182 D ThinkOS : [image:gallery] displayed OHR.NaejangsanNP
+10-30 21:44:40.492 21182 21182 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-30 21:50:28.839 21182 21182 I ThinkOS : Configuration changed without Activity recreation: 1
+10-30 21:50:29.025 21182 21182 I ThinkOS : attention=AWAKE

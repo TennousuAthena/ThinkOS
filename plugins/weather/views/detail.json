@@ -1,0 +1,78 @@
+{
+  "layout": "split",
+  "mood": "{{mood}}",
+  "slots": {
+    "lead": {
+      "children": [
+        {
+          "type": "icon",
+          "name": "{{icon}}",
+          "weight": 1
+        },
+        {
+          "type": "text",
+          "value": "{{temperature}}",
+          "style": "display"
+        },
+        {
+          "type": "text",
+          "value": "{{summary}}",
+          "style": "body"
+        },
+        {
+          "type": "text",
+          "value": "{{metrics}}",
+          "style": "caption"
+        },
+        {
+          "type": "text",
+          "value": "{{cardInfo}}",
+          "style": "caption",
+          "tap": "refresh"
+        },
+        {
+          "type": "text",
+          "value": "{{source}} · {{licence}}",
+          "style": "caption"
+        }
+      ]
+    },
+    "main": {
+      "children": [
+        {
+          "type": "text",
+          "value": "{{hourlyTitle}}",
+          "style": "body"
+        },
+        {
+          "type": "chart",
+          "style": "area",
+          "values": "{{hourly}}",
+          "highlight": "{{highlight}}",
+          "weight": 1
+        },
+        {
+          "type": "text",
+          "value": "{{hourlyRange}}",
+          "style": "caption"
+        },
+        {
+          "type": "text",
+          "value": "@daily",
+          "style": "body"
+        },
+        {
+          "type": "list",
+          "items": "{{days}}",
+          "item": {
+            "icon": "{{.icon}}",
+            "title": "{{.title}}",
+            "subtitle": "{{.subtitle}}",
+            "trailing": "{{.trailing}}"
+          },
+          "weight": 2
+        }
+      ]
+    }
+  }
+}

@@ -17,8 +17,17 @@ interface RenderComponent {
     val handlesTap: Boolean get() = false
     /** True only while this renderer needs display-rate ticks (for example an image transition). */
     val animating: Boolean get() = false
+    /** Measured native photo captions reserve the bottom band from other stage overlays. */
+    val bottomOverlayInset: Int get() = 0
     fun bind(snapshot: JSONObject, variant: String, strings: (String) -> String?)
     fun colors(value: Palette)
+    /** Only the selected page/card is active; drag previews may be attached but remain paused. */
+    fun active(value: Boolean) {}
+    /** Native capability tap without taking ownership of the OS's swipe/long-press gestures. */
+    fun tap(): Boolean = false
+    /** OS-owned vertical content browsing; horizontal navigation and long press stay with the stage. */
+    fun dragVertical(offset: Float): Boolean = false
+    fun releaseVertical(offset: Float, velocity: Float) {}
     fun tick(monotonic: Long, attention: Attention) {}
     fun localeChanged() {}
 }

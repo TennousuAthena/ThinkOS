@@ -1,0 +1,66 @@
+{
+  "complete": true,
+  "jvmTests": 210,
+  "jvmFailures": 0,
+  "pythonTests": 31,
+  "nativeLua": "passed: Bing parser/scheduling/races plus production sandbox, HTTP continuations, JSON/JNI persistence and local gallery",
+  "lint": "passed",
+  "assembleDebug": "passed",
+  "goProtocol": "passed",
+  "minSdk": 27,
+  "targetSdk": 27,
+  "abi": [
+    "armeabi-v7a"
+  ],
+  "installedApkSha256": "6b460479047c23999f96335b0f50fdcb690eef0e8be0c95165a9d230211ddb2d",
+  "installedApkMatchesBuild": true,
+  "defaultSource": "bing",
+  "serverRequired": false,
+  "realBingArchiveMarket": "zh-CN",
+  "realBingArchiveItems": 13,
+  "offlineColdStartMsFinalApk": 674,
+  "realPhotosVerified": [
+    "OHR.AutumnCranes",
+    "OHR.AveburyStones",
+    "OHR.KuneticeCastle"
+  ],
+  "localRegression": {
+    "complete": true,
+    "passed": [
+      "local library, hot replacement, sampled decode and gallery page render without restarting",
+      "tap advances; native carousel leaves page gestures to the OS",
+      "landscape and portrait render in LIGHT and DARK",
+      "NIGHT exits ambient photo pages",
+      "50 photo changes and malformed-image skipping without process restart",
+      "repeated metadata scans keep file descriptor usage bounded",
+      "reduced motion switches from pan to whole-image contain",
+      "leaving the page stops carousel decode and timers",
+      "offline cold launch <3s; local photos render with no Server"
+    ],
+    "fileDescriptorsBefore": 62,
+    "fileDescriptorsAfter": 70,
+    "offlineColdStartMs": 691,
+    "finalPid": "17782"
+  },
+  "ambient": {
+    "seconds": 600.12,
+    "cpuMeanOneCorePct": 5.577,
+    "max10SecondSampleCpuPct": 19.841,
+    "jankyFrames": 85,
+    "jankyPct": 2.88,
+    "p99ms": 18,
+    "pssKiB": 113262,
+    "slowBitmapUploads": 1,
+    "pidStable": true,
+    "apkSha256": "acd90c4eebfcdd3d14fe58cea9737ee4cb077c83e04e1c24e01adab59b01cf4f",
+    "note": "Performance sampled before the final Lua source-change generation ordering fix; OS image pipeline is identical.",
+    "wifiOn": true,
+    "animatorDurationScale": 1
+  },
+  "restored": {
+    "wifiOn": true,
+    "animatorScaleKeyAbsent": true,
+    "developmentOverrides": []
+  },
+  "finalDeviceState": "DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=47993, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.2.0, bytes=109361, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=50679, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=78725, disabled=false, error=null)]"
+}

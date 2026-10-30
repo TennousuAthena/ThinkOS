@@ -1,0 +1,24 @@
+{
+  "complete": true,
+  "apkSha256": "43a6dc7f22ea32024a52ee2846ce83d17abc79eb10249f9a86df30e72f6c960a",
+  "installedApkMatchesBuild": true,
+  "jvmTests": 211,
+  "jvmFailures": 0,
+  "lint": "passed",
+  "assembleDebug": "passed",
+  "abi": [
+    "armeabi-v7a"
+  ],
+  "minSdk": 27,
+  "targetSdk": 27,
+  "visualChecks": [
+    "portrait and landscape in LIGHT/DARK",
+    "right-aligned time in top-right with 24dp insets",
+    "bottom title and full copyright, no fixed-height gaps",
+    "offline status above and aligned with photo captions"
+  ],
+  "restored": {
+    "developmentOverrides": []
+  },
+  "scope": "Native layout and text presentation only; source, history, pan and cache implementation unchanged."
+}

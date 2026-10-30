@@ -96,6 +96,20 @@
         }
       ]
     },
+    "motion.clock": {
+      "type": "choice",
+      "label": "@setting.motion.clock",
+      "default": "roll",
+      "group": "@setting.group.display",
+      "choices": [
+        { "value": "none", "label": "@setting.motion.clock.none" },
+        { "value": "roll", "label": "@setting.motion.clock.roll" },
+        { "value": "fade", "label": "@setting.motion.clock.fade" },
+        { "value": "drop", "label": "@setting.motion.clock.drop" },
+        { "value": "flip", "label": "@setting.motion.clock.flip" },
+        { "value": "zoom", "label": "@setting.motion.clock.zoom" }
+      ]
+    },
     "display.brightness_max": {
       "type": "number",
       "label": "@setting.display.brightness_max",

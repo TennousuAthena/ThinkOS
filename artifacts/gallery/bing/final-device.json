@@ -1,0 +1,11 @@
+{
+  "installedApkSha256": "6b460479047c23999f96335b0f50fdcb690eef0e8be0c95165a9d230211ddb2d",
+  "installedApkMatchesBuild": true,
+  "restored": {
+    "wifiOn": true,
+    "animatorScaleKeyAbsent": true,
+    "developmentOverrides": []
+  },
+  "pid": "18166",
+  "state": "DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=47993, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.2.0, bytes=109361, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=50679, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=78725, disabled=false, error=null)]"
+}

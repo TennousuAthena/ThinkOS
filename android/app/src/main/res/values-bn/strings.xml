@@ -10,7 +10,7 @@
     <string name="maintenance_diagnostics">ডায়াগনস্টিক</string>
     <string name="maintenance_restore_plugins">ইনবিল্ট প্লাগইন পুনরুদ্ধার করুন</string>
     <string name="maintenance_reset_settings">সেটিংস রিসেট করুন</string>
-    <string name="maintenance_android_settings">Android সেটিংস খুলুন (ওয়াচডগ ৫ মিনিট বন্ধ)</string>
+    <string name="maintenance_android_settings">Android সেটিংস খুলুন, ওয়াচডগ ৫ মিনিট বন্ধ</string>
     <string name="maintenance_exit_safe_mode">নিরাপদ মোড থেকে বেরিয়ে রিস্টার্ট করুন</string>
     <string name="maintenance_back">ফিরে যান</string>
     <string name="maintenance_restored">ইনবিল্ট প্লাগইন পুনরুদ্ধার হয়েছে</string>
@@ -43,7 +43,7 @@
     <string name="setting_group_kiosk">কিয়স্ক</string>
     <string name="setting_group_time">সময়</string>
     <string name="setting_theme_mode">থিম</string>
-    <string name="setting_theme_mode_auto">স্বয়ংক্রিয় (পরিবেশের আলো)</string>
+    <string name="setting_theme_mode_auto">স্বয়ংক্রিয়, পরিবেশের আলো</string>
     <string name="setting_theme_mode_sun">স্বয়ংক্রিয় (সূর্যোদয় ও সূর্যাস্ত)</string>
     <string name="setting_theme_mode_light">সবসময় হালকা</string>
     <string name="setting_theme_mode_dark">সবসময় গাঢ়</string>
@@ -56,19 +56,26 @@
     <string name="setting_display_orientation_auto">সেন্সর অনুসারে</string>
     <string name="setting_display_orientation_landscape">ল্যান্ডস্কেপ</string>
     <string name="setting_display_orientation_portrait">পোর্ট্রেট</string>
+    <string name="setting_motion_clock">ঘড়ির অ্যানিমেশন</string>
+    <string name="setting_motion_clock_none">নেই</string>
+    <string name="setting_motion_clock_roll">রোল</string>
+    <string name="setting_motion_clock_fade">ফেড</string>
+    <string name="setting_motion_clock_drop">পড়া</string>
+    <string name="setting_motion_clock_flip">ফ্লিপ</string>
+    <string name="setting_motion_clock_zoom">জুম</string>
     <string name="setting_display_brightness_max">সর্বোচ্চ উজ্জ্বলতা</string>
     <string name="setting_attention_awake_to_ambient_s">এতক্ষণ ব্যবহার না হলে আলো কমান</string>
     <string name="setting_attention_to_asleep_s">এতক্ষণ কেউ কাছে না থাকলে স্লিপ</string>
     <string name="setting_attention_engaged_idle_s">এতক্ষণ নিষ্ক্রিয় থাকলে ইন্টারঅ্যাকশন শেষ</string>
     <string name="setting_attention_ambient_page_after_s">আলো কমার এতক্ষণ পরে ছবির পৃষ্ঠা</string>
-    <string name="setting_server_url">Server ঠিকানা (ফাঁকা = স্বয়ংক্রিয়ভাবে খুঁজুন)</string>
+    <string name="setting_server_url">Server ঠিকানা, ফাঁকা = স্বয়ংক্রিয়ভাবে খুঁজুন</string>
     <string name="setting_server_token">পেয়ারিং টোকেন</string>
-    <string name="setting_kiosk_lock">সিস্টেম UI লক করুন (স্ট্যাটাস বার, জেসচার, সাম্প্রতিক অ্যাপ)</string>
-    <string name="setting_time_ntp_servers">NTP সার্ভার (কমা দিয়ে আলাদা)</string>
+    <string name="setting_kiosk_lock">সিস্টেম UI লক করুন</string>
+    <string name="setting_time_ntp_servers">NTP সার্ভার, কমা দিয়ে আলাদা</string>
     <string name="setting_time_sync_hour">প্রতিদিন সময় সিঙ্ক</string>
     <string name="setting_group_location">অবস্থান</string>
     <string name="setting_location_mode">অবস্থানের উৎস</string>
-    <string name="setting_location_mode_auto">সময় অঞ্চলের শহর (আনুমানিক)</string>
+    <string name="setting_location_mode_auto">সময় অঞ্চলের শহর, আনুমানিক</string>
     <string name="setting_location_mode_manual">স্থান বাছুন / স্থানাঙ্ক</string>
     <string name="setting_location_name">শহর, জেলা বা উপজেলা</string>
     <string name="setting_location_latitude">অক্ষাংশ</string>
@@ -82,7 +89,7 @@
     <string name="form_place_empty">কোনো স্থান পাওয়া যায়নি। অন্য নাম চেষ্টা করুন।</string>
     <string name="form_place_error">অনলাইন অনুসন্ধান উপলব্ধ নয়। শুধু ডিভাইসে থাকা সময় অঞ্চলের শহর দেখানো হচ্ছে।</string>
     <string name="form_place_invalid">এই স্থানের জন্য ব্যবহারযোগ্য সময় অঞ্চল নেই।</string>
-    <string name="form_place_attribution">অনুসন্ধান: Open-Meteo · অবস্থান তথ্য: GeoNames (CC BY 4.0)</string>
+    <string name="form_place_attribution">অনুসন্ধান: Open-Meteo · অবস্থান তথ্য: GeoNames, CC BY 4.0</string>
     <string name="media_previous">আগের ট্র্যাক</string>
     <string name="media_play">চালু করুন</string>
     <string name="media_pause">বিরতি</string>

@@ -1,0 +1,7 @@
+{
+  "complete": true,
+  "checks": [
+    "real Bing caption and copyright at bottom; right-aligned corner time in portrait/landscape and both themes",
+    "status notice clears the measured photo caption block"
+  ]
+}

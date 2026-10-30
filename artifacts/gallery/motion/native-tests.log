@@ -1,0 +1,71 @@
+PASS basic Lua + forbidden libraries (0.08 ms, 16278 bytes)
+PASS infinite loop (23.87 ms, 15034 bytes)
+PASS pcall cannot swallow budget (11.04 ms, 15641 bytes)
+PASS xpcall cannot swallow budget (10.28 ms, 15848 bytes)
+PASS nested coroutine budget (9.75 ms, 16750 bytes)
+PASS wrapped coroutine budget (8.57 ms, 16431 bytes)
+PASS non-yieldable comparator pcall budget (7.99 ms, 16161 bytes)
+PASS nested non-yieldable xpcall budget (7.23 ms, 16939 bytes)
+PASS allocator rejects large string (0.00 ms, 15518 bytes)
+PASS caught allocator errors still bounded (0.01 ms, 16214 bytes)
+PASS binary load refused (0.01 ms, 15902 bytes)
+PASS bounded pattern backtracking (11.62 ms, 15759 bytes)
+PASS pattern pcall cannot swallow budget (10.41 ms, 16487 bytes)
+PASS pattern normal behavior (0.01 ms, 15780 bytes)
+PASS weather start publishes immediately; network deferred; bounded full forecast (1.525 ms, 208676 bytes retained, 225816 bytes peak)
+PASS weather unit, language and minute changes only render; relevance remains stable (1.307 ms, 272364 bytes retained, 272364 bytes peak)
+PASS weather cache starts offline immediately; timestamp and raw Celsius survive (2.229 ms, 326114 bytes retained, 342249 bytes peak)
+PASS weather HTTP, timeout, non JSON and missing fields preserve complete cache (5.143 ms, 210482 bytes retained, 419030 bytes peak)
+PASS weather backoff 1, 2, 5, 15 minutes; success resets retry cycle (0.977 ms, 276700 bytes retained, 289688 bytes peak)
+PASS weather sleep stops refresh; wake and changed interval resume (1.615 ms, 345738 bytes retained, 363029 bytes peak)
+PASS weather untrusted clock retries at 30s; sync pulls next minute without relative age (0.653 ms, 259190 bytes retained, 278924 bytes peak)
+PASS weather an inflight success during sleep stays fresh on wake (0.682 ms, 255686 bytes retained, 269915 bytes peak)
+PASS weather expired data and clock moving backwards never appear freshly updated (0.709 ms, 258663 bytes retained, 267421 bytes peak)
+PASS weather location race discards late result and fetches newest coordinates (0.780 ms, 271960 bytes retained, 291654 bytes peak)
+PASS weather inflight overlap coalesces; stop suppresses late writes (0.418 ms, 231141 bytes retained, 237210 bytes peak)
+PASS weather invalid cache and malformed full arrays are rejected atomically (0.824 ms, 292682 bytes retained, 317827 bytes peak)
+PASS weather all WMO groups, night icons, hazards and unknown codes (0.660 ms, 248201 bytes retained, 266236 bytes peak)
+PASS weather fractional time zones select local current hour and nominal local date (0.621 ms, 273190 bytes retained, 292763 bytes peak)
+PASS weather daily date labels retain fixed API boundaries across a DST transition (0.603 ms, 273057 bytes retained, 292681 bytes peak)
+PASS generated descriptors retain their help
+PASS refused edits roll back and clear after three seconds
+PASS a repeated refusal gets its own full display interval
+PASS a successful edit cancels old feedback
+PASS scope changes prevent stale error callbacks
+PASS reset and locale changes cancel feedback
+PASS leaving and reopening starts with clean feedback
+PASS stopping the plugin cancels pending feedback
+PASS gallery preserves UTF-8 titles and bounds state for long photo paths
+PASS gallery local scan, sorted list, display settings, error retention, directory isolation, cap, sleep and stop
+PASS gallery in-flight directory change discards stale response and rescans
+PASS Bing market mapping, URL validation, archive normalization, credits, deduplication and persistence budget
+PASS Bing startup, cache restore, TTL, forced retry, partial archive persistence, sleep, clock and stale response isolation
+PASS simultaneous source and market changes revoke HTTP responses before local IO yields
+PASS typed JNI Unicode and object values
+PASS three-argument module load keeps globals; an explicit fourth environment is preserved
+PASS native JSON null/empty arrays/int64/NUL and strict validation
+PASS sealed configuration, finalizers and hidden host functions
+PASS native Lua patterns restored and backtracking is uncatchably budgeted
+PASS cached function dispatch with typed arguments
+PASS async API yield has a retained task identity
+PASS async continuation can suspend a second time
+PASS resume budgets reset after wall time spent awaiting IO
+PASS tos.library.list returns a table using the async JSON transport for 300 photos
+PASS library failures return nil and an error
+PASS normal async yield crosses protected pcall
+PASS unmanaged child coroutines cannot orphan async requests
+PASS CPU budget enforced on each continuation
+PASS cancelled async tasks cannot resurrect
+PASS 200ms wall cap and recovery after blocked synchronous host
+PASS CPU spent inside one trusted host call is credited to the script (70ms > the 50ms script budget)
+PASS host-call credit is capped, so a loop of host calls still hits the budget
+PASS ordinary script error classified separately from resource failure
+PASS cached timer callback
+PASS large JSON C decoder (53891 chars, CPU 304us)
+PASS generational GC bounds repeated event allocations
+PASS gallery starts with the exact production bootstrap and codec
+PASS initial attention preserves the deferred first scan
+PASS full gallery script publishes 300 photos through production JSON transport (CPU 490us)
+PASS Bing starts through the production sandbox module loader
+PASS Bing HTTP continuations parse, deduplicate, persist and publish through production JSON/JNI (CPU 72us)
+PASS aggregate 24MB cap includes native JSON allocations

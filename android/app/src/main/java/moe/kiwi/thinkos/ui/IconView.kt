@@ -1,58 +1,167 @@
 package moe.kiwi.thinkos.ui
 
+import android.animation.ValueAnimator
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.RectF
 import android.view.View
+import moe.kiwi.thinkos.core.Attention
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
 
-/** Exact names form the icon vocabulary; unknown names never silently turn into a sun. */
+/** Shared alpha masks are rasterised once; themes tint them without allocating new artwork. */
 internal class IconView(context: Context) : View(context) {
     var palette = Palette.DARK
-        set(value) { field = value; invalidate() }
+        set(value) { if (field != value) { field = value; invalidate() } }
     var name = "sun"
         set(value) { if (field != value) { field = value; contentDescription = value; invalidate() } }
-    private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeCap = Paint.Cap.ROUND }
+    private val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
+    private val target = RectF(0f, 0f, 128f, 128f)
+    private var phase = 0.0
+    private var previous = 0L
+    var animating = false
+        private set
+
+    init { setLayerType(LAYER_TYPE_HARDWARE, null) }
+
+    fun tick(now: Long, attention: Attention) {
+        val active = name in weatherNames && name != "clear-night" &&
+            (attention == Attention.AWAKE || attention == Attention.ENGAGED) && ValueAnimator.areAnimatorsEnabled()
+        if (active) {
+            if (animating && previous != 0L) phase += (now - previous).coerceIn(0, 100) / 1000.0
+            invalidate()
+        } else if (animating) invalidate()
+        animating = active
+        previous = now
+    }
 
     override fun onDraw(canvas: Canvas) {
+        val size = min(width, height).toFloat()
+        if (size <= 0) return
         paint.color = palette.accent
-        paint.strokeWidth = 2f * resources.displayMetrics.density
-        val x = width / 2f
-        val y = height / 2f
-        val r = min(width, height) * .22f
-        DRAWERS[name]?.invoke(canvas, paint, x, y, r) ?: run {
-            canvas.drawCircle(x, y, r, paint)
-            canvas.drawLine(x, y - r * .4f, x, y + r * .1f, paint)
-            canvas.drawPoint(x, y + r * .5f, paint)
+        paint.alpha = 255
+        canvas.save()
+        canvas.translate((width - size) / 2, (height - size) / 2)
+        canvas.scale(size / 128, size / 128)
+        fun mask(key: String) { canvas.drawBitmap(IconArt.mask(key), null, target, paint) }
+        fun sun(partly: Boolean = false) {
+            canvas.save()
+            if (partly) { canvas.clipRect(0f, 0f, 128f, 48f); canvas.translate(12f, 4f); canvas.scale(.65f, .65f) }
+            mask("sun-disc")
+            canvas.rotate((sin(phase * .35) * 9).toFloat(), 64f, 64f)
+            mask("sun-rays")
+            canvas.restore()
         }
+        fun moon(partly: Boolean = false) {
+            canvas.save()
+            if (partly) { canvas.clipRect(0f, 0f, 128f, 49f); canvas.translate(10f, 2f); canvas.scale(.65f, .65f) }
+            mask("moon")
+            canvas.restore()
+        }
+        fun cloud(raised: Boolean = false) {
+            canvas.save()
+            canvas.translate((sin(phase * .7) * 2).toFloat(), if (raised) -14f else 0f)
+            mask("cloud")
+            canvas.restore()
+        }
+        fun precipitation(snow: Boolean, showers: Boolean = false) {
+            canvas.save(); canvas.clipRect(18f, 76f, 112f, 121f)
+            for (i in 0..2) {
+                val step = (phase / (if (snow) 3.8 else 1.8) + i * .31) % 1
+                canvas.save()
+                val x = 43f + i * 21f + if (snow) (sin(phase + i) * 3).toFloat() else 0f
+                canvas.translate(x - 64f, 78f + (step * 39).toFloat() - 64f)
+                paint.alpha = (sin(step * Math.PI) * 255).toInt().coerceIn(0, 255)
+                mask(if (snow) "flake" else if (showers) "shower-drop" else "drop")
+                canvas.restore()
+            }
+            paint.alpha = 255; canvas.restore()
+        }
+        when (name) {
+            "sun", "clear-day" -> sun()
+            "moon", "clear-night" -> moon()
+            "partly-day" -> { sun(true); cloud() }
+            "partly-night" -> { moon(true); cloud() }
+            "cloud" -> cloud()
+            "fog" -> { cloud(true); mask("fog") }
+            "rain", "shower" -> { cloud(true); precipitation(false, name == "shower") }
+            "snow" -> { cloud(true); precipitation(true) }
+            "thunder" -> { cloud(true); mask("bolt") }
+            "calendar", "clock" -> mask(name)
+            else -> mask("unknown")
+        }
+        canvas.restore()
     }
     companion object {
-        private val DRAWERS: Map<String, (Canvas, Paint, Float, Float, Float) -> Unit> = mapOf(
-            "calendar" to { c, p, x, y, r ->
-                c.drawRoundRect(x-r*1.1f, y-r, x+r*1.1f, y+r*1.15f, r*.2f, r*.2f, p)
-                c.drawLine(x-r, y-r*.35f, x+r, y-r*.35f, p)
-                for (sign in listOf(-1, 1)) c.drawLine(x+sign*r*.5f, y-r*1.25f, x+sign*r*.5f, y-r*.7f, p)
-            },
-            "moon" to { c, p, x, y, r ->
-                c.drawArc(x-r, y-r, x+r, y+r, 40f, 280f, false, p)
-                c.drawArc(x-r*.3f, y-r, x+r*1.2f, y+r*.5f, 70f, 180f, false, p)
-            },
-            "clock" to { c, p, x, y, r ->
-                c.drawCircle(x, y, r, p)
-                c.drawLine(x, y, x, y-r*.6f, p)
-                c.drawLine(x, y, x+r*.4f, y+r*.3f, p)
-            },
-            "sun" to { c, p, x, y, r ->
-                c.drawCircle(x, y, r*.55f, p)
-                for (i in 0..7) {
-                    val angle = i * Math.PI / 4
-                    c.drawLine(x+(cos(angle)*r*.85).toFloat(), y+(sin(angle)*r*.85).toFloat(),
-                        x+(cos(angle)*r*1.18).toFloat(), y+(sin(angle)*r*1.18).toFloat(), p)
-                }
+        val weatherNames = setOf("clear-day", "clear-night", "partly-day", "partly-night", "cloud", "fog", "rain", "shower", "snow", "thunder")
+        val names: Set<String> = weatherNames + setOf("sun", "moon", "calendar", "clock", "unknown")
+    }
+}
+
+/** A bounded, theme-independent set of 256px alpha masks (under 1 MiB for the vocabulary). */
+private object IconArt {
+    private val masks = mutableMapOf<String, Bitmap>()
+    fun mask(name: String): Bitmap = masks.getOrPut(name) {
+        val bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ALPHA_8)
+        val canvas = Canvas(bitmap).apply { scale(2f, 2f) }
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.WHITE; style = Paint.Style.STROKE
+            strokeCap = Paint.Cap.ROUND; strokeJoin = Paint.Join.ROUND; strokeWidth = 3.2f
+        }
+        val path = Path()
+        when (name) {
+            "sun-disc" -> canvas.drawCircle(64f, 64f, 22f, paint)
+            "sun-rays" -> for (i in 0..7) {
+                val angle = i * Math.PI / 4
+                canvas.drawLine(64f + (cos(angle) * 33).toFloat(), 64f + (sin(angle) * 33).toFloat(),
+                    64f + (cos(angle) * 44).toFloat(), 64f + (sin(angle) * 44).toFloat(), paint)
             }
-        )
-        val names: Set<String> get() = DRAWERS.keys
+            "moon" -> {
+                path.moveTo(79f, 24f)
+                path.cubicTo(48f, 15f, 25f, 42f, 34f, 72f)
+                path.cubicTo(43f, 100f, 79f, 107f, 97f, 79f)
+                path.cubicTo(72f, 88f, 50f, 67f, 56f, 45f)
+                path.cubicTo(59f, 34f, 68f, 27f, 79f, 24f)
+                canvas.drawPath(path, paint)
+            }
+            "cloud" -> {
+                path.moveTo(33f, 85f)
+                path.cubicTo(12f, 85f, 11f, 57f, 32f, 54f)
+                path.cubicTo(32f, 28f, 65f, 24f, 76f, 46f)
+                path.cubicTo(100f, 38f, 116f, 61f, 104f, 77f)
+                path.cubicTo(100f, 84f, 93f, 85f, 86f, 85f)
+                path.close(); canvas.drawPath(path, paint)
+            }
+            "fog" -> for (i in 0..2) canvas.drawLine(29f + i % 2 * 8, 85f + i * 11, 100f - i % 2 * 8, 85f + i * 11, paint)
+            "drop", "shower-drop" -> canvas.drawLine(66f, 59f, 62f, if (name == "drop") 68f else 72f, paint)
+            "flake" -> for (i in 0..2) {
+                val angle = i * Math.PI / 3
+                val x = (cos(angle) * 5).toFloat(); val y = (sin(angle) * 5).toFloat()
+                canvas.drawLine(64f - x, 64f - y, 64f + x, 64f + y, paint)
+            }
+            "bolt" -> {
+                path.moveTo(70f, 78f); path.lineTo(55f, 99f); path.lineTo(69f, 99f)
+                path.lineTo(59f, 119f); path.lineTo(83f, 93f); path.lineTo(69f, 93f)
+                canvas.drawPath(path, paint)
+            }
+            "calendar" -> {
+                canvas.drawRoundRect(28f, 30f, 100f, 102f, 7f, 7f, paint)
+                canvas.drawLine(28f, 52f, 100f, 52f, paint)
+                canvas.drawLine(46f, 22f, 46f, 38f, paint); canvas.drawLine(82f, 22f, 82f, 38f, paint)
+            }
+            "clock" -> {
+                canvas.drawCircle(64f, 64f, 38f, paint)
+                canvas.drawLine(64f, 64f, 64f, 39f, paint); canvas.drawLine(64f, 64f, 81f, 77f, paint)
+            }
+            else -> {
+                canvas.drawCircle(64f, 64f, 34f, paint)
+                canvas.drawLine(64f, 49f, 64f, 66f, paint); canvas.drawPoint(64f, 80f, paint)
+            }
+        }
+        bitmap
     }
 }

@@ -10,7 +10,7 @@
     <string name="maintenance_diagnostics">Diagnostics</string>
     <string name="maintenance_restore_plugins">Restore built-in plugins</string>
     <string name="maintenance_reset_settings">Reset settings</string>
-    <string name="maintenance_android_settings">Open Android settings (watchdog paused for 5 minutes)</string>
+    <string name="maintenance_android_settings">Open Android settings, watchdog paused for 5 minutes</string>
     <string name="maintenance_exit_safe_mode">Leave safe mode and restart</string>
     <string name="maintenance_back">Back</string>
     <string name="maintenance_restored">Built-in plugins restored</string>
@@ -43,7 +43,7 @@
     <string name="setting_group_kiosk">Kiosk</string>
     <string name="setting_group_time">Time</string>
     <string name="setting_theme_mode">Theme</string>
-    <string name="setting_theme_mode_auto">Automatic (ambient light)</string>
+    <string name="setting_theme_mode_auto">Automatic, ambient light</string>
     <string name="setting_theme_mode_sun">Automatic (sunrise and sunset)</string>
     <string name="setting_theme_mode_light">Always light</string>
     <string name="setting_theme_mode_dark">Always dark</string>
@@ -56,19 +56,26 @@
     <string name="setting_display_orientation_auto">Follow sensor</string>
     <string name="setting_display_orientation_landscape">Landscape</string>
     <string name="setting_display_orientation_portrait">Portrait</string>
+    <string name="setting_motion_clock">Clock animation</string>
+    <string name="setting_motion_clock_none">None</string>
+    <string name="setting_motion_clock_roll">Roll</string>
+    <string name="setting_motion_clock_fade">Fade</string>
+    <string name="setting_motion_clock_drop">Drop</string>
+    <string name="setting_motion_clock_flip">Flip</string>
+    <string name="setting_motion_clock_zoom">Zoom</string>
     <string name="setting_display_brightness_max">Maximum brightness</string>
     <string name="setting_attention_awake_to_ambient_s">Dim after nobody uses it for</string>
     <string name="setting_attention_to_asleep_s">Sleep mode after nobody is near for</string>
     <string name="setting_attention_engaged_idle_s">End interaction after idle for</string>
     <string name="setting_attention_ambient_page_after_s">Show photo page after dimmed for</string>
-    <string name="setting_server_url">Server address (empty = find automatically)</string>
+    <string name="setting_server_url">Server address, empty = find automatically</string>
     <string name="setting_server_token">Pairing token</string>
-    <string name="setting_kiosk_lock">Lock the system UI (status bar, gestures, Recents)</string>
-    <string name="setting_time_ntp_servers">NTP servers (comma separated)</string>
+    <string name="setting_kiosk_lock">Lock the system UI</string>
+    <string name="setting_time_ntp_servers">NTP servers, comma separated</string>
     <string name="setting_time_sync_hour">Daily time sync at</string>
     <string name="setting_group_location">Location</string>
     <string name="setting_location_mode">Location source</string>
-    <string name="setting_location_mode_auto">Time zone city (approximate)</string>
+    <string name="setting_location_mode_auto">Time zone city, approximate</string>
     <string name="setting_location_mode_manual">Choose a place / coordinates</string>
     <string name="setting_location_name">City, district or county</string>
     <string name="setting_location_latitude">Latitude</string>
@@ -82,7 +89,7 @@
     <string name="form_place_empty">No places found. Try another name.</string>
     <string name="form_place_error">Online search unavailable. Showing time zone cities stored on this device.</string>
     <string name="form_place_invalid">This place has no usable time zone.</string>
-    <string name="form_place_attribution">Search: Open-Meteo · Location data: GeoNames (CC BY 4.0)</string>
+    <string name="form_place_attribution">Search: Open-Meteo · Location data: GeoNames, CC BY 4.0</string>
     <string name="media_previous">Previous track</string>
     <string name="media_play">Play</string>
     <string name="media_pause">Pause</string>

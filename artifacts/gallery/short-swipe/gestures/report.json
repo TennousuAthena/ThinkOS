@@ -1,0 +1,36 @@
+{
+  "complete": true,
+  "passed": [
+    "down at newest photo stops at the history boundary",
+    "up browses older and down returns to newer; gallery page stays selected",
+    "short drag springs back without changing selection",
+    "rapid alternating swipes keep the current gallery and runtime healthy",
+    "horizontal swipes retain OS page navigation",
+    "long press still opens the native settings page",
+    "history and outlined white time render in both orientations and themes",
+    "portrait active sweep sampled with animations enabled"
+  ],
+  "nativePanEvents": [
+    "0.0,0.0->-143.0,0.0 12000ms",
+    "-143.0,0.0->0.0,0.0 12000ms",
+    "0.0,0.0->-143.0,0.0 12000ms",
+    "0.0,0.0->-143.0,0.0 12000ms",
+    "0.0,0.0->-143.0,0.0 12000ms",
+    "-143.0,0.0->0.0,0.0 12000ms",
+    "-143.0,0.0->0.0,0.0 12000ms",
+    "0.0,0.0->-143.0,0.0 12000ms",
+    "0.0,0.0->-143.0,0.0 12000ms",
+    "-143.0,0.0->0.0,0.0 12000ms",
+    "-143.0,0.0->0.0,0.0 12000ms",
+    "0.0,0.0->-143.0,0.0 12000ms",
+    "0.0,0.0->-143.0,0.0 12000ms",
+    "-1476.0,0.0->0.0,0.0 31706ms",
+    "-1476.0,0.0->0.0,0.0 31706ms",
+    "-143.0,0.0->0.0,0.0 12000ms",
+    "0.0,0.0->-143.0,0.0 12000ms",
+    "0.0,0.0->-1476.0,0.0 31706ms",
+    "-1476.0,0.0->0.0,0.0 31706ms",
+    "-143.0,0.0->0.0,0.0 12000ms"
+  ],
+  "pid": "28221"
+}

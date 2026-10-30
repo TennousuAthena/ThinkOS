@@ -127,6 +127,7 @@ class ThinkStage(
                 governor.attention = value.attention
                 ambient.mode(value.attention, governor.reducedMotion)
                 router.applyAttention(value.attention)
+                router.applyTheme(value.theme)
                 if (value.theme != theme) {
                     theme = value.theme
                     fromPalette = palette
@@ -136,7 +137,7 @@ class ThinkStage(
                     themeStart = SystemClock.uptimeMillis()
                     themeAnimating = true
                 }
-                renderDeck(value.deck)
+                renderDeck(store.current.deck)
                 val message = if (value.safeMode) context.getString(moe.kiwi.thinkos.R.string.safe_mode_banner) else value.overlay.message
                 overlayText.text = message.orEmpty()
                 overlayText.visibility = if (message == null) GONE else VISIBLE
@@ -154,6 +155,7 @@ class ThinkStage(
             }
         }
         clock.start()
+        current?.active(true)
     }
     fun stop() {
         collection?.cancel()
@@ -161,6 +163,7 @@ class ThinkStage(
         scope?.cancel()
         scope = null
         clock.stop()
+        current?.active(false)
         ambient.pause()
         current?.tick(SystemClock.uptimeMillis(), Attention.ASLEEP)
         neighbor?.tick(SystemClock.uptimeMillis(), Attention.ASLEEP)
@@ -181,6 +184,7 @@ class ThinkStage(
     }
     /** Language, 12/24-hour setting or time zone changed in Android's settings. */
     fun localeChanged() {
+        layoutDirection = android.text.TextUtils.getLayoutDirectionFromLocale(java.util.Locale.getDefault())
         current?.localeChanged()
         neighbor?.localeChanged()
     }
@@ -203,6 +207,8 @@ class ThinkStage(
         if (preview == null) neighbor?.let(pageHost::removeView)
         neighbor = old
         current = incoming
+        old?.active(false)
+        incoming.active(true)
         pageHost.removeView(boot)
         val vertical = next.vertical && next.page == deck.page
         val direction = if (next.direction == 0) 1 else next.direction
@@ -261,7 +267,7 @@ class ThinkStage(
         neighbor?.let(pageHost::removeView)
         neighbor = null
         current?.apply { translationX = 0f; translationY = 0f }
-        current?.releaseStack(0f, 0f)
+        current?.releaseVertical(0f, 0f)
         axis = 0
         dragDirection = 0
         stackDrag = false
@@ -293,6 +299,7 @@ class ThinkStage(
             system.invalidate()
         }
         governor.activeAnimations = themeAnimating || systemActive || current?.activeAnimations == true || neighbor?.activeAnimations == true
+        governor.ambientAnimations = current?.ambientAnimations == true || neighbor?.ambientAnimations == true
     }
     private fun applyColors(value: Palette) {
         ambient.colors(value)
@@ -407,19 +414,7 @@ class ThinkStage(
                     maintenanceArmed = false
                     disarmLongPress()
                 }
-                if (event.pointerCount == 1) {
-                    if (axis == 0 && max(abs(dx), abs(dy)) > slop) axis = if (abs(dx) > abs(dy)) 1 else 2
-                    if (axis != 0) {
-                        val vertical = axis == 2
-                        offset = if (vertical) dy else dx
-                        stackDrag = vertical && current?.dragStack(downX, downY, offset) == true
-                        if (!stackDrag) {
-                            prepareNeighbor(if (offset < 0) 1 else -1, vertical)
-                            position(current ?: return true, if (neighbor == null) offset * .16f else offset, vertical)
-                            neighbor?.let { position(it, offset + dragDirection * if (vertical) height else width, vertical) }
-                        }
-                    }
-                }
+                if (event.pointerCount == 1) dragTo(dx, dy)
             }
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 disarmLongPress()
@@ -433,11 +428,16 @@ class ThinkStage(
                     velocity = null
                     return true
                 }
+                // A brief fling may have no MOVE beyond slop. Use its final coordinates so it
+                // cannot fall through as a tap, and so release uses the actual finger distance.
+                if (event.actionMasked == MotionEvent.ACTION_UP && event.pointerCount == 1)
+                    dragTo(event.x - downX, event.y - downY)
                 velocity?.addMovement(event)
-                velocity?.computeCurrentVelocity(1000)
+                velocity?.computeCurrentVelocity(1000, ViewConfiguration.get(context).scaledMaximumFlingVelocity.toFloat())
                 val vertical = axis == 2
                 val speed = velocity?.let { if (vertical) it.yVelocity else it.xVelocity } ?: 0f
-                if (stackDrag) current?.releaseStack(if (event.actionMasked == MotionEvent.ACTION_CANCEL) 0f else offset, speed)
+                if (stackDrag) current?.releaseVertical(if (event.actionMasked == MotionEvent.ACTION_CANCEL) 0f else offset,
+                    if (event.actionMasked == MotionEvent.ACTION_CANCEL) 0f else speed)
                 else if (axis != 0) {
                     val extent = if (vertical) height else width
                     val commit = event.actionMasked != MotionEvent.ACTION_CANCEL && neighbor != null && (abs(offset) > extent * .22f || abs(speed) > 700 * resources.displayMetrics.density && offset * speed > 0)
@@ -454,7 +454,7 @@ class ThinkStage(
                         }
                     }
                 } else if (event.actionMasked == MotionEvent.ACTION_UP) {
-                    current?.openAt(event.x, event.y)?.let(router::open)
+                    if (current?.tapAt(event.x, event.y) != true) current?.openAt(event.x, event.y)?.let(router::open)
                     performClick()
                 }
                 axis = 0
@@ -464,6 +464,21 @@ class ThinkStage(
             MotionEvent.ACTION_POINTER_UP -> { handler.removeCallbacks(maintenance); maintenanceArmed = false }
         }
         return true
+    }
+    private fun dragTo(dx: Float, dy: Float) {
+        if (axis == 0 && max(abs(dx), abs(dy)) > slop) {
+            disarmLongPress()
+            axis = if (abs(dx) > abs(dy)) 1 else 2
+        }
+        if (axis == 0) return
+        val vertical = axis == 2
+        offset = if (vertical) dy else dx
+        stackDrag = vertical && current?.dragVertical(downX, downY, offset) == true
+        if (!stackDrag) {
+            prepareNeighbor(if (offset < 0) 1 else -1, vertical)
+            current?.let { position(it, if (neighbor == null) offset * .16f else offset, vertical) }
+            neighbor?.let { position(it, offset + dragDirection * if (vertical) height else width, vertical) }
+        }
     }
     override fun performClick(): Boolean { super.performClick(); return true }
 

@@ -1,0 +1,10 @@
+{
+  "apkSha256": "80170dc544145958a29e13debf7f05e46bc47ca677a62de6528ba6295a28bfbc",
+  "installedApkMatchesBuild": true,
+  "state": "DeviceState(attention=AMBIENT, deck=DeckState(page=gallery.slideshow, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=59681, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=110391, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=51579, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=123958, disabled=false, error=null)]",
+  "restored": {
+    "wifiOn": true,
+    "animatorScaleKeyAbsent": true,
+    "developmentOverrides": []
+  }
+}

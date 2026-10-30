@@ -1,0 +1,9 @@
+{
+  "complete": true,
+  "passed": [
+    "512-item native library result and 300-photo Lua state stay within runtime budgets",
+    "local library, hot replacement, sampled decode and gallery page render without restarting",
+    "30-second enabled-animation AMBIENT sample captured"
+  ],
+  "finalPid": "13299"
+}

@@ -1,0 +1,16 @@
+--------- beginning of main
+10-30 17:14:50.696 30772 30772 I ThinkOS : tzdata 2026e (419 zones)
+10-30 17:14:50.899 30772 30772 I ThinkOS : Runtime started; local mode, safe=false
+10-30 17:14:50.902 30772 30772 I ThinkOS : Activity created; orientation=1
+10-30 17:14:50.926 30772 30791 W ThinkOS : time sync failed (1); retry in 30s
+10-30 17:14:50.976 30772 30772 I ThinkOS : theme=LIGHT lux=null
+10-30 17:14:51.101 30772 30772 I ThinkOS : theme=DARK lux=150.0
+10-30 17:14:51.215 30772 30772 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[]
+10-30 17:14:51.677 30772 30772 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[]
+10-30 17:14:51.696 30772 30792 I ThinkOS : [plugin:clock] loaded 0.3.0; Lua 44926 bytes
+10-30 17:14:51.779 30772 30792 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-30 17:14:52.027 30772 30792 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 38397 bytes
+10-30 17:14:52.110 30772 30772 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[]
+10-30 17:14:52.441 30772 30792 I ThinkOS : [plugin:weather] loaded 0.1.0; Lua 99283 bytes
+10-30 17:14:52.587 30772 30772 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=34258, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=41138, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=101976, disabled=false, error=null)]
+10-30 17:14:53.461 30772 30792 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Unable to resolve host "api.open-meteo.com": No address associated with hostname

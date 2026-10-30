@@ -12,6 +12,7 @@ import moe.kiwi.thinkos.location.LocationProvider
 import moe.kiwi.thinkos.plugin.PluginPage
 import moe.kiwi.thinkos.plugin.PluginRuntime
 import moe.kiwi.thinkos.plugin.PluginWidget
+import moe.kiwi.thinkos.anim.MotionPrefs
 import moe.kiwi.thinkos.settings.AndroidSettingsPersistence
 import moe.kiwi.thinkos.settings.SettingsStore
 import moe.kiwi.thinkos.settings.SystemSettings
@@ -55,6 +56,7 @@ class RuntimeHost(private val context: Context) : PluginRuntime.Callbacks {
     val system = SystemValues(settings)
     val timeSync = moe.kiwi.thinkos.time.TimeSync(context, system, settings)
     val plugins = PluginRuntime(context, this, settings)
+    private val images = moe.kiwi.thinkos.ui.ImageComponents(moe.kiwi.thinkos.image.ImageLoader(context, plugins::imageOwner))
     val router = DeckRouter(context, store, { pluginId, event, args ->
         if (event == "variant" || event == "page.enter") {
             if (args.length() > 1) plugins.setVariant(pluginId, args.optString(1))
@@ -74,6 +76,7 @@ class RuntimeHost(private val context: Context) : PluginRuntime.Callbacks {
         override fun closeSettings() = router.closeSettings()
         override fun settingsInteraction() { router.noteInteraction(); sensors.touch() }
         override fun text(pluginId: String, key: String): String? = plugins.text(pluginId, key)
+        override fun component(context: Context, pluginId: String, definition: JSONObject) = images.create(context, pluginId, definition)
     }
 
     /** Android's language, 12/24-hour or time zone settings changed (broadcast): refresh everything that shows a time. */
@@ -104,7 +107,9 @@ class RuntimeHost(private val context: Context) : PluginRuntime.Callbacks {
     private val observers = linkedSetOf<Observer>()
 
     init {
+        MotionPrefs.clock = system.clockMotion
         settings.addListener { scope, keys ->
+            if (scope == SettingsStore.SYSTEM && SystemSettings.Keys.CLOCK_MOTION in keys) MotionPrefs.clock = system.clockMotion
             if (scope == SettingsStore.SYSTEM && SystemSettings.Keys.ORIENTATION in keys) mainHandler.post { applyOrientationSetting() }
             if (scope == SettingsStore.SYSTEM && SystemSettings.Keys.KIOSK_LOCK in keys) mainHandler.post { observers.toList().forEach { it.onKioskLock(system.kioskLock) } }
         }

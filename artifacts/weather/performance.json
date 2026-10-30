@@ -1,0 +1,37 @@
+{
+  "complete": true,
+  "scenes": {
+    "weather-awake": {
+      "durationSeconds": 120.08,
+      "meanCpuPercent": 29.255,
+      "frames": 3625,
+      "jankyFrames": 2,
+      "jankyPercent": 0.055,
+      "pssMiB": 70.54,
+      "pid": "31599"
+    },
+    "awake": {
+      "durationSeconds": 120.08,
+      "meanCpuPercent": 32.095,
+      "frames": 7214,
+      "jankyFrames": 2,
+      "jankyPercent": 0.028,
+      "pssMiB": 67.41,
+      "pid": "31599",
+      "baselineCpuPercent": 32.112,
+      "cpuGrowthPercent": -0.053
+    },
+    "ambient": {
+      "durationSeconds": 600.07,
+      "meanCpuPercent": 2.916,
+      "frames": 2172,
+      "jankyFrames": 17,
+      "jankyPercent": 0.783,
+      "pssMiB": 73.64,
+      "pid": "31599",
+      "baselineCpuPercent": 2.923,
+      "cpuGrowthPercent": -0.239
+    }
+  },
+  "failures": []
+}

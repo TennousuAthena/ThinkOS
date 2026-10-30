@@ -1,0 +1,150 @@
+{
+  "id": "weather",
+  "name": "@name",
+  "version": "0.1.0",
+  "api": 2,
+  "main": "main.lua",
+  "permissions": [
+    "network",
+    "location"
+  ],
+  "settings": {
+    "temp_unit": {
+      "type": "choice",
+      "label": "@setting.temp_unit",
+      "default": "c",
+      "choices": [
+        {
+          "value": "c",
+          "label": "@unit.c"
+        },
+        {
+          "value": "f",
+          "label": "@unit.f"
+        }
+      ],
+      "group": "@group.display"
+    },
+    "interval": {
+      "type": "choice",
+      "label": "@setting.interval",
+      "default": "15",
+      "choices": [
+        {
+          "value": "10",
+          "label": "@interval.10"
+        },
+        {
+          "value": "15",
+          "label": "@interval.15"
+        },
+        {
+          "value": "30",
+          "label": "@interval.30"
+        },
+        {
+          "value": "60",
+          "label": "@interval.60"
+        }
+      ],
+      "group": "@group.data"
+    },
+    "stale_after": {
+      "type": "number",
+      "label": "@setting.stale_after",
+      "default": 180,
+      "min": 30,
+      "max": 1440,
+      "step": 1,
+      "unit": "min",
+      "group": "@group.data"
+    },
+    "endpoint": {
+      "type": "text",
+      "label": "@setting.endpoint",
+      "default": "https://api.open-meteo.com/v1/forecast",
+      "maxLength": 512,
+      "group": "@group.data",
+      "help": "@help.endpoint"
+    },
+    "retry_initial": {
+      "type": "number",
+      "label": "@setting.retry_initial",
+      "default": 60,
+      "min": 10,
+      "max": 300,
+      "step": 1,
+      "unit": "s",
+      "group": "@group.recovery"
+    },
+    "retry_max": {
+      "type": "number",
+      "label": "@setting.retry_max",
+      "default": 900,
+      "min": 60,
+      "max": 3600,
+      "step": 1,
+      "unit": "s",
+      "group": "@group.recovery"
+    },
+    "clock_retry": {
+      "type": "number",
+      "label": "@setting.clock_retry",
+      "default": 30,
+      "min": 10,
+      "max": 60,
+      "step": 1,
+      "unit": "s",
+      "group": "@group.recovery"
+    },
+    "high_wind": {
+      "type": "number",
+      "label": "@setting.high_wind",
+      "default": 40,
+      "min": 10,
+      "max": 200,
+      "step": 1,
+      "unit": "km/h",
+      "group": "@group.relevance"
+    },
+    "heat": {
+      "type": "number",
+      "label": "@setting.heat",
+      "default": 35,
+      "min": 20,
+      "max": 60,
+      "step": 1,
+      "unit": "°C",
+      "group": "@group.relevance"
+    },
+    "cold": {
+      "type": "number",
+      "label": "@setting.cold",
+      "default": 0,
+      "min": -60,
+      "max": 15,
+      "step": 1,
+      "unit": "°C",
+      "group": "@group.relevance"
+    }
+  },
+  "pages": [
+    {
+      "id": "detail",
+      "view": "views/detail.json",
+      "title": "@title"
+    }
+  ],
+  "widgets": [
+    {
+      "id": "now",
+      "view": "views/now.json",
+      "opens": "detail"
+    }
+  ],
+  "commands": [
+    {
+      "id": "refresh"
+    }
+  ]
+}

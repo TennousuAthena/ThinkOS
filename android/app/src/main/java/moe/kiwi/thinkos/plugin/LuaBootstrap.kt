@@ -32,7 +32,7 @@ local function immutable(t)
 end
 tos={config=immutable(host("config")),json=json}
 tos.on=function(name,fn) assert(type(name)=="string" and type(fn)=="function"); handlers[name]=fn end
-tos.state={set=function(t) assert(type(t)=="table"); host("state.set",t) end,get=function(path) return host("state.get",path or "") end}
+tos.state={set=function(t) assert(type(t)=="table" or type(t)=="string"); host("state.set",t) end,get=function(path) return host("state.get",path or "") end}
 tos.store={get=function(k) return host("store.get",k) end,set=function(k,v) return host("store.set",k,v) end}
 tos.time={now=function() return host("time.now") end,format=function(ms,fmt,tz) if ms==nil then return "—" end; return host("time.format",ms,fmt or "@time",tz) end}
 tos.tz={home=function() return host("tz.home") end,info=function(id) return host("tz.info",id) end}
@@ -48,6 +48,7 @@ local function timer(seconds,fn,repeating,opts)
 end
 tos.timer={after=function(s,fn) return timer(s,fn,false) end,every=function(s,fn,opts) return timer(s,fn,true,opts) end,cancel=function(id) timers[id]=nil; host("timer.cancel",id) end,sleep=function(s) return await("sleep",s) end}
 tos.http={get=function(url,opts) return await("http.get",url,opts) end,post=function(url,body,opts) return await("http.post",url,body,opts) end}
+tos.library={list=function(opts) local text,err=await("library.list",opts); if err then return nil,err end; return json.decode(text) end}
 tos.settings={
   list=function() return host("settings.list") end,
   get=function(scope) return host("settings.get",scope) end,

@@ -1,0 +1,22 @@
+{
+  "complete": true,
+  "passed": [
+    "device renders the real Bing daily image through the OS HTTP/cache pipeline",
+    "tap advances across at least three real Bing photos",
+    "the same complete landscape source is reused in portrait with pan",
+    "offline cold start renders cached Bing metadata and image without Server",
+    "caption-off mode keeps the separate copyright credit visible (screenshot)"
+  ],
+  "archiveRefreshedThisProcess": false,
+  "firstPhoto": "OHR.AutumnCranes",
+  "photosDisplayed": [
+    "OHR.AutumnCranes",
+    "OHR.AveburyStones",
+    "OHR.KuneticeCastle"
+  ],
+  "cacheFiles": "total 2312\n-rw------- 1 u0_a74 u0_a74_cache 339531 2026-10-30 20:56 06a94db5984b9e05acb82feea0a828a30c610cc268b1c24971399fe477c30c65\n-rw------- 1 u0_a74 u0_a74_cache 341114 2026-10-30 21:04 3833dbc07f6fdf45ad6de6173fe62ec5c969018755c3c123d07ebbadb987e5b0\n-rw------- 1 u0_a74 u0_a74_cache 335977 2026-10-30 21:04 4fc4ab136538b52b6f503e15f888f3964ecba1a1bae85123a02a4b2749d957ac\n-rw------- 1 u0_a74 u0_a74_cache 333190 2026-10-30 21:03 69e9f022d6ffc4b220fd5314407e26144ce37fa79a991d1302f26da28d00ad28\n-rw------- 1 u0_a74 u0_a74_cache 331717 2026-10-30 20:55 7161cd0de44030c27163773f1c39e37e140bbf9c49eb64fda3dbbbe284d7b23e\n-rw------- 1 u0_a74 u0_a74_cache 336859 2026-10-30 20:54 80a53fc4cb224c109267bb67bcc0ff9d45c0827cf101f87c0aff0f53d5bc99db\n-rw------- 1 u0_a74 u0_a74_cache 334001 2026-10-30 20:53 8104bd54c1b2b44dde15984273506641a4c55bda97d349110f28af83ae70c2eb\n",
+  "offlineColdStart": "Starting: Intent { cmp=moe.kiwi.thinkos/.MainActivity }\nStatus: ok\nActivity: moe.kiwi.thinkos/.MainActivity\nThisTime: 674\nTotalTime: 674\nWaitTime: 702\nComplete\n",
+  "offlineColdStartMs": 674,
+  "finalPid": "18166",
+  "logcat": "final-logcat.txt"
+}

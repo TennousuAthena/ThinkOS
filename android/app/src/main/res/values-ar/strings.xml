@@ -10,7 +10,7 @@
     <string name="maintenance_diagnostics">التشخيص</string>
     <string name="maintenance_restore_plugins">استعادة الإضافات المدمجة</string>
     <string name="maintenance_reset_settings">إعادة ضبط الإعدادات</string>
-    <string name="maintenance_android_settings">فتح إعدادات Android (إيقاف المراقب 5 دقائق)</string>
+    <string name="maintenance_android_settings">فتح إعدادات Android, إيقاف المراقب 5 دقائق</string>
     <string name="maintenance_exit_safe_mode">الخروج من الوضع الآمن وإعادة التشغيل</string>
     <string name="maintenance_back">رجوع</string>
     <string name="maintenance_restored">تمت استعادة الإضافات المدمجة</string>
@@ -43,7 +43,7 @@
     <string name="setting_group_kiosk">وضع العرض</string>
     <string name="setting_group_time">الوقت</string>
     <string name="setting_theme_mode">السمة</string>
-    <string name="setting_theme_mode_auto">تلقائي (الإضاءة المحيطة)</string>
+    <string name="setting_theme_mode_auto">تلقائي, الإضاءة المحيطة</string>
     <string name="setting_theme_mode_sun">تلقائي (الشروق والغروب)</string>
     <string name="setting_theme_mode_light">فاتح دائمًا</string>
     <string name="setting_theme_mode_dark">داكن دائمًا</string>
@@ -56,19 +56,26 @@
     <string name="setting_display_orientation_auto">حسب المستشعر</string>
     <string name="setting_display_orientation_landscape">أفقي</string>
     <string name="setting_display_orientation_portrait">رأسي</string>
+    <string name="setting_motion_clock">حركة الساعة</string>
+    <string name="setting_motion_clock_none">بدون</string>
+    <string name="setting_motion_clock_roll">تمرير</string>
+    <string name="setting_motion_clock_fade">تلاشي</string>
+    <string name="setting_motion_clock_drop">سقوط</string>
+    <string name="setting_motion_clock_flip">قلب</string>
+    <string name="setting_motion_clock_zoom">تكبير</string>
     <string name="setting_display_brightness_max">أقصى سطوع</string>
     <string name="setting_attention_awake_to_ambient_s">التخفيف بعد عدم الاستخدام لمدة</string>
     <string name="setting_attention_to_asleep_s">وضع السكون بعد غياب أي شخص لمدة</string>
     <string name="setting_attention_engaged_idle_s">إنهاء التفاعل بعد خمول لمدة</string>
     <string name="setting_attention_ambient_page_after_s">عرض الصور بعد التخفيف لمدة</string>
-    <string name="setting_server_url">عنوان Server (فارغ = اكتشاف تلقائي)</string>
+    <string name="setting_server_url">عنوان Server, فارغ = اكتشاف تلقائي</string>
     <string name="setting_server_token">رمز الإقران</string>
-    <string name="setting_kiosk_lock">قفل واجهة النظام (شريط الحالة، الإيماءات، التطبيقات الأخيرة)</string>
-    <string name="setting_time_ntp_servers">خوادم NTP (مفصولة بفواصل)</string>
+    <string name="setting_kiosk_lock">قفل واجهة النظام</string>
+    <string name="setting_time_ntp_servers">خوادم NTP, مفصولة بفواصل</string>
     <string name="setting_time_sync_hour">مزامنة الوقت يوميًا عند</string>
     <string name="setting_group_location">الموقع</string>
     <string name="setting_location_mode">مصدر الموقع</string>
-    <string name="setting_location_mode_auto">مدينة المنطقة الزمنية (تقريبية)</string>
+    <string name="setting_location_mode_auto">مدينة المنطقة الزمنية, تقريبية</string>
     <string name="setting_location_mode_manual">اختيار مكان / إحداثيات</string>
     <string name="setting_location_name">المدينة أو الحي أو المحافظة</string>
     <string name="setting_location_latitude">خط العرض</string>
@@ -82,7 +89,7 @@
     <string name="form_place_empty">لم يتم العثور على أماكن. جرّب اسماً آخر.</string>
     <string name="form_place_error">البحث عبر الإنترنت غير متاح. تُعرض مدن المناطق الزمنية المخزنة على الجهاز فقط.</string>
     <string name="form_place_invalid">لا توجد منطقة زمنية صالحة لهذا المكان.</string>
-    <string name="form_place_attribution">البحث: Open-Meteo · بيانات الأماكن: GeoNames (CC BY 4.0)</string>
+    <string name="form_place_attribution">البحث: Open-Meteo · بيانات الأماكن: GeoNames, CC BY 4.0</string>
     <string name="media_previous">المقطع السابق</string>
     <string name="media_play">تشغيل</string>
     <string name="media_pause">إيقاف مؤقت</string>

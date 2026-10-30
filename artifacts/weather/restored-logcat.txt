@@ -1,0 +1,12 @@
+--------- beginning of main
+10-30 17:35:57.687  2037  2037 I ThinkOS : tzdata 2026e (419 zones)
+10-30 17:35:58.935  2037  2037 I ThinkOS : Runtime started; local mode, safe=false
+10-30 17:35:58.939  2037  2037 I ThinkOS : Activity created; orientation=1
+10-30 17:35:59.034  2037  2037 I ThinkOS : theme=LIGHT lux=null
+10-30 17:35:59.764  2037  2118 I ThinkOS : [plugin:clock] loaded 0.3.0; Lua 44926 bytes
+10-30 17:35:59.853  2037  2118 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-30 17:36:00.105  2037  2118 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 38397 bytes
+10-30 17:36:00.516  2037  2118 I ThinkOS : [plugin:weather] loaded 0.1.0; Lua 98598 bytes
+10-30 17:36:03.793  2037  2118 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-30 17:36:03.866  2037  2117 I ThinkOS : time sync: 0.pool.ntp.org 139.199.214.202 offset=41ms rtt=27ms
+10-30 17:36:05.857  2037  2143 D ThinkOS : [store:weather] persisted coalesced snapshot

@@ -305,7 +305,7 @@ data class DeviceState(
 - 静态组件：`text` / `image` / `list` / `icon` / `progress` / `player`
 - **活组件**：`clock`（`style`: `digital`/`analog`/`solar`/`world`/`float`，`format`、`tz`）——设备本地按 TimeSource 走动，插件不需要每秒更新
 
-图标 `icon.name` 映射到设备内置图标集（天气类图标用 Lottie 动画版本）；`image.url` 可以是插件包内资源（`asset:`）、照片集（`album:`）或 HTTP 地址。
+图标 `icon.name` 映射到设备内置图标集；API 3 的 `image.src` 接受插件 `asset:assets/...`、已授权本地文件或 HTTP(S) 图片（network 权限；公网 HTTPS、私网 HTTP）。Lua 提供清单，OS 管理解码、平移与轮播，见 ADR-024。
 
 **扩展流程**：需要新的版式或组件 → 在 APK 中实现 → 登记到 `shared/schema/plugin/` 与 `06-plugins.md` → 提升运行时 `api` 版本 → 插件才能使用。插件声明了设备不支持的版式时，设备回退到 `stack` 渲染并记录警告。
 
@@ -335,7 +335,7 @@ PluginThread（单线程 HandlerThread，所有 lua_State 都只在这里执行�
 
 - Lua 永远不在主线程执行，插件再慢也不会卡动画。
 - 写法是同步风格（`local res = tos.http.get(url)`），实际不阻塞线程。
-- `_dispatch` / `_timer` 在引导后缓存为注册表引用，事件直接传入类型化参数，不编译调用源码。JNI 用 Map/List/标量互转；JSON 编解码由 C 侧 yyjson 完成。Lua 5.4 使用分代 GC，不再逐事件全量回收。
+- `_dispatch` / `_timer` 在引导后缓存为注册表引用，事件直接传入类型化参数，不编译调用源码。JNI 用 Map/List/标量互转；API 3 的大媒体库结果改为 IO 编 JSON 文本、C 侧解码为表，`tos.state.set` 也支持对象 JSON 文本以避免大清单逐字段 JNI 成本。JSON 编解码由 C 侧 yyjson 完成。Lua 5.4 使用分代 GC，不再逐事件全量回收。
 - 挂起的根协程保留注册表引用，IO 完成后恢复同一个任务；每次恢复重新计预算。实例停止/替换时取消任务，迟到结果丢弃。异步 `start` 成功前保留旧版，失败则回滚。
 
 #### 3.7.3 沙箱与预算
@@ -357,7 +357,7 @@ PluginThread（单线程 HandlerThread，所有 lua_State 都只在这里执行�
 - 插件的声明式视图（`views/*.json`）在加载时编译：版式/模板 → View 树；`{{path | 格式化}}` → 绑定表（路径 → 若干 View 属性）。
 - 插件状态是一棵表（`tos.state`）。脚本修改状态 → 运行时计算变化的路径 → 主线程只更新这些路径对应的 View，并按组件类型选择过渡动画。
 - 绑定只支持路径取值和少量内置格式化（`round`、`time`、`date`、`upper`、`default`），**不支持表达式**——逻辑写在 Lua 里。
-- 没有 Lua 脚本的插件可以用 manifest 里的 `sources`（定时 HTTP 拉取 JSON、读取照片集）直接填充状态（纯声明插件）。
+- 没有 Lua 的插件当前只能提供静态声明（如 home）；`sources` 调度器尚未实现。数据插件使用 `tos.http` / `tos.library.list` 和 `tos.state`，见 `06-plugins.md`。
 
 #### 3.7.5 插件的安装（目录 + 文件清单，ADR-018）
 
@@ -538,10 +538,10 @@ Device Owner 属于系统级操作，按 `07-build-deploy.md` §4.3 交由人工
 | 已安装插件 | `filesDir/plugins/` | — | 当前版本 + 上一版本（回滚用） |
 | 插件存储 | `filesDir/store/<id>.json` | 每插件 256KB | `tos.store` |
 | 设置 | `filesDir/settings/server.json`（Server 下发层）、`filesDir/settings/local.json`（设备上的修改） | 每插件 ≤64KiB | APK / schema 默认值 ← Server 下发 ← 设备上的修改（§3.18） |
-| 照片集 | `filesDir/albums/<album>/` | 1.5GB（可配） | Server 下发，已按横竖裁好；离线照常轮播 |
+| 照片集 | `getExternalFilesDirs()[0]/Pictures/` | 本地文件，不另建副本 | 应用私有外部目录，免 READ_EXTERNAL_STORAGE；M2 下发亦使用此根；OS 保留完整画面 |
 | 最后画面快照 | `filesDir/snapshot/` | 每页 1 份 | 冷启动先画上次的画面，插件启动后再更新 |
-| 网络图片 | OkHttp 磁盘缓存 | 50MB | — |
-| 图片内存缓存 | LruCache | 32MB | — |
+| 网络图片 | `cacheDir/images` | 50MiB / 512 项 | URL 哈希缓存；单张≤8MiB；缓存先读，原子提交和访问时间淘汰，显示中 pin；不依赖 Server |
+| 图片内存 | 当前 + 转场两张 | 每张 ≤2MP / 窗口像素×1.5 | 无全尺寸 LruCache，离页清空引用 |
 | 待回报的指标/日志 | `filesDir/outbox/` | 5MB，丢弃最旧 | Server 恢复后补传 |
 
 冷启动顺序：显示快照（< 1s 出画面）→ 恢复呼吸 → 启动插件运行时（内置插件优先）→ 插件状态到达后差量过渡 → 后台尝试同步。冷启动 < 3s 不依赖网络。
@@ -550,10 +550,11 @@ Device Owner 属于系统级操作，按 `07-build-deploy.md` §4.3 交由人工
 
 | 线程 | 用途 | 规则 |
 |---|---|---|
-| Main | Reducer、View、MotionClock 绘制、绑定更新 | 单帧预算 12ms；不做解码、不做 IO、不跑 Lua |
+| Main | Reducer、View、MotionClock 绘制、绑定更新 | 单帧预算 12ms；图片平移为独立的原生连续属性动画；不做解码、不做 IO、不跑 Lua |
 | Plugin（单线程） | 所有 Lua 状态 | 每次执行/恢复 ≤50ms CPU +200ms 墙钟；IO 等待必须 yield |
 | `Dispatchers.IO` | 网络、磁盘、同步、插件的异步 API | — |
-| Decode（单线程） | 照片解码 | 照片集已裁好尺寸；`inBitmap` 复用 2 块 bitmap |
+| `ThinkOS-ImageIO`（2 线程） | 通用网络图片下载与缓存 | 同 URL 合并，取消请求，沿用媒体网络策略；慢网络不堵塞本地/缓存读取 |
+| `ThinkOS-ImageDecode`（单线程） | 本地/包内/缓存图片解码 | 边界校验、采样、EXIF 旋转/镜像；不在主线程解码；当前未用 inBitmap 复用 |
 | Camera（HandlerThread） | Camera2 回调 | 只拷贝 Y 平面，立即归还 Image |
 | Vision（单线程） | 运动/人脸/手势推理 | 忙时直接丢帧，绝不排队 |
 | Audio-FFT（单线程） | 频谱计算 | 33ms 一次 |

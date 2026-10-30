@@ -184,6 +184,9 @@ type SchemaImage struct {
 	Tap *string `json:"tap,omitempty"`
 	Weight *float64 `json:"weight,omitempty"`
 	Interval any `json:"interval,omitempty"`
+	Pan_speed any `json:"pan_speed,omitempty"`
+	Pan_seconds any `json:"pan_seconds,omitempty"`
+	Pan_direction *string `json:"pan_direction,omitempty"`
 }
 
 type SchemaCarousel struct {
@@ -195,8 +198,12 @@ type SchemaCarousel struct {
 	Fit *string `json:"fit,omitempty"`
 	Pan any `json:"pan,omitempty"`
 	Shuffle any `json:"shuffle,omitempty"`
-	Tap *string `json:"tap,omitempty"`
 	Weight *float64 `json:"weight,omitempty"`
+	Pan_speed any `json:"pan_speed,omitempty"`
+	Caption *string `json:"caption,omitempty"`
+	Caption_hold any `json:"caption_hold,omitempty"`
+	Pan_seconds any `json:"pan_seconds,omitempty"`
+	Pan_direction *string `json:"pan_direction,omitempty"`
 }
 
 type SchemaManifest struct {
@@ -258,9 +265,9 @@ type SchemaCommand struct {
 	Gesture *string `json:"gesture,omitempty"`
 }
 
-const PluginAPI = 2
+const PluginAPI = 3
 
-var renderComponentTypes = map[string]int{"text": 1, "icon": 1, "clock": 1, "form": 1, "progress": 2, "chart": 2, "list": 2, "daylight": 2, "moon": 2}
+var renderComponentTypes = map[string]int{"text": 1, "icon": 1, "clock": 1, "form": 1, "progress": 2, "chart": 2, "list": 2, "daylight": 2, "moon": 2, "image": 3, "carousel": 3}
 
 var renderLayouts = map[string]int{"stacks": 1, "focus": 1, "form": 1, "split": 2, "stage": 2}
 

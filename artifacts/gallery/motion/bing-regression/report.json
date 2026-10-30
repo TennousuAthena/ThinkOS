@@ -1,0 +1,22 @@
+{
+  "complete": true,
+  "passed": [
+    "device renders the real Bing daily image through the OS HTTP/cache pipeline",
+    "tap advances across at least three real Bing photos",
+    "the same complete landscape source is reused in portrait with pan",
+    "offline cold start renders cached Bing metadata and image without Server",
+    "caption-off mode keeps the separate copyright credit visible (screenshot)"
+  ],
+  "archiveRefreshedThisProcess": false,
+  "firstPhoto": "OHR.AutumnCranes",
+  "photosDisplayed": [
+    "OHR.AutumnCranes",
+    "OHR.AveburyStones",
+    "OHR.KuneticeCastle"
+  ],
+  "cacheFiles": "total 4296\n-rw------- 1 u0_a74 u0_a74_cache 339531 2026-10-30 21:44 06a94db5984b9e05acb82feea0a828a30c610cc268b1c24971399fe477c30c65\n-rw------- 1 u0_a74 u0_a74_cache 341114 2026-10-30 21:55 3833dbc07f6fdf45ad6de6173fe62ec5c969018755c3c123d07ebbadb987e5b0\n-rw------- 1 u0_a74 u0_a74_cache 335977 2026-10-30 21:55 4fc4ab136538b52b6f503e15f888f3964ecba1a1bae85123a02a4b2749d957ac\n-rw------- 1 u0_a74 u0_a74_cache 338792 2026-10-30 21:26 53a964041c8683196b4ba47bc10c1a7bb4daf7df328c08414009c0bbdfd1ec3b\n-rw------- 1 u0_a74 u0_a74_cache 326712 2026-10-30 21:53 5a30f9d7ed3f1dac6d869d0d6321a1d353c42111285dab594328c740576a8e23\n-rw------- 1 u0_a74 u0_a74_cache 333190 2026-10-30 21:55 69e9f022d6ffc4b220fd5314407e26144ce37fa79a991d1302f26da28d00ad28\n-rw------- 1 u0_a74 u0_a74_cache 331717 2026-10-30 21:43 7161cd0de44030c27163773f1c39e37e140bbf9c49eb64fda3dbbbe284d7b23e\n-rw------- 1 u0_a74 u0_a74_cache 340562 2026-10-30 21:26 76f1969f064c001a8f9639699c86b978aebd2f945b60f6fec2e8e44dcc8ee2f7\n-rw------- 1 u0_a74 u0_a74_cache 336859 2026-10-30 21:40 80a53fc4cb224c109267bb67bcc0ff9d45c0827cf101f87c0aff0f53d5bc99db\n-rw------- 1 u0_a74 u0_a74_cache 334001 2026-10-30 21:40 8104bd54c1b2b44dde15984273506641a4c55bda97d349110f28af83ae70c2eb\n-rw------- 1 u0_a74 u0_a74_cache 332955 2026-10-30 21:53 9f7f3873d6edeabb90d2055a25190ca78e9a595c576cc4bcc3f393467685eadc\n-rw------- 1 u0_a74 u0_a74_cache 340732 2026-10-30 21:43 a3c3ff9656b87c6d66a6c8fa5314499f51508a2bee8bb25c7623797c4c42dda9\n-rw------- 1 u0_a74 u0_a74_cache 339504 2026-10-30 21:52 d8ba82d6538ca2bf43760792a3fe3221597565a476a49aacec72772e3939062b\n",
+  "offlineColdStart": "Starting: Intent { cmp=moe.kiwi.thinkos/.MainActivity }\nStatus: ok\nActivity: moe.kiwi.thinkos/.MainActivity\nThisTime: 467\nTotalTime: 467\nWaitTime: 488\nComplete\n",
+  "offlineColdStartMs": 467,
+  "finalPid": "23895",
+  "logcat": "final-logcat.txt"
+}

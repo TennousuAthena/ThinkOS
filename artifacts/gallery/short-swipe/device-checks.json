@@ -1,0 +1,14 @@
+{
+  "serial": "HUA0BWUT",
+  "pid": "29549",
+  "apkSha256": "d1b06abc9e40c863fbaa990257762a7a6259e0e317671fd9b7c94933f16faec9",
+  "installedSha256": "d1b06abc9e40c863fbaa990257762a7a6259e0e317671fd9b7c94933f16faec9",
+  "settings": {
+    "animator_duration_scale": "null",
+    "wifi_on": "1"
+  },
+  "testPackageRemoved": true,
+  "developmentOverridesRemoved": true,
+  "state": "DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=39021, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=109419, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=50679, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=147037, disabled=false, error=null)]",
+  "runtimeCrash": false
+}

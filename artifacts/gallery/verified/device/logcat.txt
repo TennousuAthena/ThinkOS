@@ -1,0 +1,35 @@
+--------- beginning of main
+10-30 19:32:58.108 14688 14688 I ThinkOS : tzdata 2026e (419 zones)
+10-30 19:32:58.319 14688 14688 I ThinkOS : Runtime started; local mode, safe=false
+10-30 19:32:58.328 14688 14688 I ThinkOS : Activity created; orientation=1
+10-30 19:32:58.344 14688 14715 W ThinkOS : time sync failed (1); retry in 30s
+10-30 19:32:59.154 14688 14688 I ThinkOS : Configuration changed without Activity recreation: 2
+10-30 19:32:59.202 14688 14688 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[]
+10-30 19:32:59.202 14688 14716 I ThinkOS : [plugin:clock] loaded 0.3.0; Lua 32228 bytes
+10-30 19:32:59.534 14688 14716 I ThinkOS : [plugin:gallery] loaded 0.1.0; Lua 42043 bytes
+10-30 19:32:59.597 14688 14716 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-30 19:32:59.788 14688 14716 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-30 19:33:00.124 14688 14716 I ThinkOS : [plugin:weather] loaded 0.1.0; Lua 99588 bytes
+10-30 19:33:00.385 14688 14716 I ThinkOS : [plugin:gallery] loaded 0.1.0; Lua 42137 bytes
+10-30 19:33:01.139 14688 14716 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Unable to resolve host "api.open-meteo.com": No address associated with hostname
+10-30 19:33:01.214 14688 14688 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=clock.face, variant=world, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=40466, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.1.0, bytes=44313, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=100464, disabled=false, error=null)]
+10-30 19:33:02.842 14688 14716 I ThinkOS : [plugin:gallery] Local gallery scanned 300 photos
+10-30 19:33:02.843 14688 14716 W ThinkOS : [plugin:gallery] Local gallery reached its item or state-size budget
+10-30 19:33:03.126 14688 14688 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=41369, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.1.0, bytes=746255, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=106957, disabled=false, error=null)]
+10-30 19:33:03.179 14688 14688 D ThinkOS : [image:gallery] displayed file:/storage/emulated/0/Android/data/moe.kiwi.thinkos/files/Pictures/ThinkOSGalleryTest-87109/01-wide.png 2146x715
+10-30 19:33:03.514 14688 14688 I ThinkOS : attention=AMBIENT
+10-30 19:33:28.369 14688 14715 W ThinkOS : time sync failed (2); retry in 60s
+10-30 19:34:01.199 14688 14716 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Unable to resolve host "api.open-meteo.com": No address associated with hostname
+10-30 19:34:28.403 14688 14715 W ThinkOS : time sync failed (3); retry in 120s
+10-30 19:36:01.262 14688 14716 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Unable to resolve host "api.open-meteo.com": No address associated with hostname
+10-30 19:36:28.454 14688 14715 W ThinkOS : time sync failed (4); retry in 240s
+10-30 19:38:04.499 14688 14716 I ThinkOS : [plugin:gallery] Local gallery scanned 300 photos
+10-30 19:38:04.499 14688 14716 W ThinkOS : [plugin:gallery] Local gallery reached its item or state-size budget
+10-30 19:40:28.506 14688 14715 W ThinkOS : time sync failed (5); retry in 480s
+10-30 19:41:01.313 14688 14716 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Unable to resolve host "api.open-meteo.com": No address associated with hostname
+10-30 19:43:05.955 14688 14716 I ThinkOS : [plugin:gallery] Local gallery scanned 300 photos
+10-30 19:43:05.956 14688 14716 W ThinkOS : [plugin:gallery] Local gallery reached its item or state-size budget
+10-30 19:43:06.161 14688 14716 I ThinkOS : [plugin:gallery] loaded 0.1.0; Lua 42043 bytes
+10-30 19:43:06.240 14688 14688 I ThinkOS : Configuration changed without Activity recreation: 1
+10-30 19:43:06.300 14688 14716 I ThinkOS : [plugin:gallery] Local gallery scanned 3 photos
+10-30 19:43:06.375 14688 14688 I ThinkOS : attention=ASLEEP

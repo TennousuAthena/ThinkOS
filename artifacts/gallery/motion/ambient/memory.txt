@@ -1,0 +1,52 @@
+Applications Memory Usage (in Kilobytes):
+Uptime: 27699001 Realtime: 27699001
+
+** MEMINFO in pid 21182 [moe.kiwi.thinkos] **
+                   Pss  Private  Private  SwapPss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------
+  Native Heap    22046    21996        0        0    27136    23413     3722
+  Dalvik Heap     5135     5088        0        0     8693     2549     6144
+ Dalvik Other     2324     2324        0        0                           
+        Stack      520      520        0        0                           
+       Ashmem        2        0        0        0                           
+      Gfx dev    16660    16660        0        0                           
+    Other dev        8        0        8        0                           
+     .so mmap     2344      284      448        0                           
+    .apk mmap      483        0       16        0                           
+    .ttf mmap      164        0      132        0                           
+    .dex mmap     7412        4     5504        0                           
+    .oat mmap      569        0      152        0                           
+    .art mmap     3378     2824      276        0                           
+   Other mmap     1472        4      856        0                           
+   EGL mtrack    12540    12540        0        0                           
+    GL mtrack    21916    21916        0        0                           
+      Unknown      544      528        0        0                           
+        TOTAL    97517    84688     7392        0    35829    25962     9866
+ 
+ App Summary
+                       Pss(KB)
+                        ------
+           Java Heap:     8188
+         Native Heap:    21996
+                Code:     6540
+               Stack:      520
+            Graphics:    51116
+       Private Other:     3720
+              System:     5437
+ 
+               TOTAL:    97517       TOTAL SWAP PSS:        0
+ 
+ Objects
+               Views:       34         ViewRootImpl:        1
+         AppContexts:        5           Activities:        1
+              Assets:        4        AssetManagers:        5
+       Local Binders:       11        Proxy Binders:       21
+       Parcel memory:        5         Parcel count:       20
+    Death Recipients:        0      OpenSSL Sockets:        0
+            WebViews:        0
+ 
+ SQL
+         MEMORY_USED:        0
+  PAGECACHE_OVERFLOW:        0          MALLOC_SIZE:        0
+ 

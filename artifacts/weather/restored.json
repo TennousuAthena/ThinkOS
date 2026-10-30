@@ -1,0 +1,11 @@
+{
+  "installedApkSha256": "96c9b48b8f0dc87fdb3f40bac98abedd95394df4e4ef7937c8c5648d947bc9d0",
+  "matchesLocalBuild": true,
+  "currentPid": "2037",
+  "wifiOn": "1",
+  "defaultHome": "priority=0 preferredOrder=0 match=0x108000 specificIndex=-1 isDefault=true\nmoe.kiwi.thinkos/.MainActivity",
+  "developmentOverridesEmpty": true,
+  "probeReversePortRemoved": true,
+  "probeStoreRemoved": true,
+  "runtimeErrors": false
+}

@@ -749,13 +749,16 @@ static int text_load(lua_State *L) {
     size_t len;
     const char *s = luaL_checklstring(L, 1, &len);
     const char *name = luaL_optstring(L, 2, "plugin chunk");
+    /* Inspect the arguments before loading pushes the compiled function. With three
+       arguments that function occupies slot 4; it must not become its own _ENV. */
+    int has_environment = lua_gettop(L) >= 4;
     int status = luaL_loadbufferx(L, s, len, name, "t");
     if (status != LUA_OK) {
         lua_pushnil(L);
         lua_insert(L, -2);
         return 2;
     }
-    if (!lua_isnone(L, 4)) {
+    if (has_environment) {
         lua_pushvalue(L, 4);
         lua_setupvalue(L, -2, 1);
     }

@@ -6,6 +6,16 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class RenderGeometryTest {
+    @Test fun photoClockUsesFixedCornersAndStaysInsideTinyViewports() {
+        assertEquals(RenderGeometry.Box(1036, 24, 1256, 80), RenderGeometry.photoClock(1280, 800, 1f))
+        assertEquals(RenderGeometry.Box(556, 24, 776, 80), RenderGeometry.photoClock(800, 1280, 1f))
+        for ((w, h) in listOf(0 to 0, 2 to 3, 10 to 5, -1 to -2, Int.MAX_VALUE to Int.MAX_VALUE)) {
+            for (d in listOf(2f, Float.NaN, Float.POSITIVE_INFINITY, Float.MAX_VALUE)) {
+                val box = RenderGeometry.photoClock(w, h, d)
+                assertTrue(box.left >= 0 && box.top >= 0 && box.right <= w.coerceAtLeast(0) && box.bottom <= h.coerceAtLeast(0))
+            }
+        }
+    }
     @Test
     fun focusReservesOnlyPresentHeaderAndFooterBands() {
         assertEquals(RenderGeometry.Box(20, 20, 1260, 780), RenderGeometry.slot("focus", "content", 1280, 800, 1f))

@@ -1,0 +1,180 @@
+{
+  "pid": 12291,
+  "tick_hz": 100,
+  "unit": "percent of one CPU core",
+  "samples": [
+    {
+      "elapsed_s": 10.09,
+      "cpu_pct": 53.915
+    },
+    {
+      "elapsed_s": 20.1,
+      "cpu_pct": 54.346
+    }
+  ],
+  "elapsed_s": 20.1,
+  "mean_cpu_pct": 54.129,
+  "max_cpu_pct": 54.346,
+  "persistent_threads": [
+    {
+      "tid": 12326,
+      "name": "RenderThread",
+      "cpu_pct": 44.179
+    },
+    {
+      "tid": 12291,
+      "name": "oe.kiwi.thinkos",
+      "cpu_pct": 10.05
+    },
+    {
+      "tid": 12298,
+      "name": "Jit thread pool",
+      "cpu_pct": 0.249
+    },
+    {
+      "tid": 12318,
+      "name": "ThinkOS-Plugin",
+      "cpu_pct": 0.249
+    },
+    {
+      "tid": 12309,
+      "name": "Profile Saver",
+      "cpu_pct": 0.1
+    },
+    {
+      "tid": 12299,
+      "name": "Signal Catcher",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12300,
+      "name": "JDWP",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12302,
+      "name": "ReferenceQueueD",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12303,
+      "name": "FinalizerDaemon",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12304,
+      "name": "FinalizerWatchd",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12305,
+      "name": "HeapTaskDaemon",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12306,
+      "name": "Binder:12291_1",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12307,
+      "name": "Binder:12291_2",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12308,
+      "name": "Binder:12291_3",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12317,
+      "name": "ThinkOS-TimeSyn",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12327,
+      "name": "queued-work-loo",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12330,
+      "name": "RenderThread",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12367,
+      "name": "FileObserver",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12368,
+      "name": "hwuiTask1",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12369,
+      "name": "ThinkOS-Astro",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12370,
+      "name": "ThinkOS-PluginI",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12380,
+      "name": "ThinkOS-PluginI",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12401,
+      "name": "ThinkOS-ImageDe",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12433,
+      "name": "RenderThread",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12434,
+      "name": "RenderThread",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12435,
+      "name": "RenderThread",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12436,
+      "name": "RenderThread",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12437,
+      "name": "RenderThread",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12438,
+      "name": "RenderThread",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12439,
+      "name": "RenderThread",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12440,
+      "name": "RenderThread",
+      "cpu_pct": 0.0
+    },
+    {
+      "tid": 12450,
+      "name": "ThinkOS-PluginI",
+      "cpu_pct": 0.0
+    }
+  ]
+}

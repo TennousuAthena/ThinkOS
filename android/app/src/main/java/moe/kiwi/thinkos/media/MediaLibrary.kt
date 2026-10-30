@@ -14,6 +14,7 @@ import android.os.Process
 import android.system.Os
 import android.system.OsConstants
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.net.URI
@@ -341,8 +342,12 @@ private class AndroidLibraryMetadata(private val access: LibraryAccess) {
                 if (bounds.outWidth <= 0 || bounds.outHeight <= 0) null
                 else {
                     val rotation = try {
-                        val orientation = ExifInterface(descriptor.fileDescriptor).getAttributeInt(
-                            ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+                        // API 27's FD constructor duplicates the descriptor into a non-owning
+                        // FileInputStream. Use the stream constructor and let our PFD own closing.
+                        Os.lseek(descriptor.fileDescriptor, 0, OsConstants.SEEK_SET)
+                        val orientation = FileInputStream(descriptor.fileDescriptor).use { stream ->
+                            ExifInterface(stream).getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+                        }
                         when (orientation) {
                             ExifInterface.ORIENTATION_ROTATE_90, ExifInterface.ORIENTATION_TRANSPOSE -> 90
                             ExifInterface.ORIENTATION_ROTATE_180, ExifInterface.ORIENTATION_FLIP_VERTICAL -> 180

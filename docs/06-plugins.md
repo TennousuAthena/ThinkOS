@@ -14,10 +14,10 @@
 | 贡献 | 是什么 | 例子 |
 |---|---|---|
 | **page（页面）** | 一个整屏页面，选用设备内置的页面版式 | `gallery.slideshow`、`music.nowplaying`、`clock.face` |
-| **widget（卡片）** | 放进首页小组件栈的卡片 | `weather.today`、`music.mini` |
+| **widget（卡片）** | 放进首页小组件栈的卡片 | `weather.now`、`music.mini` |
 | **alert（通知）** | 叠层通知，可唤醒屏幕 | `notify` 插件转发的手机通知 |
 | **command（指令）** | 可被点击、手势、语音、远程触发的动作 | `music.next`（“下一首”） |
-| **settings（设置项）** | 在 manifest 里声明，OS 自动生成设置页 | `weather` 的城市、`clock` 的 24 小时制 |
+| **settings（设置项）** | 在 manifest 里声明，OS 自动生成设置页 | `weather` 的温度单位、`clock` 的秒数显示 |
 
 **页面即插件**：设备上左右翻动的每一页都是某个插件的 page；首页 `home.main` 本身也是插件，它是一个 `stacks` 页面，两个栈里放的是其他插件的 widget。
 
@@ -52,29 +52,18 @@ APK 根索引 `assets/plugins/index.json` 为 `{plugins:[上述完整索引…]}
 
 ```json
 {
-  "id": "weather",
-  "name": "天气",
-  "version": "1.2.0",
-  "api": 1,
-  "icon": "assets/icon.png",
-  "main": "main.lua",
-  "permissions": ["network"],
+  "id": "weather", "name": "@name", "version": "0.1.0", "api": 2,
+  "main": "main.lua", "permissions": ["network", "location"],
   "settings": {
-    "city": { "type": "text",   "label": "城市", "default": "Hong Kong" },
-    "lat":  { "type": "number", "label": "纬度", "default": 22.3,  "min": -90,  "max": 90,  "step": 0.1 },
-    "lon":  { "type": "number", "label": "经度", "default": 114.2, "min": -180, "max": 180, "step": 0.1 },
-    "unit": { "type": "choice", "label": "温度单位", "default": "c",
-              "choices": [ { "value": "c", "label": "摄氏" }, { "value": "f", "label": "华氏" } ] }
+    "temp_unit": { "type": "choice", "label": "@setting.temp_unit", "default": "c",
+      "choices": [{ "value": "c", "label": "°C" }, { "value": "f", "label": "°F" }] },
+    "interval": { "type": "choice", "label": "@setting.interval", "default": "15",
+      "choices": [{ "value": "10", "label": "10 min" }, { "value": "15", "label": "15 min" },
+                  { "value": "30", "label": "30 min" }, { "value": "60", "label": "60 min" }] }
   },
-  "pages": [
-    { "id": "detail", "view": "views/detail.json", "title": "天气" }
-  ],
-  "widgets": [
-    { "id": "today", "view": "views/today.json", "opens": "detail" }
-  ],
-  "commands": [
-    { "id": "refresh", "phrases": ["刷新天气"] }
-  ]
+  "pages": [{ "id": "detail", "view": "views/detail.json", "title": "@title" }],
+  "widgets": [{ "id": "now", "view": "views/now.json", "opens": "detail" }],
+  "commands": [{ "id": "refresh" }]
 }
 ```
 
@@ -82,7 +71,7 @@ APK 根索引 `assets/plugins/index.json` 为 `{plugins:[上述完整索引…]}
 |---|---|---|
 | `id` | 是 | 全局唯一，小写字母数字与 `-`；也是页面/卡片/指令的命名空间 |
 | `name` / `version` | 是 | 显示名 / 语义化版本。用 Git 分发时，`version` 必须等于 git tag 去掉前缀 `v` 后的值（§12.2） |
-| `api` | 是 | 需要的运行时 API 版本（当前为 `1`）；高于设备支持的版本时不会被安装 |
+| `api` | 是 | 需要的运行时 API 版本（当前支持 `1` / `2` / `3`）；高于设备支持的版本时不会被安装 |
 | `icon` | 否 | 包内相对路径 |
 | `main` | 否 | 入口 Lua 文件；省略即纯声明插件 |
 | `permissions` | 否 | 见 §6.3；未声明即拒绝 |
@@ -92,7 +81,7 @@ APK 根索引 `assets/plugins/index.json` 为 `{plugins:[上述完整索引…]}
 | `commands[]` | 否 | `id`；可选 `phrases`（语音固定短语）、`gesture`（`wave`/`left`/`right`/`fist`，冲突以配置为准） |
 | `sources` | 否 | 纯声明插件的数据来源，见 §5 |
 
-页面、卡片、指令的全名都是 `<plugin>.<id>`，例如 `weather.today`、`music.next`。
+页面、卡片、指令的全名都是 `<plugin>.<id>`，例如 `weather.now`、`music.next`。
 
 ## 4. 声明式视图
 
@@ -104,13 +93,13 @@ APK 根索引 `assets/plugins/index.json` 为 `{plugins:[上述完整索引…]}
 |---|---|
 | 页面版式 `layout` | API 1：`stacks` / `focus` / 设置专用 `form`（§11.3）；API 2：`split` / `stage` |
 | 卡片模板 `template` | 已实现 `glance`；M1 媒体与列表模板待实现 |
-| 组件 `type` | API 1：`text` / `icon` / `clock`，`form` 只用于设置版式；API 2：`progress` / `chart` / `list` / `daylight` / `moon`，媒体词汇见下 |
+| 组件 `type` | API 1：`text` / `icon` / `clock`，`form` 只用于设置版式；API 2：`progress` / `chart` / `list` / `daylight` / `moon`；API 3：`image` / `carousel` |
 | `clock.style` | `digital` / `analog` / `solar` / `world` / `float` |
 | `text.style` | `display` / `title` / `body` / `caption` |
 
 各版式、模板有哪些槽位以 `shared/schema/plugin/` 为准。需要新的版式或组件属于「设备端功能迭代」：先在 APK 实现、提升 `api` 版本，插件才能使用。
 
-设备同时接受 API 1 和 2。使用新增词汇、组件组、`tap` 或 `weight` 的插件必须声明 `"api": 2`；安装器与打包器都检查，不会让 API 1 插件静默使用新版词汇。版本表来自 `layouts.json` 的 `x-thinkos-api`，并生成到 Kotlin / Go。
+设备同时接受 API 1、2 和 3。使用 API 2 词汇、组件组、`tap` 或 `weight` 的插件至少声明 `"api": 2`；图片组件至少声明 `"api": 3`；安装器与打包器都检查，不会让 API 1 插件静默使用新版词汇。版本表来自 `layouts.json` 的 `x-thinkos-api`，并生成到 Kotlin / Go。
 
 API 2 的固定组件与内容字段：
 
@@ -122,15 +111,48 @@ API 2 的固定组件与内容字段：
 | `daylight` | `path` 指向 `tos.astro.sun()` 的派生状态；复用日光表盘，不自行读取位置 |
 | `moon` | `path` 指向 `tos.astro.moon()` 或其 `phase`；显示月相及照亮比例；`hemisphere` 为 `north/south` 或状态绑定，南半球水平镜像 |
 
-用户于2026-10-30指定先测试UI。`controls/video/image/carousel` 的候选定义暂存在 schema 中，但尚未完成宿主接线，因此不在当前可安装的组件词汇中。设备在安装时拒绝这些声明，避免页面进入后因缺渲染器崩溃；媒体与图片的完整功能留待后续。
+用户后续已授权相册与通用图片接口，并明确要求微软每日一图。API 3 开放 `image` / `carousel` 与 `tos.library.list`，支持本地、包内和 HTTP(S) 图片；gallery 默认设备直连 Bing，不依赖 Server。`controls/video` 与 `tos.media.*` 继续暂缓，安装器仍拒绝这些媒体组件。
 
-所有组件可带固定事件名 `tap` 与数值 `weight`（0…100）。点击发送 `tos.on("tap", function(name, index) ... end)`，其中 `name` 是声明值；列表行还给出从 1 开始的 `index`。OS 保留横向翻页手势，列表区域的纵向拖动用于滚动。`daylight/moon` 只消费派生数据，绘制本身不要求 `location` 权限。
+除点击由 OS 保留的 `carousel` 外，组件可带固定事件名 `tap`；所有组件可带数值 `weight`（0…100）。点击发送 `tos.on("tap", function(name, index) ... end)`，其中 `name` 是声明值；列表行还给出从 1 开始的 `index`。OS 保留横向翻页手势，列表区域的纵向拖动用于滚动。`daylight/moon` 只消费派生数据，绘制本身不要求 `location` 权限。
 
 `weight` 只分配 OS 组件组剩余高度：文本、图标、进度默认按内容高度；时钟、表单、图表、列表、天文组件默认共享剩余高度。显式 0 使用内容高度。`focus` 的槽位以及新版式槽位可放单个组件或 `{"children":[...]}` 组件组，不支持任意嵌套。版式固定：`split` 的 `lead/main` 横屏左右约 40/60、竖屏上下约 40/60；`stage` 的 `stage` 全出血，`over/under` 覆盖其上。插件不能设置像素、颜色、CSS 或自定义动画。
 
-当前 `icon.name` 精确支持 `sun`、`moon`、`clock`、`calendar`；未知名称显示明确的占位符，不按子串猜测。布局槽位及 stack/header/content/footer 角色从同一份 schema 生成。
+当前 `icon.name` 精确支持 `sun`、`moon`、`clock`、`calendar`、`unknown`，以及天气词汇 `clear-day` / `clear-night` / `partly-day` / `partly-night` / `cloud` / `fog` / `rain` / `shower` / `snow` / `thunder`；未知名称显示明确的占位符，不按子串猜测。布局槽位及 stack/header/content/footer 角色从同一份 schema 生成。
 
 `clock.sun` 为状态路径，例如 `"sun": "sun"`，读取插件通过 `tos.astro.sun()` 取得的派生数据。solar 表盘以真实太阳中天为圆环顶部，用真实日出日落和三层曙暮光标出白昼区间；无有效天文数据时只显示空环与时间，不推测日出日落。OS 绘图只接收派生事件，不把位置反向暴露给插件。
+
+### 4.1.1 API 3：图片与轮播
+
+这两个是通用 OS 组件；第三方插件和 `gallery` 使用同一接口。插件给出地址和文字，不接触图片字节、Bitmap、原生 View 或帧循环。
+
+| 组件 | 字段 |
+|---|---|
+| `image` | `src`（可绑定字符串）；`fit: "pan" / "contain"`，默认 `pan`；`pan`（默认 true）；`interval`（单图或单程最短停留秒数，默认 30）；`pan_speed`（1–120 dp/s，默认 45）；`pan_seconds`（单程动画最短秒数，默认 12，0.1–120）；`pan_direction: random/forward/reverse`（可绑定，默认 random）；`tap` / `weight` |
+| `carousel` | `items` 为状态数组路径，接受 `"photos"` 或 `"{{photos}}"`；必填 `interval`（秒）和 `duration`（转场毫秒）；同上 `fit/pan/pan_speed/pan_seconds/pan_direction`；`transition: fade/slide/zoom/random`，默认 fade；`shuffle`；`caption: auto/tap/off`，默认 auto；`caption_hold`（1–60 秒，默认 6）；`weight` |
+
+`carousel` 数组最多 300 项，每项 `{src, id?, title?, credit?}`。`id` 缺省取 `src`，重复 id 只取第一项；`title/credit` 各最多 512 字符。更新或重排数组保留当前 id；删除当前项时切到首张。离页再进入在当前进程内记住位置。`credit` 是独立常驻的署名，`caption=off` 或标题淡出都不会隐藏它；首页预览也应单独声明署名文字。
+
+照片叠层使用固定 OS 版式：`clock.style=float` 在 stage 的 over/header 中固定右上角，24dp 边距、数字右对齐，保留白字与窄黑边；不再在容器中间摆放或独立漂移。carousel 标题和完整署名合为底部文字组，边距 24dp、横屏最多 560dp，标题与署名相隔 8dp；独立的 under 状态提示按实际文字高度避让并对齐。没有新增插件对齐/像素样式选项。
+
+`pan` **不永久裁掉任何画面**：保持比例、按一条边贴合窗口，从溢出轴一端移到另一端；水平平移按 RTL 反向。OS 根据速度上限延长停留，完整扫过后才自动换图。平移由 Android 原生属性动画连续插值，使用亚像素 translation 与正弦缓入缓出，跟随显示刷新；不再以待机 5fps 手动推进图片坐标。每张图默认随机选择正/反方向，forward 按阅读方向，reverse 交换两端。单程默认至少 12 秒，速度上限 45dp/s；若提前走完便停留到 interval，过宽的图延长动画和停留，确保完整扫过。单张图片在停留结束后平滑反向。动画自身不要求提高 OS 其它层的场景节拍；离页即取消。`fit=contain`、`pan=false` 或系统减少动画时，整张缩放居中，纯色留边；没有 Ken Burns 放大。`cover/smart` 不是当前 API 3 词汇。
+
+上滑轮播查看清单下一项（Bing 清单按时间倒序，因此是更早的图片），下滑返回上一项；手动浏览在两端回弹，不跨端循环。图片随手指上下移动，时间与其它 stage 叠层固定。短拖动取消；按距离/速度提交后原生缓动归位。缺图先显示加载预览，松手时仍未下载完则保持当前跟手位置，解码完成后沿同一方向继续滑入；反向拖动/离页撤销旧请求，不接受迟到结果。手动浏览重置自动轮播停留时间；自动轮播仍循环。短促手势需达到系统 paging touch slop，速度不能单独把极小位移判成翻页；快速反向甩动可撤销尚未落定的切换。归位/回弹通过可中断的阻尼运动驱动，新触摸从当前实际位置接管；预览请求与清理回调按代际撤销，不强制跳到动画终点。等待图片解码时保持当前拖动位置，解码后继续同一方向；抬手用最终坐标，避免缺少 MOVE 的快滑误判成点击。过渡中的轻触只显示说明，不重复启动新的切换。点击轮播 = 下一张并显示字幕；`carousel` 不接受 `tap` 字段（该组件保留自身点击）。长按设置、左右翻页仍由 OS 接管。当前可见页面才启动图片任务；邻页预览不加载/计时，离页、ASLEEP 或 Activity 停止即取消任务、停止属性动画并清空位图引用。减少动画时不平移或缩放转场。
+
+解码在线程 `ThinkOS-ImageDecode` 顺序进行：单文件 ≤8MiB，长边 ≤8192、≤32MP；先读边界后采样，ARGB_8888，完整处理 EXIF 的旋转/镜像。交付位图 ≤窗口像素的 1.5 倍、≤2MP、长边 ≤4096；只保留当前/转场中的两张，不另建全尺寸内存缓存。无效/未授权图片跳过；全部失败停在背景，可点击重试。
+
+HTTP(S) 图片需要所属插件声明 `network` 权限。OS 使用通用 `MediaHttpClient`，2 个 ImageIO 线程负责下载；本地/缓存读取与解码不排在网络请求之后。响应必须成功、Content-Type 为 image、实际字节≤8MiB，并在提交缓存前通过图片边界检查。每次重定向校验地址，禁止 HTTPS 降级，公网只允许 HTTPS，明文 HTTP 仅私网。离页/停用插件时取消网络和解码，旧代际结果丢弃。
+
+缓存位于应用内部 `cacheDir/images`，URL 的 SHA256 作键；最多 50MiB / 512 文件。下载写临时文件，校验后原子提交；同 URL 并发合并。按访问时间淘汰，显示或解码中的文件持有 lease，不会被清理；不缓存失败或过大的响应。缓存先读，命中后不联网；URL 应标识不可变内容，更新图片须提供新 URL；Android 仍可回收 cacheDir，所以离线只保证已下载且尚未被回收的照片。
+
+```json
+{"layout":"stage","slots":{"stage":{
+  "type":"carousel","items":"photos","interval":"{{config.interval}}",
+  "duration":"{{config.duration}}","fit":"pan","pan":"{{config.pan}}",
+  "pan_speed":"{{config.pan_speed}}","pan_seconds":"{{config.pan_seconds}}",
+  "pan_direction":"{{config.pan_direction}}","transition":"{{config.transition}}",
+  "caption":"{{config.caption}}"
+}}}
+```
 
 ### 4.2 绑定语法
 
@@ -149,18 +171,18 @@ API 2 的固定组件与内容字段：
 
 列表用 `"items": "{{queue}}"` 绑定整个数组，数组元素的字段在 `item` 模板里用 `{{.title}}` 引用。行内也可读取 `{{config.unit}}` 等插件全局状态；未带点前缀的路径先查行元素再查全局。数组绑定只读取完整数组路径，不执行表达式。
 
-图片地址可以是：`asset:icon.png`（包内资源）、`album:family`（照片集）、`http(s)://…`。
+图片地址接受 `asset:assets/photo.png`（所属插件包内资源）、绝对本地路径或 `file:///…`（需要 `library` 权限并通过 OS 目录授权）、`https://…` 或私网 `http://…`（需要 `network` 权限）。URL 不接受用户凭据或 fragment；不接受 `album:`、`content:`。图片字节始终由 OS 处理，`tos.http` 仅用于来源元数据。
 
 ### 4.3 示例
 
-**卡片** `views/today.json`：
+**卡片** `views/now.json`：
 
 ```json
 {
   "template": "glance",
   "children": [
-    { "type": "text", "value": "{{temp | round}}°", "style": "display" },
-    { "type": "text", "value": "{{desc | default \"—\"}} · 湿度 {{humidity}}%", "style": "body" },
+    { "type": "text", "value": "{{temperature}}", "style": "display" },
+    { "type": "text", "value": "{{summary}}", "style": "body" },
     { "type": "icon", "name": "{{icon}}" }
   ],
   "relevance": "{{relevance}}"
@@ -189,24 +211,14 @@ API 2 的固定组件与内容字段：
 
 ### 4.4 相关度与情绪色
 
-- **相关度**：卡片可绑定 `relevance`（0–1）。用户 5 分钟内没有手动翻栈时，栈自动转到相关度最高的卡片（例如即将开始的日程、正在播放的音乐）。运行时会对相关度频繁跳动的插件降权。
-- **情绪色**：页面可绑定 `mood`（`"#RRGGBB"`，通常取照片或封面的主色），设备按当前主题映射到安全色域，用来染色背景呼吸场。
+- **相关度（调度待实现）**：卡片可绑定 `relevance`（0–1）。用户 5 分钟内没有手动翻栈时，栈自动转到相关度最高的卡片（例如即将开始的日程、正在播放的音乐）。运行时会对相关度频繁跳动的插件降权。
+- **情绪色（映射待实现）**：页面可绑定 `mood`（`"#RRGGBB"`，通常取照片或封面的主色），设备按当前主题映射到安全色域，用来染色背景呼吸场。
 
 ## 5. 纯声明插件与 `sources`
 
-没有逻辑的插件可以不写 Lua，用 `sources` 定时取数据填进状态：
+没有逻辑的插件可以不写 Lua（如 home），直接使用静态声明与其它插件的 widget 引用。
 
-```json
-"sources": {
-  "now": {
-    "http": "https://api.open-meteo.com/v1/forecast?latitude={{config.lat}}&longitude={{config.lon}}&current=temperature_2m",
-    "every": 600,
-    "into": "raw"
-  }
-}
-```
-
-拉到的 JSON 放进状态 `raw`，视图里用 `{{raw.current.temperature_2m | round}}` 绑定。`sources` 支持 `http`（需 `network` 权限）和 `album`（需 `photos` 权限）。需要换算、判断或组合数据时，改用 Lua。
+**当前没有 `sources` 调度器**，manifest schema 也不接受该字段。原先的 `sources.http/sources.album` 属于候选设计，不是现有接口；`photos` 权限名已移除。数据插件现在用 `tos.http` 或 `tos.library.list` 获取清单，通过 `tos.state` 提交给固定组件；本地相册不需要 Server。
 
 ## 6. Lua API（`tos.*`）
 
@@ -242,7 +254,7 @@ tos.on("playback", function(st) ... end)        -- 仅播放器持有者收到
 
 | API | 权限 | 挂起 | 说明 |
 |---|---|---|---|
-| `tos.state.set(tbl)` | — | 否 | 合并写入状态；变化的路径会更新视图（50ms 内合并） |
+| `tos.state.set(t)` | — | 否 | 合并状态并触发视图更新；API 3 也可传对象 JSON 文本，适合大清单；仍禁止写 `config`，状态总量 ≤256KiB |
 | `tos.state.get(path)` | — | 否 | 读状态 |
 | `tos.config` | — | — | 只读表：本插件所有设置项的当前生效值（manifest 默认值 ← Server 下发 ← 设备修改，见 §11.2）。插件不能写，值变化时收到 `config` 事件 |
 | `tos.settings.list()` | `system.settings` | 否 | 列出所有有设置项的范围：`[{scope, name}]`，`scope` 为 `"system"` 或插件 id |
@@ -264,7 +276,8 @@ tos.on("playback", function(st) ... end)        -- 仅播放器持有者收到
 | `tos.astro.seasons(year)` | — | 否 | 当年二分二至的 UTC 毫秒时间戳，支持 1950–2050 |
 | `tos.page.focus(page, {live=bool})` / `release(page)` | — | 否 | 请求切到本插件页面，由 DeckRouter 仲裁；`live` 需页面声明 `live` |
 | `tos.alert{…}`（待实现） | `alert` | — | 本轮仅测试 debug 模拟通知界面，未接插件 API |
-| `tos.media.*` / `tos.library.list(opts)`（待接线） | `media` / `library` | — | 队列与媒体库核心已有代码；宿主接线和实际播放按用户要求暂缓 |
+| `tos.library.list(opts)` | `library` | 是 | 枚举本地媒体，返回 `{items,truncated,scanned,directory}` 或 `nil,err`；见 §6.6 |
+| `tos.media.*`（待接线） | `media` | — | 队列与播放器核心已有代码，宿主接线和实际播放继续暂缓 |
 | `tos.chime(name)`（计划） | `alert` | — | 内置提示音，尚未实现 |
 | `tos.server.call(name, args)`（M2） | `server` | 是 | 可选 Server 服务，尚未实现 |
 | `tos.server.subscribe(topic, fn)`（M2） | `server` | — | 可选 Server 推送，尚未实现 |
@@ -301,62 +314,69 @@ tos.on("playback", function(st) ... end)        -- 仅播放器持有者收到
 
 太阳使用截断 VSOP87D，月球使用 Schlyter 摄动模型，季节使用 Meeus 第27章；ΔT固定69.2秒，适用于2020年代的分钟级展示。位置搜索服务仅辅助配置；断网或无 Server 时全部天文计算正常。精度和实测见后续验证记录。
 
-## 7. 完整示例：天气插件
-
-`main.lua`：
+### 6.6 本地媒体库（API 3）
 
 ```lua
-local cfg = tos.config
-
-local ICONS = { [0] = "sun", [1] = "sun-cloud", [2] = "cloud", [3] = "cloud",
-                [61] = "rain", [63] = "rain", [71] = "snow" }
-
-local function refresh()
-  local url = string.format(
-    "https://api.open-meteo.com/v1/forecast?latitude=%s&longitude=%s"
-    .. "&current=temperature_2m,relative_humidity_2m,weather_code", cfg.lat, cfg.lon)
-  local res, err = tos.http.get(url)           -- 挂起，不阻塞
-  if not res or res.status ~= 200 then
-    tos.log.warn("weather fetch failed", err or res.status)
-    return                                     -- 保留上次的数据
+-- manifest: api=3, permissions=["library"]
+local result, err = tos.library.list{kind="image", recursive=true}
+if result then
+  local photos = tos.json.decode("[]")
+  for i, item in ipairs(result.items) do
+    if i > 300 then break end
+    photos[#photos+1] = {id=item.src, src=item.src, title=item.title}
   end
-  local cur = tos.json.decode(res.body).current
-  local temp = cur.temperature_2m
-  if cfg.unit == "f" then temp = temp * 9 / 5 + 32 end
-  tos.state.set{
-    temp      = temp,
-    humidity  = cur.relative_humidity_2m,
-    icon      = ICONS[cur.weather_code] or "cloud",
-    desc      = cfg.city,
-    updated   = tos.time.now(),
-    relevance = 0.3,
-  }
-  tos.store.set("last", tos.state.get(""))     -- 离线重启后先显示上次的数据
+  tos.state.set(tos.json.encode{photos=photos})
+else
+  tos.log.warn(err)
 end
-
-tos.on("start", function()
-  local last = tos.store.get("last")
-  if last then tos.state.set(last) end
-  refresh()
-  tos.timer.every(600, refresh)
-end)
-
--- 用户在设置页改了城市 / 经纬度 / 单位：立即用新值刷新
-tos.on("config", function(c)
-  cfg = c
-  refresh()
-end)
-
-tos.on("command", function(name)
-  if name == "refresh" then refresh() end
-end)
 ```
 
-配合 §3 的 manifest 和 §4.3 的 `views/today.json` 即为一个完整插件。Server 关机后它继续在设备上每 10 分钟直接请求天气 API；长按天气页或天气卡片就能改城市和单位，**这个设置页插件作者一行 UI 代码都没写**。
+`opts` 只接受 `kind: image/audio/video`、可选绝对路径 `dir` 和布尔 `recursive`（默认 false）。省略目录时取应用外部私有 `Pictures/Music/Movies`；空私有目录返回空数组，不扫描共享盘兜底。image 项含 `src/url/title/mime` 与可读取到的 `width/height/rotation`；宽高已按 EXIF 方向修正；不可读取的可选值可能是 `tos.json.null`，与 `tos.json.decode` 的 null 语义相同。格式 jpg/jpeg/png/webp/gif（首帧）/bmp；API 27 不支持 HEIC。
+
+扫描在 PluginIO 执行，结果由 OS 编成 JSON 文本跨 JNI，C 侧解码后仍返回相同的 Lua 表。大清单可用 `tos.state.set(tos.json.encode{photos=photos})` 提交，避免数千次逐字段 JNI 往返；编码文本与表补丁采用相同的 config 隔离、原子合并和 256KiB 上限。Lua 挂起后回到原插件线程恢复；停止/替换插件时取消，迟到结果丢弃。硬预算：≤512 项、≤8192 个目录条目、递归深度≤16、文本≤1MiB；命中预算 `truncated=true`。`scanned` 包括被跳过的条目；`directory` 是最终授权的绝对目录。
+
+OS 在枚举和最终打开文件时都重新授权；不允许应用内部配置目录、其它 App 私有目录或逃逸符号链接。当前 manifest 没有 `READ_EXTERNAL_STORAGE`，仅使用应用私有外部目录，**共享目录会返回错误**，不弹权限窗、不修改 Device Owner。未来单独接共享授权流程；`library` 插件权限本身不等于 Android 的存储读取授权。
+
+开发送图（不需要 Server）：
+
+```bash
+adb shell mkdir -p /sdcard/Android/data/moe.kiwi.thinkos/files/Pictures
+adb push photo.jpg /sdcard/Android/data/moe.kiwi.thinkos/files/Pictures/
+```
+
+gallery 最多 300 项，另以保守的 180KiB 清单预算给设置/预览留出状态空间；超长路径会进一步减少项数。默认每 300 秒重扫，也可发插件 `refresh` 命令；显示选项全在 manifest 设置 schema 中。选本地来源时只扫描本地目录，空目录显示提示。
+
+### 6.7 相册来源：微软 Bing 每日一图
+
+`plugins/gallery/sources/bing.lua` 只处理清单；main.lua 经公开 `tos.http.get / tos.locale / tos.store / tos.timer / tos.state` 调度，不包含图片下载私有接口。默认 `source=bing`，可改 `local` 或 `all`（每日图与本地交错）。设置都在 manifest schema：市场自动/手选、刷新默认 6 小时、历史默认 30（1–90）、重试、显示和本地扫描选项。
+
+- 无缓存时延期首次请求，先取 `idx=0`，再取 `idx=7`，每次最多 8 项；有缓存时立即渲染，未过刷新间隔不联网。手动 refresh 重新取两批。每批独立保存，后一批失败不丢首批。
+- `tos.locale()` 的 `language/region/script` 映射市场；简体中文地区用 zh-CN，繁体及没有本地化的语言用 en-US；支持 en-GB、ja-JP、de-DE、fr-FR、es-ES、pt-BR 手选。
+- 使用受限的 `/th?id=OHR.…` urlbase 构造 `_1920x1080.jpg`；横竖屏共用同张原图，交给 OS 平移保留完整内容。按图名去重、fullstartdate 排序；title 为空/Info 时从 copyright 提取标题，完整 copyright 另作常驻 credit。默认跳过显式 wp=false，此标志不作为许可证明。
+- 元数据以 JSON 文本保存至 tos.store，历史数和 180KiB 保守预算共同约束；跨市场/endpoint 不混用缓存。图片缓存归 OS。失败保留旧清单，按设置指数退避；校时前等待，ASLEEP 不发起新刷新；来源/市场变化先撤销旧代际再进行异步 IO。
+- 首次离线且没有缓存时显示可重试的提示；已有数据时保留可用照片。Server 下发/管理、自定义 JSON 源、其它公共图源继续暂缓。
+
+## 7. 完整实现：天气插件
+
+源码见 [`plugins/weather/`](../plugins/weather/manifest.json)。卡片 `weather.now` 使用 `glance`，点击进入 `weather.detail` 的原生 `split` 页面：当前温度、体感/湿度/风、24 点温度面积图和可滚动的 5 日预报。所有图标、主题、布局和动画由 OS 绘制。设置、状态和事件只走公开 `tos.*`，无需 Server。
+
+- 地点只来自 `tos.location.get()`，在系统设置中编辑；天气设置不重复保存坐标。温度始终按摄氏、风速按 km/h 请求，在本地切换 °C/°F 与 km/h/mph；更改单位和语言不会联网。
+- 默认 [Open-Meteo Forecast API](https://open-meteo.com/en/docs)，`forecast_days=5`、`timezone=auto`、`timeformat=unixtime`。小时与更新时间使用原始 UTC 秒转毫秒、响应时区及命名格式；日预报边界跨 DST 仍使用响应固定偏移，因此加该偏移还原名义日期，在 UTC 以 `@weekday` 显示，避免星期重复。
+- `forecast.lua` 校验全部必需字段、数组长度/时间步长、有限数值与温度范围，整份通过才替换旧快照。`codes.lua` 映射 WMO 类别、日夜图标和情绪色，未知码明确显示未知天气。11 种语言都有完整词条。
+- `start` 同步读缓存、立即渲染，再安排 1 秒后的首个请求。缓存保留原始摄氏数据，作为 JSON 文本写入 `tos.store`；C 编解码避免大数组逐字段跨 JNI 传输。支持早期对象形态缓存，损坏缓存丢弃。
+- 请求挂起不阻塞插件线程；单飞并合并重入；位置/接口变更使旧请求失效。默认 15 分钟刷新，失败按 1→2→5→15 分钟退避，保留并标注上次数据；ASLEEP 停止刷新，唤醒后按剩余有效期恢复。未校时不显示相对时间，默认 30 秒重试，可信时间恢复后下一分钟补拉。
+- `stale_after` 默认 180 分钟；断网、过期与换地点都有明确文案。重试时长、接口地址和关注阈值均来自 manifest 设置 schema。点击详情的更新时间或发送 `refresh` 指令可手动刷新。
+- 卡片显示 Open-Meteo.com，详情附 CC BY 4.0；[使用条款](https://open-meteo.com/en/terms)与[署名许可](https://open-meteo.com/en/licence)适用。免费接口供本项目的个人非商业用途。
+
+相关度与 mood 已发布为状态。自动相关度轮换及 mood 背景映射仍是 OS 后续能力，当前没有消费者；不把状态绑定声明当作已实现效果。第二页 `weather.sky` 和降雨提醒未实现，后者依赖 `tos.alert`。
+
+验证与复现见 [`20-weather-handoff.md`](20-weather-handoff.md) 的续作记录。
 
 ## 8. 页面编排配置
 
-页面顺序、角色、首页两个栈放什么，写在 Server 的 `config.toml`，随期望状态下发（APK 内置一份默认值，Server 不在时使用）。这部分是**部署配置**而不是设备设置项：设备上的设置页不编辑它。
+**当前设备实现**：角色来自 manifest 的 `pages[].roles`；目录按 home、sleep、其它 page key 排序，settings 不进入左右翻页。AMBIENT 延时从系统设置读取，切首个 ambient 页；NIGHT 排除 ambient 页并退回 sleep。home 的栈内容来自 `plugins/home/views/main.json` 中的 widget 引用，安装新的 widget 不会自动添加它。
+
+下面保留的是 **M2 候选部署草图，当前没有 Server 下发接线**；`deck.roles` 不是正在生效的设备接口。未来实现需先统一共享 schema，不能绕过 manifest 角色与设置契约。
 
 ```toml
 [device.default.deck]
@@ -368,16 +388,15 @@ ambient = "gallery.slideshow"
 sleep   = "clock.face"
 
 [device.default.deck.home]       # home.main 的两个卡片栈（横屏左/右，竖屏上/下）
-left  = ["clock.now", "weather.today"]
+left  = ["clock.now", "weather.now"]
 right = ["music.mini", "gallery.preview"]
 
 [device.default.plugins.weather] # 页面级设置的下发值（§11.2 的“Server 下发”层）
-city = "Hong Kong"
-lat  = 22.3
-lon  = 114.2
+temp_unit = "c"
+interval = "15"
 ```
 
-新插件安装后若未出现在配置中，其页面追加到 deck 末尾、卡片追加到右栈末尾。需要安装哪些插件、从哪个仓库装，另在 `config.toml` 的 `[[plugins]]` 里声明，见 §12.3。
+当前设备新增页面会按上述规则重新排序；卡片必须在 home 视图中明确引用。M2 的安装来源候选配置见 §12.3。
 
 ## 9. 开发与调试
 
@@ -395,8 +414,8 @@ lon  = 114.2
 | `home` | `main`（`stacks`，角色 home） | — | 无（纯声明） | — |
 | `clock` | `face`（`focus` + 活组件 clock，变体 数字/指针/日光/世界，角色 sleep） | `now` / `calendar` | 有（日期、时区、日照数据） | `location`；设置为显示秒与世界城市，12/24小时跟随系统 |
 | `settings` | `form`（`form`，角色 settings，不在翻页序列里） | — | 有 | `system.settings`（系统插件，固定安装，见 §11.3） |
-| `weather`（待实现） | 目标：详情页 | 目标：天气卡片 | 待实现 | `network` / `location` |
-| `gallery`（待实现） | 目标：相册轮播 | 目标：预览卡片 | 待实现 | `library` |
+| `weather` | `detail`（24 小时 + 5 日） | `now` | `refresh` | `network` / `location` |
+| `gallery` | 相册轮播 | 预览卡片 | 默认直连 Bing 每日一图，可选本地或合并；离线缓存 | `library` / `network` |
 | `music`（待实现） | 目标：正在播放 | 目标：迷你卡片 | 待实现 | `media` / `library` / `network` |
 | `notify`（仅 UI 预览） | debug 模拟预览 | — | 未接收或轮询消息 | HTTP 监听按用户要求暂缓 |
 
@@ -411,7 +430,7 @@ lon  = 114.2
 | 级别 | 谁声明 | `scope` | 例子 |
 |---|---|---|---|
 | 系统级 | OS 自己：`shared/schema/settings/system.json`，清单见 `04-ui-spec.md` §9 | `system` | 主题模式、夜间模式、方向锁定、亮度上限、变暗时间、Server 地址 |
-| 页面级 | 插件 manifest 的 `settings` | 插件 id | 天气城市、时钟 24 小时制、相册的轮播间隔 |
+| 页面级 | 插件 manifest 的 `settings` | 插件 id | 天气温度单位、时钟秒数、相册的轮播间隔 |
 
 页面级设置**以插件为单位**：长按某个页面，打开的是它所属插件的设置；长按首页栈里的某张卡片，打开的是该卡片所属插件的设置——所谓“组件级设置”就是所属插件的设置。首页两个栈里放什么、页面的先后顺序不是设置项，属于部署配置（§8）。页面的**变体**（上下滑切换的表盘、相簿等）也不是设置项，保持现有的 DeckRouter 记录方式。
 

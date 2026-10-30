@@ -16,6 +16,32 @@ sys.path.insert(0, str(ROOT / 'shared' / 'gen'))
 import schema_tools as tools
 
 class PluginPackageTests(unittest.TestCase):
+    def test_api_three_gallery_exposes_bing_and_local_through_shared_interfaces(self):
+        manifest, _ = packages.validate_plugin(ROOT / 'plugins/gallery')
+        self.assertEqual(3, manifest['api'])
+        self.assertEqual(['library', 'network'], manifest['permissions'])
+        self.assertEqual('bing', manifest['settings']['source']['default'])
+        self.assertEqual({'bing', 'local', 'all'}, {x['value'] for x in manifest['settings']['source']['choices']})
+        self.assertEqual('https://www.bing.com/HPImageArchive.aspx', manifest['settings']['endpoint']['default'])
+        self.assertEqual(12, manifest['settings']['pan_seconds']['default'])
+        self.assertEqual('random', manifest['settings']['pan_direction']['default'])
+        tools.validate_view({'layout': 'stage', 'slots': {'stage': {
+            'type': 'image', 'src': 'https://www.bing.com/photo.jpg', 'pan_seconds': 12, 'pan_direction': 'random'
+        }}}, 3)
+        for name in ('slideshow', 'preview'):
+            view = json.loads((ROOT / 'plugins/gallery/views' / (name+'.json')).read_text())
+            tools.validate_view(view, 3)
+            with self.assertRaises(tools.ValidationError): tools.validate_view(view, 2)
+        for component in [
+            {'type': 'image', 'src': '{{cover}}', 'fit': 'cover'},
+            {'type': 'carousel', 'items': 'photos', 'interval': 30, 'duration': 800, 'tap': 'private'},
+            {'type': 'image', 'src': '{{cover}}', 'pan_seconds': 0},
+            {'type': 'image', 'src': '{{cover}}', 'pan_direction': 'arbitrary'},
+            {'type': 'video'}, {'type': 'controls'},
+        ]:
+            with self.assertRaises(tools.ValidationError):
+                tools.validate_view({'layout': 'stage', 'slots': {'stage': component}}, 3)
+
     def test_native_component_fixture_uses_api_two_without_location_permission(self):
         manifest, _ = packages.validate_plugin(ROOT / 'tools/tests/fixtures/component-probe')
         self.assertEqual(2, manifest['api'])
@@ -60,7 +86,7 @@ class PluginPackageTests(unittest.TestCase):
         path.write_text(json.dumps(data))
 
     def test_builtin_packages_validate_and_are_reproducible(self):
-        for name in ('home', 'clock', 'settings'):
+        for name in ('home', 'clock', 'weather', 'gallery', 'settings'):
             first, digest = packages.package_plugin(ROOT / 'plugins' / name, self.root / 'a')
             second, again = packages.package_plugin(ROOT / 'plugins' / name, self.root / 'b')
             self.assertEqual(digest, again)
@@ -149,7 +175,7 @@ class PluginPackageTests(unittest.TestCase):
         self.assertEqual(list((device / 'files/dev-plugins').iterdir()), [device / 'files/dev-plugins/clock'])
 
     def test_new_api_is_rejected(self):
-        self.manifest(lambda data: data.update(api=3))
+        self.manifest(lambda data: data.update(api=4))
         with self.assertRaises(packages.ValidationError): packages.validate_plugin(self.plugin)
 
     def test_traversal_reference_is_rejected(self):

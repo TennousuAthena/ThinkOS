@@ -10,7 +10,7 @@
     <string name="maintenance_diagnostics">Диагностика</string>
     <string name="maintenance_restore_plugins">Восстановить встроенные плагины</string>
     <string name="maintenance_reset_settings">Сбросить настройки</string>
-    <string name="maintenance_android_settings">Открыть настройки Android (сторожевой таймер на паузе 5 минут)</string>
+    <string name="maintenance_android_settings">Открыть настройки Android, сторожевой таймер на паузе 5 минут</string>
     <string name="maintenance_exit_safe_mode">Выйти из безопасного режима и перезапустить</string>
     <string name="maintenance_back">Назад</string>
     <string name="maintenance_restored">Встроенные плагины восстановлены</string>
@@ -43,7 +43,7 @@
     <string name="setting_group_kiosk">Киоск</string>
     <string name="setting_group_time">Время</string>
     <string name="setting_theme_mode">Тема</string>
-    <string name="setting_theme_mode_auto">Автоматически (по освещению)</string>
+    <string name="setting_theme_mode_auto">Автоматически, по освещению</string>
     <string name="setting_theme_mode_sun">Автоматически (восход и закат)</string>
     <string name="setting_theme_mode_light">Всегда светлая</string>
     <string name="setting_theme_mode_dark">Всегда тёмная</string>
@@ -56,19 +56,26 @@
     <string name="setting_display_orientation_auto">По датчику</string>
     <string name="setting_display_orientation_landscape">Альбомная</string>
     <string name="setting_display_orientation_portrait">Книжная</string>
+    <string name="setting_motion_clock">Анимация часов</string>
+    <string name="setting_motion_clock_none">Нет</string>
+    <string name="setting_motion_clock_roll">Прокрутка</string>
+    <string name="setting_motion_clock_fade">Затухание</string>
+    <string name="setting_motion_clock_drop">Падение</string>
+    <string name="setting_motion_clock_flip">Переворот</string>
+    <string name="setting_motion_clock_zoom">Масштаб</string>
     <string name="setting_display_brightness_max">Максимальная яркость</string>
     <string name="setting_attention_awake_to_ambient_s">Затемнять после бездействия</string>
     <string name="setting_attention_to_asleep_s">Спящий режим, если рядом никого</string>
     <string name="setting_attention_engaged_idle_s">Завершать взаимодействие после бездействия</string>
     <string name="setting_attention_ambient_page_after_s">Показывать фото после затемнения на</string>
-    <string name="setting_server_url">Адрес Server (пусто = найти автоматически)</string>
+    <string name="setting_server_url">Адрес Server, пусто = найти автоматически</string>
     <string name="setting_server_token">Токен сопряжения</string>
-    <string name="setting_kiosk_lock">Заблокировать интерфейс системы (строка состояния, жесты, недавние)</string>
-    <string name="setting_time_ntp_servers">NTP-серверы (через запятую)</string>
+    <string name="setting_kiosk_lock">Заблокировать интерфейс системы</string>
+    <string name="setting_time_ntp_servers">NTP-серверы, через запятую</string>
     <string name="setting_time_sync_hour">Ежедневная синхронизация времени в</string>
     <string name="setting_group_location">Местоположение</string>
     <string name="setting_location_mode">Источник местоположения</string>
-    <string name="setting_location_mode_auto">Город часового пояса (примерно)</string>
+    <string name="setting_location_mode_auto">Город часового пояса, примерно</string>
     <string name="setting_location_mode_manual">Выбрать место / координаты</string>
     <string name="setting_location_name">Город, район или округ</string>
     <string name="setting_location_latitude">Широта</string>
@@ -82,7 +89,7 @@
     <string name="form_place_empty">Места не найдены. Попробуйте другое название.</string>
     <string name="form_place_error">Онлайн-поиск недоступен. Показаны только города часовых поясов, сохранённые на устройстве.</string>
     <string name="form_place_invalid">Для этого места нет подходящего часового пояса.</string>
-    <string name="form_place_attribution">Поиск: Open-Meteo · Места: GeoNames (CC BY 4.0)</string>
+    <string name="form_place_attribution">Поиск: Open-Meteo · Места: GeoNames, CC BY 4.0</string>
     <string name="media_previous">Предыдущая композиция</string>
     <string name="media_play">Воспроизвести</string>
     <string name="media_pause">Пауза</string>

@@ -1,0 +1,98 @@
+{
+  "complete": false,
+  "passed": [
+    "native card and detail fit both orientations in LIGHT",
+    "native card and detail fit both orientations in DARK",
+    "native card and detail fit both orientations in NIGHT",
+    "native detail rebinds ar with localized dates and layout direction",
+    "native detail rebinds zh-CN with localized dates and layout direction",
+    "native forecast list scrolls to the fifth day",
+    "long press on weather card opens its schema settings and unit changes immediately"
+  ],
+  "screens": {
+    "home-landscape-light": [
+      1280,
+      800
+    ],
+    "detail-landscape-light": [
+      1280,
+      800
+    ],
+    "home-portrait-light": [
+      800,
+      1280
+    ],
+    "detail-portrait-light": [
+      800,
+      1280
+    ],
+    "home-landscape-dark": [
+      1280,
+      800
+    ],
+    "detail-landscape-dark": [
+      1280,
+      800
+    ],
+    "home-portrait-dark": [
+      800,
+      1280
+    ],
+    "detail-portrait-dark": [
+      800,
+      1280
+    ],
+    "home-landscape-night": [
+      1280,
+      800
+    ],
+    "detail-landscape-night": [
+      1280,
+      800
+    ],
+    "home-portrait-night": [
+      800,
+      1280
+    ],
+    "detail-portrait-night": [
+      800,
+      1280
+    ],
+    "detail-landscape-ar": [
+      1280,
+      800
+    ],
+    "detail-portrait-ar": [
+      800,
+      1280
+    ],
+    "detail-landscape-zh-CN": [
+      1280,
+      800
+    ],
+    "detail-portrait-zh-CN": [
+      800,
+      1280
+    ],
+    "detail-day-five": [
+      1280,
+      800
+    ],
+    "card-settings": [
+      1280,
+      800
+    ],
+    "home-fahrenheit": [
+      1280,
+      800
+    ],
+    "failed-screen": [
+      800,
+      1280
+    ]
+  },
+  "uiPid": "27570",
+  "failure": "Command '['adb', '-s', 'HUA0BWUT', 'shell', '-T', 'cat /sdcard/thinkos-weather-ui.xml']' returned non-zero exit status 1.",
+  "settingsRestored": true,
+  "wifiRestored": true
+}

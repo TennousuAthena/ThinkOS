@@ -1,0 +1,22 @@
+{
+  "pid": 13299,
+  "tick_hz": 100,
+  "unit": "percent of one CPU core",
+  "samples": [
+    {
+      "elapsed_s": 10.09,
+      "cpu_pct": 8.821
+    },
+    {
+      "elapsed_s": 20.18,
+      "cpu_pct": 6.442
+    },
+    {
+      "elapsed_s": 30.09,
+      "cpu_pct": 6.357
+    }
+  ],
+  "elapsed_s": 30.09,
+  "mean_cpu_pct": 7.212,
+  "max_cpu_pct": 8.821
+}

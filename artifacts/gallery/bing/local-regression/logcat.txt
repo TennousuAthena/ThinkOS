@@ -1,0 +1,24 @@
+--------- beginning of main
+10-30 21:03:04.832 17782 17782 I ThinkOS : tzdata 2026e (419 zones)
+10-30 21:03:05.044 17782 17782 I ThinkOS : Runtime started; local mode, safe=false
+10-30 21:03:05.046 17782 17782 I ThinkOS : Activity created; orientation=1
+10-30 21:03:05.060 17782 17812 W ThinkOS : time sync failed (1); retry in 30s
+10-30 21:03:05.745 17782 17782 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[]
+10-30 21:03:05.851 17782 17782 I ThinkOS : Configuration changed without Activity recreation: 2
+10-30 21:03:05.940 17782 17813 I ThinkOS : [plugin:clock] loaded 0.3.0; Lua 32228 bytes
+10-30 21:03:06.350 17782 17813 I ThinkOS : [plugin:gallery] loaded 0.2.0; Lua 100244 bytes
+10-30 21:03:06.413 17782 17813 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-30 21:03:06.593 17782 17813 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-30 21:03:06.904 17782 17813 I ThinkOS : [plugin:weather] loaded 0.1.0; Lua 99719 bytes
+10-30 21:03:07.198 17782 17813 I ThinkOS : [plugin:gallery] loaded 0.2.0; Lua 58979 bytes
+10-30 21:03:07.353 17782 17813 I ThinkOS : [plugin:gallery] Local gallery scanned 3 photos
+10-30 21:03:07.734 17782 17782 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=clock.face, variant=world, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=35741, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.2.0, bytes=55376, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=100595, disabled=false, error=null)]
+10-30 21:03:07.923 17782 17813 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Unable to resolve host "api.open-meteo.com": No address associated with hostname
+10-30 21:03:09.082 17782 17782 D ThinkOS : [image:gallery] displayed file:/storage/emulated/0/Android/data/moe.kiwi.thinkos/files/Pictures/ThinkOSGalleryTest-39865/01-wide.png 2146x715
+10-30 21:03:09.609 17782 17782 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=40201, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.2.0, bytes=56329, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=107280, disabled=false, error=null)]
+10-30 21:03:11.067 17782 17782 W ThinkOS : [image:gallery] open failed: ENOENT (No such file or directory)
+10-30 21:03:11.089 17782 17782 W ThinkOS : [image:gallery] open failed: ENOENT (No such file or directory)
+10-30 21:03:11.128 17782 17813 I ThinkOS : [plugin:gallery] loaded 0.2.0; Lua 100244 bytes
+10-30 21:03:11.256 17782 17782 I ThinkOS : Configuration changed without Activity recreation: 1
+10-30 21:03:11.371 17782 17782 I ThinkOS : attention=ENGAGED
+10-30 21:03:11.499 17782 17782 D ThinkOS : [image:gallery] displayed OHR.AutumnCranes 1652x929

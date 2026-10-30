@@ -15,7 +15,8 @@ android {
         versionCode = 2
         versionName = "0.1.1"
         ndk { abiFilters += "armeabi-v7a" }
-        testInstrumentationRunner = "android.test.InstrumentationTestRunner"
+        testInstrumentationRunner = if (providers.gradleProperty("galleryGestureProbe").orNull == "true")
+            "moe.kiwi.thinkos.GallerySwipeInstrumentation" else "android.test.InstrumentationTestRunner"
     }
     externalNativeBuild {
         cmake { path = file("src/main/cpp/CMakeLists.txt") }

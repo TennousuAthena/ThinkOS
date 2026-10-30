@@ -1,0 +1,14 @@
+{
+  "video": {
+    "width": 1280,
+    "height": 800,
+    "r_frame_rate": "60000/1001",
+    "avg_frame_rate": "911250/22673",
+    "duration": "18.138400",
+    "nb_frames": "729"
+  },
+  "first10SecondsFrames": 580,
+  "changingPhotoRegionFrames": 349,
+  "consecutiveDuplicateFraction": 0.39724,
+  "region": "320x240 inside the photo; excludes clock and caption"
+}

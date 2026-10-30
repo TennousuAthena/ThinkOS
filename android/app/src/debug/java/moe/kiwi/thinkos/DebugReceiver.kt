@@ -17,6 +17,17 @@ class DebugReceiver : BroadcastReceiver() {
             "orientation" -> host.debugOrientation(intent.getIntExtra("value", 10))
             "maintenance" -> host.debugMaintenance()
             "state" -> Log.i("ThinkOS", "DEBUG state=${host.store.current} plugins=${host.plugins.diagnostics()}")
+            "locale" -> {
+                // Process-local locale for native UI tests; never changes Android's saved language.
+                val locale = intent.getStringExtra("value")?.let(java.util.Locale::forLanguageTag)
+                    ?: android.content.res.Resources.getSystem().configuration.locales[0]
+                java.util.Locale.setDefault(locale)
+                @Suppress("DEPRECATION")
+                context.resources.updateConfiguration(android.content.res.Configuration(context.resources.configuration).apply {
+                    setLocale(locale)
+                }, context.resources.displayMetrics)
+                host.localeChanged()
+            }
             "lux" -> host.sensors.debugInjectLux(if (intent.hasExtra("value")) intent.getFloatExtra("value", 20f) else null)
             "presence" -> host.sensors.debugPresence(intent.getBooleanExtra("value", false))
             "hold_attention" -> host.sensors.debugHoldAttention(Attention.entries.firstOrNull { it.name == intent.getStringExtra("value") })

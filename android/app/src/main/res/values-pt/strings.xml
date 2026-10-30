@@ -10,7 +10,7 @@
     <string name="maintenance_diagnostics">Diagnóstico</string>
     <string name="maintenance_restore_plugins">Restaurar plugins integrados</string>
     <string name="maintenance_reset_settings">Redefinir configurações</string>
-    <string name="maintenance_android_settings">Abrir configurações do Android (vigilância pausada por 5 minutos)</string>
+    <string name="maintenance_android_settings">Abrir configurações do Android, vigilância pausada por 5 minutos</string>
     <string name="maintenance_exit_safe_mode">Sair do modo seguro e reiniciar</string>
     <string name="maintenance_back">Voltar</string>
     <string name="maintenance_restored">Plugins integrados restaurados</string>
@@ -43,7 +43,7 @@
     <string name="setting_group_kiosk">Quiosque</string>
     <string name="setting_group_time">Hora</string>
     <string name="setting_theme_mode">Tema</string>
-    <string name="setting_theme_mode_auto">Automático (luz ambiente)</string>
+    <string name="setting_theme_mode_auto">Automático, luz ambiente</string>
     <string name="setting_theme_mode_sun">Automático (nascer e pôr do sol)</string>
     <string name="setting_theme_mode_light">Sempre claro</string>
     <string name="setting_theme_mode_dark">Sempre escuro</string>
@@ -56,19 +56,26 @@
     <string name="setting_display_orientation_auto">Seguir o sensor</string>
     <string name="setting_display_orientation_landscape">Paisagem</string>
     <string name="setting_display_orientation_portrait">Retrato</string>
+    <string name="setting_motion_clock">Animação do relógio</string>
+    <string name="setting_motion_clock_none">Nenhuma</string>
+    <string name="setting_motion_clock_roll">Rolagem</string>
+    <string name="setting_motion_clock_fade">Desvanecer</string>
+    <string name="setting_motion_clock_drop">Queda</string>
+    <string name="setting_motion_clock_flip">Giro</string>
+    <string name="setting_motion_clock_zoom">Zoom</string>
     <string name="setting_display_brightness_max">Brilho máximo</string>
     <string name="setting_attention_awake_to_ambient_s">Escurecer após inatividade de</string>
     <string name="setting_attention_to_asleep_s">Repouso após ninguém por perto durante</string>
     <string name="setting_attention_engaged_idle_s">Encerrar a interação após inatividade de</string>
     <string name="setting_attention_ambient_page_after_s">Mostrar fotos após escurecido por</string>
-    <string name="setting_server_url">Endereço do Server (vazio = detectar automaticamente)</string>
+    <string name="setting_server_url">Endereço do Server, vazio = detectar automaticamente</string>
     <string name="setting_server_token">Token de pareamento</string>
-    <string name="setting_kiosk_lock">Bloquear a interface do sistema (barra de estado, gestos, recentes)</string>
-    <string name="setting_time_ntp_servers">Servidores NTP (separados por vírgula)</string>
+    <string name="setting_kiosk_lock">Bloquear a interface do sistema</string>
+    <string name="setting_time_ntp_servers">Servidores NTP, separados por vírgula</string>
     <string name="setting_time_sync_hour">Sincronizar a hora todos os dias às</string>
     <string name="setting_group_location">Localização</string>
     <string name="setting_location_mode">Origem da localização</string>
-    <string name="setting_location_mode_auto">Cidade do fuso horário (aproximada)</string>
+    <string name="setting_location_mode_auto">Cidade do fuso horário, aproximada</string>
     <string name="setting_location_mode_manual">Escolher local / coordenadas</string>
     <string name="setting_location_name">Cidade, distrito ou município</string>
     <string name="setting_location_latitude">Latitude</string>
@@ -82,7 +89,7 @@
     <string name="form_place_empty">Nenhum local encontrado. Tente outro nome.</string>
     <string name="form_place_error">Pesquisa online indisponível. A mostrar apenas as cidades de fusos horários guardadas no dispositivo.</string>
     <string name="form_place_invalid">Este local não tem um fuso horário utilizável.</string>
-    <string name="form_place_attribution">Pesquisa: Open-Meteo · Locais: GeoNames (CC BY 4.0)</string>
+    <string name="form_place_attribution">Pesquisa: Open-Meteo · Locais: GeoNames, CC BY 4.0</string>
     <string name="media_previous">Faixa anterior</string>
     <string name="media_play">Reproduzir</string>
     <string name="media_pause">Pausar</string>

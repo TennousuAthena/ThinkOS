@@ -1,0 +1,21 @@
+{
+  "complete": true,
+  "passed": [
+    "device fetched Bing metadata over HTTPS and decoded the real daily image",
+    "tap advances across at least three real Bing photos",
+    "the same complete landscape source is reused in portrait with pan",
+    "offline cold start renders cached Bing metadata and image without Server",
+    "caption-off mode keeps the separate copyright credit visible (screenshot)",
+    "600-second real Bing gallery AMBIENT sample completed with animations enabled"
+  ],
+  "firstPhoto": "OHR.AutumnCranes",
+  "photosDisplayed": [
+    "OHR.AutumnCranes",
+    "OHR.AveburyStones",
+    "OHR.KuneticeCastle"
+  ],
+  "cacheFiles": "total 996\n-rw------- 1 u0_a74 u0_a74_cache 341114 2026-10-30 20:50 3833dbc07f6fdf45ad6de6173fe62ec5c969018755c3c123d07ebbadb987e5b0\n-rw------- 1 u0_a74 u0_a74_cache 335977 2026-10-30 20:50 4fc4ab136538b52b6f503e15f888f3964ecba1a1bae85123a02a4b2749d957ac\n-rw------- 1 u0_a74 u0_a74_cache 333190 2026-10-30 20:50 69e9f022d6ffc4b220fd5314407e26144ce37fa79a991d1302f26da28d00ad28\n",
+  "offlineColdStart": "Starting: Intent { cmp=moe.kiwi.thinkos/.MainActivity }\nStatus: ok\nActivity: moe.kiwi.thinkos/.MainActivity\nThisTime: 755\nTotalTime: 755\nWaitTime: 773\nComplete\n",
+  "finalPid": "16109",
+  "logcat": "final-logcat.txt"
+}

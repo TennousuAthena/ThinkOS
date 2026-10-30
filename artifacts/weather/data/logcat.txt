@@ -1,0 +1,56 @@
+--------- beginning of main
+10-30 17:10:20.135 27570 27570 I ThinkOS : tzdata 2026e (419 zones)
+10-30 17:10:20.374 27570 27570 I ThinkOS : Runtime started; local mode, safe=false
+10-30 17:10:20.377 27570 27570 I ThinkOS : Activity created; orientation=1
+10-30 17:10:20.482 27570 27570 I ThinkOS : theme=LIGHT lux=null
+10-30 17:10:21.166 27570 27594 I ThinkOS : [plugin:clock] loaded 0.3.0; Lua 44926 bytes
+10-30 17:10:21.261 27570 27594 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-30 17:10:21.511 27570 27594 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 38397 bytes
+10-30 17:10:21.900 27570 27594 I ThinkOS : [plugin:weather] loaded 0.1.0; Lua 98598 bytes
+10-30 17:10:22.966 27570 27594 I ThinkOS : [plugin:weather-probe] WEATHER PROBE f5629f76dd8144588ac292552ea7da7a PASS start never waits for HTTP
+10-30 17:10:22.988 27570 27594 I ThinkOS : [plugin:weather-probe] loaded 0.1.0; Lua 110530 bytes
+10-30 17:10:24.011 27570 27594 I ThinkOS : [plugin:weather-probe] weather refresh ok 22.54721 114.13149
+10-30 17:10:24.476 27570 27594 I ThinkOS : [plugin:weather-probe] WEATHER PROBE f5629f76dd8144588ac292552ea7da7a PASS fixture loads through actual PluginHttp and JNI
+10-30 17:10:24.596 27570 27594 I ThinkOS : [plugin:weather-probe] WEATHER PROBE f5629f76dd8144588ac292552ea7da7a PASS unit and locale render locally without HTTP
+10-30 17:10:24.604 27570 27594 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-30 17:10:24.643 27570 27594 W ThinkOS : [plugin:weather-probe] weather refresh failed production:115: forecast HTTP 503
+10-30 17:10:24.680 27570 27594 I ThinkOS : [plugin:weather-probe] WEATHER PROBE f5629f76dd8144588ac292552ea7da7a PASS preserves snapshot after /503
+10-30 17:10:24.724 27570 27594 I ThinkOS : [plugin:weather-probe] weather refresh ok 22.54721 114.13149
+10-30 17:10:25.760 27570 27593 I ThinkOS : time sync: 0.pool.ntp.org 111.230.189.174 offset=37ms rtt=28ms
+10-30 17:10:26.627 27570 27699 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-30 17:10:26.733 27570 27699 D ThinkOS : [store:weather-probe] persisted coalesced snapshot
+10-30 17:10:27.782 27570 27594 W ThinkOS : [plugin:weather-probe] weather refresh failed production:114: timeout
+10-30 17:10:27.844 27570 27594 I ThinkOS : [plugin:weather-probe] WEATHER PROBE f5629f76dd8144588ac292552ea7da7a PASS preserves snapshot after /slow
+10-30 17:10:27.878 27570 27594 I ThinkOS : [plugin:weather-probe] weather refresh ok 22.54721 114.13149
+10-30 17:10:27.941 27570 27594 W ThinkOS : [plugin:weather-probe] weather refresh failed production:116: invalid JSON or memory limit: unexpected character, expected a JSON value
+10-30 17:10:27.971 27570 27594 I ThinkOS : [plugin:weather-probe] WEATHER PROBE f5629f76dd8144588ac292552ea7da7a PASS preserves snapshot after /html
+10-30 17:10:28.001 27570 27594 I ThinkOS : [plugin:weather-probe] weather refresh ok 22.54721 114.13149
+10-30 17:10:28.057 27570 27594 W ThinkOS : [plugin:weather-probe] weather refresh failed forecast:4: invalid forecast number
+10-30 17:10:28.085 27570 27594 I ThinkOS : [plugin:weather-probe] WEATHER PROBE f5629f76dd8144588ac292552ea7da7a PASS preserves snapshot after /missing
+10-30 17:10:28.115 27570 27594 I ThinkOS : [plugin:weather-probe] weather refresh ok 22.54721 114.13149
+10-30 17:10:28.170 27570 27594 W ThinkOS : [plugin:weather-probe] weather refresh failed production:115: forecast HTTP 503
+10-30 17:10:30.130 27570 27699 D ThinkOS : [store:weather-probe] persisted coalesced snapshot
+10-30 17:10:38.234 27570 27594 I ThinkOS : [plugin:weather-probe] weather refresh ok 22.54721 114.13149
+10-30 17:10:38.262 27570 27594 I ThinkOS : [plugin:weather-probe] WEATHER PROBE f5629f76dd8144588ac292552ea7da7a PASS scheduled retry automatically recovers
+10-30 17:10:38.584 27570 27594 I ThinkOS : [plugin:weather-probe] WEATHER PROBE f5629f76dd8144588ac292552ea7da7a PASS wake keeps a still-fresh snapshot without duplicate HTTP
+10-30 17:10:38.886 27570 27594 I ThinkOS : [plugin:weather-probe] WEATHER PROBE f5629f76dd8144588ac292552ea7da7a PASS ASLEEP suppresses all new requests
+10-30 17:10:39.007 27570 27594 I ThinkOS : [plugin:weather-probe] weather refresh ok 22.54721 114.13149
+10-30 17:10:39.520 27570 27594 I ThinkOS : [plugin:weather-probe] WEATHER PROBE f5629f76dd8144588ac292552ea7da7a PASS wake resumes an overdue refresh
+10-30 17:10:39.547 27570 27594 W ThinkOS : [plugin:weather-probe] weather refresh failed production:115: forecast HTTP 503
+10-30 17:10:39.565 27570 27594 I ThinkOS : [plugin:weather-probe] WEATHER PROBE f5629f76dd8144588ac292552ea7da7a PASS untrusted clock uses short retry without a relative age
+10-30 17:10:39.673 27570 27594 I ThinkOS : [plugin:weather-probe] weather refresh ok 22.54721 114.13149
+10-30 17:10:40.187 27570 27594 I ThinkOS : [plugin:weather-probe] WEATHER PROBE f5629f76dd8144588ac292552ea7da7a PASS time sync triggers refresh on the next minute tick
+10-30 17:10:40.742 27570 27594 I ThinkOS : [plugin:weather-probe] WEATHER PROBE f5629f76dd8144588ac292552ea7da7a PASS old-location response is discarded while HTTP is suspended
+10-30 17:10:40.833 27570 27594 I ThinkOS : [plugin:weather-probe] weather refresh ok 40.7 -74
+10-30 17:10:41.545 27570 27594 I ThinkOS : [plugin:weather-probe] WEATHER PROBE f5629f76dd8144588ac292552ea7da7a PASS newest coordinates win after the race
+10-30 17:10:41.596 27570 27594 I ThinkOS : [plugin:weather-probe] weather refresh ok 40.7 -74
+10-30 17:10:41.634 27570 27594 I ThinkOS : [plugin:weather-probe] WEATHER PROBE f5629f76dd8144588ac292552ea7da7a PASS five daily labels stay distinct across the New York DST boundary
+10-30 17:10:41.747 27570 27594 I ThinkOS : [plugin:weather-probe] weather refresh ok 22.54721 114.13149
+10-30 17:10:42.426 27570 27594 I ThinkOS : [plugin:weather-probe] WEATHER PROBE f5629f76dd8144588ac292552ea7da7a PASS real forecast TLS and WMO fields work on API 27
+10-30 17:10:42.427 27570 27594 I ThinkOS : [plugin:weather-probe] WEATHER PROBE f5629f76dd8144588ac292552ea7da7a ALL PASSED calls=18 writes=11
+10-30 17:10:42.613 27570 27570 I ThinkOS : attention=ASLEEP
+10-30 17:10:43.808 27570 27699 D ThinkOS : [store:weather-probe] persisted coalesced snapshot
+10-30 17:10:44.397 27570 27594 I ThinkOS : [plugin:weather-probe] loaded 0.1.1; Lua 99243 bytes
+10-30 17:10:46.135 27570 27570 I ThinkOS : attention=AWAKE
+10-30 17:10:46.284 27570 27594 I ThinkOS : [plugin:weather-probe] weather refresh ok 22.54721 114.13149
+10-30 17:10:46.523 27570 27570 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=LIGHT, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=54833, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=42016, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=123355, disabled=false, error=null), PluginDiagnostic(id=weather-probe, version=0.1.1, bytes=106654, disabled=false, error=null)]

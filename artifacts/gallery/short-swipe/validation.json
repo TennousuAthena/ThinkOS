@@ -1,0 +1,144 @@
+{
+  "complete": true,
+  "date": "2026-10-31",
+  "device": {
+    "serial": "HUA0BWUT",
+    "pid": "29549",
+    "apkSha256": "d1b06abc9e40c863fbaa990257762a7a6259e0e317671fd9b7c94933f16faec9",
+    "installedSha256": "d1b06abc9e40c863fbaa990257762a7a6259e0e317671fd9b7c94933f16faec9",
+    "settings": {
+      "animator_duration_scale": "null",
+      "wifi_on": "1"
+    },
+    "testPackageRemoved": true,
+    "developmentOverridesRemoved": true,
+    "state": "DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=39021, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=109419, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=50679, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=147037, disabled=false, error=null)]",
+    "runtimeCrash": false
+  },
+  "baselineApkSha256": "43a6dc7f22ea32024a52ee2846ce83d17abc79eb10249f9a86df30e72f6c960a",
+  "build": {
+    "gradle": "testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest",
+    "offline": true,
+    "jvm": {
+      "tests": 216,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "lint": "passed",
+    "nativeLibraries": [
+      "lib/armeabi-v7a/libtos.so"
+    ],
+    "minSdk": 27,
+    "targetSdk": 27,
+    "log": "build.log"
+  },
+  "shortFastSwipe": {
+    "baseline": {
+      "tinyHighVelocityChangedSelection": true,
+      "takeoverMaxJumpPx": 901.0555,
+      "takeoverDiscontinuities": 6,
+      "cancelPreservesSelection": true,
+      "oneSettledLayer": true,
+      "complete": true
+    },
+    "fixed": {
+      "tinyHighVelocityChangedSelection": false,
+      "takeoverMaxJumpPx": 33.799988,
+      "takeoverDiscontinuities": 0,
+      "cancelPreservesSelection": true,
+      "oneSettledLayer": true,
+      "complete": true
+    },
+    "realBing": {
+      "tinyHighVelocityChangedSelection": false,
+      "takeoverMaxJumpPx": 33.799988,
+      "takeoverDiscontinuities": 0,
+      "cancelPreservesSelection": true,
+      "oneSettledLayer": true,
+      "complete": true
+    },
+    "videos": [
+      "before.mp4",
+      "after.mp4",
+      "real-bing.mp4"
+    ]
+  },
+  "regressions": {
+    "races": {
+      "complete": true,
+      "passed": [
+        "a second swipe advances past a downloading image; late HTTP completion cannot replace it",
+        "oldest history boundary does not wrap to newest",
+        "cancelled preview stays on the selected image after decoding",
+        "download cancellation releases the URL lock; reverse browsing subsequently loads the same image"
+      ],
+      "displayed": [
+        "A",
+        "C",
+        "B",
+        "A"
+      ]
+    },
+    "gestures": {
+      "complete": true,
+      "passed": [
+        "down at newest photo stops at the history boundary",
+        "up browses older and down returns to newer; gallery page stays selected",
+        "short drag springs back without changing selection",
+        "rapid alternating swipes keep the current gallery and runtime healthy",
+        "horizontal swipes retain OS page navigation",
+        "long press still opens the native settings page",
+        "history and outlined white time render in both orientations and themes",
+        "portrait active sweep sampled with animations enabled"
+      ],
+      "nativePanEvents": [
+        "0.0,0.0->-143.0,0.0 12000ms",
+        "-143.0,0.0->0.0,0.0 12000ms",
+        "0.0,0.0->-143.0,0.0 12000ms",
+        "0.0,0.0->-143.0,0.0 12000ms",
+        "0.0,0.0->-143.0,0.0 12000ms",
+        "-143.0,0.0->0.0,0.0 12000ms",
+        "-143.0,0.0->0.0,0.0 12000ms",
+        "0.0,0.0->-143.0,0.0 12000ms",
+        "0.0,0.0->-143.0,0.0 12000ms",
+        "-143.0,0.0->0.0,0.0 12000ms",
+        "-143.0,0.0->0.0,0.0 12000ms",
+        "0.0,0.0->-143.0,0.0 12000ms",
+        "0.0,0.0->-143.0,0.0 12000ms",
+        "-1476.0,0.0->0.0,0.0 31706ms",
+        "-1476.0,0.0->0.0,0.0 31706ms",
+        "-143.0,0.0->0.0,0.0 12000ms",
+        "0.0,0.0->-143.0,0.0 12000ms",
+        "0.0,0.0->-1476.0,0.0 31706ms",
+        "-1476.0,0.0->0.0,0.0 31706ms",
+        "-143.0,0.0->0.0,0.0 12000ms"
+      ],
+      "pid": "28221"
+    },
+    "bing-regression": {
+      "complete": true,
+      "passed": [
+        "device renders the real Bing daily image through the OS HTTP/cache pipeline",
+        "tap advances across at least three real Bing photos",
+        "the same complete landscape source is reused in portrait with pan",
+        "offline cold start renders cached Bing metadata and image without Server",
+        "caption-off mode keeps the separate copyright credit visible (screenshot)"
+      ],
+      "archiveRefreshedThisProcess": false,
+      "firstPhoto": "OHR.AutumnCranes",
+      "photosDisplayed": [
+        "OHR.AutumnCranes",
+        "OHR.AveburyStones",
+        "OHR.KuneticeCastle"
+      ],
+      "cacheFiles": "total 4296\n-rw------- 1 u0_a74 u0_a74_cache 339531 2026-10-30 23:55 06a94db5984b9e05acb82feea0a828a30c610cc268b1c24971399fe477c30c65\n-rw------- 1 u0_a74 u0_a74_cache 341114 2026-10-31 00:01 3833dbc07f6fdf45ad6de6173fe62ec5c969018755c3c123d07ebbadb987e5b0\n-rw------- 1 u0_a74 u0_a74_cache 335977 2026-10-31 00:01 4fc4ab136538b52b6f503e15f888f3964ecba1a1bae85123a02a4b2749d957ac\n-rw------- 1 u0_a74 u0_a74_cache 338792 2026-10-30 22:45 53a964041c8683196b4ba47bc10c1a7bb4daf7df328c08414009c0bbdfd1ec3b\n-rw------- 1 u0_a74 u0_a74_cache 326712 2026-10-30 22:43 5a30f9d7ed3f1dac6d869d0d6321a1d353c42111285dab594328c740576a8e23\n-rw------- 1 u0_a74 u0_a74_cache 333190 2026-10-31 00:01 69e9f022d6ffc4b220fd5314407e26144ce37fa79a991d1302f26da28d00ad28\n-rw------- 1 u0_a74 u0_a74_cache 331717 2026-10-30 23:54 7161cd0de44030c27163773f1c39e37e140bbf9c49eb64fda3dbbbe284d7b23e\n-rw------- 1 u0_a74 u0_a74_cache 340562 2026-10-30 22:45 76f1969f064c001a8f9639699c86b978aebd2f945b60f6fec2e8e44dcc8ee2f7\n-rw------- 1 u0_a74 u0_a74_cache 336859 2026-10-30 23:53 80a53fc4cb224c109267bb67bcc0ff9d45c0827cf101f87c0aff0f53d5bc99db\n-rw------- 1 u0_a74 u0_a74_cache 334001 2026-10-30 23:53 8104bd54c1b2b44dde15984273506641a4c55bda97d349110f28af83ae70c2eb\n-rw------- 1 u0_a74 u0_a74_cache 332955 2026-10-30 22:44 9f7f3873d6edeabb90d2055a25190ca78e9a595c576cc4bcc3f393467685eadc\n-rw------- 1 u0_a74 u0_a74_cache 340732 2026-10-30 22:44 a3c3ff9656b87c6d66a6c8fa5314499f51508a2bee8bb25c7623797c4c42dda9\n-rw------- 1 u0_a74 u0_a74_cache 339504 2026-10-30 23:55 d8ba82d6538ca2bf43760792a3fe3221597565a476a49aacec72772e3939062b\n",
+      "offlineColdStart": "Starting: Intent { cmp=moe.kiwi.thinkos/.MainActivity }\nStatus: ok\nActivity: moe.kiwi.thinkos/.MainActivity\nThisTime: 753\nTotalTime: 753\nWaitTime: 778\nComplete\n",
+      "offlineColdStartMs": 753,
+      "finalPid": "29549",
+      "logcat": "final-logcat.txt"
+    }
+  },
+  "performanceScope": "Interaction regressions and offline cold start verified. No new isolated 10-minute benchmark was run.",
+  "finalScreenshot": "final-device.png"
+}

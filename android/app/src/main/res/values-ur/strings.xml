@@ -10,7 +10,7 @@
     <string name="maintenance_diagnostics">تشخیص</string>
     <string name="maintenance_restore_plugins">بلٹ اِن پلگ اِن بحال کریں</string>
     <string name="maintenance_reset_settings">سیٹنگز ری سیٹ کریں</string>
-    <string name="maintenance_android_settings">Android سیٹنگز کھولیں (نگران 5 منٹ کے لیے موقوف)</string>
+    <string name="maintenance_android_settings">Android سیٹنگز کھولیں, نگران 5 منٹ کے لیے موقوف</string>
     <string name="maintenance_exit_safe_mode">محفوظ موڈ سے نکلیں اور دوبارہ شروع کریں</string>
     <string name="maintenance_back">واپس</string>
     <string name="maintenance_restored">بلٹ اِن پلگ اِن بحال ہو گئے</string>
@@ -43,7 +43,7 @@
     <string name="setting_group_kiosk">کیوسک</string>
     <string name="setting_group_time">وقت</string>
     <string name="setting_theme_mode">تھیم</string>
-    <string name="setting_theme_mode_auto">خودکار (ماحول کی روشنی)</string>
+    <string name="setting_theme_mode_auto">خودکار, ماحول کی روشنی</string>
     <string name="setting_theme_mode_sun">خودکار (طلوع و غروب آفتاب)</string>
     <string name="setting_theme_mode_light">ہمیشہ ہلکی</string>
     <string name="setting_theme_mode_dark">ہمیشہ گہری</string>
@@ -56,19 +56,26 @@
     <string name="setting_display_orientation_auto">سینسر کے مطابق</string>
     <string name="setting_display_orientation_landscape">افقی</string>
     <string name="setting_display_orientation_portrait">عمودی</string>
+    <string name="setting_motion_clock">گھڑی کی حرکت</string>
+    <string name="setting_motion_clock_none">کوئی نہیں</string>
+    <string name="setting_motion_clock_roll">رول</string>
+    <string name="setting_motion_clock_fade">فیڈ</string>
+    <string name="setting_motion_clock_drop">گرنا</string>
+    <string name="setting_motion_clock_flip">پلٹنا</string>
+    <string name="setting_motion_clock_zoom">زوم</string>
     <string name="setting_display_brightness_max">زیادہ سے زیادہ چمک</string>
     <string name="setting_attention_awake_to_ambient_s">اتنی دیر استعمال نہ ہونے پر مدھم کریں</string>
     <string name="setting_attention_to_asleep_s">اتنی دیر کوئی پاس نہ ہو تو سلیپ</string>
     <string name="setting_attention_engaged_idle_s">اتنی دیر غیر فعال رہنے پر تعامل ختم</string>
     <string name="setting_attention_ambient_page_after_s">مدھم ہونے کے اتنی دیر بعد تصاویر کا صفحہ</string>
-    <string name="setting_server_url">Server کا پتہ (خالی = خود بخود تلاش)</string>
+    <string name="setting_server_url">Server کا پتہ, خالی = خود بخود تلاش</string>
     <string name="setting_server_token">جوڑنے کا ٹوکن</string>
-    <string name="setting_kiosk_lock">سسٹم انٹرفیس لاک کریں (اسٹیٹس بار، اشارے، حالیہ ایپس)</string>
-    <string name="setting_time_ntp_servers">NTP سرورز (کوما سے الگ)</string>
+    <string name="setting_kiosk_lock">سسٹم انٹرفیس لاک کریں</string>
+    <string name="setting_time_ntp_servers">NTP سرورز, کوما سے الگ</string>
     <string name="setting_time_sync_hour">روزانہ وقت کی مطابقت</string>
     <string name="setting_group_location">مقام</string>
     <string name="setting_location_mode">مقام کا ماخذ</string>
-    <string name="setting_location_mode_auto">ٹائم زون کا شہر (تخمینی)</string>
+    <string name="setting_location_mode_auto">ٹائم زون کا شہر, تخمینی</string>
     <string name="setting_location_mode_manual">مقام منتخب کریں / نقاط</string>
     <string name="setting_location_name">شہر، ضلع یا تحصیل</string>
     <string name="setting_location_latitude">عرض بلد</string>
@@ -82,7 +89,7 @@
     <string name="form_place_empty">کوئی مقام نہیں ملا۔ دوسرا نام آزمائیں۔</string>
     <string name="form_place_error">آن لائن تلاش دستیاب نہیں۔ صرف آلے میں محفوظ ٹائم زون کے شہر دکھائے جا رہے ہیں۔</string>
     <string name="form_place_invalid">اس مقام کے لیے کوئی قابلِ استعمال ٹائم زون نہیں۔</string>
-    <string name="form_place_attribution">تلاش: Open-Meteo · مقامات کا ڈیٹا: GeoNames (CC BY 4.0)</string>
+    <string name="form_place_attribution">تلاش: Open-Meteo · مقامات کا ڈیٹا: GeoNames, CC BY 4.0</string>
     <string name="media_previous">پچھلا ٹریک</string>
     <string name="media_play">چلائیں</string>
     <string name="media_pause">وقفہ</string>

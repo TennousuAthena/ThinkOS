@@ -3,8 +3,11 @@ package moe.kiwi.thinkos.ui
 import moe.kiwi.thinkos.core.WallClock
 import android.content.Context
 import android.graphics.*
+import android.os.SystemClock
 import android.view.View
 import moe.kiwi.thinkos.R
+import moe.kiwi.thinkos.anim.Motion
+import moe.kiwi.thinkos.anim.MotionPrefs
 import moe.kiwi.thinkos.anim.PropertyBreath
 import moe.kiwi.thinkos.core.Attention
 import moe.kiwi.thinkos.i18n.Formats
@@ -37,6 +40,7 @@ class ClockView(context: Context, private val declaration: JSONObject, private v
     private val pulse = PropertyBreath(this, .82f)
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = Typeface.create("sans-serif-light", Typeface.NORMAL); fontFeatureSettings = "tnum" }
     private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = Typeface.create("sans-serif", Typeface.NORMAL) }
+    private val photoOutline = Paint(Paint.ANTI_ALIAS_FLAG)
     private val line = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeCap = Paint.Cap.ROUND }
     private var now = WallClock.now()
     private var lastBucket = -1L
@@ -56,6 +60,10 @@ class ClockView(context: Context, private val declaration: JSONObject, private v
         val main: String get() = hour + separator + minute + (second?.let { separator + it } ?: "")
     }
     private var parts = Parts("--", "--", null, null, ":", false)
+    /** Roll transition: only the characters that changed move, clipped to their own cell, translation only. */
+    private var rollFrom: String? = null
+    private var rollStart = 0L
+    private var rollMode = "roll"
 
     init { setLayerType(LAYER_TYPE_HARDWARE, null); importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES }
 
@@ -104,6 +112,9 @@ class ClockView(context: Context, private val declaration: JSONObject, private v
                 layout.separator, layout.periodFirst,
             ) else Parts("--", "--", null, null, ":", false)
             val changed = next.main != parts.main || next.period != parts.period
+            if (changed && !first && clockStyle == "digital" && MotionPrefs.clock != "none" && next.main.length == parts.main.length &&
+                level in setOf(Attention.AWAKE, Attention.ENGAGED) && android.animation.ValueAnimator.areAnimatorsEnabled()
+            ) { rollFrom = parts.main; rollStart = SystemClock.uptimeMillis(); rollMode = MotionPrefs.clock }
             parts = next
             if (changed || first) contentDescription = if (synced) ZoneFormat.format("@time", wall, home) else "--:--"
             if (first || changed || clockStyle in setOf("analog", "solar", "world", "float")) invalidate()
@@ -127,7 +138,7 @@ class ClockView(context: Context, private val declaration: JSONObject, private v
         super.onDraw(canvas)
         if (width == 0 || height == 0) return
         paint.color = palette.primary
-        if (now < SYNCED_AFTER) { text(canvas, "--:--", width / 2f, height / 2f, min(width * .25f, height * .5f)); return }
+        if (now < SYNCED_AFTER && clockStyle != "float") { text(canvas, "--:--", width / 2f, height / 2f, min(width * .25f, height * .5f)); return }
         when (clockStyle) {
             "analog" -> {
                 cachedDial(canvas)
@@ -135,19 +146,62 @@ class ClockView(context: Context, private val declaration: JSONObject, private v
             }
             "solar" -> solar(canvas)
             "world" -> world(canvas)
-            "float" -> {
-                canvas.save()
-                canvas.translate((sin(now / 60_000.0) * 10 * dp).toFloat(), (cos(now / 75_000.0) * 8 * dp).toFloat())
-                digital(canvas)
-                canvas.restore()
-            }
+            "float" -> digital(canvas)
             else -> digital(canvas)
         }
     }
 
+    private fun drawMain(canvas: Canvas, text: String, x: Float, baseline: Float) {
+        if (clockStyle == "float") { drawClockText(canvas, text, x, baseline, paint); return }
+        val from = rollFrom
+        if (from == null || from.length != text.length) { canvas.drawText(text, x, baseline, paint); return }
+        val t = ((SystemClock.uptimeMillis() - rollStart).toFloat() / Motion.NUMBER).coerceIn(0f, 1f)
+        if (t >= 1f) { rollFrom = null; canvas.drawText(text, x, baseline, paint); return }
+        val e = Motion.EASE.getInterpolation(t)
+        val top = baseline + paint.ascent()
+        val bottom = baseline + paint.descent()
+        val h = bottom - top
+        val base = paint.color
+        fun glyph(source: String, i: Int, cx: Float, dy: Float, alpha: Float) {
+            paint.color = base
+            paint.alpha = (255 * alpha).toInt()
+            canvas.drawText(source, i, i + 1, cx, baseline + dy, paint)
+        }
+        for (i in text.indices) {
+            val cx = x + paint.measureText(text, 0, i)
+            if (text[i] == from[i]) { glyph(text, i, cx, 0f, 1f); continue }
+            val w = paint.measureText(text, i, i + 1)
+            canvas.save()
+            when (rollMode) {
+                "fade" -> { glyph(from, i, cx, 0f, 1 - e); glyph(text, i, cx, 0f, e) }
+                "drop" -> { glyph(from, i, cx, h * .25f * e, 1 - e); glyph(text, i, cx, -h * .25f * (1 - e), e) }
+                "zoom" -> {
+                    val mx = cx + w / 2f
+                    val my = (top + bottom) / 2f
+                    canvas.save(); canvas.scale(1f + .3f * e, 1f + .3f * e, mx, my); glyph(from, i, cx, 0f, 1 - e); canvas.restore()
+                    canvas.scale(.7f + .3f * e, .7f + .3f * e, mx, my); glyph(text, i, cx, 0f, e)
+                }
+                "flip" -> {
+                    val my = (top + bottom) / 2f
+                    if (t < .5f) { canvas.scale(1f, 1f - t * 2f, cx, my); glyph(from, i, cx, 0f, 1f) }
+                    else { canvas.scale(1f, t * 2f - 1f, cx, my); glyph(text, i, cx, 0f, 1f) }
+                }
+                else -> {
+                    canvas.clipRect(cx, top, cx + w, bottom)
+                    glyph(from, i, cx, -e * h, 1f)
+                    glyph(text, i, cx, (1 - e) * h, 1f)
+                }
+            }
+            canvas.restore()
+        }
+        paint.color = base
+        postInvalidateOnAnimation()
+    }
+
     private fun digital(canvas: Canvas) {
         val p = parts
-        val portrait = !compact && height > width * 1.1f && p.second == null
+        val photo = clockStyle == "float"
+        val portrait = !photo && !compact && height > width * 1.1f && p.second == null
         if (portrait) {
             val size = min(width * .67f, height * .39f)
             text(canvas, p.hour, width / 2f, height * .31f, size)
@@ -162,23 +216,24 @@ class ClockView(context: Context, private val declaration: JSONObject, private v
         val periodSize = size * .3f
         val labelWidth = if (period == null) 0f else { labelPaint.textSize = periodSize; labelPaint.measureText(period) + gap }
         val total = paint.measureText(p.main) + labelWidth
-        val fit = if (total > width * .94f) width * .94f / total else 1f
+        val available = if (photo) (width - 2 * dp).coerceAtLeast(0f) else width * .94f
+        val fit = if (total > available) available / total else 1f
         paint.textSize = size * fit
         labelPaint.textSize = periodSize * fit
         val mainWidth = paint.measureText(p.main)
         val periodWidth = if (period == null) 0f else labelPaint.measureText(period) + gap * fit
-        val start = (width - (mainWidth + periodWidth)) / 2f
+        val start = if (photo) width - dp - mainWidth - periodWidth else (width - (mainWidth + periodWidth)) / 2f
         val baseline = height / 2f - (paint.ascent() + paint.descent()) / 2
         paint.textAlign = Paint.Align.LEFT
         labelPaint.textAlign = Paint.Align.LEFT
         labelPaint.color = palette.secondary
         paint.color = palette.primary
         if (period != null && p.periodFirst) {
-            canvas.drawText(period, start, baseline, labelPaint)
-            canvas.drawText(p.main, start + periodWidth, baseline, paint)
+            drawClockText(canvas, period, start, baseline, labelPaint)
+            drawMain(canvas, p.main, start + periodWidth, baseline)
         } else {
-            canvas.drawText(p.main, start, baseline, paint)
-            if (period != null) canvas.drawText(period, start + mainWidth + gap * fit, baseline, labelPaint)
+            drawMain(canvas, p.main, start, baseline)
+            if (period != null) drawClockText(canvas, period, start + mainWidth + gap * fit, baseline, labelPaint)
         }
     }
 
@@ -188,7 +243,22 @@ class ClockView(context: Context, private val declaration: JSONObject, private v
         p.textAlign = Paint.Align.CENTER
         val measured = p.measureText(value)
         if (measured > maxWidth) p.textSize = size * maxWidth / measured
-        canvas.drawText(value, cx, cy - (p.ascent() + p.descent()) / 2, p)
+        drawClockText(canvas, value, cx, cy - (p.ascent() + p.descent()) / 2, p)
+    }
+
+    /** Photo clocks stay white on either theme; a narrow black contour survives bright photo detail. */
+    private fun drawClockText(canvas: Canvas, value: String, x: Float, baseline: Float, p: Paint) {
+        if (clockStyle != "float") { canvas.drawText(value, x, baseline, p); return }
+        photoOutline.set(p)
+        photoOutline.color = 0xBB000000.toInt()
+        photoOutline.style = Paint.Style.STROKE
+        photoOutline.strokeWidth = 1.25f * dp
+        photoOutline.strokeJoin = Paint.Join.ROUND
+        canvas.drawText(value, x, baseline, photoOutline)
+        val color = p.color
+        p.color = Color.WHITE
+        canvas.drawText(value, x, baseline, p)
+        p.color = color
     }
 
     private fun analog(canvas: Canvas, cx: Float, cy: Float, r: Float, zone: ZoneClock, seconds: Boolean) {

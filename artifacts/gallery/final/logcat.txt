@@ -1,0 +1,41 @@
+--------- beginning of main
+10-30 18:59:48.319  9376  9376 I ThinkOS : tzdata 2026e (419 zones)
+10-30 18:59:48.528  9376  9376 I ThinkOS : Runtime started; local mode, safe=false
+10-30 18:59:48.531  9376  9376 I ThinkOS : Activity created; orientation=1
+10-30 18:59:48.549  9376  9402 W ThinkOS : time sync failed (1); retry in 30s
+10-30 18:59:49.203  9376  9376 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=PORTRAIT, safeMode=false) plugins=[]
+10-30 18:59:49.310  9376  9376 I ThinkOS : Configuration changed without Activity recreation: 2
+10-30 18:59:49.438  9376  9403 I ThinkOS : [plugin:clock] loaded 0.3.0; Lua 32228 bytes
+10-30 18:59:49.783  9376  9403 I ThinkOS : [plugin:gallery] loaded 0.1.0; Lua 42043 bytes
+10-30 18:59:49.849  9376  9403 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-30 18:59:50.048  9376  9403 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-30 18:59:50.365  9376  9403 I ThinkOS : [plugin:weather] loaded 0.1.0; Lua 99551 bytes
+10-30 18:59:50.619  9376  9403 I ThinkOS : [plugin:gallery] loaded 0.1.0; Lua 42137 bytes
+10-30 18:59:51.189  9376  9376 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=clock.face, variant=world, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=35741, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.1.0, bytes=43035, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=100427, disabled=false, error=null)]
+10-30 18:59:51.381  9376  9403 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Unable to resolve host "api.open-meteo.com": No address associated with hostname
+10-30 18:59:53.045  9376  9403 I ThinkOS : [plugin:gallery] Local gallery scanned 300 photos
+10-30 18:59:53.046  9376  9403 W ThinkOS : [plugin:gallery] Local gallery reached its item or state-size budget
+10-30 18:59:53.129  9376  9376 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=40201, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.1.0, bytes=45266, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=106920, disabled=false, error=null)]
+10-30 18:59:53.346  9376  9376 D ThinkOS : [image:gallery] displayed file:/storage/emulated/0/Android/data/moe.kiwi.thinkos/files/Pictures/ThinkOSGalleryTest-59792/01-wide.png 2146x715
+10-30 18:59:53.489  9376  9376 I ThinkOS : attention=AMBIENT
+10-30 19:00:18.594  9376  9402 W ThinkOS : time sync failed (2); retry in 60s
+10-30 19:00:23.430  9376  9376 D ThinkOS : [image:gallery] displayed file:/storage/emulated/0/Android/data/moe.kiwi.thinkos/files/Pictures/ThinkOSGalleryTest-59792/02-portrait.png 800x1600
+10-30 19:00:51.516  9376  9403 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Unable to resolve host "api.open-meteo.com": No address associated with hostname
+10-30 19:01:02.097  9376  9376 D ThinkOS : [image:gallery] displayed file:/storage/emulated/0/Android/data/moe.kiwi.thinkos/files/Pictures/ThinkOSGalleryTest-59792/03-fit.png 1280x800
+10-30 19:01:18.663  9376  9402 W ThinkOS : time sync failed (3); retry in 120s
+10-30 19:01:33.035  9376  9376 D ThinkOS : [image:gallery] displayed file:/storage/emulated/0/Android/data/moe.kiwi.thinkos/files/Pictures/ThinkOSGalleryTest-59792/10-stress-000.png 2146x715
+10-30 19:02:03.911  9376  9376 D ThinkOS : [image:gallery] displayed file:/storage/emulated/0/Android/data/moe.kiwi.thinkos/files/Pictures/ThinkOSGalleryTest-59792/10-stress-001.png 800x1600
+10-30 19:02:42.581  9376  9376 D ThinkOS : [image:gallery] displayed file:/storage/emulated/0/Android/data/moe.kiwi.thinkos/files/Pictures/ThinkOSGalleryTest-59792/10-stress-002.png 1280x800
+10-30 19:02:51.640  9376  9403 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Unable to resolve host "api.open-meteo.com": No address associated with hostname
+10-30 19:03:13.524  9376  9376 D ThinkOS : [image:gallery] displayed file:/storage/emulated/0/Android/data/moe.kiwi.thinkos/files/Pictures/ThinkOSGalleryTest-59792/10-stress-003.png 2146x715
+10-30 19:03:18.782  9376  9402 W ThinkOS : time sync failed (4); retry in 240s
+10-30 19:03:44.393  9376  9376 D ThinkOS : [image:gallery] displayed file:/storage/emulated/0/Android/data/moe.kiwi.thinkos/files/Pictures/ThinkOSGalleryTest-59792/10-stress-004.png 800x1600
+10-30 19:04:23.062  9376  9376 D ThinkOS : [image:gallery] displayed file:/storage/emulated/0/Android/data/moe.kiwi.thinkos/files/Pictures/ThinkOSGalleryTest-59792/10-stress-005.png 1280x800
+10-30 19:04:54.843  9376  9403 I ThinkOS : [plugin:gallery] Local gallery scanned 300 photos
+10-30 19:04:54.843  9376  9403 W ThinkOS : [plugin:gallery] Local gallery reached its item or state-size budget
+10-30 19:07:18.894  9376  9402 W ThinkOS : time sync failed (5); retry in 480s
+10-30 19:07:51.740  9376  9403 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Unable to resolve host "api.open-meteo.com": No address associated with hostname
+10-30 19:09:55.896  9376  9403 I ThinkOS : [plugin:gallery] loaded 0.1.0; Lua 42043 bytes
+10-30 19:09:55.998  9376  9376 I ThinkOS : Configuration changed without Activity recreation: 1
+10-30 19:09:56.080  9376  9403 I ThinkOS : [plugin:gallery] Local gallery scanned 3 photos
+10-30 19:09:56.145  9376  9376 I ThinkOS : attention=ASLEEP

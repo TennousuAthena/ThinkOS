@@ -19,7 +19,7 @@ plugins/<id>/
 | `home` | 首页双栈小组件（纯声明，无进程） |
 | `clock` | 时间卡片 + 全屏时钟页面（多种表盘） |
 | `weather` | 天气卡片 + 详情页 |
-| `gallery` | 相册轮播页面 + 预览卡片 |
+| `gallery` | 默认 Bing 每日一图，可选本地/混合；API 3 平移轮播、预览和离线缓存，无需 Server |
 | `music` | 正在播放页面 + 迷你播放卡片 + 播放指令 |
 | `notify` | 外部 HTTP 通知转为屏幕通知 |
 
@@ -38,3 +38,5 @@ plugins/<id>/
 - 给仓库加上 topic **`thinkos-plugin`**，别人就能在 GitHub / GitLab / Gitea / Forgejo 上搜到
 - 安装在 Server 上完成：`thinkos-server plugin add <仓库地址> [--tag vX.Y.Z] [--path 子目录]`，安装前会列出权限，确认后才安装；设备装好后离线也能运行
 - 详见 `../docs/06-plugins.md` §12
+
+相册 API、送图方式与验收记录见 `docs/06-plugins.md` §4.1.1 / §6.6 和 `docs/21-gallery-handoff.md`。

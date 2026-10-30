@@ -14,6 +14,16 @@ import java.util.Locale
  */
 class StringTable(private val tables: Map<String, Map<String, String>>) {
     val languages: Set<String> get() = tables.keys
+    // NumberFormat is expensive on API 27 and is not thread-safe. Keep one per calling
+    // thread and replace it when the locale changes; string-only arguments need none.
+    private val numberFormat = ThreadLocal<Pair<Locale, NumberFormat>>()
+    private fun numbers(locale: Locale): NumberFormat {
+        numberFormat.get()?.let { if (it.first == locale) return it.second }
+        return NumberFormat.getInstance(locale).apply {
+            maximumFractionDigits = 3
+            numberFormat.set(locale to this)
+        }
+    }
 
     fun raw(key: String, locale: Locale): String? {
         for (name in LocaleChain.candidates(locale)) tables[name]?.get(key)?.let { return it }
@@ -28,7 +38,6 @@ class StringTable(private val tables: Map<String, Map<String, String>>) {
         val template = (if (count != null) raw("$key.${Plurals.category(locale, count)}", locale) ?: raw("$key.other", locale) else null)
             ?: raw(key, locale) ?: return null
         if (params.isEmpty() || '{' !in template) return template
-        val numbers = NumberFormat.getInstance(locale).apply { maximumFractionDigits = 3 }
         return buildString {
             var i = 0
             while (i < template.length) {
@@ -39,7 +48,7 @@ class StringTable(private val tables: Map<String, Map<String, String>>) {
                 val name = template.substring(open + 1, close)
                 when (val value = if (name in params) params[name] else null) {
                     null -> append(template, open, close + 1)         // unknown placeholder stays visible
-                    is Number -> append(numbers.format(value))
+                    is Number -> append(numbers(locale).format(value))
                     else -> append(value.toString())
                 }
                 i = close + 1

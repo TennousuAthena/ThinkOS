@@ -1,0 +1,23 @@
+{
+  "template": "glance",
+  "relevance": 0.2,
+  "children": [
+    {
+      "type": "image",
+      "src": "{{cover}}",
+      "fit": "contain",
+      "pan": false,
+      "weight": 1
+    },
+    {
+      "type": "text",
+      "value": "{{coverTitle}}",
+      "style": "caption"
+    },
+    {
+      "type": "text",
+      "value": "{{coverCredit}}",
+      "style": "caption"
+    }
+  ]
+}

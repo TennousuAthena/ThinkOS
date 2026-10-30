@@ -1,0 +1,83 @@
+{
+  "complete": true,
+  "jvmTests": 211,
+  "jvmFailures": 0,
+  "pythonTests": 31,
+  "nativeLua": "passed",
+  "goProtocol": "passed",
+  "lint": "passed",
+  "assembleDebug": "passed",
+  "abi": [
+    "armeabi-v7a"
+  ],
+  "minSdk": 27,
+  "targetSdk": 27,
+  "apkSha256": "80170dc544145958a29e13debf7f05e46bc47ca677a62de6528ba6295a28bfbc",
+  "installedApkMatchesBuild": true,
+  "features": {
+    "history": "up=older, down=newer, bounded manual browsing; autoplay loops",
+    "pan": "native display-rate eased subpixel translation, random direction per photo, 12-second minimum sweep, 45dp/s cap",
+    "clock": "white fill with narrow 1.25dp black contour (0xBB alpha), including day period and unsynced text"
+  },
+  "gestureChecks": [
+    "down at newest photo stops at the history boundary",
+    "up browses older and down returns to newer; gallery page stays selected",
+    "short drag springs back without changing selection",
+    "rapid alternating swipes keep the current gallery and runtime healthy",
+    "horizontal swipes retain OS page navigation",
+    "long press still opens the native settings page",
+    "history and outlined white time render in both orientations and themes",
+    "native panning recorded separately from performance samples",
+    "portrait active sweep sampled with animations enabled",
+    "600-second foreground stability sample captured; mixed interaction/page conditions"
+  ],
+  "asyncRaceChecks": [
+    "a second swipe advances past a downloading image; late HTTP completion cannot replace it",
+    "oldest history boundary does not wrap to newest",
+    "cancelled preview stays on the selected image after decoding",
+    "download cancellation releases the URL lock; reverse browsing subsequently loads the same image"
+  ],
+  "localRegression": [
+    "local library, hot replacement, sampled decode and gallery page render without restarting",
+    "tap advances; native carousel leaves page gestures to the OS",
+    "landscape and portrait render in LIGHT and DARK",
+    "NIGHT exits ambient photo pages",
+    "50 photo changes and malformed-image skipping without process restart",
+    "repeated metadata scans keep file descriptor usage bounded",
+    "reduced motion switches from pan to whole-image contain",
+    "leaving the page stops carousel decode and timers",
+    "offline cold launch <3s; local photos render with no Server"
+  ],
+  "bingRegression": [
+    "device renders the real Bing daily image through the OS HTTP/cache pipeline",
+    "tap advances across at least three real Bing photos",
+    "the same complete landscape source is reused in portrait with pan",
+    "offline cold start renders cached Bing metadata and image without Server",
+    "caption-off mode keeps the separate copyright credit visible (screenshot)"
+  ],
+  "offlineColdStartMs": 467,
+  "activePortraitSweep": {
+    "seconds": 15.07,
+    "frames": 917,
+    "jankyFrames": 20,
+    "jankyPct": 2.18,
+    "p99ms": 18,
+    "cpuMeanOneCorePct": 51.427,
+    "pssKiB": 105292,
+    "renderCadence": "approximately 60 fps while sweeping",
+    "caveat": "Prioritizes continuous motion; active CPU exceeds the old <8% target. Not an idle CPU sample."
+  },
+  "foregroundStability": {
+    "seconds": 600.08,
+    "cpuMeanOneCorePct": 12.943,
+    "jankyPct": 1.24,
+    "p99ms": 17,
+    "pidStable": true,
+    "caveat": "The 600-second sample includes extra unscripted photo changes and lacks an end-of-sample page snapshot. It is a foreground stability sample, not an isolated ten-minute gallery/idle CPU measurement."
+  },
+  "restored": {
+    "wifiOn": true,
+    "animatorScaleKeyAbsent": true,
+    "developmentOverrides": []
+  }
+}

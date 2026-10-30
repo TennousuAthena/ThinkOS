@@ -7,6 +7,10 @@
 
 > **用户最新指示（同日，优先于后面的原始待办顺序）**：暂不实现完整功能，仅测试 UI。当前验证原生组件、设置交互与模拟通知界面；媒体 Runtime/Lua/权限、图片轮播、内容插件数据接线和 HTTP 通知监听均暂缓。未落源码的媒体接线草稿在 `/tmp/thinkos-media-integration`，不是已实现功能。UI 记录见 `17-ui-validation.md`。
 
+> **天气续作（同日）**：用户已明确解除天气数据接线暂缓，完成范围为 W0–W2；天气图标、卡片/详情、实时预报、缓存与恢复见 `20-weather-handoff.md` 的续作记录。媒体等其它暂缓项不受影响。
+
+> **相册续作（同日）**：用户已解除相册与通用图片接口的暂缓，并补充要求实现微软每日一图。API 3 的 `image/carousel`、`tos.library.list`、通用网络图片/缓存和 `gallery` 已实现；默认 Bing，可选本地/混合，完整画面平移、不永久裁切。Server 下发/管理暂缓。媒体播放与 HTTP 通知仍暂缓。公开接口与验收见 `21-gallery-handoff.md`、`06-plugins.md`。
+
 ## 0. 接手后的第一小时
 
 1. 读：`AGENTS.md` → `01-vision.md` → `03-architecture.md` → `06-plugins.md`（§11 设置、§12 Git 安装）→ `08-decisions.md`（ADR-013 到 018）→ 本文。
@@ -67,7 +71,8 @@
 | **天文引擎** | ⏳ 刚开头，**未接线** | 见 §3.3 |
 | Media3 依赖 | ⏳ 已加入，**没有任何代码使用** | 构建通过，APK 仍只含 armv7 的 `libtos.so`，无新增原生库 |
 | 媒体引擎、图片轮播、组件库、位置设置、通知叠层 | ❌ 未开始（只有设计草案，见 §4） | — |
-| 插件 `weather` `gallery` `music` `notify` | ❌ 未开始 | `plugins/` 下四个目录是空的 |
+| 插件 `weather` | ✅ W0–W2 已落地 | 图标、卡片/详情、直连预报与缓存，详见 `20-weather-handoff.md` 续作验收 |
+| 插件 `gallery` `music` `notify` | ❌ 完整功能暂缓 | 沿用用户 UI 阶段指示 |
 | 插件目录化（`.tpk` → 目录 + `index.json`） | ❌ | 设备端仍用 `.tpk` 解包 |
 | Server（Go） | 仅骨架 | M2，不在当前范围 |
 | 文档 | ⚠️ 落后于代码 | 见 §7 |

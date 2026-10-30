@@ -5,6 +5,16 @@ import kotlin.math.floor
 
 /** Integer geometry shared by native renderers; independent of Android so edge cases run on JVM. */
 object RenderGeometry {
+    /** Fixed photo-clock placement, not a plugin alignment/style option. */
+    fun photoClock(width: Int, height: Int, density: Float): Box {
+        val w = width.coerceAtLeast(0); val h = height.coerceAtLeast(0)
+        val d = density.toDouble().takeIf { it.isFinite() && it > 0 } ?: 1.0
+        fun dp(value: Int) = (value * d).coerceIn(0.0, Int.MAX_VALUE.toDouble()).toInt()
+        val edge = minOf(dp(24), w / 2, h / 2)
+        val clockWidth = minOf(dp(220), w - 2 * edge)
+        val clockHeight = minOf(dp(56), h - 2 * edge)
+        return Box(w - edge - clockWidth, edge, w - edge, edge + clockHeight)
+    }
     data class Box(val left: Int, val top: Int, val right: Int, val bottom: Int) {
         val width: Int get() = right - left
         val height: Int get() = bottom - top

@@ -1,0 +1,6 @@
+{
+  "id":"gallery-history-probe","name":"History gesture probe","version":"0.1.0","api":3,"main":"main.lua",
+  "permissions":["network"],
+  "settings":{"base_url":{"type":"text","label":"Fixture endpoint","default":"http://127.0.0.1:8119","maxLength":512,"hidden":true}},
+  "pages":[{"id":"history","view":"views/history.json","title":"History gesture probe"}]
+}

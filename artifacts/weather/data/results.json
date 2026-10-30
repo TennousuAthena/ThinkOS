@@ -1,0 +1,107 @@
+{
+  "complete": true,
+  "initialPid": "27570",
+  "digest": "fbe9c5cab73a4898aa1dd17d9bbd847f586109d5410b3811b056c2d527af36ce",
+  "passed": [
+    "start never waits for HTTP",
+    "fixture loads through actual PluginHttp and JNI",
+    "unit and locale render locally without HTTP",
+    "preserves snapshot after /503",
+    "preserves snapshot after /slow",
+    "preserves snapshot after /html",
+    "preserves snapshot after /missing",
+    "scheduled retry automatically recovers",
+    "wake keeps a still-fresh snapshot without duplicate HTTP",
+    "ASLEEP suppresses all new requests",
+    "wake resumes an overdue refresh",
+    "untrusted clock uses short retry without a relative age",
+    "time sync triggers refresh on the next minute tick",
+    "old-location response is discarded while HTTP is suspended",
+    "newest coordinates win after the race",
+    "five daily labels stay distinct across the New York DST boundary",
+    "real forecast TLS and WMO fields work on API 27",
+    "hot replacement starts production weather from cache without changing PID",
+    "hot replacement inherits ASLEEP and only refreshes after the next wake"
+  ],
+  "httpRequests": [
+    {
+      "url": "/good?latitude=22.547210&longitude=114.131490&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=celsius&wind_speed_unit=kmh&forecast_days=5&timezone=auto&timeformat=unixtime",
+      "at": 1793351424.034928
+    },
+    {
+      "url": "/503?latitude=22.547210&longitude=114.131490&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=celsius&wind_speed_unit=kmh&forecast_days=5&timezone=auto&timeformat=unixtime",
+      "at": 1793351424.668441
+    },
+    {
+      "url": "/good?latitude=22.547210&longitude=114.131490&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=celsius&wind_speed_unit=kmh&forecast_days=5&timezone=auto&timeformat=unixtime",
+      "at": 1793351424.747752
+    },
+    {
+      "url": "/slow?latitude=22.547210&longitude=114.131490&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=celsius&wind_speed_unit=kmh&forecast_days=5&timezone=auto&timeformat=unixtime",
+      "at": 1793351424.813567
+    },
+    {
+      "url": "/good?latitude=22.547210&longitude=114.131490&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=celsius&wind_speed_unit=kmh&forecast_days=5&timezone=auto&timeformat=unixtime",
+      "at": 1793351427.902279
+    },
+    {
+      "url": "/html?latitude=22.547210&longitude=114.131490&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=celsius&wind_speed_unit=kmh&forecast_days=5&timezone=auto&timeformat=unixtime",
+      "at": 1793351427.970858
+    },
+    {
+      "url": "/good?latitude=22.547210&longitude=114.131490&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=celsius&wind_speed_unit=kmh&forecast_days=5&timezone=auto&timeformat=unixtime",
+      "at": 1793351428.025501
+    },
+    {
+      "url": "/missing?latitude=22.547210&longitude=114.131490&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=celsius&wind_speed_unit=kmh&forecast_days=5&timezone=auto&timeformat=unixtime",
+      "at": 1793351428.082182
+    },
+    {
+      "url": "/good?latitude=22.547210&longitude=114.131490&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=celsius&wind_speed_unit=kmh&forecast_days=5&timezone=auto&timeformat=unixtime",
+      "at": 1793351428.139746
+    },
+    {
+      "url": "/503?latitude=22.547210&longitude=114.131490&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=celsius&wind_speed_unit=kmh&forecast_days=5&timezone=auto&timeformat=unixtime",
+      "at": 1793351428.198655
+    },
+    {
+      "url": "/good?latitude=22.547210&longitude=114.131490&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=celsius&wind_speed_unit=kmh&forecast_days=5&timezone=auto&timeformat=unixtime",
+      "at": 1793351438.255925
+    },
+    {
+      "url": "/good?latitude=22.547210&longitude=114.131490&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=celsius&wind_speed_unit=kmh&forecast_days=5&timezone=auto&timeformat=unixtime",
+      "at": 1793351439.029116
+    },
+    {
+      "url": "/503?latitude=22.547210&longitude=114.131490&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=celsius&wind_speed_unit=kmh&forecast_days=5&timezone=auto&timeformat=unixtime",
+      "at": 1793351439.576897
+    },
+    {
+      "url": "/good?latitude=22.547210&longitude=114.131490&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=celsius&wind_speed_unit=kmh&forecast_days=5&timezone=auto&timeformat=unixtime",
+      "at": 1793351439.694687
+    },
+    {
+      "url": "/delayed?latitude=31.200000&longitude=121.500000&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=celsius&wind_speed_unit=kmh&forecast_days=5&timezone=auto&timeformat=unixtime",
+      "at": 1793351440.263911
+    },
+    {
+      "url": "/good?latitude=40.700000&longitude=-74.000000&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=celsius&wind_speed_unit=kmh&forecast_days=5&timezone=auto&timeformat=unixtime",
+      "at": 1793351440.855917
+    },
+    {
+      "url": "/dst?latitude=40.700000&longitude=-74.000000&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=celsius&wind_speed_unit=kmh&forecast_days=5&timezone=auto&timeformat=unixtime",
+      "at": 1793351441.619067
+    },
+    {
+      "url": "/good?latitude=22.547210&longitude=114.131490&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=celsius&wind_speed_unit=kmh&forecast_days=5&timezone=auto&timeformat=unixtime",
+      "at": 1793351441.768827
+    },
+    {
+      "url": "/good?latitude=22.547210&longitude=114.131490&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=celsius&wind_speed_unit=kmh&forecast_days=5&timezone=auto&timeformat=unixtime",
+      "at": 1793351446.3051789
+    }
+  ],
+  "diagnostics": "DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=LIGHT, orientation=PORTRAIT, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=54833, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=42016, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=123355, disabled=false, error=null), PluginDiagnostic(id=weather-probe, version=0.1.1, bytes=106654, disabled=false, error=null)]",
+  "settingsUnchanged": true,
+  "logcat": "logcat.txt"
+}

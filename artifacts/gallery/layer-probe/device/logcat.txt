@@ -1,0 +1,31 @@
+--------- beginning of main
+10-30 19:22:36.789 12812 12812 I ThinkOS : tzdata 2026e (419 zones)
+10-30 19:22:37.001 12812 12812 I ThinkOS : Runtime started; local mode, safe=false
+10-30 19:22:37.004 12812 12812 I ThinkOS : Activity created; orientation=1
+10-30 19:22:37.821 12812 12845 I ThinkOS : [plugin:clock] loaded 0.3.0; Lua 32228 bytes
+10-30 19:22:38.182 12812 12845 I ThinkOS : [plugin:gallery] loaded 0.1.0; Lua 42043 bytes
+10-30 19:22:38.482 12812 12845 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-30 19:22:38.962 12812 12845 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-30 19:22:39.337 12812 12845 I ThinkOS : [plugin:weather] loaded 0.1.0; Lua 99551 bytes
+10-30 19:22:40.751 12812 12845 I ThinkOS : [plugin:gallery] loaded 0.1.0; Lua 42137 bytes
+10-30 19:22:41.924 12812 12812 I ThinkOS : Configuration changed without Activity recreation: 2
+10-30 19:22:42.019 12812 12812 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=36543, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.1.0, bytes=43035, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=102447, disabled=false, error=null)]
+10-30 19:22:42.251 12812 12812 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=36543, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.1.0, bytes=43035, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=102447, disabled=false, error=null)]
+10-30 19:22:42.777 12812 12845 I ThinkOS : [plugin:gallery] Local gallery scanned 300 photos
+10-30 19:22:42.777 12812 12845 W ThinkOS : [plugin:gallery] Local gallery reached its item or state-size budget
+10-30 19:22:44.123 12812 12812 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=clock.face, variant=world, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=40490, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.1.0, bytes=746255, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=102447, disabled=false, error=null)]
+10-30 19:22:45.441 12812 12812 D ThinkOS : [image:gallery] displayed file:/storage/emulated/0/Android/data/moe.kiwi.thinkos/files/Pictures/ThinkOSGalleryTest-82725/01-wide.png 2146x715
+10-30 19:22:45.953 12812 12812 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=41393, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.1.0, bytes=747208, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=102447, disabled=false, error=null)]
+10-30 19:22:47.172 12812 12845 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-30 19:22:48.024 12812 12812 I ThinkOS : attention=AMBIENT
+10-30 19:22:49.186 12812 13023 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-30 19:22:53.861 12812 12844 I ThinkOS : time sync: 1.pool.ntp.org 111.230.189.174 offset=62ms rtt=31ms
+10-30 19:23:15.517 12812 12812 D ThinkOS : [image:gallery] displayed file:/storage/emulated/0/Android/data/moe.kiwi.thinkos/files/Pictures/ThinkOSGalleryTest-82725/02-portrait.png 800x1600
+10-30 19:23:22.365 12812 12812 W ThinkOS : [image:gallery] open failed: ENOENT (No such file or directory)
+10-30 19:23:22.447 12812 12812 W ThinkOS : [image:gallery] open failed: ENOENT (No such file or directory)
+10-30 19:23:22.505 12812 12812 W ThinkOS : [image:gallery] open failed: ENOENT (No such file or directory)
+10-30 19:23:22.528 12812 12812 I ThinkOS : Configuration changed without Activity recreation: 1
+10-30 19:23:22.532 12812 12812 W ThinkOS : [image:gallery] open failed: ENOENT (No such file or directory)
+10-30 19:23:22.620 12812 12845 I ThinkOS : [plugin:gallery] loaded 0.1.0; Lua 42043 bytes
+10-30 19:23:22.633 12812 12812 I ThinkOS : attention=AWAKE
+10-30 19:23:22.786 12812 12845 I ThinkOS : [plugin:gallery] Local gallery scanned 3 photos

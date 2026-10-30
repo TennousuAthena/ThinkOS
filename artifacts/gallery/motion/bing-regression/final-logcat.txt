@@ -1,0 +1,25 @@
+--------- beginning of main
+10-30 21:55:46.449 23895 23895 I ThinkOS : tzdata 2026e (419 zones)
+10-30 21:55:46.684 23895 23895 I ThinkOS : Runtime started; local mode, safe=false
+10-30 21:55:46.686 23895 23895 I ThinkOS : Activity created; orientation=1
+10-30 21:55:46.700 23895 23917 W ThinkOS : time sync failed (1); retry in 30s
+10-30 21:55:47.399 23895 23895 I ThinkOS : Configuration changed without Activity recreation: 2
+10-30 21:55:47.488 23895 23895 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[]
+10-30 21:55:47.558 23895 23918 I ThinkOS : [plugin:clock] loaded 0.3.0; Lua 32228 bytes
+10-30 21:55:47.992 23895 23918 I ThinkOS : [plugin:gallery] loaded 0.3.0; Lua 100302 bytes
+10-30 21:55:48.052 23895 23918 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-30 21:55:48.232 23895 23918 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-30 21:55:48.546 23895 23918 I ThinkOS : [plugin:weather] loaded 0.1.0; Lua 99603 bytes
+10-30 21:55:49.425 23895 23895 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=clock.face, variant=solar, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=39298, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=101272, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=100479, disabled=false, error=null)]
+10-30 21:55:49.591 23895 23918 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Unable to resolve host "api.open-meteo.com": No address associated with hostname
+10-30 21:55:50.803 23895 23895 D ThinkOS : [image:gallery] displayed OHR.AutumnCranes
+10-30 21:55:50.805 23895 23895 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-30 21:55:51.301 23895 23895 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=40201, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=102225, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=107164, disabled=false, error=null)]
+10-30 21:56:03.947 23895 23918 I ThinkOS : [plugin:gallery] loaded 0.3.0; Lua 100322 bytes
+10-30 21:56:04.118 23895 23895 D ThinkOS : [image:gallery] displayed OHR.AutumnCranes
+10-30 21:56:04.119 23895 23895 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-30 21:56:04.585 23895 23895 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=44105, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=101292, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=111921, disabled=false, error=null)]
+10-30 21:56:15.269 23895 23918 I ThinkOS : [plugin:gallery] loaded 0.3.0; Lua 100302 bytes
+10-30 21:56:15.460 23895 23895 D ThinkOS : [image:gallery] displayed OHR.AutumnCranes
+10-30 21:56:15.462 23895 23895 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-30 21:56:17.127 23895 23895 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=gallery.slideshow, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=clock, version=0.3.0, bytes=44105, disabled=false, error=null), PluginDiagnostic(id=gallery, version=0.3.0, bytes=101272, disabled=false, error=null), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null), PluginDiagnostic(id=settings, version=0.1.0, bytes=40149, disabled=false, error=null), PluginDiagnostic(id=weather, version=0.1.0, bytes=111921, disabled=false, error=null)]

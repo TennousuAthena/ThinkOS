@@ -63,6 +63,23 @@ class I18nTest {
     }
 
     @Test
+    fun repeatedNumbersFollowLocaleOnConcurrentUiAndPluginThreads() {
+        val pool = java.util.concurrent.Executors.newFixedThreadPool(2)
+        try {
+            val work = listOf(Locale.US to "Paris: 21.5°", Locale.FRANCE to "Paris: 21,5°").map { (locale, expected) ->
+                pool.submit {
+                    repeat(200) {
+                        assertEquals(expected, table.format("temp", locale, mapOf("city" to "Paris", "value" to 21.5)))
+                    }
+                }
+            }
+            work.forEach { it.get(5, java.util.concurrent.TimeUnit.SECONDS) }
+            assertEquals("Paris: 21.5°", table.format("temp", Locale.US, mapOf("city" to "Paris", "value" to 21.5)))
+            assertEquals("Paris: 21,5°", table.format("temp", Locale.FRANCE, mapOf("city" to "Paris", "value" to 21.5)))
+        } finally { pool.shutdownNow() }
+    }
+
+    @Test
     fun englishPlurals() {
         assertEquals("1 item", table.format("items", Locale.ENGLISH, mapOf("count" to 1)))
         assertEquals("2 items", table.format("items", Locale.ENGLISH, mapOf("count" to 2)))

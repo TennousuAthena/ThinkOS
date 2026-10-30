@@ -1,0 +1,102 @@
+{
+  "pid": 12291,
+  "tick_hz": 100,
+  "unit": "percent of one CPU core",
+  "samples": [
+    {
+      "elapsed_s": 10.09,
+      "cpu_pct": 61.843
+    },
+    {
+      "elapsed_s": 20.2,
+      "cpu_pct": 55.391
+    },
+    {
+      "elapsed_s": 30.29,
+      "cpu_pct": 56.987
+    },
+    {
+      "elapsed_s": 40.38,
+      "cpu_pct": 54.609
+    },
+    {
+      "elapsed_s": 50.45,
+      "cpu_pct": 55.015
+    },
+    {
+      "elapsed_s": 60.54,
+      "cpu_pct": 53.221
+    },
+    {
+      "elapsed_s": 70.64,
+      "cpu_pct": 43.861
+    },
+    {
+      "elapsed_s": 80.73,
+      "cpu_pct": 5.352
+    },
+    {
+      "elapsed_s": 90.82,
+      "cpu_pct": 3.568
+    },
+    {
+      "elapsed_s": 100.92,
+      "cpu_pct": 13.564
+    },
+    {
+      "elapsed_s": 111.0,
+      "cpu_pct": 54.067
+    },
+    {
+      "elapsed_s": 121.1,
+      "cpu_pct": 54.356
+    },
+    {
+      "elapsed_s": 131.17,
+      "cpu_pct": 51.539
+    },
+    {
+      "elapsed_s": 141.26,
+      "cpu_pct": 55.798
+    },
+    {
+      "elapsed_s": 151.34,
+      "cpu_pct": 53.968
+    },
+    {
+      "elapsed_s": 161.42,
+      "cpu_pct": 52.877
+    },
+    {
+      "elapsed_s": 171.51,
+      "cpu_pct": 41.229
+    },
+    {
+      "elapsed_s": 181.61,
+      "cpu_pct": 5.347
+    },
+    {
+      "elapsed_s": 191.7,
+      "cpu_pct": 2.676
+    },
+    {
+      "elapsed_s": 201.78,
+      "cpu_pct": 15.675
+    },
+    {
+      "elapsed_s": 211.87,
+      "cpu_pct": 55.798
+    },
+    {
+      "elapsed_s": 221.96,
+      "cpu_pct": 54.113
+    },
+    {
+      "elapsed_s": 232.06,
+      "cpu_pct": 52.277
+    }
+  ],
+  "elapsed_s": 232.06,
+  "mean_cpu_pct": 41.438,
+  "max_cpu_pct": 61.843
+}

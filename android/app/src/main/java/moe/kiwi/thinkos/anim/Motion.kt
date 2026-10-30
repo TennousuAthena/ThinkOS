@@ -15,6 +15,11 @@ import kotlin.math.exp
 import kotlin.math.sin
 import kotlin.math.sqrt
 
+/** Live copy of the animation presets in system settings, read on the main thread when an animation starts. */
+object MotionPrefs {
+    @Volatile var clock = "roll"
+}
+
 object Motion {
     const val PAGE = 320L
     const val VARIANT = 350L
@@ -90,12 +95,14 @@ class FrameGovernor {
     var attention = Attention.AWAKE
     var reducedMotion = false
     var activeAnimations = false
+    var ambientAnimations = false
     val fps: Int
         get() = when {
             reducedMotion -> 5
             attention == Attention.ASLEEP -> if (activeAnimations) 5 else 1
             activeAnimations && attention in setOf(Attention.AWAKE, Attention.ENGAGED) -> 60
             activeAnimations -> 30
+            ambientAnimations && attention in setOf(Attention.AWAKE, Attention.ENGAGED) -> 30
             attention == Attention.AMBIENT -> 3
             else -> 1
         }

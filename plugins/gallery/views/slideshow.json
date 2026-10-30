@@ -1,0 +1,30 @@
+{
+  "layout": "stage",
+  "slots": {
+    "stage": {
+      "type": "carousel",
+      "items": "photos",
+      "interval": "{{config.interval}}",
+      "duration": "{{config.duration}}",
+      "transition": "{{config.transition}}",
+      "fit": "pan",
+      "pan": "{{config.pan}}",
+      "pan_speed": "{{config.pan_speed}}",
+      "shuffle": "{{config.shuffle}}",
+      "caption": "{{config.caption}}",
+      "caption_hold": "{{config.caption_hold}}",
+      "pan_seconds": "{{config.pan_seconds}}",
+      "pan_direction": "{{config.pan_direction}}"
+    },
+    "over": {
+      "type": "clock",
+      "style": "float",
+      "format": "@time"
+    },
+    "under": {
+      "type": "text",
+      "value": "{{notice}}",
+      "style": "caption"
+    }
+  }
+}

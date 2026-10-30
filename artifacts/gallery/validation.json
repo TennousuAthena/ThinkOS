@@ -1,0 +1,65 @@
+{
+  "complete": true,
+  "jvmTests": 206,
+  "jvmFailures": 0,
+  "pythonTests": 31,
+  "nativeLua": "passed; production bootstrap/JSON transport, full 300-photo state, UTF-8 and byte budgets",
+  "goProtocol": "GO111MODULE=off go test ./server/internal/protocol passed",
+  "apkSha256": "a974d71cbc05f7082c3b8350526c66acca9297b20e682001b9ae8bf2fd077669",
+  "installedApkMatchesBuild": true,
+  "abi": [
+    "armeabi-v7a"
+  ],
+  "minSdk": 27,
+  "targetSdk": 27,
+  "conditions": {
+    "animatorDurationScaleDuringTest": 1,
+    "panSpeedDpPerSecond": 3,
+    "ambientPanFps": 5,
+    "awakePanFps": 30,
+    "wifiDuringColdStartAndBenchmark": false,
+    "serverRequired": false,
+    "libraryFixtureFiles": 524,
+    "libraryResultCap": 512,
+    "galleryPhotos": 300
+  },
+  "ambient": {
+    "seconds": 600.08,
+    "cpuMeanOneCorePct": 5.024,
+    "max10SecondSampleCpuPct": 31.349,
+    "jankyFrames": 76,
+    "totalFrames": 2626,
+    "jankyPct": 2.89,
+    "p99ms": 18,
+    "pssKiB": 69088,
+    "pidStable": true
+  },
+  "ui": {
+    "complete": true,
+    "passed": [
+      "512-item native library result and 300-photo Lua state stay within runtime budgets",
+      "local library, hot replacement, sampled decode and gallery page render without restarting",
+      "tap advances; native carousel leaves page gestures to the OS",
+      "landscape and portrait render in LIGHT and DARK",
+      "NIGHT exits ambient photo pages",
+      "50 photo changes and malformed-image skipping without process restart",
+      "repeated metadata scans keep file descriptor usage bounded",
+      "reduced motion switches from pan to whole-image contain",
+      "leaving the page stops carousel decode and timers",
+      "offline cold launch <3s; local photos render with no Server",
+      "600-second AMBIENT performance sample captured"
+    ],
+    "fileDescriptorsBefore": 66,
+    "fileDescriptorsAfter": 70,
+    "offlineColdStartMs": 756,
+    "finalPid": "14688"
+  },
+  "memoryAfter50ChangesPssKiB": 126337,
+  "restored": {
+    "animatorScaleKeyAbsent": true,
+    "wifiOn": true,
+    "developmentOverrides": []
+  },
+  "authoritativeDeviceArtifacts": "verified/",
+  "earlierSamples": "Superseded diagnostic records; some had invalid animation settings. Do not use for acceptance."
+}

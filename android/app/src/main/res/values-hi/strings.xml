@@ -10,7 +10,7 @@
     <string name="maintenance_diagnostics">निदान</string>
     <string name="maintenance_restore_plugins">अंतर्निहित प्लगइन बहाल करें</string>
     <string name="maintenance_reset_settings">सेटिंग रीसेट करें</string>
-    <string name="maintenance_android_settings">Android सेटिंग खोलें (वॉचडॉग 5 मिनट के लिए रुका)</string>
+    <string name="maintenance_android_settings">Android सेटिंग खोलें, वॉचडॉग 5 मिनट के लिए रुका</string>
     <string name="maintenance_exit_safe_mode">सुरक्षित मोड छोड़ें और पुनः आरंभ करें</string>
     <string name="maintenance_back">वापस</string>
     <string name="maintenance_restored">अंतर्निहित प्लगइन बहाल हुए</string>
@@ -43,7 +43,7 @@
     <string name="setting_group_kiosk">किओस्क</string>
     <string name="setting_group_time">समय</string>
     <string name="setting_theme_mode">थीम</string>
-    <string name="setting_theme_mode_auto">स्वचालित (परिवेशी प्रकाश)</string>
+    <string name="setting_theme_mode_auto">स्वचालित, परिवेशी प्रकाश</string>
     <string name="setting_theme_mode_sun">स्वचालित (सूर्योदय और सूर्यास्त)</string>
     <string name="setting_theme_mode_light">हमेशा हल्की</string>
     <string name="setting_theme_mode_dark">हमेशा गहरी</string>
@@ -56,19 +56,26 @@
     <string name="setting_display_orientation_auto">सेंसर के अनुसार</string>
     <string name="setting_display_orientation_landscape">लैंडस्केप</string>
     <string name="setting_display_orientation_portrait">पोर्ट्रेट</string>
+    <string name="setting_motion_clock">घड़ी एनिमेशन</string>
+    <string name="setting_motion_clock_none">कोई नहीं</string>
+    <string name="setting_motion_clock_roll">रोल</string>
+    <string name="setting_motion_clock_fade">फ़ेड</string>
+    <string name="setting_motion_clock_drop">गिरना</string>
+    <string name="setting_motion_clock_flip">फ़्लिप</string>
+    <string name="setting_motion_clock_zoom">ज़ूम</string>
     <string name="setting_display_brightness_max">अधिकतम चमक</string>
     <string name="setting_attention_awake_to_ambient_s">इतनी देर उपयोग न होने पर मंद करें</string>
     <string name="setting_attention_to_asleep_s">इतनी देर कोई पास न होने पर स्लीप</string>
     <string name="setting_attention_engaged_idle_s">इतनी देर निष्क्रिय रहने पर इंटरैक्शन समाप्त</string>
     <string name="setting_attention_ambient_page_after_s">मंद होने के इतनी देर बाद फ़ोटो पृष्ठ</string>
-    <string name="setting_server_url">Server पता (खाली = अपने-आप खोजें)</string>
+    <string name="setting_server_url">Server पता, खाली = अपने-आप खोजें</string>
     <string name="setting_server_token">पेयरिंग टोकन</string>
-    <string name="setting_kiosk_lock">सिस्टम UI लॉक करें (स्टेटस बार, जेस्चर, हाल के ऐप)</string>
-    <string name="setting_time_ntp_servers">NTP सर्वर (अल्पविराम से अलग)</string>
+    <string name="setting_kiosk_lock">सिस्टम UI लॉक करें</string>
+    <string name="setting_time_ntp_servers">NTP सर्वर, अल्पविराम से अलग</string>
     <string name="setting_time_sync_hour">प्रतिदिन समय समन्वय</string>
     <string name="setting_group_location">स्थान</string>
     <string name="setting_location_mode">स्थान का स्रोत</string>
-    <string name="setting_location_mode_auto">समय क्षेत्र का शहर (अनुमानित)</string>
+    <string name="setting_location_mode_auto">समय क्षेत्र का शहर, अनुमानित</string>
     <string name="setting_location_mode_manual">स्थान चुनें / निर्देशांक</string>
     <string name="setting_location_name">शहर, ज़िला या तहसील</string>
     <string name="setting_location_latitude">अक्षांश</string>
@@ -82,7 +89,7 @@
     <string name="form_place_empty">कोई स्थान नहीं मिला। दूसरा नाम आज़माएँ।</string>
     <string name="form_place_error">ऑनलाइन खोज उपलब्ध नहीं है। केवल डिवाइस में मौजूद समय क्षेत्र के शहर दिखाए जा रहे हैं।</string>
     <string name="form_place_invalid">इस स्थान के लिए कोई उपयोगी समय क्षेत्र नहीं है।</string>
-    <string name="form_place_attribution">खोज: Open-Meteo · स्थान डेटा: GeoNames (CC BY 4.0)</string>
+    <string name="form_place_attribution">खोज: Open-Meteo · स्थान डेटा: GeoNames, CC BY 4.0</string>
     <string name="media_previous">पिछला ट्रैक</string>
     <string name="media_play">चलाएँ</string>
     <string name="media_pause">रोकें</string>
