@@ -58,7 +58,7 @@ internal class TileView(
         override fun onMeasure(wSpec: Int, hSpec: Int) {
             val w = MeasureSpec.getSize(wSpec); val h = MeasureSpec.getSize(hSpec)
             arrange(w, h)
-            for ((v, b) in positions) v.measure(exact(b.width), exact(b.height))
+            for ((v, b) in positions) v.measure(exact(if (v.visibility == GONE) 0 else b.width), exact(if (v.visibility == GONE) 0 else b.height))
             setMeasuredDimension(w, h)
         }
         override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
@@ -83,6 +83,7 @@ internal class TileView(
         stopFlip()
         this.owner = owner; this.pageOwner = pageOwner; this.opens = opens; this.size = size
         signature = next; definition = declaration
+        value.setAutoSizeTextTypeUniformWithConfiguration(18, if (size == "small") 28 else 48, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
         val tile = declaration.optString("template") == "tile"
         if (!tile && declaration.has("template")) Log.w("ThinkOS", "glance in tiles: $owner; displaying empty tile")
         val array = if (tile) declaration.optJSONArray("faces") else null
@@ -109,7 +110,8 @@ internal class TileView(
             rendered = faces.map { f -> f.mapValues { it.value.render(snapshot, variant(), strings) } }
             if (faceIndex !in eligible()) faceIndex = eligible().firstOrNull() ?: 0
             showFace()
-            badge.text = badgeTemplate.render(snapshot, variant(), strings)
+            val badgeText = badgeTemplate.render(snapshot, variant(), strings)
+            if (badge.text.toString() != badgeText) badge.text = badgeText
             badge.visibility = if (badge.text.isEmpty()) GONE else VISIBLE
         }
         refreshColor(animate = !force)
@@ -118,10 +120,16 @@ internal class TileView(
     private fun showFace() {
         val f = rendered.getOrNull(faceIndex).orEmpty()
         val labelOnly = size == "small" && rendered.isNotEmpty() && eligible().isEmpty()
+        val hadValue = value.text.isNotEmpty()
+        val hadIcon = icon.name.isNotBlank()
         icon.name = if (labelOnly) "" else f["icon"].orEmpty()
-        value.text = if (labelOnly) f["label"].orEmpty() else f["value"].orEmpty(); label.text = f["label"].orEmpty(); detail.text = f["detail"].orEmpty()
-        contentDescription = listOf(label.text, value.text, detail.text).filter { it.isNotBlank() }.distinct().joinToString(" · ")
-        requestLayout()
+        if (hadIcon != icon.name.isNotBlank()) requestLayout()
+        fun text(view: TextView, next: String) { if (view.text.toString() != next) view.text = next }
+        text(value, if (labelOnly) f["label"].orEmpty() else f["value"].orEmpty())
+        text(label, f["label"].orEmpty()); text(detail, f["detail"].orEmpty())
+        if (hadValue != value.text.isNotEmpty()) requestLayout()
+        val description = listOf(label.text, value.text, detail.text).filter { it.isNotBlank() }.distinct().joinToString(" · ")
+        if (contentDescription?.toString() != description) contentDescription = description
     }
     private fun color(template: Binding.Template?, id: String, source: String): Int? {
         if (template == null) return null
@@ -194,7 +202,6 @@ internal class TileView(
             val right = (left + cw.coerceAtLeast(0)).coerceAtMost(w - p); val bottom = (top + ch.coerceAtLeast(0)).coerceAtMost(h - p)
             positions[v] = if (rtl) RenderGeometry.Box(w-right, top, w-left, bottom) else RenderGeometry.Box(left, top, right, bottom)
         }
-        value.setAutoSizeTextTypeUniformWithConfiguration(18, if (size == "small") 28 else 48, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
         val line = dp(30); val valH = dp(58); val iconSize = minOf(dp(if (size == "small") 44 else 40), iw, ih)
         if (size == "small") {
             place(icon, (iw-iconSize)/2, (ih-iconSize)/2, iconSize, iconSize, icon.name.isNotBlank())

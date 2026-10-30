@@ -16,7 +16,7 @@ import kotlin.math.sin
 /** Shared alpha masks are rasterised once; themes tint them without allocating new artwork. */
 internal class IconView(context: Context) : View(context) {
     var palette = Palette.DARK
-        set(value) { if (field != value) { field = value; invalidate() } }
+        set(value) { val repaint = field.accent != value.accent; field = value; if (repaint) invalidate() }
     var name = "sun"
         set(value) { if (field != value) { field = value; contentDescription = value; invalidate() } }
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
@@ -31,6 +31,7 @@ internal class IconView(context: Context) : View(context) {
     fun tick(now: Long, attention: Attention) {
         val active = name in weatherNames && name != "clear-night" &&
             (attention == Attention.AWAKE || attention == Attention.ENGAGED) && ValueAnimator.areAnimatorsEnabled()
+        if (active && animating && now - previous < 1000L / 30) return // Keep weather at 30fps when a tile transition raises the scene clock to 60.
         if (active) {
             if (animating && previous != 0L) phase += (now - previous).coerceIn(0, 100) / 1000.0
             invalidate()

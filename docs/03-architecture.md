@@ -898,3 +898,7 @@ Server： thinkos-server plugin add https://github.com/alice/thinkos-stocks --ta
 | P10 | 插件沙箱与预算：单次 50ms、每插件 4MB / 合计 24MB、禁用 io/os/package/debug | §3.7.3 |
 | P11 | 设置体系：系统级 + 页面级共用一种声明格式，`SettingsStore` 统一保管，设置界面是 `settings` 插件（**已定，ADR-017**） | §3.18 |
 | P12 | 插件以 Git 仓库分发，设备安装单位为目录 + 文件清单（**已定，ADR-018**） | §3.7.5、`06-plugins.md` §12 |
+
+### API 4 磁贴补充
+
+`tiles` 是原生固定网格，`tile` 是原生卡片模板；页面引用决定尺寸，Lua 只通过 tos.* 提供数据。底色是 ADR-025 对 ADR-017 的唯一外观例外，前景色与所有排版仍由 OS 决定。PageView 维护单个翻面调度器，失活或 AMBIENT 停止。系统设置 tiles.live/tiles.interval 仍经过共享 schema 和 SettingsStore；不引入新偏好文件。契约、代码和真机结果见 `24-tiles-validation.md`。

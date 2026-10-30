@@ -71,7 +71,7 @@ APK 根索引 `assets/plugins/index.json` 为 `{plugins:[上述完整索引…]}
 |---|---|---|
 | `id` | 是 | 全局唯一，小写字母数字与 `-`；也是页面/卡片/指令的命名空间 |
 | `name` / `version` | 是 | 显示名 / 语义化版本。用 Git 分发时，`version` 必须等于 git tag 去掉前缀 `v` 后的值（§12.2） |
-| `api` | 是 | 需要的运行时 API 版本（当前支持 `1` / `2` / `3`）；高于设备支持的版本时不会被安装 |
+| `api` | 是 | 需要的运行时 API 版本（当前支持 `1` / `2` / `3` / `4`）；高于设备支持的版本时不会被安装 |
 | `icon` | 否 | 包内相对路径 |
 | `main` | 否 | 入口 Lua 文件；省略即纯声明插件 |
 | `permissions` | 否 | 见 §6.3；未声明即拒绝 |
@@ -85,14 +85,14 @@ APK 根索引 `assets/plugins/index.json` 为 `{plugins:[上述完整索引…]}
 
 ## 4. 声明式视图
 
-视图只描述**内容与语义**，不描述像素、颜色、动画。排版、横竖屏、主题、夜间模式、动画都由设备完成。
+视图只描述**内容与语义**，不描述像素或自定义动画；ADR-025 仅开放 tile 磁贴底色 color，其它颜色仍由 OS 决定。排版、横竖屏、主题、夜间模式、动画都由设备完成。
 
 ### 4.1 渲染词汇
 
 | 层 | 可选值 |
 |---|---|
 | 页面版式 `layout` | API 1：`stacks` / `focus` / 设置专用 `form`（§11.3）；API 2：`split` / `stage`；API 4：`tiles` |
-| 卡片模板 `template` | 已实现 `glance`；M1 媒体与列表模板待实现 |
+| 卡片模板 `template` | API 1：`glance`；API 4：`tile`；M1 媒体与列表模板待实现 |
 | 组件 `type` | API 1：`text` / `icon` / `clock`，`form` 只用于设置版式；API 2：`progress` / `chart` / `list` / `daylight` / `moon`；API 3：`image` / `carousel` |
 | `clock.style` | `digital` / `analog` / `solar` / `world` / `float` |
 | `text.style` | `display` / `title` / `body` / `caption` |

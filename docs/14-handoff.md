@@ -260,3 +260,5 @@ shared/{schema,gen,i18n,tzdata,protocol}/   契约与生成脚本
 plugins/{home,clock,settings}/  已有；{weather,gallery,music,notify}/ 空目录
 tools/       deploy / plugin-push / bench / screenshot / package_plugins / vendor_tzdata / gen_*_golden
 ```
+
+2026-10-31 后续：API 4 磁贴开发与验收集中记录在 `24-tiles-validation.md`；播放器仍是 API 5 / ADR-026 提案。ThinkSmart View 固定横屏使用 REVERSE_LANDSCAPE=8，旧开发命令 0 已统一映射。

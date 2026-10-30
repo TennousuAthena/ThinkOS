@@ -46,3 +46,9 @@ A7 的天气是 APK 自带插件：删除开发覆盖目录会按既有逻辑回
 - 旧脚本假设 settings 探针下一页就是 home；新增 tiles 后该假设失效，回归现在明确返回 home 再测设置归属。
 - 视觉矩阵已逐图检查横/竖屏的浅、深、红色夜间；文本边界同时由真机 View 树断言。ar 网格与内容镜像，hi 字形上下边界完整。
 - 动画测试显式设倍率 1，结束后按原始值恢复；缺省键使用 delete 恢复，不写入字面量 null。
+
+### 性能预采样与修正
+
+`artifacts/tiles/performance-initial/` 为提前中止的预采样，不计入完整 10 分钟验收。一次阶段读数为 1243 帧中 90 janky（7.24%）；DrawStart→SyncQueued 最大约 5.07ms，但部分 PerformTraversalsStart→DrawStart 达 22ms。定位到颜色绑定未改变文字时仍 setText/requestLayout，以及每次测量重新设置自动字号。
+
+修正后：只有文字或图标有实际变化才改对应 View；自动字号只在声明/尺寸变动时设置；隐藏的文字不参与实际测量；角标也避免重复赋值。图标仅在 accent 变化时重绘，并在页面其它动画升至 60fps 时把天气图标自身保持在 30fps。后续重新跑完整 UI 与两轮 600 秒性能记录。

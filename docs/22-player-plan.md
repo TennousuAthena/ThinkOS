@@ -19,6 +19,8 @@
 
 ## 2. 现状核对（已核对，2026-10-30）
 
+2026-10-31 补记：下表现状保留核对当时的快照；API 4 / ADR-025 现已用于 tiles/tile，播放器提议顺延为 API 5 / ADR-026。
+
 | 项 | 现状 | 依据 |
 |---|---|---|
 | 媒体引擎 | `MediaEngine`（355 行）已写：Media3 ExoPlayer 1.9.2 + OkHttp 数据源；一个会话、一个队列（≤512）、一个所有者；`load / play / pause / toggle / next / prev / seek / volume / setShuffle / setRepeat / stop / releaseOwner / attachVideo`；事件 `media.session / media.track / media.error / queue.end` | `media/MediaEngine.kt`、`MediaQueue.kt` |
