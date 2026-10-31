@@ -1,0 +1,12 @@
+{
+  "kind": "interrupted diagnostic; not an acceptance run",
+  "reason": "Stopped after confirming an over-budget draw; final candidate also pauses the occluded ambient animation",
+  "apkSha256": "87bb65adbb0eab869ba3f348eb144bccba22c2557a104f212ed7600aac1572cc",
+  "frames": 9319,
+  "sampledFrames": 9319,
+  "maxDrawMs": 12.344687,
+  "maxFrameMs": 36.590162,
+  "jank": "80 (0.86%)",
+  "lastSampleSeconds": 397.08,
+  "complete": false
+}

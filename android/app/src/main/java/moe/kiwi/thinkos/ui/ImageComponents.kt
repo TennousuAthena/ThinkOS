@@ -126,6 +126,10 @@ internal class ImageComponents(private val loader: ImageLoader) {
         override val handlesTap get() = carousel
         override val bottomOverlayInset get() = if (captionBlock.measuredHeight > 0)
             captionBlock.measuredHeight + (captionBlock.layoutParams as FrameLayout.LayoutParams).bottomMargin else 0
+        override fun burnInOffset(x: Int, y: Int) {
+            captionBlock.translationX = x.toFloat()
+            captionBlock.translationY = y.toFloat()
+        }
         private val advance = Runnable { if (running() && browse == null) showNext() }
         private val finish = Runnable {
             incoming?.let { layer ->

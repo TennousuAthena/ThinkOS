@@ -1,0 +1,77 @@
+{
+  "complete": true,
+  "serial": "192.168.3.167:5555",
+  "build": "assembleDebug / assembleDebugAndroidTest / testDebugUnitTest / lintDebug passed",
+  "jvmTests": 227,
+  "viewportCases": 32,
+  "realBingGestureRegression": true,
+  "deviceChecks": {
+    "horizontalSwipePage": "tiles.main",
+    "longPressPage": "settings.form",
+    "finalState": [
+      "gallery.slideshow",
+      "ENGAGED",
+      "LIGHT",
+      "LANDSCAPE",
+      "3582",
+      "6",
+      "system",
+      "324636",
+      "6"
+    ],
+    "installedApkSha256": "71fefd8939f62ee110778e408a5cca2bf8fe34a46c593758b4d84f69927d7367",
+    "matchesBuiltApk": true,
+    "temporaryDebugHoldsCleared": true
+  },
+  "performance": {
+    "seconds": 601.686472707981,
+    "frames": 14133,
+    "jankyFrames": 99,
+    "jankyPercent": 0.7004882190617704,
+    "maxDrawMs": 5.395781,
+    "maxFrameMs": 30.380621,
+    "sampledFrames": 14133,
+    "frameCoverage": 1.0,
+    "peakPssMiB": 109.19140625,
+    "peakLuaMiB": 0.3047647476196289,
+    "sameProcess": true,
+    "frameWarnings": 0,
+    "frameCountSkew": 0,
+    "initialState": {
+      "page": "gallery.slideshow",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "32608",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "295023",
+      "navigationGeneration": "2"
+    },
+    "finalState": {
+      "page": "gallery.slideshow",
+      "attention": "AWAKE",
+      "theme": "DARK",
+      "orientation": "LANDSCAPE",
+      "pid": "32608",
+      "touches": "0",
+      "navigationReason": "open",
+      "luaBytes": "320471",
+      "navigationGeneration": "2"
+    },
+    "flaggedFrames": 0,
+    "inputFrames": 0
+  },
+  "offlineColdStartMs": 774,
+  "apk": {
+    "sha256": "71fefd8939f62ee110778e408a5cca2bf8fe34a46c593758b4d84f69927d7367",
+    "libraries": [
+      "lib/armeabi-v7a/libtos.so"
+    ],
+    "minSdk": 27,
+    "targetSdk": 27
+  },
+  "baseline": "artifacts/tiles/gallery-viewport-baseline/diagnostic.json",
+  "rawData": "performance-raw.tar.gz",
+  "rawIndex": "performance-raw-index.json"
+}

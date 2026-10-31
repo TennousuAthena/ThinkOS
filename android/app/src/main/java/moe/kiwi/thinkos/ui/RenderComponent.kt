@@ -19,6 +19,8 @@ interface RenderComponent {
     val animating: Boolean get() = false
     /** Measured native photo captions reserve the bottom band from other stage overlays. */
     val bottomOverlayInset: Int get() = 0
+    /** Move stationary photo labels without moving the edge-to-edge image viewport. */
+    fun burnInOffset(x: Int, y: Int) {}
     fun bind(snapshot: JSONObject, variant: String, strings: (String) -> String?)
     fun colors(value: Palette)
     /** Only the selected page/card is active; drag previews may be attached but remain paused. */

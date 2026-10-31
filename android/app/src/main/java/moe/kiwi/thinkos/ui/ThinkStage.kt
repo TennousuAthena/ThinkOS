@@ -74,6 +74,8 @@ class ThinkStage(
     private var maintenanceArmed = false
     private val maintenance = Runnable { if (maintenanceArmed) { maintenanceArmed = false; onMaintenance() } }
     private var lastDrift = 0L
+    private var driftX = 0f
+    private var driftY = 0f
     private var wakeUntil = 0L
     private var longPressArmed = false
     private var longPressFired = false
@@ -181,6 +183,7 @@ class ThinkStage(
             visible.update(replacement, widgets)
         }
         renderDeck(store.current.deck)
+        applyDrift()
     }
     /** Language, 12/24-hour setting or time zone changed in Android's settings. */
     fun localeChanged() {
@@ -222,6 +225,7 @@ class ThinkStage(
             incoming.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(200).withEndAction {
                 pageHost.removeView(old)
                 if (neighbor === old) neighbor = null
+                applyDrift()
             }.start()
             old.animate().alpha(0f).setDuration(180).start()
         } else if (old != null && !governor.reducedMotion) {
@@ -231,6 +235,7 @@ class ThinkStage(
             springs += Motion.spring(position(old, vertical), -direction * extent, speed, { position(old, it, vertical) }) {
                 pageHost.removeView(old)
                 if (neighbor === old) neighbor = null
+                applyDrift()
             }
         } else {
             old?.let(pageHost::removeView)
@@ -245,6 +250,7 @@ class ThinkStage(
         system.variantCount = page.variants.size
         system.variantIndex = page.variants.indexOf(next.variant)
         system.shownAt = SystemClock.uptimeMillis()
+        applyDrift()
         clock.wake()
     }
     private fun position(view: View, vertical: Boolean): Float = if (vertical) view.translationY else view.translationX
@@ -252,6 +258,15 @@ class ThinkStage(
         if (vertical) view.translationY = value else view.translationX = value
     }
     private fun syncAmbient() { ambient.covered(current?.opaque == true && neighbor == null && axis == 0) }
+    private fun applyDrift() {
+        val photoVisible = current?.photoStage == true || neighbor?.photoStage == true
+        pageHost.translationX = if (photoVisible) 0f else driftX
+        pageHost.translationY = if (photoVisible) 0f else driftY
+        val x = if (photoVisible) driftX.roundToInt() else 0
+        val y = if (photoVisible) driftY.roundToInt() else 0
+        current?.burnInOffset(x, y)
+        neighbor?.burnInOffset(x, y)
+    }
     private fun prepareNeighbor(direction: Int, vertical: Boolean) {
         ambient.covered(false)
         if (dragDirection == direction && neighbor != null) return
@@ -263,6 +278,7 @@ class ThinkStage(
         if (page != null && variant != null) {
             neighbor = newPage(page, variant).also { pageHost.addView(it, LayoutParams(-1, -1)) }
         }
+        applyDrift()
     }
     private fun cancelGesture() {
         springs.forEach(ValueAnimator::cancel)
@@ -277,6 +293,7 @@ class ThinkStage(
         commitDrag = false
         velocity?.recycle()
         velocity = null
+        applyDrift()
     }
     fun refreshSettings() { current?.tick(SystemClock.uptimeMillis(), store.current.attention); clock.wake() }
     private fun tick(now: Long) {
@@ -294,10 +311,11 @@ class ThinkStage(
         current?.tick(now, governor.attention)
         neighbor?.tick(now, governor.attention)
         if (now - lastDrift >= 1_000) {
-            pageHost.translationX = (round(sin(now / 180_000.0 * Math.PI) * 64) / 8).toFloat()
-            pageHost.translationY = (round(cos(now / 240_000.0 * Math.PI) * 48) / 8).toFloat()
+            driftX = (round(sin(now / 180_000.0 * Math.PI) * 64) / 8).toFloat()
+            driftY = (round(cos(now / 240_000.0 * Math.PI) * 48) / 8).toFloat()
             lastDrift = now
         }
+        applyDrift()
         val systemActive = now < wakeUntil || now - system.shownAt < 2_600
         if (systemActive || system.wakeAt != 0L && now >= wakeUntil) {
             if (now >= wakeUntil) system.wakeAt = 0

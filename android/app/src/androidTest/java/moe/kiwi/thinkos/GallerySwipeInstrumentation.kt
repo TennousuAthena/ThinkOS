@@ -14,6 +14,8 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import moe.kiwi.thinkos.core.Attention
 import moe.kiwi.thinkos.core.Theme
+import moe.kiwi.thinkos.anim.MotionClock
+import moe.kiwi.thinkos.ui.ClockView
 import moe.kiwi.thinkos.ui.ThinkStage
 import org.json.JSONArray
 import org.json.JSONObject
@@ -32,7 +34,11 @@ class GallerySwipeInstrumentation : Instrumentation() {
     private var previousDelta = 0f
     private var traceStarted = 0L
     override fun onCreate(arguments: Bundle?) { super.onCreate(arguments); args = arguments ?: Bundle(); start() }
-    private fun main(block: () -> Unit) = runOnMainSync(block)
+    private fun main(block: () -> Unit) {
+        var failure: Throwable? = null
+        runOnMainSync { try { block() } catch(t: Throwable) { failure=t } }
+        failure?.let { throw it }
+    }
     private fun photo(): FrameLayout? {
         fun search(v: View): FrameLayout? {
             if (v is FrameLayout && (0 until v.childCount).any { v.getChildAt(it) is LinearLayout } &&
@@ -88,6 +94,81 @@ class GallerySwipeInstrumentation : Instrumentation() {
         repeat(3) { if(selected()!="A") { swipe(stage.height*.65f,180); SystemClock.sleep(650) } }
         check(selected()=="A") { "Cannot reset fixture to A" }
     }
+    /** Real photo stage: exercise all exposed edges, and the independent foreground drift. */
+    private fun checkViewport(host: RuntimeHost, result: JSONObject) {
+        val clock=ThinkStage::class.java.getDeclaredField("clock").also { it.isAccessible=true }.get(stage) as MotionClock
+        val dx=ThinkStage::class.java.getDeclaredField("driftX").also { it.isAccessible=true }
+        val dy=ThinkStage::class.java.getDeclaredField("driftY").also { it.isAccessible=true }
+        val apply=ThinkStage::class.java.getDeclaredMethod("applyDrift").also { it.isAccessible=true }
+        val samples=JSONArray()
+        val originalOrientation=activity.requestedOrientation
+        fun offset(x: Int, y: Int) = main { dx.setFloat(stage,x.toFloat());dy.setFloat(stage,y.toFloat());apply.invoke(stage) }
+        fun clockView(v: View): View? {
+            if(v is ClockView) return v
+            if(v is ViewGroup) for(i in 0 until v.childCount) clockView(v.getChildAt(i))?.let { return it }
+            return null
+        }
+        fun location(v: View) = IntArray(2).also(v::getLocationOnScreen)
+        fun coversScreen() = main {
+            val root=checkNotNull(photo()) { "Photo disappeared" }
+            val expected=location(stage)
+            val actual=location(root)
+            check(actual.contentEquals(expected) && root.width==stage.width && root.height==stage.height) {
+                "Photo viewport ${actual.toList()} ${root.width}x${root.height} != stage ${expected.toList()} ${stage.width}x${stage.height}"
+            }
+            val visible=Rect();root.getGlobalVisibleRect(visible)
+            check(visible==Rect(expected[0],expected[1],expected[0]+stage.width,expected[1]+stage.height)) { "Photo viewport clipped: $visible" }
+            check((root.parent as View).alpha==1f) { "Attention faded the photo into its backdrop" }
+            check((stage.getChildAt(0) as ViewGroup).getChildAt(0).visibility==View.INVISIBLE) {
+                "Covered ambient animation remained visible"
+            }
+        }
+        try {
+            for(orientation in listOf(0,1)) {
+              main { host.debugOrientation(orientation) }
+              waitFor("Photo unavailable after rotation") {
+                  var ready=false
+                  main { ready=(stage.width>stage.height)==(orientation==0) && photo()!=null }
+                  ready
+              }
+              for(theme in listOf(Theme.LIGHT,Theme.DARK)) { // Bing's ambient page is intentionally absent at NIGHT.
+                main { clock.start();host.sensors.debugHoldTheme(theme) }
+                SystemClock.sleep(2300)
+                main { clock.stop() } // Hold deterministic drift extremes; native photo pan stays live.
+                for(attention in listOf(Attention.AMBIENT,Attention.AWAKE)) {
+                    main { host.sensors.debugHoldAttention(attention) }
+                    for(delay in listOf(30L,150L,500L)) { SystemClock.sleep(delay);coversScreen() }
+                    offset(0,0)
+                    var baseClock=IntArray(2)
+                    main { baseClock=location(checkNotNull(clockView(stage))) }
+                    for((x,y) in listOf(-8 to -6,8 to -6,-8 to 6,8 to 6)) {
+                        offset(x,y);SystemClock.sleep(50);coversScreen()
+                        main {
+                            val root=checkNotNull(photo())
+                            val caption=(0 until root.childCount).map(root::getChildAt).filterIsInstance<LinearLayout>().single()
+                            check(caption.translationX==x.toFloat() && caption.translationY==y.toFloat()) { "Caption lost burn-in drift" }
+                            val position=location(checkNotNull(clockView(stage)))
+                            check(position[0]==baseClock[0]+x && position[1]==baseClock[1]+y) { "Clock lost burn-in drift" }
+                            // A caption relayout must preserve both the viewport and foreground offset.
+                            root.requestLayout()
+                        }
+                        SystemClock.sleep(50);coversScreen()
+                        samples.put(JSONObject().put("orientation",if(orientation==0)"landscape" else "portrait")
+                            .put("theme",theme.name).put("attention",attention.name).put("x",x).put("y",y))
+                    }
+                    if(attention==Attention.AWAKE) {
+                        val bitmap=uiAutomation.takeScreenshot()
+                        File(targetContext.filesDir,"gallery-viewport-$orientation-${theme.name.lowercase()}.png").outputStream().use {
+                            bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,it)
+                        }
+                        bitmap.recycle()
+                    }
+                }
+              }
+            }
+            result.put("viewportCases",samples).put("fullBleedWithForegroundDrift",true)
+        } finally { main { host.debugOrientation(originalOrientation);clock.start() } }
+    }
     override fun onStart() {
         val result=JSONObject(); var success=false
         try {
@@ -99,6 +180,9 @@ class GallerySwipeInstrumentation : Instrumentation() {
             waitFor("Page unavailable") { var ready=false;main { ready=host.router.pages.any { it.key==page } };ready }
             main { host.router.open(page) }
             waitFor("Photo not ready") { selected().isNotEmpty() };SystemClock.sleep(900);resetFixture()
+            if(args.getString("viewport")=="true") {
+                checkViewport(host,result);success=true;return
+            }
             val config=ViewConfiguration.get(activity);val baseline=selected()
             traceStarted=SystemClock.uptimeMillis()
             repeat(4) { swipe(-(config.scaledTouchSlop+3f),8);SystemClock.sleep(60) }
@@ -131,7 +215,7 @@ class GallerySwipeInstrumentation : Instrumentation() {
         finally {
             if(::activity.isInitialized) main {
                 val host=(activity.application as ThinkApplication).runtime
-                host.sensors.debugHoldAttention(null);host.sensors.debugInjectLux(null)
+                host.sensors.debugHoldAttention(null);host.sensors.debugHoldTheme(null);host.sensors.debugInjectLux(null)
             }
             result.put("complete",success)
             File(targetContext.filesDir,"swipe-instrumentation.json").writeText(result.toString(2))

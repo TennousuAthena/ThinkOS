@@ -1,0 +1,18 @@
+{
+  "horizontalSwipePage": "tiles.main",
+  "longPressPage": "settings.form",
+  "finalState": [
+    "gallery.slideshow",
+    "ENGAGED",
+    "LIGHT",
+    "LANDSCAPE",
+    "3582",
+    "6",
+    "system",
+    "324636",
+    "6"
+  ],
+  "installedApkSha256": "71fefd8939f62ee110778e408a5cca2bf8fe34a46c593758b4d84f69927d7367",
+  "matchesBuiltApk": true,
+  "temporaryDebugHoldsCleared": true
+}

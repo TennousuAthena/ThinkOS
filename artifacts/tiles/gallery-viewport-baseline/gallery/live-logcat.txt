@@ -1,0 +1,33 @@
+--------- beginning of main
+10-31 12:58:37.695 30493 30493 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 12:59:01.910 30493 30570 W ThinkOS : time sync failed (2); retry in 60s
+10-31 12:59:07.871 30493 30493 D ThinkOS : [image:gallery] displayed OHR.AutumnCranes
+10-31 12:59:07.874 30493 30493 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 12:59:38.836 30493 30493 D ThinkOS : [image:gallery] displayed OHR.AveburyStones
+10-31 12:59:38.839 30493 30493 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 12:59:38.840 30493 30572 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/188.40.99.226:443
+10-31 13:00:02.004 30493 30570 W ThinkOS : time sync failed (3); retry in 120s
+10-31 13:00:09.804 30493 30493 D ThinkOS : [image:gallery] displayed OHR.KuneticeCastle
+10-31 13:00:09.808 30493 30493 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:00:40.766 30493 30493 D ThinkOS : [image:gallery] displayed OHR.PondCypress
+10-31 13:00:40.768 30493 30493 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:01:11.730 30493 30493 D ThinkOS : [image:gallery] displayed OHR.SitovoWaterfall
+10-31 13:01:11.733 30493 30493 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 13:01:40.944 30493 30572 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/188.40.99.226:443
+10-31 13:01:42.692 30493 30493 D ThinkOS : [image:gallery] displayed OHR.MaligneFest
+10-31 13:01:42.694 30493 30493 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 13:02:02.152 30493 30570 W ThinkOS : time sync failed (4); retry in 240s
+10-31 13:02:13.650 30493 30493 D ThinkOS : [image:gallery] displayed OHR.YellowstoneWolves
+10-31 13:02:13.652 30493 30493 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 13:02:44.604 30493 30493 D ThinkOS : [image:gallery] displayed OHR.NaejangsanNP
+10-31 13:02:44.607 30493 30493 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:03:15.561 30493 30493 D ThinkOS : [image:gallery] displayed OHR.VietnamBridge
+10-31 13:03:15.563 30493 30493 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:03:46.519 30493 30493 D ThinkOS : [image:gallery] displayed OHR.BrownSloth
+10-31 13:03:46.521 30493 30493 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:04:17.480 30493 30493 D ThinkOS : [image:gallery] displayed OHR.VeniceSunrise
+10-31 13:04:17.482 30493 30493 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:04:48.441 30493 30493 D ThinkOS : [image:gallery] displayed OHR.DolbadarnWales
+10-31 13:04:48.443 30493 30493 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 13:05:19.394 30493 30493 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 13:05:19.397 30493 30493 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms

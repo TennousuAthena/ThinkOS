@@ -1,0 +1,371 @@
+--------- beginning of system
+--------- beginning of crash
+--------- beginning of main
+10-31 12:46:34.680 25921 25921 D ThinkOS : [image:gallery] displayed OHR.AutumnCranes
+10-31 12:46:34.683 25921 25921 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 12:46:49.425 25921 25921 I ThinkOS : attention=AWAKE
+10-31 12:47:04.840 25921 25921 D ThinkOS : [image:gallery] displayed OHR.AveburyStones
+10-31 12:47:04.842 25921 25921 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 12:47:06.779 25921 25921 I ThinkOS : attention=ENGAGED
+10-31 12:47:11.047 25921 25921 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 12:47:15.704 25921 25921 D ThinkOS : [image:gallery] displayed OHR.AveburyStones
+10-31 12:47:15.705 25921 25921 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 12:47:17.891 25921 25921 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 12:47:22.769 25921 25921 D ThinkOS : [image:gallery] displayed OHR.AveburyStones
+10-31 12:47:22.770 25921 25921 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 12:47:25.263 25921 25921 D ThinkOS : [image:gallery] displayed OHR.AveburyStones
+10-31 12:47:25.263 25921 25921 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 12:47:26.595 25921 25921 D ThinkOS : [image:gallery] displayed OHR.AveburyStones
+10-31 12:47:26.596 25921 25921 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 12:47:29.320 25921 25921 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 12:47:44.355 25921 25921 I ThinkOS : attention=AWAKE
+10-31 12:49:04.591 25921 25921 D ThinkOS : [image:gallery] displayed OHR.AveburyStones
+10-31 12:49:04.591 25921 25921 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 12:49:29.685 25921 25921 I ThinkOS : attention=AMBIENT
+10-31 12:49:34.750 25921 25921 D ThinkOS : [image:gallery] displayed OHR.KuneticeCastle
+10-31 12:49:34.751 25921 25921 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 12:50:05.696 25921 25921 D ThinkOS : [image:gallery] displayed OHR.PondCypress
+10-31 12:50:05.697 25921 25921 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 12:50:36.658 25921 25921 D ThinkOS : [image:gallery] displayed OHR.SitovoWaterfall
+10-31 12:50:36.659 25921 25921 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 12:50:45.844 25921 25921 I ThinkOS : attention=ASLEEP
+10-31 12:55:26.442 29726 29726 I ThinkOS : tzdata 2026e (419 zones)
+10-31 12:55:26.680 29726 29726 I ThinkOS : Runtime started; local mode, safe=false
+10-31 12:55:26.939 29726 29726 I ThinkOS : theme=LIGHT lux=309.6
+10-31 12:55:27.112 29726 29789 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 12:55:27.232 29726 29726 I ThinkOS : Activity created; orientation=1
+10-31 12:55:27.317 29726 29726 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 12:55:27.570 29726 29788 I ThinkOS : time sync: 0.pool.ntp.org 111.230.189.174 offset=236ms rtt=28ms
+10-31 12:55:27.709 29726 29789 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 12:55:28.544 29814 29814 I ThinkOS : tzdata 2026e (419 zones)
+10-31 12:55:28.843 29814 29814 I ThinkOS : Runtime started; local mode, safe=false
+10-31 12:55:28.911 29814 29814 I ThinkOS : Activity created; orientation=1
+10-31 12:55:29.065 29814 29814 I ThinkOS : theme=LIGHT lux=314.4
+10-31 12:55:29.116 29814 29814 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 12:55:29.181 29814 29833 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 12:55:29.714 29814 29833 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 12:55:29.822 29814 29832 I ThinkOS : time sync: 0.pool.ntp.org 111.230.189.174 offset=240ms rtt=37ms
+10-31 12:55:30.082 29814 29814 I ThinkOS : theme=LIGHT lux=314.4
+10-31 12:55:30.120 29814 29833 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 12:55:30.159 29814 29833 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 12:55:30.323 29814 29833 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 12:55:30.467 29814 29833 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 12:55:30.765 29814 29833 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99682 bytes
+10-31 12:55:31.345 29814 29814 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 12:55:31.347 29814 29814 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 12:55:34.611 29814 29814 I ThinkOS : attention=AMBIENT
+10-31 12:55:35.819 29814 29814 I ThinkOS : attention=AWAKE
+10-31 12:55:36.605 29814 29833 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 12:55:38.421 29814 29814 I ThinkOS : theme=DARK lux=314.4
+10-31 12:55:38.629 29814 29862 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-31 12:55:40.735 29814 29814 I ThinkOS : attention=AMBIENT
+10-31 12:55:41.925 29814 29814 I ThinkOS : attention=AWAKE
+10-31 12:55:44.496 29814 29814 I ThinkOS : theme=NIGHT lux=314.4
+10-31 12:55:46.812 29814 29814 I ThinkOS : attention=AMBIENT
+10-31 12:55:46.849 29814 29814 E AndroidRuntime: FATAL EXCEPTION: main
+10-31 12:55:46.849 29814 29814 E AndroidRuntime: Process: moe.kiwi.thinkos, PID: 29814
+10-31 12:55:46.849 29814 29814 E AndroidRuntime: java.lang.IllegalStateException: Photo disappeared
+10-31 12:55:46.849 29814 29814 E AndroidRuntime: 	at moe.kiwi.thinkos.GallerySwipeInstrumentation.checkViewport$coversScreen$lambda$22(GallerySwipeInstrumentation.kt:108)
+10-31 12:55:46.849 29814 29814 E AndroidRuntime: 	at moe.kiwi.thinkos.GallerySwipeInstrumentation.$r8$lambda$H5k8atfG8hO2YhE0waa0wBuenX4(Unknown Source:0)
+10-31 12:55:46.849 29814 29814 E AndroidRuntime: 	at moe.kiwi.thinkos.GallerySwipeInstrumentation$$ExternalSyntheticLambda4.invoke(D8$$SyntheticClass:0)
+10-31 12:55:46.849 29814 29814 E AndroidRuntime: 	at moe.kiwi.thinkos.GallerySwipeInstrumentation.main$lambda$0(GallerySwipeInstrumentation.kt:37)
+10-31 12:55:46.849 29814 29814 E AndroidRuntime: 	at moe.kiwi.thinkos.GallerySwipeInstrumentation.$r8$lambda$t-EZ5bFbFOQlhy0-5vnkx796IZc(Unknown Source:0)
+10-31 12:55:46.849 29814 29814 E AndroidRuntime: 	at moe.kiwi.thinkos.GallerySwipeInstrumentation$$ExternalSyntheticLambda5.run(D8$$SyntheticClass:0)
+10-31 12:55:46.849 29814 29814 E AndroidRuntime: 	at android.app.Instrumentation$SyncRunnable.run(Instrumentation.java:2093)
+10-31 12:55:46.849 29814 29814 E AndroidRuntime: 	at android.os.Handler.handleCallback(Handler.java:790)
+10-31 12:55:46.849 29814 29814 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+10-31 12:55:46.849 29814 29814 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:164)
+10-31 12:55:46.849 29814 29814 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:6494)
+10-31 12:55:46.849 29814 29814 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+10-31 12:55:46.849 29814 29814 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:438)
+10-31 12:55:46.849 29814 29814 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:807)
+10-31 12:55:46.884 29814 29814 E ThinkOS : Uncaught exception; restarting
+10-31 12:55:46.884 29814 29814 E ThinkOS : java.lang.IllegalStateException: Photo disappeared
+10-31 12:55:46.884 29814 29814 E ThinkOS : 	at moe.kiwi.thinkos.GallerySwipeInstrumentation.checkViewport$coversScreen$lambda$22(GallerySwipeInstrumentation.kt:108)
+10-31 12:55:46.884 29814 29814 E ThinkOS : 	at moe.kiwi.thinkos.GallerySwipeInstrumentation.$r8$lambda$H5k8atfG8hO2YhE0waa0wBuenX4(Unknown Source:0)
+10-31 12:55:46.884 29814 29814 E ThinkOS : 	at moe.kiwi.thinkos.GallerySwipeInstrumentation$$ExternalSyntheticLambda4.invoke(D8$$SyntheticClass:0)
+10-31 12:55:46.884 29814 29814 E ThinkOS : 	at moe.kiwi.thinkos.GallerySwipeInstrumentation.main$lambda$0(GallerySwipeInstrumentation.kt:37)
+10-31 12:55:46.884 29814 29814 E ThinkOS : 	at moe.kiwi.thinkos.GallerySwipeInstrumentation.$r8$lambda$t-EZ5bFbFOQlhy0-5vnkx796IZc(Unknown Source:0)
+10-31 12:55:46.884 29814 29814 E ThinkOS : 	at moe.kiwi.thinkos.GallerySwipeInstrumentation$$ExternalSyntheticLambda5.run(D8$$SyntheticClass:0)
+10-31 12:55:46.884 29814 29814 E ThinkOS : 	at android.app.Instrumentation$SyncRunnable.run(Instrumentation.java:2093)
+10-31 12:55:46.884 29814 29814 E ThinkOS : 	at android.os.Handler.handleCallback(Handler.java:790)
+10-31 12:55:46.884 29814 29814 E ThinkOS : 	at android.os.Handler.dispatchMessage(Handler.java:99)
+10-31 12:55:46.884 29814 29814 E ThinkOS : 	at android.os.Looper.loop(Looper.java:164)
+10-31 12:55:46.884 29814 29814 E ThinkOS : 	at android.app.ActivityThread.main(ActivityThread.java:6494)
+10-31 12:55:46.884 29814 29814 E ThinkOS : 	at java.lang.reflect.Method.invoke(Native Method)
+10-31 12:55:46.884 29814 29814 E ThinkOS : 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:438)
+10-31 12:55:46.884 29814 29814 E ThinkOS : 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:807)
+10-31 12:55:47.546 29869 29869 I ThinkOS : tzdata 2026e (419 zones)
+10-31 12:55:52.162 29869 29869 I ThinkOS : Runtime started; local mode, safe=false
+10-31 12:55:52.205 29869 29893 W ThinkOS : Unclean native execution attributed to plugin clock
+10-31 12:55:52.370 29869 29869 I ThinkOS : Activity created; orientation=2
+10-31 12:55:52.481 29869 29869 I ThinkOS : theme=LIGHT lux=309.0
+10-31 12:55:52.595 29869 29893 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 12:55:53.137 29869 29893 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 12:55:53.527 29869 29893 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 12:55:53.570 29869 29893 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 12:55:53.740 29869 29893 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 12:55:53.883 29869 29893 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 12:55:54.189 29869 29893 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99682 bytes
+10-31 12:55:57.266 29869 29892 I ThinkOS : time sync: 0.pool.ntp.org 111.230.189.174 offset=236ms rtt=27ms
+10-31 12:55:57.610 29869 29893 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 12:55:59.637 29869 29917 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-31 12:56:24.556 29869 29869 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 12:56:24.558 29869 29869 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 12:56:54.733 29869 29869 D ThinkOS : [image:gallery] displayed OHR.AutumnCranes
+10-31 12:56:54.736 29869 29869 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 12:57:13.708 29997 29997 I ThinkOS : tzdata 2026e (419 zones)
+10-31 12:57:14.073 29997 29997 I ThinkOS : Runtime started; local mode, safe=false
+10-31 12:57:14.075 29997 29997 I ThinkOS : Activity created; orientation=1
+10-31 12:57:14.197 29997 29997 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 12:57:14.327 29997 29997 I ThinkOS : theme=LIGHT lux=null
+10-31 12:57:14.446 29997 30022 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 12:57:14.976 29997 30022 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 12:57:15.332 29997 29997 I ThinkOS : theme=LIGHT lux=345.9
+10-31 12:57:15.362 29997 30022 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 12:57:15.403 29997 30022 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 12:57:15.569 29997 30022 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 12:57:15.715 29997 30022 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 12:57:16.019 29997 30022 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99682 bytes
+10-31 12:57:16.599 29997 29997 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 12:57:16.601 29997 29997 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 12:57:19.836 29997 30022 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 12:57:19.839 29997 29997 I ThinkOS : attention=AMBIENT
+10-31 12:57:21.055 29997 29997 I ThinkOS : attention=AWAKE
+10-31 12:57:21.860 29997 30050 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-31 12:57:22.524 29997 30021 I ThinkOS : time sync: 0.pool.ntp.org 111.230.189.174 offset=238ms rtt=25ms
+10-31 12:57:23.711 29997 29997 I ThinkOS : theme=DARK lux=345.9
+10-31 12:57:26.029 29997 29997 I ThinkOS : attention=AMBIENT
+10-31 12:57:27.239 29997 29997 I ThinkOS : attention=AWAKE
+10-31 12:57:29.800 29997 29997 I ThinkOS : Configuration changed without Activity recreation: 1
+10-31 12:57:30.003 29997 29997 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 12:57:30.004 29997 29997 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-1476.0,0.0 31706ms
+10-31 12:57:30.014 29997 29997 I ThinkOS : theme=LIGHT lux=345.9
+10-31 12:57:32.326 29997 29997 I ThinkOS : attention=AMBIENT
+10-31 12:57:33.505 29997 29997 I ThinkOS : attention=AWAKE
+10-31 12:57:35.717 29997 29997 I ThinkOS : theme=DARK lux=345.9
+10-31 12:57:38.034 29997 29997 I ThinkOS : attention=AMBIENT
+10-31 12:57:39.216 29997 29997 I ThinkOS : attention=AWAKE
+10-31 12:57:41.640 29997 29997 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 12:57:41.647 29997 29997 I ThinkOS : theme=LIGHT lux=345.9
+10-31 12:57:42.257 30059 30059 I ThinkOS : tzdata 2026e (419 zones)
+10-31 12:57:44.666 30059 30059 I ThinkOS : Runtime started; local mode, safe=false
+10-31 12:57:44.900 30059 30059 I ThinkOS : Activity created; orientation=2
+10-31 12:57:44.990 30059 30059 I ThinkOS : theme=LIGHT lux=317.7
+10-31 12:57:45.043 30059 30081 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 12:57:45.591 30059 30081 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 12:57:45.999 30059 30081 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 12:57:46.044 30059 30081 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 12:57:46.205 30059 30081 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 12:57:46.346 30059 30081 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 12:57:46.648 30059 30081 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99682 bytes
+10-31 12:57:49.932 30059 30081 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 12:57:51.413 30059 30080 I ThinkOS : time sync: 0.pool.ntp.org 111.230.189.174 offset=240ms rtt=33ms
+10-31 12:57:52.010 30059 30099 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-31 12:58:08.076 30059 30081 I ThinkOS : [plugin:gallery-history-probe] loaded 0.1.0; Lua 42304 bytes
+10-31 12:58:13.840 30340 30340 I ThinkOS : tzdata 2026e (419 zones)
+10-31 12:58:14.666 30380 30380 I ThinkOS : tzdata 2026e (419 zones)
+10-31 12:58:14.920 30380 30380 I ThinkOS : Runtime started; local mode, safe=false
+10-31 12:58:14.927 30380 30380 I ThinkOS : Activity created; orientation=2
+10-31 12:58:15.040 30380 30380 I ThinkOS : theme=LIGHT lux=null
+10-31 12:58:15.287 30380 30406 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 12:58:15.827 30380 30406 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 12:58:16.046 30380 30380 I ThinkOS : theme=LIGHT lux=348.3
+10-31 12:58:16.225 30380 30406 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 12:58:16.265 30380 30406 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 12:58:16.433 30380 30406 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 12:58:16.578 30380 30406 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 12:58:16.895 30380 30406 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99682 bytes
+10-31 12:58:17.068 30380 30406 I ThinkOS : [plugin:gallery-history-probe] loaded 0.1.0; Lua 42304 bytes
+10-31 12:58:17.424 30380 30380 D ThinkOS : [image:gallery-history-probe] displayed A
+10-31 12:58:17.960 30380 30405 I ThinkOS : time sync: 0.pool.ntp.org 111.230.189.174 offset=239ms rtt=28ms
+10-31 12:58:22.706 30380 30406 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 12:58:23.311 30380 30380 I ThinkOS : attention=ENGAGED
+10-31 12:58:23.969 30429 30429 I ThinkOS : tzdata 2026e (419 zones)
+10-31 12:58:24.397 30429 30429 I ThinkOS : Runtime started; local mode, safe=false
+10-31 12:58:24.400 30429 30429 I ThinkOS : Activity created; orientation=1
+10-31 12:58:24.621 30429 30429 I ThinkOS : theme=LIGHT lux=null
+10-31 12:58:24.670 30429 30429 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 12:58:24.762 30429 30462 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 12:58:25.323 30429 30462 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 12:58:25.728 30429 30462 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 12:58:25.769 30429 30462 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 12:58:25.935 30429 30462 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 12:58:26.077 30429 30462 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 12:58:26.388 30429 30462 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99682 bytes
+10-31 12:58:29.390 30429 30461 I ThinkOS : time sync: 1.pool.ntp.org 119.28.183.184 offset=236ms rtt=45ms
+10-31 12:58:30.602 30493 30493 I ThinkOS : tzdata 2026e (419 zones)
+10-31 12:58:31.710 30493 30493 I ThinkOS : Runtime started; local mode, safe=false
+10-31 12:58:31.712 30493 30493 I ThinkOS : Activity created; orientation=2
+10-31 12:58:31.843 30493 30570 W ThinkOS : time sync failed (1); retry in 30s
+10-31 12:58:32.113 30493 30572 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 12:58:32.647 30493 30572 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 12:58:33.045 30493 30572 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 12:58:33.088 30493 30572 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 12:58:33.243 30493 30572 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 12:58:33.363 30493 30572 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 12:58:33.644 30493 30572 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99682 bytes
+10-31 12:58:36.706 30493 30572 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/188.40.99.226:443
+10-31 12:58:37.693 30493 30493 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 12:58:37.695 30493 30493 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 12:59:01.910 30493 30570 W ThinkOS : time sync failed (2); retry in 60s
+10-31 12:59:07.871 30493 30493 D ThinkOS : [image:gallery] displayed OHR.AutumnCranes
+10-31 12:59:07.874 30493 30493 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 12:59:38.836 30493 30493 D ThinkOS : [image:gallery] displayed OHR.AveburyStones
+10-31 12:59:38.839 30493 30493 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 12:59:38.840 30493 30572 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/188.40.99.226:443
+10-31 13:00:02.004 30493 30570 W ThinkOS : time sync failed (3); retry in 120s
+10-31 13:00:09.804 30493 30493 D ThinkOS : [image:gallery] displayed OHR.KuneticeCastle
+10-31 13:00:09.808 30493 30493 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:00:40.766 30493 30493 D ThinkOS : [image:gallery] displayed OHR.PondCypress
+10-31 13:00:40.768 30493 30493 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:01:11.730 30493 30493 D ThinkOS : [image:gallery] displayed OHR.SitovoWaterfall
+10-31 13:01:11.733 30493 30493 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 13:01:40.944 30493 30572 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/188.40.99.226:443
+10-31 13:01:42.692 30493 30493 D ThinkOS : [image:gallery] displayed OHR.MaligneFest
+10-31 13:01:42.694 30493 30493 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 13:02:02.152 30493 30570 W ThinkOS : time sync failed (4); retry in 240s
+10-31 13:02:13.650 30493 30493 D ThinkOS : [image:gallery] displayed OHR.YellowstoneWolves
+10-31 13:02:13.652 30493 30493 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 13:02:44.604 30493 30493 D ThinkOS : [image:gallery] displayed OHR.NaejangsanNP
+10-31 13:02:44.607 30493 30493 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:03:15.561 30493 30493 D ThinkOS : [image:gallery] displayed OHR.VietnamBridge
+10-31 13:03:15.563 30493 30493 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:03:46.519 30493 30493 D ThinkOS : [image:gallery] displayed OHR.BrownSloth
+10-31 13:03:46.521 30493 30493 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:04:17.480 30493 30493 D ThinkOS : [image:gallery] displayed OHR.VeniceSunrise
+10-31 13:04:17.482 30493 30493 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:04:48.441 30493 30493 D ThinkOS : [image:gallery] displayed OHR.DolbadarnWales
+10-31 13:04:48.443 30493 30493 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 13:05:19.394 30493 30493 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 13:05:19.397 30493 30493 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:05:26.648 32184 32184 I ThinkOS : tzdata 2026e (419 zones)
+10-31 13:05:27.113 32184 32184 I ThinkOS : Runtime started; local mode, safe=false
+10-31 13:05:27.119 32184 32184 I ThinkOS : Activity created; orientation=1
+10-31 13:05:27.245 32184 32184 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 13:05:27.264 32184 32184 I ThinkOS : theme=LIGHT lux=null
+10-31 13:05:27.492 32184 32247 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 13:05:28.037 32184 32247 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 13:05:28.051 32184 32246 I ThinkOS : time sync: 0.pool.ntp.org 111.230.189.174 offset=239ms rtt=27ms
+10-31 13:05:28.443 32184 32247 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 13:05:28.485 32184 32247 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 13:05:28.654 32184 32247 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 13:05:28.801 32184 32247 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 13:05:29.117 32184 32247 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99682 bytes
+10-31 13:05:33.604 32184 32247 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 13:05:35.630 32184 32265 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-31 13:06:04.120 32406 32406 I ThinkOS : tzdata 2026e (419 zones)
+10-31 13:06:04.420 32406 32406 I ThinkOS : Runtime started; local mode, safe=false
+10-31 13:06:04.773 32406 32406 I ThinkOS : Activity created; orientation=1
+10-31 13:06:04.788 32406 32457 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 13:06:04.868 32406 32406 I ThinkOS : theme=LIGHT lux=353.7
+10-31 13:06:04.890 32406 32406 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 13:06:05.328 32406 32456 I ThinkOS : time sync: 0.pool.ntp.org 111.230.189.174 offset=238ms rtt=25ms
+10-31 13:06:05.409 32406 32457 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 13:06:06.325 32484 32484 I ThinkOS : tzdata 2026e (419 zones)
+10-31 13:06:06.640 32484 32484 I ThinkOS : Runtime started; local mode, safe=false
+10-31 13:06:06.648 32484 32484 I ThinkOS : Activity created; orientation=1
+10-31 13:06:06.791 32484 32484 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 13:06:06.806 32484 32484 I ThinkOS : theme=LIGHT lux=null
+10-31 13:06:06.988 32484 32503 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 13:06:07.529 32484 32503 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 13:06:07.681 32484 32502 I ThinkOS : time sync: 0.pool.ntp.org 111.230.189.174 offset=241ms rtt=37ms
+10-31 13:06:07.812 32484 32484 I ThinkOS : theme=LIGHT lux=351.0
+10-31 13:06:07.920 32484 32503 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 13:06:07.960 32484 32503 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 13:06:08.126 32484 32503 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 13:06:08.268 32484 32503 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 13:06:08.566 32484 32503 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99682 bytes
+10-31 13:06:09.176 32484 32484 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 13:06:09.178 32484 32484 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:06:12.022 32484 32503 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 13:06:12.411 32484 32484 I ThinkOS : attention=AMBIENT
+10-31 13:06:13.630 32484 32484 I ThinkOS : attention=AWAKE
+10-31 13:06:14.048 32484 32530 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-31 13:06:16.238 32484 32484 I ThinkOS : theme=DARK lux=351.0
+10-31 13:06:18.553 32484 32484 I ThinkOS : attention=AMBIENT
+10-31 13:06:19.746 32484 32484 I ThinkOS : attention=AWAKE
+10-31 13:06:22.375 32484 32484 I ThinkOS : Configuration changed without Activity recreation: 1
+10-31 13:06:22.556 32484 32484 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 13:06:22.557 32484 32484 D ThinkOS : [image:gallery] native-pan -1476.0,0.0->0.0,0.0 31706ms
+10-31 13:06:22.565 32484 32484 I ThinkOS : theme=LIGHT lux=351.0
+10-31 13:06:24.881 32484 32484 I ThinkOS : attention=AMBIENT
+10-31 13:06:26.301 32484 32484 I ThinkOS : attention=AWAKE
+10-31 13:06:28.927 32484 32484 I ThinkOS : theme=DARK lux=351.0
+10-31 13:06:31.236 32484 32484 I ThinkOS : attention=AMBIENT
+10-31 13:06:32.425 32484 32484 I ThinkOS : attention=AWAKE
+10-31 13:06:34.938 32484 32484 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 13:06:34.945 32484 32484 I ThinkOS : theme=LIGHT lux=351.0
+10-31 13:06:35.529 32539 32539 I ThinkOS : tzdata 2026e (419 zones)
+10-31 13:06:37.152 32539 32539 I ThinkOS : Runtime started; local mode, safe=false
+10-31 13:06:37.395 32539 32539 I ThinkOS : Activity created; orientation=2
+10-31 13:06:37.497 32539 32539 I ThinkOS : theme=LIGHT lux=348.3
+10-31 13:06:37.545 32539 32564 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 13:06:37.995 32539 32563 I ThinkOS : time sync: 0.pool.ntp.org 111.230.189.174 offset=246ms rtt=40ms
+10-31 13:06:38.092 32539 32564 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 13:06:38.501 32539 32564 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 13:06:38.545 32539 32564 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 13:06:38.711 32539 32564 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 13:06:38.854 32539 32564 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 13:06:39.164 32539 32564 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99682 bytes
+10-31 13:06:42.215 32539 32564 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 13:06:44.244 32539 32587 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-31 13:06:48.654 32608 32608 I ThinkOS : tzdata 2026e (419 zones)
+10-31 13:06:49.783 32608 32608 I ThinkOS : Runtime started; local mode, safe=false
+10-31 13:06:49.785 32608 32608 I ThinkOS : Activity created; orientation=2
+10-31 13:06:49.868 32608 32688 W ThinkOS : time sync failed (1); retry in 30s
+10-31 13:06:50.171 32608 32689 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 13:06:50.713 32608 32689 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 32483 bytes
+10-31 13:06:51.108 32608 32689 I ThinkOS : [plugin:gallery] loaded 0.4.0; Lua 100296 bytes
+10-31 13:06:51.151 32608 32689 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 13:06:51.304 32608 32689 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 39225 bytes
+10-31 13:06:51.425 32608 32689 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 13:06:51.702 32608 32689 I ThinkOS : [plugin:weather] loaded 0.2.0; Lua 99682 bytes
+10-31 13:06:54.766 32608 32689 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/188.40.99.226:443
+10-31 13:06:55.789 32608 32608 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 13:06:55.791 32608 32608 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:07:19.962 32608 32688 W ThinkOS : time sync failed (2); retry in 60s
+10-31 13:07:25.965 32608 32608 D ThinkOS : [image:gallery] displayed OHR.AutumnCranes
+10-31 13:07:25.968 32608 32608 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 13:07:56.900 32608 32689 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/188.40.99.226:443
+10-31 13:07:56.912 32608 32608 D ThinkOS : [image:gallery] displayed OHR.AveburyStones
+10-31 13:07:56.915 32608 32608 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:08:20.055 32608 32688 W ThinkOS : time sync failed (3); retry in 120s
+10-31 13:08:27.872 32608 32608 D ThinkOS : [image:gallery] displayed OHR.KuneticeCastle
+10-31 13:08:27.875 32608 32608 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:08:58.831 32608 32608 D ThinkOS : [image:gallery] displayed OHR.PondCypress
+10-31 13:08:58.833 32608 32608 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 13:09:29.793 32608 32608 D ThinkOS : [image:gallery] displayed OHR.SitovoWaterfall
+10-31 13:09:29.795 32608 32608 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:09:59.024 32608 32689 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/188.40.99.226:443
+10-31 13:10:00.750 32608 32608 D ThinkOS : [image:gallery] displayed OHR.MaligneFest
+10-31 13:10:00.752 32608 32608 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 13:10:20.110 32608 32688 W ThinkOS : time sync failed (4); retry in 240s
+10-31 13:10:31.710 32608 32608 D ThinkOS : [image:gallery] displayed OHR.YellowstoneWolves
+10-31 13:10:31.712 32608 32608 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:11:02.666 32608 32608 D ThinkOS : [image:gallery] displayed OHR.NaejangsanNP
+10-31 13:11:02.669 32608 32608 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:11:33.623 32608 32608 D ThinkOS : [image:gallery] displayed OHR.VietnamBridge
+10-31 13:11:33.625 32608 32608 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 13:12:04.579 32608 32608 D ThinkOS : [image:gallery] displayed OHR.BrownSloth
+10-31 13:12:04.582 32608 32608 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:12:35.539 32608 32608 D ThinkOS : [image:gallery] displayed OHR.VeniceSunrise
+10-31 13:12:35.542 32608 32608 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 13:13:06.501 32608 32608 D ThinkOS : [image:gallery] displayed OHR.DolbadarnWales
+10-31 13:13:06.504 32608 32608 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 13:13:37.456 32608 32608 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 13:13:37.458 32608 32608 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:14:08.413 32608 32608 D ThinkOS : [image:gallery] displayed OHR.AutumnCranes
+10-31 13:14:08.416 32608 32608 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 13:14:20.273 32608 32688 W ThinkOS : time sync failed (5); retry in 480s
+10-31 13:14:39.362 32608 32608 D ThinkOS : [image:gallery] displayed OHR.AveburyStones
+10-31 13:14:39.365 32608 32608 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:15:01.153 32608 32689 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:114: Failed to connect to api.open-meteo.com/188.40.99.226:443
+10-31 13:15:10.317 32608 32608 D ThinkOS : [image:gallery] displayed OHR.KuneticeCastle
+10-31 13:15:10.320 32608 32608 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 13:15:41.272 32608 32608 D ThinkOS : [image:gallery] displayed OHR.PondCypress
+10-31 13:15:41.275 32608 32608 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:16:12.215 32608 32608 D ThinkOS : [image:gallery] displayed OHR.SitovoWaterfall
+10-31 13:16:12.218 32608 32608 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:16:43.169 32608 32608 D ThinkOS : [image:gallery] displayed OHR.MaligneFest
+10-31 13:16:43.170 32608 32608 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms

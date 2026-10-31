@@ -2,6 +2,15 @@
 
 > 2026-10-30 续作。用户要求开发相册、完整画面平移与轮播、优先公开 ThinkOS 接口，随后明确要求实现**微软每日一图**。已纠正此前把 Bing 一并排除的范围理解：当前默认设备直连 Bing，Server 下发/管理仍暂缓。当前实现以本节、ADR-024 与 `06-plugins.md` §4.1.1 / §6.6–6.7 为准。
 
+## 照片页白边修正（2026-10-31）
+
+- 根因：页面整体的防残影位移会露出底层浅色背景；进入 AMBIENT 时的整组下移、淡化也会让照片边缘露底。
+- 修复：OS 的 `stage` 中单个 `image/carousel` 固定覆盖视口，防残影位移只作用于时钟、提示和照片字幕。照片背景不参加注意力淡化/位移动效，旋转与重新布局也保持铺满；不透明照片覆盖期间暂停底层呼吸动画，拖动或切页露出背景时按原有逻辑恢复。图片的等比例平移、完整画面和手势行为沿用原实现；普通页面仍使用原有整体位移。本节替代下方「OS 页面整体漂移」的旧实现描述。
+- 无线真机验证横竖屏 × LIGHT/DARK × AWAKE/AMBIENT × 四角位移，共 32 组；检查屏幕坐标、可见区域、照片不透明度，以及时钟/字幕仍然位移，并在唤醒/待机动画过程中和字幕重新布局后复查。截图与结果见 `artifacts/gallery/viewport/`。Bing 的 ambient 页面按既定路由在 NIGHT 退出，不计为照片页面测试。
+- `assembleDebug`、227 项 JVM 测试、lint、安装和 8–30ms 短促滑动回归通过。最终 APK 断网、无 Server 冷启动 774ms；601.69 秒真实 Bing 轮播采集 14,133/14,133 帧，jank 0.70%，无掉帧告警，最大 UI 绘制 5.40ms，端到端帧最大 30.38ms，峰值 PSS 109.19MiB、Lua 0.305MiB；页面、进程、方向不变，无输入。完整结果见 `artifacts/tiles/gallery-viewport-performance/report.json`，原设置和联网规则已恢复。
+- 首轮诊断在 397 秒内记录到一次 UI 绘制 12.34ms，随后中止以测试暂停被遮挡背景动画的最终版本；该轮不算验收通过，原始数据和说明保留在 `artifacts/tiles/gallery-viewport-baseline/`。最终轮保留全部有效帧、异常峰值与非零 Flags 的原有计数规则，没有改动 12ms、jank <5% 和内存门槛。
+- 复现视口检查：构建 `-PgalleryGestureProbe=true assembleDebug assembleDebugAndroidTest`，安装两份 APK，执行 `adb -s 192.168.3.167:5555 shell am instrument -w -e page gallery.slideshow -e viewport true moe.kiwi.thinkos.test/moe.kiwi.thinkos.GallerySwipeInstrumentation`。连续运行使用 `python3 tools/tests/tile_perf.py --serial 192.168.3.167:5555 --scene gallery --seconds 600`，保留与磁贴相同的页面/进程/输入校验、采样覆盖率与性能阈值。两轮逐帧/内存原文保存在 `artifacts/gallery/viewport/performance-raw.tar.gz`，SHA-256 索引为同目录的 `performance-raw-index.json`；在仓库根目录解压可恢复原路径。
+
 ## 短促快滑抖动修正（2026-10-31）
 
 - 复现：旧版对 8ms 的很小竖向位移会误切图片；缺少越过 slop 的 MOVE 时又会落入点击路径。归位中的下一次拖动调用 finish.run 强制到达终点，取消后立即清理预览也会破坏接管。

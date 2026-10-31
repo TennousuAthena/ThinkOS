@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Two independent 10-minute AWAKE live-tile scenes, with application networking blocked over wireless ADB."""
+"""10-minute native page scenes, with application networking blocked over wireless ADB."""
 import argparse
 import json
 import os
@@ -21,7 +21,7 @@ APP='moe.kiwi.thinkos';HOME=APP+'/.MainActivity';LAUNCHER='org.lineageos.trebuch
 
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--serial',required=True);p.add_argument('--seconds',type=int,default=600)
-    p.add_argument('--scene',choices=['both','builtin','sixteen','aero'],default='both')
+    p.add_argument('--scene',choices=['both','builtin','sixteen','aero','gallery'],default='both')
     p.add_argument('--diagnostic-icon',choices=['star','cloud','rain'])
     p.add_argument('--cycle-attention',action='store_true')
     p.add_argument('--profile',action='store_true',help='Diagnostic method sampling; never an acceptance run')
@@ -63,9 +63,10 @@ def main():
         config=json.loads(original or b'{}');config.setdefault('system',{}).update({'theme.mode':'dark','theme.night':False,'display.orientation':'landscape','tiles.live':True,'tiles.interval':5})
         write(json.dumps(config).encode());network.start()
         (args.output/'network-before.txt').write_text(network.evidence())
-        shell('cmd','package','set-home-activity',HOME);shell('am','start','-n',HOME);time.sleep(5)
+        shell('cmd','package','set-home-activity',HOME)
+        (args.output/'cold-start.txt').write_bytes(shell('am','start','-W','-n',HOME));time.sleep(5)
         debug('hold_attention','AWAKE');debug('orientation',0,'--ei')
-        scenes=[('builtin','tiles.main'),('sixteen','tile-probe.stress'),('aero','aero.main')]
+        scenes=[('builtin','tiles.main'),('sixteen','tile-probe.stress'),('aero','aero.main'),('gallery','gallery.slideshow')]
         scenes=[s for s in scenes if s[0] in ('builtin','sixteen')] if args.scene=='both' else [s for s in scenes if s[0]==args.scene]
         for name,page in scenes:
             if name=='sixteen':

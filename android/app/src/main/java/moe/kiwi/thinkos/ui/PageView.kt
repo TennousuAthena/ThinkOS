@@ -55,6 +55,7 @@ internal class ComponentGroup(
     }
     val owner: String get() = pluginId
     val floatingClock: Boolean get() = bound.singleOrNull()?.view.let { it is ClockView && it.clockStyle == "float" }
+    val photo: Boolean get() = bound.singleOrNull()?.definition?.optString("type").let { it == "image" || it == "carousel" }
     var opens: String? = null
     val activeAnimations: Boolean get() = embeddedTile?.activeAnimations == true || bound.any { it.renderer?.animating == true }
     val bottomOverlayInset: Int get() = bound.maxOfOrNull { it.renderer?.bottomOverlayInset ?: 0 } ?: 0
@@ -210,6 +211,7 @@ internal class ComponentGroup(
         colors(palette)
     }
     fun night(amount: Float) { embeddedTile?.night(amount) }
+    fun burnInOffset(x: Int, y: Int) { bound.forEach { it.renderer?.burnInOffset(x, y) } }
     fun tileViews(): List<TileView> = listOfNotNull(embeddedTile)
     /** Native visuals stay live above Aero's cached static text/chrome. */
     fun desktopVisuals(): List<View> = embeddedTile?.let { listOf(it) } ?: bound.filter {
@@ -380,14 +382,17 @@ internal class PageView(
     private val stackItems = mutableMapOf<String, JSONArray>()
     private var dragging: StackSlot? = null
     private var previousLayout = ""
+    private var photoDriftX = 0
+    private var photoDriftY = 0
     private val cadence = TileCadence()
     private fun liveTiles(): List<TileView> = tiles.values.filter { it.visibility == VISIBLE } + stacks.values.flatMap { it.tileViews() } + groups.values.flatMap { it.tileViews() }
     private var active = false
     fun active(value: Boolean) { if (!value) cadence.reset(); active = value; aero?.active(value); groups.values.forEach { it.active(value) }; stacks.values.forEach { it.active(value) }; tiles.values.forEach { it.active(value && it.visibility == VISIBLE) } }
     private val layout get() = page.view.optString("layout")
-    val opaque: Boolean get() = layout in setOf("tiles", "aero")
+    val opaque: Boolean get() = layout in setOf("tiles", "aero") || photoStage
     private val slotNames get() = LayoutVocabulary.slots[layout].orEmpty()
     private val roles get() = LayoutVocabulary.roles[layout].orEmpty()
+    val photoStage: Boolean get() = layout == "stage" && groups.any { (name, group) -> roles[name] == "stage" && group.photo }
     val activeAnimations: Boolean get() = aero?.activeAnimations == true || groups.values.any { it.activeAnimations } || stacks.values.any { it.activeAnimations } || tiles.values.any { it.activeAnimations }
     val ambientAnimations: Boolean get() = aero?.ambientAnimations == true || groups.values.any { it.ambientAnimations } || stacks.values.any { it.ambientAnimations } || tiles.values.any { it.ambientAnimations }
 
@@ -406,6 +411,7 @@ internal class PageView(
             groups.clear()
             stacks.clear()
             definitions.clear()
+            photoDriftX = 0; photoDriftY = 0
         }
         previousLayout = layout
         contentDescription = page.title
@@ -470,6 +476,20 @@ internal class PageView(
     }
     fun colors(value: Palette) { palette = value; if (layout == "tiles") setBackgroundColor(value.bg) else background = null; aero?.colors(value); groups.values.forEach { it.colors(value) }; stacks.values.forEach { it.colors(value) }; tiles.values.forEach { it.colors(value) } }
     fun localeChanged() { aero?.localeChanged(); groups.values.forEach { it.localeChanged() }; stacks.values.forEach { it.localeChanged() }; tiles.values.forEach { it.localeChanged() } }
+    /** Photos already pan inside a fixed viewport. Only their stationary foreground needs drift. */
+    fun burnInOffset(x: Int, y: Int) {
+        val nextX = if (photoStage) x else 0
+        val nextY = if (photoStage) y else 0
+        if (nextX == photoDriftX && nextY == photoDriftY) return
+        groups.forEach { (name, group) ->
+            if (roles[name] == "stage") group.burnInOffset(nextX, nextY)
+            else if (group.isLaidOut) {
+                group.offsetLeftAndRight(nextX - photoDriftX)
+                group.offsetTopAndBottom(nextY - photoDriftY)
+            }
+        }
+        photoDriftX = nextX; photoDriftY = nextY
+    }
     fun tick(now: Long, attention: Attention) {
         aero?.tick(now,attention)
         groups.values.forEach { it.tick(now, attention) }; stacks.values.forEach { it.tick(now, attention) }
@@ -482,6 +502,10 @@ internal class PageView(
     fun animateAttention(waking: Boolean) {
         (groups.values.toList() + stacks.values.toList() + tiles.values.toList()).forEachIndexed { i, view ->
             view.animate().cancel()
+            if (photoStage && groups.any { (name, group) -> roles[name] == "stage" && group === view }) {
+                view.alpha = 1f; view.translationY = 0f
+                return@forEachIndexed
+            }
             val containsTile = view is TileView || view is ComponentGroup && view.tileViews().isNotEmpty() || view is StackSlot && view.tileViews().isNotEmpty()
             if (waking) { view.alpha = if (containsTile) 1f else .5f; view.translationY = 14 * resources.displayMetrics.density }
             view.animate().alpha(if (waking || containsTile) 1f else .84f).translationY(if (waking) 0f else 6 * resources.displayMetrics.density)
@@ -588,8 +612,14 @@ internal class PageView(
             val y = view.top
             val wasLaid = view.isLaidOut
             val rect = rectangle(name, spec)
+            if (photoStage && roles[name] != "stage") rect.offset(photoDriftX, photoDriftY)
             view.layout(rect.left, rect.top, rect.right, rect.bottom)
-            if (changed && wasLaid && (x != rect.left || y != rect.top)) {
+            if (photoStage && roles[name] == "stage") {
+                // Neither attention nor resize transitions may reveal the backdrop at an edge.
+                view.animate().cancel()
+                view.alpha = 1f; view.translationX = 0f; view.translationY = 0f
+                (view as? ComponentGroup)?.burnInOffset(photoDriftX, photoDriftY)
+            } else if (changed && wasLaid && (x != rect.left || y != rect.top)) {
                 view.translationX = (x - rect.left).toFloat()
                 view.translationY = (y - rect.top).toFloat()
                 view.animate().translationX(0f).translationY(0f).setDuration(Motion.PAGE).setInterpolator(Motion.EASE).start()
