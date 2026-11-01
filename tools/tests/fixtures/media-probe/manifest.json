@@ -1,0 +1,2 @@
+{"id": "media-probe", "name": "Media API probe", "version": "1.0.0", "api": 7, "main": "main.lua", "permissions": ["media", "library", "network"],
+ "pages": [{"id": "status", "title": "Media API probe", "view": "views/status.json"}]}

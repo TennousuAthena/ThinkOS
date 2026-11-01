@@ -1,0 +1,44 @@
+{
+  "id": "public-script",
+  "name": "Public script",
+  "version": "1.0.0",
+  "api": 6,
+  "main": "main.lua",
+  "permissions": [],
+  "uses": {
+    "daily": {
+      "export": "gallery.daily",
+      "shape": "photos/1"
+    },
+    "wrong": {
+      "export": "gallery.daily",
+      "shape": "photos/2"
+    },
+    "deep": {
+      "export": "public-provider.deep",
+      "shape": "probe/1"
+    },
+    "bomb": {
+      "export": "public-provider.bomb",
+      "shape": "probe/1"
+    },
+    "secure": {
+      "export": "public-provider.secure",
+      "shape": "probe/1"
+    }
+  },
+  "calls": [
+    "gallery.refresh",
+    "weather.nope",
+    "clock.nope",
+    "public-provider.ping",
+    "public-provider.private"
+  ],
+  "pages": [
+    {
+      "id": "main",
+      "view": "views/main.json",
+      "title": "Public script"
+    }
+  ]
+}

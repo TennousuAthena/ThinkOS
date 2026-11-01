@@ -23,6 +23,7 @@ def main():
     p.add_argument('--live',action='store_true')
     p.add_argument('--plugins',action='store_true')
     p.add_argument('--aero',action='store_true')
+    p.add_argument('--motion',action='store_true')
     args=p.parse_args();args.output.mkdir(parents=True,exist_ok=True)
     adb=['adb','-s',args.serial]
     if not args.skip_build:
@@ -34,6 +35,8 @@ def main():
         folder,_=package_plugin(ROOT/'tools/tests/fixtures/tile-probe',tmp);publish_directory(folder,args.serial)
         if args.plugins:
             folder,_=package_plugin(ROOT/'tools/tests/fixtures/legacy-three',tmp);publish_directory(folder,args.serial)
+        if args.motion:
+            folder,_=package_plugin(ROOT/'tools/tests/fixtures/tile-motion',tmp);publish_directory(folder,args.serial)
     subprocess.run(adb+['shell','run-as','moe.kiwi.thinkos','rm','-rf','files/tiles-validation'],check=True)
     scale=subprocess.check_output(adb+['shell','settings','get','global','animator_duration_scale']).decode().strip()
     try:
@@ -42,6 +45,7 @@ def main():
         if args.live:command+=['-e','live','true']
         if args.plugins:command+=['-e','plugins','true']
         if args.aero:command+=['-e','aero','true']
+        if args.motion:command+=['-e','motion','true']
         completed=subprocess.run(command+['moe.kiwi.thinkos.test/moe.kiwi.thinkos.TileInstrumentation'],capture_output=True,timeout=300)
         (args.output/'instrumentation.txt').write_bytes(completed.stdout+completed.stderr)
         raw=read_app_file(args.serial,'files/tiles-validation/report.json')
@@ -56,6 +60,7 @@ def main():
         restore=['delete','global','animator_duration_scale'] if scale=='null' else ['put','global','animator_duration_scale',scale]
         subprocess.run(adb+['shell','settings']+restore,check=True)
         if args.plugins:remove_plugin('legacy-three',args.serial)
+        if args.motion:remove_plugin('tile-motion',args.serial)
         if not args.keep_fixture:remove_plugin('tile-probe',args.serial)
 
 if __name__=='__main__':main()

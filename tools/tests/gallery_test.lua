@@ -3,7 +3,8 @@ local source=assert(arg[1])
 local function fixture()
   local f={handlers={},timers={},scans=0,logs={},states={}}
   local config={local_dir="",scan_seconds=300}
-  tos={config=config,json={decode=function(text) assert(text=="[]"); return {} end,encode=function(value) return value end},state={set=function(value) f.state=value; f.states[#f.states+1]=value end},
+  f.animations={}
+  tos={config=config,tile={animate=function(name) f.animations[#f.animations+1]=name; return true end},json={decode=function(text) assert(text=="[]"); return {} end,encode=function(value) return value end},state={set=function(value) f.state=value; f.states[#f.states+1]=value end},
     i18n={t=function(key) return key end},on=function(name,fn) f.handlers[name]=fn end,
     log={warn=function(...) f.logs[#f.logs+1]={...} end,info=function() end},
     timer={after=function(seconds,fn) local n=#f.timers+1; f.timers[n]=fn; f.delay=seconds; return n end,cancel=function(n) f.timers[n]=false end},
@@ -23,6 +24,7 @@ local f=fixture(); assert(f.scans==0 and f.state.notice=="loading")
 f.event("attention","AWAKE"); assert(f.delay==.1, "initial attention must not postpone the first scan")
 f.fire(); assert(f.scans==1 and f.options.kind=="image" and f.options.dir==nil and f.options.recursive)
 assert(#f.state.photos==2 and f.state.cover=="file:///a.jpg" and f.state.notice=="")
+assert(#f.state.public.daily.photos==0 and f.state.public.daily.cover=="") -- Local paths are never exported.
 f.result.items[1].title=string.rep("汉",256)
 f.event("command","refresh"); assert(f.state.photos[2].title==string.rep("汉",256))
 f.result.items[1].title="B"

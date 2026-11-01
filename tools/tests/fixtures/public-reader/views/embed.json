@@ -1,0 +1,7 @@
+{
+  "layout": "split",
+  "slots": {
+    "lead": { "widget": "gallery.preview" },
+    "main": { "widget": "weather.now" }
+  }
+}

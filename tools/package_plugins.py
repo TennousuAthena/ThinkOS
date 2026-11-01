@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import re
 from pathlib import Path, PurePosixPath
 import sys
 import shutil
@@ -66,6 +67,59 @@ def tile_drops(sizes, cols, rows):
     return set(dropped)
 
 
+def check_use_bindings(manifest, entry, view):
+    """A binding to uses.<alias> must name an alias this plugin declared; otherwise it stays silently blank."""
+    declared = manifest.get('uses', {})
+    def visit(value):
+        if isinstance(value, dict):
+            for child in value.values():
+                visit(child)
+        elif isinstance(value, list):
+            for child in value:
+                visit(child)
+        elif isinstance(value, str):
+            for alias in re.findall(r'(?:^|\{\{\s*)uses\.([A-Za-z0-9_-]+)', value):
+                if alias not in declared:
+                    raise ValidationError(f'{entry}: binding to undeclared uses.{alias}')
+    visit(view)
+
+
+def check_public_links(manifests):
+    """Warn about links the packaged set cannot satisfy. Providers may also arrive later, so this never fails."""
+    plugins = {manifest['id']: manifest for manifest in manifests}
+    for manifest in manifests:
+        for alias, use in manifest.get('uses', {}).items():
+            provider, export = use['export'].split('.')
+            declared = plugins.get(provider, {}).get('exports', {}).get(export)
+            if provider in plugins and declared is None:
+                print(f'warning: {manifest["id"]}: uses.{alias}: {use["export"]} is not exported', file=sys.stderr)
+            elif declared is not None and declared['shape'] != use['shape']:
+                print(f'warning: {manifest["id"]}: uses.{alias}: wants {use["shape"]}, {use["export"]} provides {declared["shape"]}', file=sys.stderr)
+            elif declared is not None and not set(declared.get('requires', [])) <= set(manifest.get('permissions', [])):
+                print(f'warning: {manifest["id"]}: uses.{alias}: missing permissions {sorted(set(declared["requires"]) - set(manifest.get("permissions", [])))}', file=sys.stderr)
+        for target in manifest.get('calls', []):
+            provider, command = target.split('.')
+            if provider in plugins and not any(entry['id'] == command and entry.get('public') for entry in plugins[provider].get('commands', [])):
+                print(f'warning: {manifest["id"]}: calls: {target} is not a public command', file=sys.stderr)
+
+
+MEDIA_COMPONENTS = {'controls', 'video', 'seekbar'}
+
+
+def uses_media_components(value):
+    if isinstance(value, dict):
+        return value.get('type') in MEDIA_COMPONENTS or any(uses_media_components(item) for item in value.values())
+    if isinstance(value, list):
+        return any(uses_media_components(item) for item in value)
+    return False
+
+
+def check_media_permission(manifest, entry_id, view):
+    # The OS draws these against the media session; without the grant the renderer would have nothing to attach to.
+    if uses_media_components(view) and 'media' not in manifest.get('permissions', []):
+        raise ValidationError(f'{entry_id}: controls, video and seekbar need the media permission')
+
+
 def validate_plugin(source):
     if Path(source).is_symlink():
         raise ValidationError('plugin root cannot be a symlink')
@@ -119,9 +173,10 @@ def validate_plugin(source):
                 raise ValidationError(f'missing view: {entry["view"]}')
             view = read_json(source / entry['view'])
             validate_view(view, manifest['api'])
+            check_media_permission(manifest, entry['id'], view)
             if view.get('layout') == 'tiles':
                 sizes = [item['size'] for item in view['slots']['tiles']]
-                dropped = tile_drops(sizes, 6, 4) & tile_drops(sizes, 4, 6)
+                dropped = tile_drops(sizes, 8, 6) & tile_drops(sizes, 6, 8)
                 if dropped: print(f'warning: {manifest["id"]}.{entry["id"]}: tiles {sorted(dropped)} do not fit in either orientation', file=sys.stderr)
             if ('layout' in view) != (category == 'pages'):
                 raise ValidationError(f'{category}.{entry["id"]}: wrong view kind')
@@ -129,6 +184,17 @@ def validate_plugin(source):
             rendered = view.get('variants')
             if declared and rendered and declared != rendered:
                 raise ValidationError(f'{entry["id"]}: manifest/view variants disagree')
+            check_use_bindings(manifest, entry['id'], view)
+            for template, alternate in entry.get('alternates', {}).items():
+                safe_relative(alternate)
+                if alternate not in names:
+                    raise ValidationError(f'missing alternate view: {alternate}')
+                other = read_json(source / alternate)
+                validate_view(other, manifest['api'])
+                check_media_permission(manifest, entry['id'], other)
+                if other.get('template') != template:
+                    raise ValidationError(f'widget {entry["id"]}: alternate {template} has a different template')
+                check_use_bindings(manifest, entry['id'], other)
     return manifest, sorted(files, key=lambda item: item[0].encode("utf-8"))
 
 
@@ -188,14 +254,16 @@ def package_plugin(source, output):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--plugin', action='append', type=Path,
-                        help='Plugin source directory; repeat to package multiple. Defaults to built-in home, clock, weather, gallery, tiles, aero and settings.')
+                        help='Plugin source directory; repeat to package multiple. Defaults to built-in home, clock, weather, gallery, tiles, aero, player, cast and settings.')
     parser.add_argument('--output', type=Path, default=ROOT / 'android/app/src/main/assets/plugins',
                         help='Output directory for <id>/ files and index.json.')
     parser.add_argument('--validate-only', action='store_true', help='Validate without writing directories.')
     args = parser.parse_args()
-    sources = args.plugin or [ROOT / 'plugins/home', ROOT / 'plugins/clock', ROOT / 'plugins/weather', ROOT / 'plugins/gallery', ROOT / 'plugins/tiles', ROOT / 'plugins/aero', ROOT / 'plugins/settings']
+    sources = args.plugin or [ROOT / 'plugins/home', ROOT / 'plugins/clock', ROOT / 'plugins/weather', ROOT / 'plugins/gallery', ROOT / 'plugins/tiles', ROOT / 'plugins/aero', ROOT / 'plugins/player', ROOT / 'plugins/cast', ROOT / 'plugins/settings']
     try:
-        ids = [validate_plugin(source)[0]['id'] for source in sources]
+        manifests = [validate_plugin(source)[0] for source in sources]
+        ids = [manifest['id'] for manifest in manifests]
+        check_public_links(manifests)
         if len(set(ids)) != len(ids):
             raise ValidationError('duplicate plugin IDs in input set')
         catalog = []

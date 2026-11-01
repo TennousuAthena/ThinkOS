@@ -13,6 +13,12 @@ shim.config = cfg
 shim.on = function(name,fn) handlers[name]=fn end
 shim.time = {format=public.time.format,now=function() local now=public.time.now();return synced and now and now+timeOffset or nil end}
 shim.location = {get=function() return placeOverride or public.location.get() end}
+local unitsOverride
+shim.units = {
+  get=function() return unitsOverride or public.units.get() end,
+  temperature=function(c) return (unitsOverride or public.units.get()).temperature=="f" and c*1.8+32 or c end,
+  wind=function(kmh) return (unitsOverride or public.units.get()).wind=="mph" and kmh*.621371192 or kmh end,
+}
 shim.state = {get=public.state.get,set=function(state) public.state.set(state) end}
 shim.store = {get=public.store.get,set=function(key,value) writes=writes+1;public.store.set(key,value) end}
 shim.http = {get=function(url,opts)
@@ -36,7 +42,7 @@ public.on("start",function()
       expect(writes==1 and state().temperature=="23°","fixture loads through actual PluginHttp and JNI")
       snapshot=public.store.get("forecast")
       local count=calls
-      cfg.temp_unit="f";handlers.config(cfg);public.timer.sleep(.01);handlers.locale()
+      unitsOverride={system="imperial",temperature="f",wind="mph"};handlers.units();public.timer.sleep(.01);handlers.locale()
       expect(calls==count and state().temperature=="74°","unit and locale render locally without HTTP")
       for _,path in ipairs({"/503","/slow","/html","/missing"}) do
         route=path;handlers.command("refresh")

@@ -1,0 +1,6 @@
+{
+  "layout": "stage",
+  "slots": {
+    "stage": { "type": "image", "src": "{{uses.daily.cover}}?composed=1" }
+  }
+}

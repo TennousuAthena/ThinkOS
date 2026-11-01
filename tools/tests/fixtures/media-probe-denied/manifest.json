@@ -1,0 +1,1 @@
+{"id": "media-probe-denied", "name": "Media API probe without grants", "version": "1.0.0", "api": 6, "main": "main.lua", "permissions": [], "pages": [{"id": "status", "title": "Media API probe", "view": "views/status.json"}]}

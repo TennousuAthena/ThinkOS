@@ -73,11 +73,13 @@ def main():
         paused = False
         try:
             for attempt in range(3):
-                dump_hierarchy(args.serial, path);output=b''
+                output=b''
                 try:
+                    # dump_hierarchy itself raises when UIAutomator exits cleanly but publishes no file.
+                    dump_hierarchy(args.serial, path)
                     raw = shell('cat', path)
                     root = ET.fromstring(raw)
-                except (subprocess.CalledProcessError, ET.ParseError):
+                except (subprocess.CalledProcessError, ET.ParseError, RuntimeError):
                     # UIAutomator can exit successfully without a file when an animated
                     # cold screen never becomes idle. Pause icon motion for hierarchy IO.
                     report['hierarchyRetries'] = report.get('hierarchyRetries', 0)+1
@@ -144,11 +146,13 @@ def main():
         orient();navigate('home.main' if from_card else 'weather.detail')
         x = 950 if from_card else 250
         shell('input', 'swipe', x, 400, x, 400, 900)
-        find(weather['name']);find(weather['setting.temp_unit'])
+        find(weather['name']);tap(find(labels['setting_system_name']));find(labels['setting_units_system'])
     def choose_unit(unit):
-        tap(find(weather['setting.temp_unit']));tap(find('°' + unit.upper()))
-        # Choosing the default removes the local override; absence means Celsius.
-        wait(lambda: saved().get('weather', {}).get('temp_unit', 'c') == unit, 'unit did not persist')
+        # Units are a system setting now (ADR-032): '°F' means the imperial system, '°C' the metric one.
+        system = 'imperial' if unit == 'f' else 'metric'
+        tap(find(labels['setting_units_system']));tap(find(labels['setting_units_system_' + system]))
+        # Choosing the default removes the local override; absence means metric.
+        wait(lambda: saved().get('system', {}).get('units.system', 'metric') == system, 'unit did not persist')
         tap(find(done))
 
     assert pid(), 'Start the debug APK first'
@@ -240,7 +244,7 @@ def main():
             assert 'plugin CPU budget exceeded' not in logs(), 'Offline cached start exhausted its budget'
             cold.append({'activityMs':total,'contentMs':ready})
         find(expected);shot('offline-fahrenheit-cache')
-        assert saved()['weather']['temp_unit']=='f'
+        assert saved()['system']['units.system']=='imperial'
         report['offlineColdStart']={'attempts':cold,'wifiDisabled':network is None,'appNetworkBlocked':network is not None,'server':'none'}
         passed('three offline cold starts display cached Fahrenheit weather within 3 seconds without budget errors')
         shell('cmd','package','set-home-activity',HOME)

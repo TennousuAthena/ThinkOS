@@ -6,9 +6,10 @@ local function clone(value) return json.decode(json.encode(value)) end
 local function test(name, fn) test_begin(); fn(); test_end(name) end
 local function new(opts)
   opts = opts or {}
-  local env = { handlers = {}, timers = {}, state = {}, requests = {}, writes = {}, serial = 0,
+  local env = { animations = {}, handlers = {}, timers = {}, state = {}, requests = {}, writes = {}, serial = 0,
     now = sample.current.time * 1000,
-    place = {name="Hong Kong",latitude=22.3,longitude=114.2,timezone="Asia/Hong_Kong"}, clock = 0 }
+    place = {name="Hong Kong",latitude=22.3,longitude=114.2,timezone="Asia/Hong_Kong"}, clock = 0,
+    units = {system="metric",temperature="c",wind="kmh"} }
   local cfg = {}; for key, field in pairs(manifest.settings) do cfg[key] = field.default end
   if opts.noTime then env.now = false end
   local function translate(key, args)
@@ -20,8 +21,14 @@ local function new(opts)
     config = cfg, json = json,
     on = function(name, fn) env.handlers[name] = fn end,
     state = {set=function(value) for k,v in pairs(value) do env.state[k]=v end end},
+    tile = {animate=function(name) env.animations[#env.animations+1]=name; return true end},
     store = {get=function() return opts.cache end,set=function(key,value) env.writes[#env.writes+1]=clone(value) end},
     location = {get=function() return clone(env.place) end},
+    units = {
+      get=function() return {system=env.units.system,temperature=env.units.temperature,wind=env.units.wind} end,
+      temperature=function(c) return env.units.temperature=="f" and c*1.8+32 or c end,
+      wind=function(kmh) return ({kmh=kmh,ms=kmh/3.6,mph=kmh*.621371192,kn=kmh*.539956803})[env.units.wind] end,
+    },
     time = {now=function() return env.now or nil end,format=function(ms,fmt,tz)
       assert(tz == "Asia/Hong_Kong" or tz == "Asia/Kathmandu" or tz == "America/New_York" or tz == "UTC")
       assert(fmt == "@time" or fmt == "@weekday")
@@ -66,8 +73,11 @@ test("start publishes immediately; network deferred; bounded full forecast", fun
 end)
 test("unit, language and minute changes only render; relevance remains stable", function()
   local e=new();e.next()();local count=#e.requests
-  local cfg=clone(tos.config);cfg.temp_unit="f";tos.config=cfg;e.emit("config",cfg)
+  e.units={system="imperial",temperature="f",wind="mph"};e.emit("units")
   assert(e.state.temperature=="74°" and e.state.metrics:find("8 mph",1,true))
+  e.units={system="metric",temperature="c",wind="kn"};e.emit("units")
+  assert(e.state.temperature=="23°" and e.state.metrics:find("kn",1,true))
+  e.units={system="imperial",temperature="f",wind="mph"};e.emit("units")
   local previous=e.state.relevance;e.state.relevance=nil;e.minute();e.emit("locale")
   assert(#e.requests==count and e.state.relevance==nil and previous==.3)
 end)

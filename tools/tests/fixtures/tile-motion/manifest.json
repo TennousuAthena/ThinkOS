@@ -1,0 +1,22 @@
+{
+  "id": "tile-motion",
+  "name": "Tile motion",
+  "version": "1.0.0",
+  "api": 6,
+  "main": "main.lua",
+  "permissions": [],
+  "pages": [
+    {
+      "id": "main",
+      "title": "Motion",
+      "view": "views/main.json"
+    }
+  ],
+  "widgets": [
+    {
+      "id": "tile",
+      "view": "views/tile.json",
+      "opens": "main"
+    }
+  ]
+}

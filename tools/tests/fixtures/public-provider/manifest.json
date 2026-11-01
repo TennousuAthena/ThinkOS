@@ -1,0 +1,35 @@
+{
+  "id": "public-provider",
+  "name": "Public provider",
+  "version": "1.0.0",
+  "api": 6,
+  "main": "main.lua",
+  "permissions": [],
+  "exports": {
+    "deep": {
+      "path": "public.deep",
+      "shape": "probe/1"
+    },
+    "bomb": {
+      "path": "public.bomb",
+      "shape": "probe/1"
+    },
+    "secure": {
+      "path": "public.secure",
+      "shape": "probe/1",
+      "requires": [
+        "location"
+      ]
+    }
+  },
+  "commands": [
+    {
+      "id": "ping",
+      "public": true,
+      "cooldown": 0.1
+    },
+    {
+      "id": "private"
+    }
+  ]
+}

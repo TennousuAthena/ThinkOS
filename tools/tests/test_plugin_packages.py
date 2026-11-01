@@ -18,7 +18,7 @@ import schema_tools as tools
 class PluginPackageTests(unittest.TestCase):
     def test_api_three_gallery_exposes_bing_and_local_through_shared_interfaces(self):
         manifest, _ = packages.validate_plugin(ROOT / 'plugins/gallery')
-        self.assertEqual(4, manifest['api'])
+        self.assertEqual(6, manifest['api'])
         self.assertEqual(['library', 'network'], manifest['permissions'])
         self.assertEqual('bing', manifest['settings']['source']['default'])
         self.assertEqual({'bing', 'local', 'all'}, {x['value'] for x in manifest['settings']['source']['choices']})
@@ -73,9 +73,12 @@ class PluginPackageTests(unittest.TestCase):
             with self.assertRaises(tools.ValidationError):
                 tools.validate_view({'layout': 'focus', 'slots': {'hero': component}}, 2)
     def test_tile_packer_uses_first_fit_in_both_orientations(self):
-        self.assertEqual({1}, packages.tile_drops(["large", "wide"], 6, 4))
-        self.assertEqual(set(), packages.tile_drops(["large", "wide"], 4, 6))
-        self.assertEqual({1, 2}, packages.tile_drops(["large"]*3, 6, 4))
+        # 8x6 landscape holds two large tiles side by side; 6x8 portrait stacks them and has no room for a wide one.
+        mixed = ["large", "large", "wide", "wide"]
+        self.assertEqual(set(), packages.tile_drops(mixed, 8, 6))
+        self.assertEqual({2, 3}, packages.tile_drops(mixed, 6, 8))
+        self.assertEqual({2}, packages.tile_drops(["large"]*3, 8, 6))
+        self.assertEqual({2}, packages.tile_drops(["large"]*3, 6, 8))
 
     def test_api_four_tiles_contract(self):
         tile = {'template': 'tile', 'faces': [{'label': 'Weather', 'value': '{{temp}}'}]}
@@ -204,8 +207,78 @@ class PluginPackageTests(unittest.TestCase):
         self.assertFalse((device / 'LEAK').exists())
         self.assertEqual(list((device / 'files/dev-plugins').iterdir()), [device / 'files/dev-plugins/clock'])
 
-    def test_new_api_is_rejected(self):
+    def test_tile_face_content_is_gated_by_api_six(self):
+        tile = {'template': 'tile', 'faces': [{'label': 'x', 'content': {'type': 'clock', 'style': 'analog'}}]}
+        tools.validate_view(tile, 6)
+        with self.assertRaises(tools.ValidationError): tools.validate_view(tile, 5)
+        tile['faces'][0]['content'] = {'type': 'image', 'src': 'a'}
+        with self.assertRaises(tools.ValidationError): tools.validate_view(tile, 6)
+
+    def test_public_contract_is_gated_validated_and_reserved(self):
+        for field in (dict(exports={'x': {'path': 'public.x', 'shape': 's/1'}}),
+                      dict(uses={'x': {'export': 'other.x', 'shape': 's/1'}}),
+                      dict(calls=['other.go'])):
+            self.manifest(lambda data: data.update(api=5, **field))
+            with self.assertRaises(packages.ValidationError): packages.validate_plugin(self.plugin)
+            self.manifest(lambda data: data.update(api=6))
+            packages.validate_plugin(self.plugin)
+            self.manifest(lambda data: [data.pop(key) for key in field])
         self.manifest(lambda data: data.update(api=6))
+        for bad in (dict(exports={'x': {'path': 'config.token', 'shape': 's/1'}}),
+                    dict(exports={'x': {'path': 'uses.daily', 'shape': 's/1'}}),
+                    dict(exports={'Bad': {'path': 'a', 'shape': 's/1'}}),
+                    dict(exports={'x': {'path': 'a', 'shape': 'unversioned'}}),
+                    dict(exports={'a': {'path': 'public', 'shape': 's/1'}, 'b': {'path': 'public.place', 'shape': 's/1', 'requires': ['location']}}),
+                    dict(exports={'x': {'path': 'a', 'shape': 's/1', 'requires': ['system.settings']}}),
+                    dict(uses={'Bad': {'export': 'other.x', 'shape': 's/1'}}),
+                    dict(calls=['clock.go'])):
+            self.manifest(lambda data: data.update(**bad))
+            with self.assertRaises(packages.ValidationError): packages.validate_plugin(self.plugin)
+            self.manifest(lambda data: [data.pop(key) for key in bad])
+
+    def test_views_can_only_bind_declared_uses_and_alternates_must_match(self):
+        self.manifest(lambda data: data.update(api=6))
+        view = self.plugin / 'views/face.json'
+        original = view.read_text()
+        data = json.loads(original)
+        data['slots']['under'] = {'type': 'text', 'value': '{{uses.ghost.x}}'}
+        view.write_text(json.dumps(data))
+        with self.assertRaises(packages.ValidationError): packages.validate_plugin(self.plugin)
+        self.manifest(lambda data: data.update(uses={'ghost': {'export': 'other.x', 'shape': 's/1'}}))
+        packages.validate_plugin(self.plugin)
+        view.write_text(original)
+        relative = view.relative_to(self.plugin).as_posix()
+        def alternate(data):
+            data.setdefault('widgets', [{'id': 'w', 'view': 'views/w.json'}])[0]['alternates'] = {'tile': relative}
+        (self.plugin / 'views/w.json').write_text(json.dumps({'template': 'glance', 'children': [{'type': 'text', 'value': 'x'}]}))
+        self.manifest(alternate)
+        with self.assertRaises(packages.ValidationError): packages.validate_plugin(self.plugin)
+
+    def test_media_components_need_api_seven_and_the_media_permission(self):
+        path = self.plugin / 'views/face.json'
+        original = json.loads(path.read_text())
+        for component in ({'type': 'video', 'fit': 'cover'}, {'type': 'controls', 'mode': 'seek'}, {'type': 'seekbar'}):
+            view = copy.deepcopy(original)
+            view['slots']['hero'] = component
+            path.write_text(json.dumps(view))
+            self.manifest(lambda data: data.update(api=6, permissions=['media']))
+            with self.assertRaises(packages.ValidationError): packages.validate_plugin(self.plugin)    # API 7 vocabulary
+            self.manifest(lambda data: data.update(api=7, permissions=[]))
+            with self.assertRaises(packages.ValidationError): packages.validate_plugin(self.plugin)    # no media grant
+            self.manifest(lambda data: data.update(api=7, permissions=['media']))
+            packages.validate_plugin(self.plugin)
+        view = copy.deepcopy(original)
+        view['slots']['hero'] = {'type': 'controls', 'mode': 'repeat-all'}
+        path.write_text(json.dumps(view))
+        with self.assertRaises(packages.ValidationError): packages.validate_plugin(self.plugin)
+
+    def test_player_plugin_is_a_valid_api_seven_package(self):
+        manifest, _ = packages.validate_plugin(ROOT / 'plugins/player')
+        self.assertEqual(7, manifest['api'])
+        self.assertIn('media', manifest['permissions'])
+
+    def test_new_api_is_rejected(self):
+        self.manifest(lambda data: data.update(api=8))
         with self.assertRaises(packages.ValidationError): packages.validate_plugin(self.plugin)
 
     def test_traversal_reference_is_rejected(self):
@@ -234,7 +307,7 @@ class PluginPackageTests(unittest.TestCase):
 
     def test_duplicate_json_keys_are_rejected(self):
         path = self.plugin / 'manifest.json'
-        path.write_text(path.read_text().replace('"api": 4,', '"api": 4, "api": 2,'))
+        path.write_text(path.read_text().replace('"api": 6,', '"api": 6, "api": 2,'))
         with self.assertRaises(packages.ValidationError): packages.validate_plugin(self.plugin)
 
     def test_setting_default_must_satisfy_its_declaration(self):

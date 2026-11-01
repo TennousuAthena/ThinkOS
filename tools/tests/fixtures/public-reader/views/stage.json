@@ -1,0 +1,7 @@
+{
+  "layout": "stage",
+  "slots": {
+    "stage": { "type": "carousel", "items": "{{uses.daily.photos}}", "interval": 30, "duration": 800, "fit": "pan" },
+    "under": { "type": "text", "value": "{{uses.now.temperature | default \"--\"}} {{uses.wrong.cover | default \"no-shape\"}} {{uses.absent.cover | default \"no-provider\"}}", "style": "caption" }
+  }
+}

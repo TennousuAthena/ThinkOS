@@ -1,0 +1,14 @@
+{
+  "template": "tile",
+  "color": "#0B5CC4",
+  "faces": [
+    {
+      "value": "A",
+      "label": "Motion"
+    },
+    {
+      "value": "B",
+      "label": "Motion"
+    }
+  ]
+}

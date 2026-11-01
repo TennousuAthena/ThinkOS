@@ -1,0 +1,1 @@
+{ "layout": "focus", "slots": { "hero": { "type": "text", "value": "{{report}}", "style": "body" } } }

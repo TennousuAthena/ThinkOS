@@ -1,0 +1,47 @@
+{
+  "id": "public-reader",
+  "name": "Public reader",
+  "version": "1.0.0",
+  "api": 6,
+  "permissions": [],
+  "uses": {
+    "daily": {
+      "export": "gallery.daily",
+      "shape": "photos/1"
+    },
+    "now": {
+      "export": "weather.now",
+      "shape": "weather-now/1"
+    },
+    "wrong": {
+      "export": "gallery.daily",
+      "shape": "photos/2"
+    },
+    "absent": {
+      "export": "no-such.thing",
+      "shape": "photos/1"
+    }
+  },
+  "pages": [
+    {
+      "id": "stage",
+      "view": "views/stage.json",
+      "title": "Public stage"
+    },
+    {
+      "id": "embed",
+      "view": "views/embed.json",
+      "title": "Referenced widget"
+    },
+    {
+      "id": "grid",
+      "view": "views/grid.json",
+      "title": "Tile alternates"
+    },
+    {
+      "id": "composed",
+      "view": "views/composed.json",
+      "title": "Composed URL"
+    }
+  ]
+}
