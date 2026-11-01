@@ -66,8 +66,9 @@ If-None-Match: "<rev>"
     "attention": { "awake_to_ambient_s": 120, "to_asleep_s": 180, "engaged_idle_s": 15 },
     "theme": { "mode": "auto", "dark_below_lux": 50, "light_above_lux": 120, "night_below_lux": 5, "night_above_lux": 15 },
     "display": { "orientation": "auto" },
+    "units": { "system": "metric", "wind": "auto" },
     "plugins": {
-      "weather": { "temp_unit": "c", "interval": "15" },
+      "weather": { "interval": "15" },
       "music": { "navidrome": "http://192.168.1.10:4533", "user": "kiwi" }
     }
   },
@@ -166,7 +167,7 @@ POST /api/v1/devices/{device_id}/report
   "settings": {
     "overrides": {
       "system": { "theme.mode": "dark" },
-      "plugins": { "weather": { "temp_unit": "f" } }
+      "plugins": { "weather": { "interval": "30" } }
     },
     "rejected": [ { "scope": "weather", "key": "temp_unit", "reason": "unknown option" } ]
   },

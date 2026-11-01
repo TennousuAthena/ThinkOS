@@ -18,6 +18,7 @@
 | **alert（通知）** | 叠层通知，可唤醒屏幕 | `notify` 插件转发的手机通知 |
 | **command（指令）** | 可被点击、手势、语音、远程触发的动作 | `music.next`（“下一首”） |
 | **settings（设置项）** | 在 manifest 里声明，OS 自动生成设置页 | `weather` 的温度单位、`clock` 的秒数显示 |
+| **export（公开数据）** | 显式公开的一段状态，其他插件声明后可读（§6.8） | `gallery.daily`（Bing 每日图）、`weather.now` |
 
 **页面即插件**：设备上左右翻动的每一页都是某个插件的 page；首页 `home.main` 本身也是插件，它是一个 `stacks` 页面，两个栈里放的是其他插件的 widget。
 
@@ -46,7 +47,7 @@
 
 每个设备安装输入目录含 `index.json`：`{id, version, digest, files:[{path, sha256, size}]}`，索引本身不计入文件清单（上限 64 KiB）。文件按路径的 UTF-8 字节顺序排列，`digest = sha256(UTF8(path + "\0" + sha256 + "\n") …)`，其中 `sha256` 为小写十六进制。拒绝重复路径、大小写冲突、控制字符、未列出文件以及哈希 / 大小不符的内容。
 
-APK 根索引 `assets/plugins/index.json` 为 `{plugins:[上述完整索引…]}`；插件文件位于 `assets/plugins/<id>/…`。运行时先验证并拷贝到私有暂存目录，再做 manifest / view 语义校验，通过后发布到以完整 digest 命名的版本目录。失败候选不覆盖正在运行的版本；启动错误、预算终止与原生退出隔离延用相同回滚逻辑。
+APK 根索引 `assets/plugins/index.json` 为 `{plugins:[上述完整索引…]}`；插件文件位于 `assets/plugins/<id>/…`。运行时先验证并拷贝到私有暂存目录，再做 manifest / view 语义校验，通过后发布到以完整 digest 命名的版本目录。失败候选不覆盖正在运行的版本；启动错误、预算终止与原生退出隔离延用相同回滚逻辑。版本目录名含完整 digest，且只能由已校验的暂存目录原子改名产生，所以之后每次冷启动遇到已发布的同 digest 目录（`index.json` 与 APK 里的索引一致）时不再重复拷贝和哈希（APK 内的原件由 Android 验签），只重新做 manifest / view 语义校验；目录缺失或索引不符才走上述完整安装。这一步原本占内置插件冷启动约 1.2 秒（8 个插件，逐文件写入闪存）。
 
 ## 3. manifest.json
 
@@ -55,8 +56,6 @@ APK 根索引 `assets/plugins/index.json` 为 `{plugins:[上述完整索引…]}
   "id": "weather", "name": "@name", "version": "0.1.0", "api": 2,
   "main": "main.lua", "permissions": ["network", "location"],
   "settings": {
-    "temp_unit": { "type": "choice", "label": "@setting.temp_unit", "default": "c",
-      "choices": [{ "value": "c", "label": "°C" }, { "value": "f", "label": "°F" }] },
     "interval": { "type": "choice", "label": "@setting.interval", "default": "15",
       "choices": [{ "value": "10", "label": "10 min" }, { "value": "15", "label": "15 min" },
                   { "value": "30", "label": "30 min" }, { "value": "60", "label": "60 min" }] }
@@ -71,14 +70,15 @@ APK 根索引 `assets/plugins/index.json` 为 `{plugins:[上述完整索引…]}
 |---|---|---|
 | `id` | 是 | 全局唯一，小写字母数字与 `-`；也是页面/卡片/指令的命名空间 |
 | `name` / `version` | 是 | 显示名 / 语义化版本。用 Git 分发时，`version` 必须等于 git tag 去掉前缀 `v` 后的值（§12.2） |
-| `api` | 是 | 需要的运行时 API 版本（当前支持 `1` / `2` / `3` / `4`）；高于设备支持的版本时不会被安装 |
+| `api` | 是 | 需要的运行时 API 版本（当前支持 `1`–`7`）；高于设备支持的版本时不会被安装 |
 | `icon` | 否 | 包内相对路径 |
 | `main` | 否 | 入口 Lua 文件；省略即纯声明插件 |
 | `permissions` | 否 | 见 §6.3；未声明即拒绝 |
 | `settings` | 否 | 本插件的设置项（页面级设置），格式见 §11.1；取代 M0 的 `config` |
 | `pages[]` | 否 | `id`、`view`、`title`、建议的 `roles`（`home`/`ambient`/`sleep`；`settings` 仅限持有 `system.settings` 权限的插件）、焦点 `priority`、`variants`、`live`（可作为实时活动全屏接管） |
-| `widgets[]` | 否 | `id`、`view`、`opens`（点击打开本插件的哪个页面） |
-| `commands[]` | 否 | `id`；可选 `phrases`（语音固定短语）、`gesture`（`wave`/`left`/`right`/`fist`，冲突以配置为准） |
+| `widgets[]` | 否 | `id`、`view`、`opens`（点击打开本插件的哪个页面）；API 6 可选 `alternates`（按模板提供其他呈现，§6.8.5） |
+| `commands[]` | 否 | `id`；可选 `phrases`（语音固定短语）、`gesture`（`wave`/`left`/`right`/`fist`，冲突以配置为准）；API 6 可选 `public`、`cooldown`（§6.8.4） |
+| `exports` / `uses` / `calls` | 否 | API 6：公开的数据、读取的公开数据、调用的公开指令，见 §6.8 |
 | `sources` | 否 | 纯声明插件的数据来源，见 §5 |
 
 页面、卡片、指令的全名都是 `<plugin>.<id>`，例如 `weather.now`、`music.next`。
@@ -91,15 +91,15 @@ APK 根索引 `assets/plugins/index.json` 为 `{plugins:[上述完整索引…]}
 
 | 层 | 可选值 |
 |---|---|
-| 页面版式 `layout` | API 1：`stacks` / `focus` / 设置专用 `form`（§11.3）；API 2：`split` / `stage`；API 4：`tiles`；API 5：`aero` |
+| 页面版式 `layout` | API 1：`stacks` / `focus` / 设置专用 `form`（§11.3）；API 2：`split` / `stage`；API 4：`tiles`；API 5：`aero`；API 6：`focus` / `split` / `stage` 的槽位可放 `{"widget":"<plugin>.<id>"}` |
 | 卡片模板 `template` | API 1：`glance`；API 4：`tile`；M1 媒体与列表模板待实现 |
-| 组件 `type` | API 1：`text` / `icon` / `clock`，`form` 只用于设置版式；API 2：`progress` / `chart` / `list` / `daylight` / `moon`；API 3：`image` / `carousel` |
+| 组件 `type` | API 1：`text` / `icon` / `clock`，`form` 只用于设置版式；API 2：`progress` / `chart` / `list` / `daylight` / `moon`；API 3：`image` / `carousel`；API 7：`video` / `controls` / `seekbar`（需 `media` 权限，§6.10） |
 | `clock.style` | `digital` / `analog` / `solar` / `world` / `float` |
 | `text.style` | `display` / `title` / `body` / `caption` |
 
 各版式、模板有哪些槽位以 `shared/schema/plugin/` 为准。需要新的版式或组件属于「设备端功能迭代」：先在 APK 实现、提升 `api` 版本，插件才能使用。
 
-设备同时接受 API 1、2、3 和 4。使用 API 2 词汇、组件组、`tap` 或 `weight` 的插件至少声明 `"api": 2`；图片组件至少声明 `"api": 3`；安装器与打包器都检查，不会让 API 1 插件静默使用新版词汇。版本表来自 `layouts.json` 的 `x-thinkos-api`，并生成到 Kotlin / Go。
+设备同时接受 API 1–7。使用 API 2 词汇、组件组、`tap` 或 `weight` 的插件至少声明 `"api": 2`；图片组件至少声明 `"api": 3`；安装器与打包器都检查，不会让 API 1 插件静默使用新版词汇。版本表来自 `layouts.json` 的 `x-thinkos-api`，并生成到 Kotlin / Go。
 
 API 2 的固定组件与内容字段：
 
@@ -111,7 +111,7 @@ API 2 的固定组件与内容字段：
 | `daylight` | `path` 指向 `tos.astro.sun()` 的派生状态；复用日光表盘，不自行读取位置 |
 | `moon` | `path` 指向 `tos.astro.moon()` 或其 `phase`；显示月相及照亮比例；`hemisphere` 为 `north/south` 或状态绑定，南半球水平镜像 |
 
-用户后续已授权相册与通用图片接口，并明确要求微软每日一图。API 3 开放 `image` / `carousel` 与 `tos.library.list`，支持本地、包内和 HTTP(S) 图片；gallery 默认设备直连 Bing，不依赖 Server。`controls/video` 与 `tos.media.*` 继续暂缓，安装器仍拒绝这些媒体组件。
+用户后续已授权相册与通用图片接口，并明确要求微软每日一图。API 3 开放 `image` / `carousel` 与 `tos.library.list`，支持本地、包内和 HTTP(S) 图片；gallery 默认设备直连 Bing，不依赖 Server。`video` / `controls` / `seekbar` 与 `tos.media.*` 在 API 7 开放（§6.10，ADR-030）；`live` 页面（实时活动）不在横向翻页序列里，只能由插件接管进入，左右滑动回到接管前的页面。
 
 除点击由 OS 保留的 `carousel` 外，组件可带固定事件名 `tap`；所有组件可带数值 `weight`（0…100）。点击发送 `tos.on("tap", function(name, index) ... end)`，其中 `name` 是声明值；列表行还给出从 1 开始的 `index`。OS 保留横向翻页手势，列表区域的纵向拖动用于滚动。`daylight/moon` 只消费派生数据，绘制本身不要求 `location` 权限。
 
@@ -127,9 +127,13 @@ API 2 的固定组件与内容字段：
 
 ### 4.1.0 API 4：磁贴
 
-`{"layout":"tiles","slots":{"tiles":[{"widget":"clock.tile","size":"wide","color":"#D24726"}]}}`。1–16 项，size 必填：small 1×1、medium 2×2、wide 4×2、large 4×4。横屏 6×4、竖屏 4×6，按声明顺序首次适配，RTL 镜像，不滚动；放不下丢弃并 warn（横屏 large+wide 放不下 wide，竖屏可同时容纳）。打包器对两个方向都放不下的引用给警告。
+`{"layout":"tiles","slots":{"tiles":[{"widget":"clock.tile","size":"wide","color":"#D24726"}]}}`。1–16 项，size 必填：small 1×1、medium 2×2、wide 4×2、large 4×4。横屏 8×6、竖屏 6×8（ADR-028），按声明顺序首次适配，RTL 镜像，不滚动；放不下丢弃并 warn（例如两张 large 横屏并排，竖屏上下叠放，第三张 large 在两个方向都放不下；`large, large, wide, wide` 横屏全部放得下，竖屏两张 wide 放不下）。打包器对两个方向都放不下的引用给警告。网格贴长边远端，余下一栏由 OS 画页面标题（取页面 manifest 的 `title`，可用 `@key`），背景由系统设置 `tiles.background` 决定，插件都不能改。内置的 `tiles.main`（标题“开始”）在两个方向都正好填满 48 格。
 
 `{"template":"tile","color":"{{config.color}}","faces":[{"icon":"clock","value":"{{time}}","label":"@name","detail":"{{date}}"}],"badge":"{{count}}"}`。faces 1–4 面，label 必填；value/detail 都空的面跳过，全空时显示第一面的 label。color 可为 #RRGGBB 或 {{绑定}}，引用颜色在页面状态中求值，卡片颜色在所属插件状态中求值。引用 > 卡片 > 系统 accent；非法运行时值回退并 warn。OS 自动取黑白前景色，插件不能指定。可绑定配置项给用户选颜色（ADR-025）。
+
+API 6 起，face 可带自己的 `content`（同样只接受 clock/progress/chart/daylight/moon，仅 wide/large 显示）；没有时沿用磁贴级 `content`。带 content 的面即使没有 value/detail 也参与翻面。例如时钟磁贴第一面是时间和日期，第二面是白色表盘：`{"faces":[{"value":"{{tileTime}}","label":"@name","detail":"{{date}}"},{"label":"@name","content":{"type":"clock","style":"analog"}}]}`。API 6 之前使用 `faces[].content` 会被拒绝。
+
+API 6 可选 `image`（完整的 `image` 组件声明）：`src` 非空时图片铺满磁贴，叠底部暗角，隐藏 icon 和 content，文字固定为白色；`value` 显示为两行标题，`detail` 最多两行（用于署名），都在名称上方。`src` 为空时回到普通磁贴。所以 `gallery.tile` 在没有每日图时显示图标。
 
 small 只显示 icon（无 icon 时 value）与角标；medium 显示 icon/value/label；wide 左侧 icon/value/label，右侧 content 或 detail；large 上部 content，下部 icon/value/label/detail。content 仅接受 clock/progress/chart/daylight/moon（仅 wide/large 显示）。tile 在 stacks 中按 large 显示；glance 在 tiles 中为空占位。点击 opens，长按进入卡片所属插件设置。页面 active 且 AWAKE/ENGAGED 时逐张翻面，同一时间最多一张，受系统 tiles.live/tiles.interval 控制；减少动画直接换面。离线沿用本地状态。所有 value/detail 均为空时不翻面，首面的图标仍可作为静态入口；没有图标则回退 label。
 
@@ -180,6 +184,7 @@ HTTP(S) 图片需要所属插件声明 `network` 权限。OS 使用通用 `Media
 | `{{updated \| time "HH:mm"}}` | 时间格式化 |
 | `{{desc \| default "—"}}` | 缺省值 |
 | `{{config.city}}` | 引用本插件的设置值（M0.5 起；可绑定的字段随 schema 逐步放开） |
+| `{{uses.daily.cover}}` | 引用 manifest 声明的公开数据（API 6，§6.8）；不可用时为空，可配合 `default` |
 
 内置格式化：`round`、`fixed n`、`time "fmt"`、`date "fmt"`、`upper`、`lower`、`default "x"`。**不支持表达式和条件**——需要逻辑就在 Lua 里算好再放进状态。
 
@@ -252,16 +257,22 @@ HTTP(S) 图片需要所属插件声明 `network` 权限。OS 使用通用 `Media
 tos.on("start", function() ... end)             -- 插件启动（含热加载后）
 tos.on("stop", function() ... end)              -- 插件停止前，适合 tos.store 保存
 tos.on("config", function(cfg) ... end)         -- 设置值变化（含 Server 下发、设备上修改）；cfg 为新的只读表
+tos.on("units", function() ... end)             -- 系统单位设置（units.*）变化；重新取 tos.units.get() 并重绘，无需权限
 tos.on("page.enter", function(page, variant, params) ... end)  -- params：打开页面时附带的参数（设置页用 {scope=…}）
 tos.on("page.leave", function(page) ... end)
 tos.on("variant", function(page, variant) ... end)
-tos.on("command", function(name, args, source) ... end)   -- source: tap / gesture / voice / remote
+tos.on("command", function(name, args, source, caller) ... end)   -- source: tap / gesture / voice / remote / plugin；caller 仅 plugin 时有值
 tos.on("form.change", function(key, value) ... end)       -- 仅 form 版式页面：用户操作了某个控件（§11.3）
 tos.on("attention", function(level) ... end)    -- ASLEEP / AMBIENT / AWAKE / ENGAGED
 tos.on("theme", function(theme) ... end)        -- LIGHT / DARK / NIGHT（一般不需要）
 tos.on("presence", function(present) ... end)   -- 需 presence 权限
 tos.on("gesture", function(name) ... end)       -- 需 presence 权限
-tos.on("playback", function(st) ... end)        -- 仅播放器持有者收到
+tos.on("media.session", function(info) ... end)  -- 仅媒体会话所有者收到（API 7，§6.10）：{reason="replaced"|"stopped", owner}
+tos.on("media.track", function(info) ... end)    -- 换到队列里的另一项：{index, reason}
+tos.on("media.error", function(info) ... end)    -- {code, name, category, message, codec, status?, index}
+tos.on("media.warning", function(info) ... end)  -- 非致命：{code, name, codec}，如某条音轨无法解码而画面照播
+tos.on("queue.end", function(info) ... end)      -- 队列播完：{index, count}
+tos.on("data", function(alias) ... end)         -- API 6：声明的公开数据或其可用性变了（§6.8.3）
 ```
 
 ### 6.2 API 一览
@@ -285,16 +296,21 @@ tos.on("playback", function(st) ... end)        -- 仅播放器持有者收到
 | `tos.time.format(ms, fmt, tz?)` | — | 否 | 命名格式遵从系统语言与 12/24 小时制；可选 IANA 时区，省略取系统时区；`ms=nil` 显示占位 |
 | `tos.tz.home()` / `tos.tz.info(id)` | — | 否 | 自带 IANA 规则的时区 ID、偏移、DST、代表城市与坐标 |
 | `tos.locale()` / `tos.i18n.t(key, params?)` | — | 否 | 系统 locale / 脚本 / RTL / 12或24小时信息；插件字符串与占位符替换 |
+| `tos.units.get()` | — | 否 | 只读：用户选定的单位 `{system="metric"\|"imperial", temperature="c"\|"f", wind="kmh"\|"ms"\|"mph"\|"kn"}`（系统设置 `units.*`，ADR-032） |
+| `tos.units.temperature(celsius)` / `tos.units.wind(kmh)` | — | 否 | 把摄氏度 / km/h 换算为用户选定的单位（数值，不取整、不带符号）；插件内部一律以摄氏、km/h 存数据 |
 | `tos.location.get()` | `location` | 否 | 系统配置位置 `{name,latitude,longitude,elevation,timezone,source}`；来源明确区分时区推定和手动输入，见 ADR-021 |
 | `tos.astro.sun(ms, place?)` / `tos.astro.moon(ms, place?)` | `location` | 是 | 独立计算线程返回本地天文数据，见 §6.5；省略地点取系统位置。取消/移除插件时不投递迟到结果 |
 | `tos.astro.seasons(year)` | — | 否 | 当年二分二至的 UTC 毫秒时间戳，支持 1950–2050 |
 | `tos.page.focus(page, {live=bool})` / `release(page)` | — | 否 | 请求切到本插件页面，由 DeckRouter 仲裁；`live` 需页面声明 `live` |
 | `tos.alert{…}`（待实现） | `alert` | — | 本轮仅测试 debug 模拟通知界面，未接插件 API |
 | `tos.library.list(opts)` | `library` | 是 | 枚举本地媒体，返回 `{items,truncated,scanned,directory}` 或 `nil,err`；见 §6.6 |
-| `tos.media.*`（待接线） | `media` | — | 队列与播放器核心已有代码，宿主接线和实际播放继续暂缓 |
+| `tos.media.load(items, opts)` 及 `play` / `pause` / `toggle` / `next` / `prev` / `seek` / `volume` / `stop` / `shuffle` / `repeat` / `jump` / `live` / `audioTrack` / `textTrack` | `media`（远程另需 `network`，本地另需 `library`） | 是 | 音视频会话与流媒体（HLS / DASH / RTSP / 渐进式 HTTP / 本地），返回 `state, err`，见 §6.10 |
 | `tos.chime(name)`（计划） | `alert` | — | 内置提示音，尚未实现 |
 | `tos.server.call(name, args)`（M2） | `server` | 是 | 可选 Server 服务，尚未实现 |
 | `tos.server.subscribe(topic, fn)`（M2） | `server` | — | 可选 Server 推送，尚未实现 |
+| `tos.tile.animate(name)` | — | 否 | 请求自己当前可见的磁贴播放 `pulse` / `flip` / `nudge`，返回 `true` 或 `nil, err`（`unknown` / `cooldown`），见 §6.9 |
+| `tos.data.get(alias)` | manifest `uses` | 否 | 读声明的公开数据，返回值或 `nil, err`；≤64KiB（§6.8.3） |
+| `tos.command.call("<plugin>.<id>", args?)` | manifest `calls` | 否 | 投递公开指令，返回 `true` 或 `nil, err`（§6.8.4） |
 | `tos.log.info/warn/error(...)` | — | 否 | 日志，带插件 id 前缀 |
 
 ### 6.3 权限
@@ -370,11 +386,161 @@ gallery 最多 300 项，另以保守的 180KiB 清单预算给设置/预览留�
 - 元数据以 JSON 文本保存至 tos.store，历史数和 180KiB 保守预算共同约束；跨市场/endpoint 不混用缓存。图片缓存归 OS。失败保留旧清单，按设置指数退避；校时前等待，ASLEEP 不发起新刷新；来源/市场变化先撤销旧代际再进行异步 IO。
 - 首次离线且没有缓存时显示可重试的提示；已有数据时保留可用照片。Server 下发/管理、自定义 JSON 源、其它公共图源继续暂缓。
 
+### 6.8 公开数据与指令（API 6，ADR-027）
+
+插件状态默认私有。插件显式公开一段状态后，其他插件声明即可读取，不用互相认识实现，也不需要 Server。模型借鉴 Home Assistant 的 Entity / Service / 卡片，但没有实体注册表和全局总线，也不依赖 HA（ADR-006）。
+
+#### 6.8.1 提供方
+
+```json
+"exports": {
+  "daily": { "path": "public.daily", "shape": "photos/1" },
+  "place": { "path": "public.place", "shape": "place/1", "requires": ["location"] }
+}
+```
+
+| 字段 | 说明 |
+|---|---|
+| 键 | 导出名，`[a-z][a-z0-9-]*`，全名 `<plugin>.<name>`；每插件 ≤16 个 |
+| `path` | 状态里的路径，用普通 `tos.state.set` 写入，共用 256KiB 状态预算。不能以 `config`、`uses`、`variant` 开头，所以设置值和 `secret` 字段不可能被导出；同一插件的导出路径不能重叠 |
+| `shape` | 内容约定 `<名称>/<主版本>`。不兼容地修改内容就升主版本，使用方读不到而不是读错。OS 只比较字符串，不校验结构 |
+| `requires` | 可选。读取方必须在 manifest 声明这些权限（不含 `system.settings`）。数据来自需要权限的能力（如位置）时必须声明，否则等于把权限转授给所有插件 |
+
+没写在 `exports` 里的状态，其他插件读不到。
+
+#### 6.8.2 视图读取（不需要 Lua，也不需要额外权限）
+
+```json
+"uses": { "daily": { "export": "gallery.daily", "shape": "photos/1" } }
+```
+
+```json
+{ "layout": "stage", "slots": { "stage": {
+  "type": "carousel", "items": "{{uses.daily.photos}}", "interval": 30, "duration": 800 } } }
+```
+
+`uses` 是保留键，和 `config` 一样由 OS 注入状态快照；API 6 起插件写它会被拒绝，API 1–5 的同名状态不受影响。提供方更新时，只有受影响的绑定会刷新，每个使用方最多约每 250ms 一次。
+
+**不可用时为空，不报错**：提供方未安装、被隔离、未导出、`shape` 不符或缺 `requires` 权限时，`uses.<alias>` 不存在，绑定为空，可以写 `{{uses.daily.title | default "—"}}`。原因写入 logcat 和诊断（`unresolved=[daily:shape_mismatch]`）；提供方恢复后自动重连。打包器对视图里未声明的 alias 报错，对打包集合内不匹配的链接警告；提供方可能之后才安装，所以设备上不拒绝。
+
+**图片授权**：`image.src` 或 `carousel.items` 的**整个值**是一个 `{{uses.<alias>…}}` 绑定时，图片按**提供方**的权限和包目录加载，使用方不用声明 `network`/`library`，也拿不到字节。拼接或带格式化的值（`https://me/{{uses.x}}`、`{{uses.x | default "…"}}`）算使用方自己的请求，按使用方权限检查。
+
+#### 6.8.3 Lua 读取
+
+```lua
+tos.on("data", function(alias)
+  local daily, err = tos.data.get(alias)   -- err: undeclared / missing / shape_mismatch / permission_required / empty / too_large / invalid
+  if daily then tos.state.set({ count = #daily.photos }) end
+end)
+```
+
+`data` 事件只告诉你哪个 alias 变了，同一 alias 最多每秒一次，所以两个插件互相订阅也不会空转。读取 ≤64KiB 且 ≤4096 个数组/对象，超出返回 `too_large`，大清单请绑定视图；嵌套超过 `tos.json` 深度返回 `invalid`，所以提供方的值不会让使用方抛错或内存超限。`start` 时提供方可能还没启动，读不到时等 `data` 事件。
+
+**读取不会触发提供方联网，也不会唤醒它**：提供方按自己的节奏更新（如 ASLEEP 时暂停），使用方看到的是它最后发布的值。
+
+#### 6.8.4 公开指令
+
+```jsonc
+"commands": [{ "id": "refresh", "public": true, "cooldown": 300 }]   // 提供方
+"calls": ["gallery.refresh"]                                          // 调用方
+```
+
+```lua
+local ok, err = tos.command.call("gallery.refresh", { reason = "tap" })  -- err: undeclared / unavailable / not_public / too_large / cooldown
+```
+
+只投递，不等待结果；提供方收到 `command` 事件，`source="plugin"`，`caller` 为调用方 id。`args` ≤4KiB。`cooldown`（秒，默认 1，0.1–86400）按指令计，不分调用方，用来保护提供方；会联网的指令应设得更长。结果需要回传时，由提供方更新公开数据。声明式视图不能直接调用指令，点击先发 `tap` 给自己的 Lua。
+
+#### 6.8.5 复用排版
+
+- 任何页面都能引用任何插件的 widget。卡片按所属插件的状态、权限和设置渲染，点击走它的 `opens`，长按打开它的设置。使用方不能改外观（ADR-017）
+- API 6 起 `focus` / `split` / `stage` 的槽位也可放 `{"widget":"gallery.preview"}`，此前只有 `stacks`、`tiles`、`aero` 支持
+- `widgets[].alternates` 让一个 widget 按模板提供多种呈现，容器自动选用：`tiles` 取 `tile`，其他容器取 `glance`，没有对应呈现时用 `view`
+
+```json
+{ "id": "preview", "view": "views/preview.json", "opens": "slideshow", "alternates": { "tile": "views/tile.json" } }
+```
+
+#### 6.8.6 自带插件的公开内容
+
+| 导出 | `shape` | 内容 | 说明 |
+|---|---|---|---|
+| `gallery.daily` | `photos/1` | `photos[{id,src,title,credit}]`、`cover`、`coverTitle`、`coverCredit` | 只含 Bing 每日图，不含本地路径；≤48KiB。`source=local` 时不拉取 Bing，内容为空。显示时保留 `credit` |
+| `weather.now` | `weather-now/1` | `temperature`、`icon`、`condition`、`stale` | 不含地点，所以不要求 `location` |
+
+公开指令：`gallery.refresh`、`weather.refresh`，`cooldown` 均为 300 秒。
+
+### 6.9 磁贴动画（API 6，ADR-028）
+
+按下倾斜和页面入场由 OS 自动播放，插件不用也不能参与。插件能做的只有按名称请求下面三种，样式、时长和曲线都归 OS：
+
+| 名称 | 效果 | 适合 |
+|---|---|---|
+| `pulse` | 放大到 108% 再回弹 | 有了新数据 |
+| `flip` | 立即翻到下一面（只有一面时无效果） | 想让用户看到另一面 |
+| `nudge` | 左右抖动几下 | 失败、被拒绝 |
+
+```lua
+-- 刷新成功且温度变了才提示；第一次加载不提示
+if shown and shown ~= last then tos.tile.animate("pulse") end
+```
+
+只作用于调用者自己、且在当前页面可见的磁贴。同一插件同一名称 1 秒冷却，之后返回 `nil, "cooldown"`；名称不在表里返回 `nil, "unknown"`。用户关闭“自动切换磁贴内容”（`tiles.live`），或系统关闭动画时，请求被静默忽略。调用本身不联网、不需要权限。`gallery` 在每日图换新时、`weather` 在温度变化时使用它。
+
+### 6.10 媒体会话与流媒体（API 7，ADR-030）
+
+OS 持有一个音视频会话和一个队列（≤512 项）；同一时间只有一个所有者。插件只决定**播什么**，缓冲、解码、字幕、控件、进度条都归 OS（ADR-017）。需要 `media` 权限；远程地址另需 `network`；本地文件与旁路字幕文件另需 `library`。设计、验收和已知限制见 `27-streaming.md`。
+
+**`tos.media.load(items, opts)`** → `state, err`。`items[i]` 的字段：
+
+| 字段 | 说明 |
+|---|---|
+| `url` | `http` / `https` / `rtsp`、`file:` / `content:` 或绝对路径，≤8192 字符。HTTP(S) 里不能带 `user:pass@`；`rtsp://user:pass@host` 是唯一允许带凭据的形式，凭据不进入 `media` 状态和日志 |
+| `title` / `artist` / `album` / `art` | 元数据，只用于显示（≤2048 / 8192 字符） |
+| `kind` | `audio`（默认）或 `video`。只决定声道用途和页面，不决定能不能播 |
+| `type` | `auto`（默认，按 URL 后缀、`mime` 判断，其余让播放器探测容器）、`progressive`、`hls`、`dash`、`rtsp`。`progressive` 不能带 `subtitles` |
+| `mime` | 可选提示：`audio/*`、`video/*`，或 `application/x-mpegURL`、`application/vnd.apple.mpegurl`、`application/dash+xml` |
+| `headers` | 至多 8 个请求头，仅 HTTP(S)。除 `User-Agent`、`Referer`、`Accept`、`Accept-Language`、`Origin` 以外的头（包括 `Authorization`、`Cookie`，以及 `X-Api-Key` 之类自定义令牌）只发给该项 URL 的同源地址：分片、密钥、字幕在别的主机上也不会带过去，跨源重定向也会丢掉；`User-Agent` 会替换默认的 `ThinkOS/1`。`Host`、`Range`、`Content-Length`、`Connection`、`Transfer-Encoding`、`Accept-Encoding`、`If-*`、`Content-Type` 等由 HTTP 栈自己管，不可设置 |
+| `subtitles` | 旁路字幕 `{url, mime?, lang?, label?}`，至多 16 条，SubRip / WebVTT / TTML / SSA（按后缀推断 MIME） |
+
+一个队列最多 512 项，其中 HLS / DASH 项最多 16 个：播放器会同时准备队列里所有的项，每个 HLS / DASH 项在准备时就去取自己的清单，所以几百个频道的列表要**逐个点播**，不要整张列表排进队列。本地文件和渐进式 HTTP 是按需打开的，可以排满。
+
+`opts`：`index`（从 1 开始）、`shuffle`、`repeat`（`off` / `one` / `all`）、`autoplay`（默认 `true`）、`volume`（0…1，播放器增益）、`start`（毫秒；0 表示默认位置，直播流为直播点）。成功返回 `media` 状态表；失败返回 `nil, err`，已有队列不受影响。
+
+**控制**（都返回 `state, err`；任何有 `media` 权限的插件都能控制当前会话，不论它是不是所有者——例如语音指令插件要能暂停别人在放的音乐。只有 `load` 会换掉所有者，并通知旧所有者 `media.session`）：`play`、`pause`、`toggle`、`next`、`prev`、`seek(ms)`、`volume(v)`、`stop`、`shuffle(bool)`、`repeat(mode)`（`repeat` 是 Lua 关键字，也可用 `repeatMode`）、`jump(index)`、`live()`（回到直播点）、`audioTrack(index)`、`textTrack(index)`（0 为关闭字幕；序号对应状态里 `audioTracks` / `textTracks`）。屏幕上的控件由 OS 直接调用播放器，不经过 Lua。
+
+**状态 `media`**（保留键，只读，需 `media` 权限；视图可绑定 `{{media.title}}`，Lua 可用 `tos.state.get("media.position")`；`tos.state.set` 写 `media` 会被拒绝）。位置约每秒更新一次，进度条自己读播放头，不依赖它。
+
+| 字段 | 说明 |
+|---|---|
+| `status` | `stopped` / `playing` / `paused` / `buffering` / `reconnecting` / `ended` / `error` |
+| `owner` `kind` `index` `count` | 所有者插件 id、当前项的 `kind`、当前序号（从 1 开始，空队列为 0）、队列长度 |
+| `title` `artist` `album` `art` | 优先取容器里的标签，没有就用 `load` 给的值 |
+| `position` `duration` `buffered` `progress` | 毫秒；`progress` 为 0…1；直播流的 `duration` 是可回看窗口 |
+| `live` `seekable` `liveOffset` `mirror` | 是否直播、能否拖动、落后直播点多少毫秒；`mirror` 为真表示这是别的设备共享上来的屏幕（Miracast，只有 OS 能创建，不能暂停与跳转，ADR-031） |
+| `source` | `progressive` / `hls` / `dash` / `rtsp` |
+| `videoWidth` `videoHeight` `pixelRatio` `frameRate` | 当前画面（已按旋转修正） |
+| `videoCodec` `audioCodec` `bitrate` `sampleRate` `channels` `bitDepth` | 实际在解的格式；`bitDepth` 未知为 0 |
+| `videoDecoder` `audioDecoder` `droppedFrames` | 用到的解码器名（`OMX.qcom…` 是硬解，`ffmpegLavc…` 是 FFmpeg 扩展）与本次丢帧数 |
+| `audioTracks` `textTracks` | `[{index, language, label, codec, channels, selected}]`，嵌入和旁路字幕统一编号 |
+| `volume` `shuffle` `repeat` | 播放器增益、随机、循环 |
+| `retry` `warning` `error` | 当前重试次数；非致命警告（如 `audio-unsupported:audio/ac3`，画面照常播放）；错误对象，见下 |
+
+**事件**（只发给会话所有者）：`media.session {reason = "replaced" / "stopped", owner}`、`media.track {index, reason}`、`media.error {code, name, category, message, codec, status?, index}`、`media.warning {code, name, codec}`、`queue.end {index, count}`。`media.error.category`：`network`（含超时、DNS、重定向循环）、`http`（`status` 是 HTTP 或 RTSP 的应答码）、`notfound`、`permission`、`policy`（明文 HTTP 被拒）、`format`（容器/编码不支持，`codec` 给出 MIME）、`decoder`、`audio`、`other`。
+
+**网络规则**（沿用 ADR-022，并补充）：明文 HTTP 与 RTSP 只允许私网、环回、链路本地地址，DNS 与实际连接地址都校验；公网明文要用户在系统设置打开 `media.public_http`（默认关，只作用于媒体通道，不影响 `tos.http`）；最多 3 次重定向，HTTPS→HTTP 一律拒绝，跨源重定向丢弃 `Authorization` / `Cookie`。RTSP 固定走 TCP 交织（RTP 与控制共用一条经过校验的连接），不支持只提供 UDP 的服务端。
+
+**自动恢复**：超时、连接失败、HTTP 408 / 429 / 5xx、RTSP 5xx 视为临时故障，按 1 / 2 / 4 / 8 / 15 / 15 秒退避重试六次，期间 `status = "reconnecting"`，网络恢复时立即重试；之后给出 `error`。401、403、404、策略拒绝、格式或解码错误不重试。直播被对端断开会重连；掉出直播窗口会自动回到直播点；缓冲 30 秒没有任何增长视为卡死，重连后仍不行则报错。
+
+**组件**（API 7，需 `media` 权限，安装时检查）：`video`（`fit`：`contain` / `cover`）是 OS 画的影院视图：画面、字幕、缓冲与错误提示，触摸时浮出标题、进度条、上一首 / ±10 秒 / 播放暂停 / 下一首、音轨与字幕按钮，无操作一段时间后淡出（跟随 `attention.engaged_idle_s`，默认 15 秒）；`controls`（`mode`：`queue` 上一首·播放·下一首，`seek` ±10 秒，`play` 仅播放暂停）；`seekbar` 可点按、拖动，拖动不会被翻页手势抢走。视频播放时显示屏至少保持 AWAKE（系统设置 `media.keep_awake_video`，默认开）。
+
+系统设置（ADR-017）：`media.public_http`、`media.keep_awake_video`，以及隐藏项 `media.buffer_s`（默认 30，10…120）、`media.buffer_mb`（默认 48，8…96），后两项只对下一次 `load` 起作用。
+
 ## 7. 完整实现：天气插件
 
 源码见 [`plugins/weather/`](../plugins/weather/manifest.json)。卡片 `weather.now` 使用 `glance`，点击进入 `weather.detail` 的原生 `split` 页面：当前温度、体感/湿度/风、24 点温度面积图和可滚动的 5 日预报。所有图标、主题、布局和动画由 OS 绘制。设置、状态和事件只走公开 `tos.*`，无需 Server。
 
-- 地点只来自 `tos.location.get()`，在系统设置中编辑；天气设置不重复保存坐标。温度始终按摄氏、风速按 km/h 请求，在本地切换 °C/°F 与 km/h/mph；更改单位和语言不会联网。
+- 地点只来自 `tos.location.get()`，在系统设置中编辑；天气设置不重复保存坐标。温度始终按摄氏、风速按 km/h 请求，按系统单位设置（`tos.units`，ADR-032）在本地换算温度与风速；天气不再有自己的单位开关。更改单位和语言不会联网。
 - 默认 [Open-Meteo Forecast API](https://open-meteo.com/en/docs)，`forecast_days=5`、`timezone=auto`、`timeformat=unixtime`。小时与更新时间使用原始 UTC 秒转毫秒、响应时区及命名格式；日预报边界跨 DST 仍使用响应固定偏移，因此加该偏移还原名义日期，在 UTC 以 `@weekday` 显示，避免星期重复。
 - `forecast.lua` 校验全部必需字段、数组长度/时间步长、有限数值与温度范围，整份通过才替换旧快照。`codes.lua` 映射 WMO 类别、日夜图标和情绪色，未知码明确显示未知天气。11 种语言都有完整词条。
 - `start` 同步读缓存、立即渲染，再安排 1 秒后的首个请求。缓存保留原始摄氏数据，作为 JSON 文本写入 `tos.store`；C 编解码避免大数组逐字段跨 JNI 传输。支持早期对象形态缓存，损坏缓存丢弃。
@@ -406,7 +572,6 @@ left  = ["clock.now", "weather.now"]
 right = ["music.mini", "gallery.preview"]
 
 [device.default.plugins.weather] # 页面级设置的下发值（§11.2 的“Server 下发”层）
-temp_unit = "c"
 interval = "15"
 ```
 
@@ -430,7 +595,7 @@ interval = "15"
 | `settings` | `form`（`form`，角色 settings，不在翻页序列里） | — | 有 | `system.settings`（系统插件，固定安装，见 §11.3） |
 | `weather` | `detail`（24 小时 + 5 日） | `now` | `refresh` | `network` / `location` |
 | `gallery` | 相册轮播 | 预览卡片 | 默认直连 Bing 每日一图，可选本地或合并；离线缓存 | `library` / `network` |
-| `music`（待实现） | 目标：正在播放 | 目标：迷你卡片 | 待实现 | `media` / `library` / `network` |
+| `player` | `library`（音乐 / 视频 / 最近 / 网络流，点标题切换）、`audio`（正在播放）、`video`（影院）；后两页是 `live` 页面，由播放接管 | — | `toggle` / `next` / `prev` | `media` / `library` / `network`；设置：音乐与视频目录、串流地址、播放列表地址、续播 |
 | `notify`（仅 UI 预览） | debug 模拟预览 | — | 未接收或轮询消息 | HTTP 监听按用户要求暂缓 |
 
 自带插件和第三方插件走**完全相同**的接口（`settings` 只是多了一个系统权限）。如果某个自带功能用这套接口做不出来，说明运行时缺能力，应该补运行时，而不是给它开后门。

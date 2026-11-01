@@ -77,9 +77,10 @@
 - 版式 `slideshow`、`nowplaying`、`list`；卡片模板 `glance`、`media`、`list`、`photo`；智能轮换（相关度）
 - `weather`：已实现 `weather.now` / `weather.detail`，直连 Open-Meteo、原始数据缓存与恢复；位置沿用系统设置，插件提供温度单位、刷新/重试与关注阈值，验收见 `20-weather-handoff.md`
 - `gallery`：默认微软 Bing 每日一图，可选本地/混合；API 3 `image/carousel`、通用 HTTP(S) 图片缓存与 `tos.library.list`；完整画面平移、常驻署名、设置与夜间退出。Server 下发/管理暂缓；验收见 `21-gallery-handoff.md`
-- `tiles`：API 4 固定磁贴网格与 tile 模板，插件自定义底色、自动黑白前景、动态翻面、长按所属插件设置，clock/weather/gallery 的磁贴和纯声明示例页；T0–T6 / A1–A9 已通过，两轮各 600 秒；验收见 `24-tiles-validation.md`
+- `tiles`：API 4 固定磁贴网格与 tile 模板（ADR-028 起为 8×6 / 6×8 的 Metro 开始屏：固定背景、标题栏、白字、按下倾斜与入场动画、`tos.tile.animate`），插件自定义底色、自动黑白前景、动态翻面、长按所属插件设置，clock/weather/gallery 的磁贴和纯声明示例页；T0–T6 / A1–A9 已通过，两轮各 600 秒；验收见 `24-tiles-validation.md`
 - `aero`：API 5 原生 Aero 桌面，固定玻璃窗口、任务栏与开始菜单，公开引用时钟/天气/照片；不含 WebView 或实时模糊，设计与来源见 `25-windows-design.md`；独立 600 秒稳定性检查通过
-- `music`：Navidrome 直连播放；ExoPlayer + `TeeAudioProcessor` 频谱；实时活动全屏接管
+- 公开数据：API 6 `exports`/`uses`/`calls`、`tos.data`、`tos.command`，槽位引用 widget 与 `alternates`；`gallery.daily`、`weather.now` 已公开，设计与验收见 `26-public-data.md`
+- `player`：已实现（ADR-030，API 7）：本地音乐 / 视频、串流地址、M3U 播放列表、最近播放与续播，HLS / DASH / RTSP 与影院视图，实时活动接管；验收见 `27-streaming.md`。Navidrome、歌词、频谱（ExoPlayer + `TeeAudioProcessor`）仍未做，见 `22-player-plan.md`
 - `notify`：本地通知展示（两种形态），M2 接入手机通知中转
 - 掉帧自动降级
 

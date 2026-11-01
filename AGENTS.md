@@ -5,7 +5,8 @@
 ## 你的任务边界
 
 - 你负责**应用层**开发：Kotlin 代码、JNI 桥与 Lua 运行时集成、资源、插件（Lua/JSON）、Go 服务端、构建脚本
-- 你不负责**设备系统层**改造（刷机、改 Magisk 模块、改系统分区）——这些已由人工完成，见 `docs/02-device.md`
+- 你也负责**系统层代码**（ADR-033）：ThinkOS 不只是一个应用，也是一套对安卓的整体改动。需要系统权限的能力写成 Magisk 模块放在 `system/`（源码、构建、主机测试都归你）。开发测试时可以用不持久的方式在设备上跑（`/data/local/tmp` 里的程序，重启即消失）
+- 你不负责**把东西持久地装进设备系统**：刷机、把模块装进 `/data/adb/modules`（开机启动的 root 进程）、改系统分区、重启设备——这些由人工完成（模块用 `system/install.sh`），已装的状态见 `docs/02-device.md`
 - 不要尝试联网下载模型/固件；本地已有资源见设备文档
 
 ## 硬性约束（违反会直接失败）
@@ -30,6 +31,7 @@
 android/   设备端 OS（Gradle + NDK，产物 app-debug.apk；内含 Lua 5.4 运行时）
 server/    Server 端下发与管理服务（Go，module thinkos-server，可选）
 shared/    契约：通讯协议 + 插件包格式（JSON Schema + 代码生成脚本）
+system/    系统层：Magisk 模块（root 守护进程等；ADR-033），应用没有模块也照常工作
 plugins/   插件源码（声明式视图 + Lua，运行在设备上）
 assets/    Lottie 等设计资源
 tools/     开发脚本
@@ -83,7 +85,11 @@ adb shell dumpsys gfxinfo moe.kiwi.thinkos
 - 所有网络接口通过 `docs/05-protocol.md` 定义的 schema，不要自创格式
 - 插件格式与 `tos.*` API 以 `docs/06-plugins.md` 为准；Lua 永远不在主线程执行
 - **可配置项（阈值、计时、开关、地址）一律走设置 schema**（ADR-017，`docs/04-ui-spec.md` §9），不要写死在代码里，也不要另建 SharedPreferences；插件只读设置，不能写
+- **插件之间只通过声明交互**（ADR-027）：`exports` / `uses` / `calls` 和公开 widget，见 `docs/06-plugins.md` §6.8；状态默认私有，不要给插件开读取其他插件状态的通道；来自受权限能力的数据要声明 `requires`
+- **磁贴动画只能按名称请求**（ADR-028）：`tos.tile.animate("pulse" | "flip" | "nudge")`，样式、时长、曲线归 OS；按下倾斜与页面入场自动播放，不要给插件开放参数，也不要绕过 `tiles.live` 与系统动画开关
 - **不为页面外观预留扩展点**（ADR-017；ADR-025 仅允许 `tile` 磁贴底色 `color`，前景色由 OS 决定）：不要引入样式语言、表盘包、部件皮肤；需要新的版式或组件，按 `docs/06-plugins.md` §4.1 的扩展流程加词汇
+- **媒体只通过 `tos.media.*` 与 OS 的 `video` / `controls` / `seekbar` 组件**（ADR-022、ADR-030）：不给插件开私有播放通道；明文地址只允许私网（`media.public_http` 是唯一例外开关）；新增解码库必须含 `armeabi-v7a`，FFmpeg 扩展是 GPL-3.0，项目以 GPLv3 分发（ADR-034）所以可以带上，想要不含它的构建时用 `-Pthinkos.ffmpeg=false`；设备测试脚本和排错见 `docs/27-streaming.md`
+- **投屏接收只在 OS 的 `CastHost` 里做，播放一律走 `MediaEngine`**（ADR-031，`docs/28-casting.md`）：不为投屏引入第二个播放器；协议不进 Lua，插件只声明页面；每个协议各有开关（`cast.enabled` DLNA、`cast.airplay`、`cast.miracast`）且默认关，只服务私网来源，推来的地址只收 http / https，拉取仍受 `media.public_http` 约束；监听、解析发送端数据时一律有界、不信任；新增协议必须带畸形输入测试。参考项目 MiracastReceiver 只当零件库（固定提交 `d1aea7e`，MIT，见 `THIRD_PARTY_NOTICES.md`），其 `playfair`（GPLv3）已按原样纳入 `android/app/src/main/cpp/playfair/`（来源与许可证见同目录 `ORIGIN.md`），因为项目以 GPLv3 分发（ADR-034）；AirPlay 镜像经 `AirPlayMirror` 重新封装成 TS 交给 `MirrorSource`，不为它引入第二个播放器。Miracast 需要的系统权限由 `system/thinkos-cast` 模块的 root 守护进程代为行使，**应用里不要加 `su`**；镜像画面只经引擎的 `MirrorSource`（只有 OS 能创建，插件不能构造）
 - **插件不再用 zip / `.tpk` 分发**（ADR-018）：设备端安装单位是目录 + 文件清单；Git 只在 Server 上用，**设备端不要引入 Git / JGit**
 
 ## 验收要求
@@ -100,4 +106,4 @@ adb shell dumpsys gfxinfo moe.kiwi.thinkos
 
 - 设备异常 → `docs/10-known-issues.md`
 - 设计取舍 → `docs/08-decisions.md`（已经有结论的不要重新讨论）
-- 需要改设备系统 → 停下来，记录下来，交给人工
+- 需要改设备系统（刷机、系统分区、持久安装模块、重启）→ 停下来，记录下来，交给人工；系统层代码本身写在 `system/`

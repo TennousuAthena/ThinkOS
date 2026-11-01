@@ -49,6 +49,7 @@
 | `busybox-ndk` | busybox 工具集（注意：**不含 ntpd**） |
 | `rv4a_engine` | ViPER4Android 音频引擎（可用可不用） |
 | `zygisk_vector` | Vector（Xposed）框架，API 102 |
+| `thinkos-cast`（**源码在本仓库 `system/`，尚未装进设备**） | Miracast Sink 的 root 守护进程（ADR-033）；装法见 `system/README.md` |
 
 > 注意：通过 `su` 直接写 `/data/adb/**` 会被 Magisk 拦截（`Permission denied`）。需要装模块时用
 > `su -c "magisk --install-module /sdcard/Download/xxx.zip"`，改配置用 `magisk --sqlite`。

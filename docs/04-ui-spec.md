@@ -256,6 +256,8 @@
 | `attention.to_asleep_s` | number | 60–1800，步长 30，秒 | 180 | 无人多久后进入 ASLEEP |
 | `attention.engaged_idle_s` | number | 5–60，步长 5，秒 | 15 | 无交互多久后退出 ENGAGED |
 | `attention.ambient_page_after_s` | number | 60–1800，步长 30，秒 | 300 | AMBIENT 持续多久后切到 `ambient` 角色页面 |
+| `units.system` | choice | `metric` 公制（°C）/ `imperial` 英制（°F） | `metric` | 温度单位；插件通过 `tos.units` 沿用，不各自再设（ADR-032） |
+| `units.wind` | choice | `auto` 跟随单位制（km/h 或 mph）/ `kmh` / `ms` / `mph` / `kn` | `auto` | 风速单位；独立于单位制，可在公制下选 m/s 或节 |
 | `server.url` | text | 空 = 通过 mDNS 自动发现 | 空 | 固定 Server 地址（`05-protocol.md` §2） |
 | `server.token` | text（`secret`） | — | 空 | 共享配对 token；V1 改为配对码 |
 | `kiosk.lock` | bool | — | 开 | 锁定系统界面：状态栏下拉、Home、Recents、系统手势（Lock Task，需 Device Owner；非 Device Owner 时只有沉浸式 + 看门狗）。关闭后立即退出锁定，是设备上自己的退出路径 |
@@ -298,9 +300,15 @@
 
 ## 磁贴（API 4 / ADR-025）
 
-固定网格横屏 6×4、竖屏 4×6；外边距 20dp，间距 8dp，磁贴直角 0dp、内边距 12dp。尺寸 small/medium/wide/large 对应 1×1/2×2/4×2/4×4，内容密度由 OS 固定；所有文字单行省略。背景按引用 color > tile color > accent，前景自动黑白，颜色变化按 Motion.NUMBER 插值，不重建 View。夜间根层滤镜统一处理。系统设置 tiles.live 默认 true，tiles.interval 默认 8 秒（5–60、步长 1），各语言同名字段由 shared schema 生成。
+固定网格横屏 8×6、竖屏 6×8（ADR-028，取代最初的 6×4 / 4×6）；外边距 20dp，间距 8dp，磁贴直角 0dp，内边距 12dp（small 8dp）。单元由短边决定（本机约 69dp），网格贴长边远端，余下约 142dp 为标题栏。尺寸 small/medium/wide/large 对应 1×1/2×2/4×2/4×4，内容密度由 OS 固定。背景按引用 color > tile color > accent，前景白字优先（白字对比度 <4.55 才用黑字），颜色变化按 Motion.NUMBER 插值，不重建 View。夜间根层滤镜统一处理。系统设置 tiles.live 默认 true，tiles.interval 默认 8 秒（5–60、步长 1），tiles.background 为 indigo / teal / wine（默认 indigo），各语言同名字段由 shared schema 生成。
 
 用户补充（2026-10-31）：以 Windows Phone / Windows 8.1 的 Metro 磁贴为参照。磁贴必须直角、平面、无阴影；网格基础单元保持正方形；信息以大号轻字重数字为主、标签锚定底部起始侧、纯色留白，不沿用普通圆角卡片的排版。RTL 镜像网格和内容。参考微软 [Windows Phone 设计建议](https://blogs.windows.com/windowsdeveloper/2013/01/18/8-tips-for-designing-windows-phone-apps/) 与 [Windows/Phone 8.1 磁贴模板目录](https://learn.microsoft.com/en-us/previous-versions/windows/apps/hh761491(v=win.10))。使用现有 Android 字体，不分发 Segoe。当前沿用 Windows 8.1 的垂直 peek 方向，不采用 Phone 的 3D 翻转。
+
+**开始屏（ADR-028）**：磁贴页永远是深色，不跟随明暗主题。背景是 OS 固定的深色对角渐变加两道极淡的光带（靛蓝 #1E1B4B→#3730A3、深青 #042F3D→#0E5A66、酒红 #2E0A24→#6B1244），只绘制一次。标题栏里 OS 以 Roboto Thin 绘制页面标题（最大 40sp，随语言重新翻译，RTL 在右侧）。
+
+排版（dp，内边距之内）：small 数值 12–24sp 加 10sp 名称；medium 左上 36dp 图标、数值 12–56sp、名称 12sp，无数值时图标居中放大到 76dp；wide 数值 12–60sp，下方一行 13sp `detail`，名称 13sp，有 `content` 时依次为数值行、`detail`、内容区；large 同理，内容占上半。有 `image` 时全幅铺图并叠 62% 高度的底部暗角，文字固定白色：`value` 变为两行标题，`detail` 最多两行（署名），名称贴底。名称栏不随翻面滑动。图标：时钟、日历、相册、音乐为实心加镂空，月相用 `moon-phase-<w|n>-<0..100>` 按亮面比例绘制。
+
+**动画**：按下倾斜（最大 7°、缩到 96.5%、90ms 减速进入，松手 300ms 过冲回弹）；打开页面时每张磁贴 380ms 升起（缩放 .9→1、上移 26dp、透明度 0→1），按声明顺序每张延迟 38ms，上限 380ms；页面由手指拖入时不重复。插件可请求 pulse（放大到 108% 再过冲回弹）、flip、nudge（±10dp 衰减抖动，360ms），详见 `06-plugins.md` §6.9。系统关闭动画时全部直接跳到终点。
 
 真机发现夜间红色矩阵会压低中灰底的对比度。磁贴按合成后的颜色选择黑白前景；两者都低于 4.5:1 时，仅在夜间把底色向最近的可读亮/暗端补偿。浅色/深色完全保留插件底色；夜间仍经过统一根层滤镜。
 
@@ -308,5 +316,7 @@
 ## 原生 Aero 桌面（API 5 / ADR-026）
 
 `aero` 是独立的固定 OS 版式。原创蓝色丝带桌面、玻璃窗口双边线、高光、微小景深、52dp 底部任务栏与原生开始菜单构成整体。窗口 5dp 圆角只用于 Aero；tiles 一律 0dp。桌面与玻璃通过缓存的 Canvas 渐变绘制，不实时模糊。原生模拟钟、天气和完整照片来自普通 widget 引用，横竖屏自动重排；菜单和任务栏均有实际导航，保留所属插件长按设置与横向翻页。
+
+防残影微移不移动全屏背景：Aero 壁纸与任务栏底板固定贴边，只移动窗口、标题、菜单及任务栏前景；tiles 背景同样固定，只移动磁贴内容。切页预览和重新布局保留前景偏移，不能因整页平移露出底层背景。
 
 窗口标题、菜单与时间日期跟随系统语言/格式；夜间标题按合成后颜色选前景。此版式不增加插件外观选项，现有 ambient/sleep/home 角色继续沿用。设计与来源见 `25-windows-design.md`。

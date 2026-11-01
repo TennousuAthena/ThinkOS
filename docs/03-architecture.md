@@ -359,6 +359,8 @@ PluginThread（单线程 HandlerThread，所有 lua_State 都只在这里执行�
 - 绑定只支持路径取值和少量内置格式化（`round`、`time`、`date`、`upper`、`default`），**不支持表达式**——逻辑写在 Lua 里。
 - 没有 Lua 的插件当前只能提供静态声明（如 home）；`sources` 调度器尚未实现。数据插件使用 `tos.http` / `tos.library.list` 和 `tos.state`，见 `06-plugins.md`。
 
+插件之间只通过声明的公开数据交互（API 6，ADR-027，接口见 `06-plugins.md` §6.8）：提供方发布状态时，运行时取出 `exports` 声明的路径，值变了才重新发布相关使用方的快照（`uses` 与 `config` 同为保留键）。未变化的值保持同一对象，UI 差量比较可直接跳过。图片按提供方授权加载的规则也在运行时解析。实现见 `plugin/PublicData.kt`。
+
 #### 3.7.5 插件的安装（目录 + 文件清单，ADR-018）
 
 | 项 | 设计 |
@@ -428,7 +430,7 @@ M1 前加固：背景圆只画入硬件层一次，呼吸改为 scale/alpha；�
 
 #### 3.8.6 防残影
 
-Stage 整体每 3 分钟以亚像素速度漂移 ±8px；ASLEEP 时时钟每分钟换一次位置（缓动过去，不跳）。
+Stage 整体每 3 分钟以亚像素速度漂移 ±8px（横向最多 8 px、纵向最多 6 px，公式在 `ui/BurnIn.kt`）；ASLEEP 时时钟每分钟换一次位置（缓动过去，不跳）。**盖满屏幕的页面不随它漂移**，否则两条边会露出页面底色（浅色主题下是白边）：磁贴、Aero、照片舞台与视频舞台都把底板钉在屏幕边缘，只有前景和小的叠层漂移（视频舞台没有前景漂移，控件浮层只出现几秒）。
 
 ### 3.9 同步与网络（sync/、net/）
 
@@ -453,12 +455,13 @@ LiveLink（可选）
 
 ### 3.10 媒体（media/）
 
-- **播放**：Media3 ExoPlayer；音源由插件给出（Navidrome 直连、Server 上的音乐库流、网络电台等），设备不关心来源；`LoadControl` 缓冲调小（约 15s / 8MB）。
+- **播放**（已实现，ADR-030，设计与验收见 `27-streaming.md`）：Media3 ExoPlayer 1.9.2，一个进程级会话 `MediaEngine`；每个队列项按自己的类型建 `MediaSource`（渐进式 HTTP、HLS、DASH、RTSP、本地文件可混排），音源由插件给出，设备不关心来源。`LoadControl` 缓冲 ≤30 秒、≤48 MB（系统设置，ExoPlayer 默认给远程视频 125 MiB，本机放不下）。AC-3 / E-AC-3 / DTS / ALAC 由 FFmpeg 扩展解码（GPL-3.0，可用 `-Pthinkos.ffmpeg=false` 关掉）。网络故障自动退避重连，直播被断开会重连，缓冲停滞 30 秒视为卡死。
+- **影院视图与控件**：`video` / `controls` / `seekbar` 是 OS 绘制的组件（`ui/MediaComponents.kt`），按钮直接调引擎、不经过 Lua；字幕、缓冲和错误提示、音轨与字幕切换都在 `video` 里。进度条自己读播放头，横向拖动不会被翻页手势抢走。
 - **频谱** **[提议]**：在 ExoPlayer 音频链路里插入 `TeeAudioProcessor` 拿到解码后的 PCM：
-  - 不需要 `RECORD_AUDIO` 权限（`Visualizer` 需要），且与播放严格同步
+  - 不需要 `RECORD_AUDIO` 权限（`Visualizer` 需要）；与声音对齐要按带时间戳的帧取最接近播放位置的一帧，Tee 点在 `AudioTrack` 之前，直接画会比声音早约 250–750 ms，见 `22-player-plan.md` §8.2。**未实现**
   - PCM → 环形缓冲 → 工作线程每 33ms 做一次 1024 点 FFT → 64 个对数频段 → 平滑 → 主线程绘制
 - **提示音**：`SoundPool` 预加载，音量比当前媒体音量低约 6dB；播放音乐时先压低音乐再响提示音。
-- **播放器所有权**：同一时间只有一个插件持有播放器（`tos.audio`），播放状态变化以 `playback` 事件发给持有者。
+- **播放器所有权**：同一时间只有一个插件持有播放器（`tos.media`）。每个插件实例有自己的会话令牌，插件重启或被替换时旧会话被释放，迟到的回调进不了新的 Lua 虚拟机；状态以保留键 `media` 发布，事件（`media.session` / `media.track` / `media.error` / `media.warning` / `queue.end`）只发给持有者，见 `06-plugins.md` §6.10。
 - **音量 / 静音**：`AudioManager` 的 `STREAM_MUSIC`。
 
 ### 3.11 感知（vision/ 与 voice/）

@@ -20,7 +20,11 @@ ThinkOS 是运行在 ThinkSmart View 上的 **Kiosk 主应用（设备外壳）*
 
 **M0.5 设置体系与目录安装已实现，验收持续补齐。** 现已加入自带 IANA 时区、多语言、系统日期格式、本地日月/季节计算，以及城市/区县搜索与离线位置设置。下一步继续 M1 的媒体能力、组件库和内容插件；M2 再接入 Server 管理。
 
-用户最新指示为**先测试 UI，暂不实现完整功能**。组件、设置交互和模拟通知的真机结果见 [UI 验证记录](docs/17-ui-validation.md)；HTTP 监听及媒体完整接线暂缓。
+用户最新指示为**先测试 UI，暂不实现完整功能**。组件、设置交互和模拟通知的真机结果见 [UI 验证记录](docs/17-ui-validation.md)；HTTP 监听暂缓。
+
+**流媒体播放已实现并在真机验收（2026-11-01，API 7 / ADR-030）**：本地音视频与 HLS / DASH / RTSP / 渐进式 HTTP，常见容器与编码（含 AC-3 / DTS / ALAC 音频），旁路与内嵌字幕，音轨切换，直播与断线自动恢复，系统插件 `player`。设计、支持矩阵、验收数据和已知限制见 [流媒体播放](docs/27-streaming.md)。
+
+**投屏接收已实现，真实发送端待验收（2026-11-01，ADR-031 / ADR-033）**：DLNA、AirPlay 视频推送与屏幕镜像、Miracast 屏幕共享都走 OS 的同一个播放器；Miracast 需要系统层模块 `system/thinkos-cast`（root 守护进程，由人工装进设备）。在真机上用脚本扮演的发送端通过了自动检查，华为手机与 iPhone 的实测还没做（AirPlay 镜像用到 GPLv3 的 FairPlay 代码，项目因此以 GPLv3 分发，见 ADR-034）。记录、限制与验收步骤见 [投屏接收](docs/28-casting.md)，系统层说明见 [system/README.md](system/README.md)。
 
 构建与安装：`tools/deploy.sh`。插件迭代：`tools/plugin-push.sh plugins/clock`。具体验证结果与尚待人工确认的项目见 [M0 验证记录](docs/12-m0-validation.md)。
 
@@ -54,6 +58,8 @@ ThinkOS 是运行在 ThinkSmart View 上的 **Kiosk 主应用（设备外壳）*
 磁贴已接入 API 4：直角 Metro 网格、自定义底色与动态翻面，设备可离线使用。实现与实测结果见 [磁贴验收](docs/24-tiles-validation.md)。
 
 API 5 增加可横滑切换的原生 Aero 桌面：玻璃窗口、任务栏、开始菜单，以及公开时钟/天气/相册卡片。设计参考与实现边界见 [Windows 设计](docs/25-windows-design.md)。
+
+API 6 让插件可以显式公开数据、指令和卡片排版：页面不写脚本、不申请权限也能直接显示相册的 Bing 每日图。见 [公开数据](docs/26-public-data.md)。
 
 ## 一句话架构
 

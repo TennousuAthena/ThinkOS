@@ -9,7 +9,7 @@
 - `weather.detail`：实时温度、体感、湿度、风速、地点与更新时间，24 小时温度曲线、可滚动的 5 日预报。
 - 10 个 Canvas 天气图标：`clear-day`、`clear-night`、`partly-day`、`partly-night`、`cloud`、`fog`、`rain`、`shower`、`snow`、`thunder`。未知 WMO 代码使用明确占位。
 - Open-Meteo 直连、完整数据校验、原始数据持久缓存、失败重试、断网显示旧数据、恢复联网后自动更新。
-- 摄氏/华氏本地换算；华氏模式同时显示 mph，摄氏模式显示 km/h。单位和语言变化不产生请求。
+- 温度与风速单位跟随系统设置 `units.system` / `units.wind`（`tos.units`），本地换算。单位和语言变化不产生请求。`heat` / `cold` / `high_wind` 阈值固定按 °C、km/h 填写。
 - 11 种语言、阿拉伯语 RTL、横竖屏、LIGHT / DARK / NIGHT，自动生成的插件设置页。
 
 天气仅通过公开 `tos.*` 获取能力，Lua 不在主线程执行。无 Server、GMS、WebView、设备 Git 或新原生依赖；不修改设备系统层。
@@ -72,7 +72,6 @@ manifest 声明的设置：
 
 | 设置 | 默认值 | 作用 |
 |---|---|---|
-| `temp_unit` | `c` | `c / f`，只做本地换算 |
 | `interval` | `15` | `10 / 15 / 30 / 60` 分钟 |
 | `stale_after` | 180 min | 标注数据过期 |
 | `endpoint` | Open-Meteo HTTPS URL | 兼容接口，不能含查询串或 fragment |

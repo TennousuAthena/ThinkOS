@@ -175,7 +175,7 @@
 
 ## ADR-022 设备持有媒体会话与播放队列
 
-> 当前状态：媒体核心与独立测试已有，Runtime/Lua/权限接线尚未启用。用户最新指示本轮仅测试 UI，完整功能暂缓；以下为后续实现方向。
+> 当前状态：已接线并在真机验收（ADR-030，API 7）。下面是当时的方向，网络策略与所有者模型至今有效，流媒体、HLS / DASH / RTSP 与影院视图的决定以 ADR-030 为准。
 
 - **决策**：设备端采用 Media3 ExoPlayer 1.9.2，复用现有无原生库依赖；音视频共用一个 OS 媒体会话和队列。播放器操作在主线程，插件通过 `tos.media.*` 请求，队列索引对 Lua 从1开始，空队列为0。所有者被替换、移除或播放错误时收到事件。
 - **状态**：OS 发布保留键 `media`，允许有媒体权限的页面直接绑定曲名、封面、进度及播放控制；插件只负责来源和数据，不逐帧更新播放器 UI。视频由原生 TextureView 承载。
@@ -213,3 +213,81 @@
 - **材料与性能**：参考 Windows Vista/7 的透明玻璃、双层边线、高光和景深；用缓存的 Canvas 渐变、静态阴影和短属性动画表达，不用 WebView、实时模糊或新依赖。Android API 27、armv7、离线和内存预算不变。
 - **边界**：不是插件主题/皮肤接口，不开放任意颜色、尺寸或 CSS。仅 tile.color 保留 ADR-025 的例外。Windows Phone/8.1 磁贴仍为 0dp 直角，Aero 窗口的小圆角只用于独立的 Aero 页面。
 - **来源**：用户要求致敬微软设计、参考 GitHub 开源项目，明确选择原生可运行页面。参考与取舍见 `25-windows-design.md`。
+
+## ADR-027 插件公开数据、公开指令与排版复用（2026-10-31）
+
+- **状态**：接受，使用 API 6。用户要求插件能对外公开数据和排版，页面可直接使用相册的微软每日一图，模型类似 Home Assistant。播放器随后使用 API 7 / ADR-030（ADR-028 已用于 Start 屏）。
+- **决策**：插件在 manifest 用 `exports` 显式公开状态路径，用 `uses` 声明读取，用 `calls` 声明调用的 `public` 指令。视图通过保留键 `{{uses.<alias>…}}` 绑定，Lua 通过 `tos.data.get`、`data` 事件和 `tos.command.call` 使用。`focus/split/stage` 槽位可引用 widget，`widgets[].alternates` 按模板提供呈现。
+- **默认私有**：不开放整份状态。状态快照含设置值（包括 `secret`），且数据可能来自受权限保护的能力。导出路径不能进入 `config/uses/variant`；`requires` 要求读取方持有相同权限，防止权限转授。
+- **图片授权**：只有整个值都是公开数据绑定时才按提供方授权加载，使用方拼接的地址按使用方权限检查。插件不接触图片字节，这样不会多暴露内容。
+- **边界**：只有运行时路由，没有实体注册表、全局事件总线或自动化引擎。读取不触发提供方联网，也不唤醒它。全部在设备本地运行，不需要 Server（ADR-015），只走公开 `tos.*`（ADR-016）。使用方不能改被引用 widget 的外观（ADR-017）。不引入 HA 运行时（ADR-006）。
+- **容错**：`shape` 带主版本，不兼容就断开而不是读错。提供方缺失时使用方为空并记录诊断，提供方恢复后自动重连。重启或升级保留已发布的值，避免闪空。指令有 `cooldown`，`data` 事件限速每秒一次。
+- **来源**：用户提出设想并确认实现。接口见 `06-plugins.md` §6.8，验收见 `26-public-data.md`。
+
+## ADR-028 Metro 开始屏：网格、背景、前景与动画词汇（2026-10-31）
+
+- **状态**：接受，仍使用 API 6（API 6 尚未发布，新字段直接并入）。用户确认了开始屏效果图（`artifacts/tiles/concept/`），要求设备达到该状态，并要求系统级支持微软式交互小动画、由插件调用。目标是 Metro 风格的 concept，不是对 Windows 8.1 的逐项复刻。
+- **网格（修订 ADR-025）**：横屏 8×6、竖屏 6×8，单元由短边决定（本机约 69dp），网格贴长边远端，余下约 142dp 为标题栏。OS 在栏内绘制页面标题（manifest 页面 `title`，语言切换时重新翻译）；栏太小则不画。默认开始页 10 张磁贴在两个方向都正好填满 48 格。
+- **背景**：磁贴页使用 OS 固定背景：深色对角渐变加两道极淡的斜向光带，只绘制一次，不做动画。靛蓝 / 深青 / 酒红三种配色由系统设置 `tiles.background` 选择，默认靛蓝；不随明暗主题切换，插件不能提供或修改。三种配色上白字对比度均 ≥7.9:1。
+- **前景（修订 ADR-025）**：白字优先；仅当白字对比度低于 4.55:1 才用黑字（此时黑字必然 ≥4.6:1）。夜间滤镜下按合成后的颜色同样判断。插件仍不能指定前景色，只有磁贴底色 `color` 是例外。
+- **内容结构**：图标在左上，大号轻字重数字，名称固定在底部栏；宽磁贴多一行 `detail`。API 6 起：磁贴可带全幅 `image`（相册每日图），面（face）可带自己的 `content`（时钟的表盘在第二面）。`value` 在图片之上变为两行标题。图形、字号、间距全部由 OS 决定。
+- **动画词汇**：
+  - OS 自动：按下时朝触点方向倾斜（最大 7°，缩到 96.5%）并带过冲回弹；打开页面时磁贴依次升起入场（页面由手指拖入时不重复播放）；面切换沿用原有翻面。
+  - 插件可请求：`tos.tile.animate(name)`，`name` 为 `pulse`（放大一下，新数据）、`flip`（立即翻到下一面）、`nudge`（左右抖动，拒绝/出错）。只作用于调用者自己当前可见的磁贴；同一插件同名动画 1 秒冷却；用户关闭“自动切换磁贴内容”（`tiles.live`）或系统关闭动画时一律忽略。无需权限、不开放时长、曲线或任何参数。
+- **边界**：不是样式接口（ADR-017 不变）。不引入主题、皮肤、插件自定义字体或动画；没有新的插件权限；全部在设备本地运行，不依赖 Server（ADR-015）。
+- **影响**：磁贴页的排布会比之前密（旧 6×4 页面在 8×6 里更小且靠右）；打包器按 8×6 / 6×8 检查放置。播放器随后使用 API 7 / ADR-030。
+- **来源**：用户对开始屏概念图的确认与对“系统级小动画由插件调用”的要求。实现与验收见 `24-tiles-validation.md`。
+
+## ADR-030 流媒体与影院视图（2026-11-01）
+
+- **状态**：接受并已实现，使用 API 7（`tools/tests/clock_accuracy_device.py` 已把 ADR-029 用于时钟精度，所以本件取 030）。用户要求系统完整支持常见视频格式与网络串流，并在真机上验收。推翻 `22-player-plan.md` §1 / §9 里“不做 HLS / DASH、视频暂缓”的结论；ADR-022 的会话与所有者模型不变。
+- **引擎**：仍是 Media3 ExoPlayer 1.9.2。新增 `media3-exoplayer-hls` / `-dash` / `-rtsp` 三个纯 Java AAR（无 `jni/` 目录，armv7 约束不受影响）。每个队列项按自己的 `type` 建 `MediaSource`（渐进式、HLS、DASH、RTSP 可以混在一个队列里），请求头、缓冲上限、字幕都按项处理。硬解 H.264 / HEVC / VP8 / VP9 / MPEG-2 / MPEG-4 / H.263 到 1080p60；轨道选择限制在 1920×1088 以内。
+- **FFmpeg 音频扩展**：平台没有 AC-3 / E-AC-3 / DTS / ALAC 解码器，加入 `org.jellyfin.media3:media3-ffmpeg-decoder:1.9.0+1`（含 armv7 `libffmpegJNI.so`，1.36 MB）。版本比 Media3 低一个小版本，真机实测可用。**它是 GPL-3.0**：自用或不分发的构建可以直接带；要分发就用 `-Pthinkos.ffmpeg=false` 关掉（这些格式会报“本设备无法解码 AC-3”，画面和其它音轨照常播放），或者改用官方源码按 LGPL 配置自己编译。这一条与 UxPlay（GPL-3.0）的分发问题同源，一并由用户决定。
+- **接口（API 7）**：组件 `video`（影院视图）、`controls`（`mode`：`queue` / `seek` / `play`）、`seekbar`，需要 `media` 权限，安装器检查；`tos.media.*` 增加 `jump` / `live` / `audioTrack` / `textTrack`，条目增加 `type` / `headers` / `subtitles`，选项增加 `start`；`media` 状态增加直播、可拖动、缓冲、解码器、丢帧、音轨 / 字幕轨列表等字段；错误分类为 `network` / `http` / `notfound` / `permission` / `policy` / `format` / `decoder` / `audio` / `other`。完整字段见 `06-plugins.md` §6.10。
+- **网络**：明文 HTTP 与 RTSP 只允许私网 / 环回 / 链路本地地址，沿用并加强 ADR-022；新增系统设置 `media.public_http`（默认关，只作用于媒体通道），打开后只放宽明文地址，HTTPS→HTTP 降级仍然拒绝。RTSP 自己开 socket，所以用自定义 `SocketFactory` 在每次连接前校验地址，并固定走 TCP 交织，RTP 数据不会绕过校验。请求头里除 `User-Agent` / `Referer` / `Accept` / `Accept-Language` / `Origin` 外的都只发给条目 URL 的同源地址（跨源重定向也会丢掉）；队列里的 HLS / DASH 项最多 16 个，因为 ExoPlayer 会同时准备队列里所有的项；RTSP 的 `user:pass@` 只存在于播放器内部，不进入状态和日志。
+- **可靠性**：临时故障（超时、连接失败、HTTP / RTSP 408 / 429 / 5xx）按 1、2、4、8、15、15 秒退避重试六次，网络恢复时立即重试；对端断开的直播自动重连；掉出直播窗口回到直播点；缓冲 30 秒没有增长视为卡死，重连、仍不行则报错。不支持的编码一律给出明确错误（画面编码不支持 → 报错；只是音频不支持 → 画面照播并给 `warning`），不会静默黑屏或无声。
+- **显示与注意力**：影院视图由 OS 绘制，触摸时浮出控件、无操作后淡出，字幕随控件让位；`ThinkStage` 为横向可拖动的组件（进度条）让出手势并解除长按计时，页面翻页、长按设置仍归 OS。视频播放时显示至少保持 AWAKE（`media.keep_awake_video`，默认开），暂停后恢复正常的变暗策略。画面上的触摸手势（2026-11-01 追加，无新增插件接口）：单击切换控件的显示，双击中间暂停 / 继续、左右四分之一跳 10 秒，竖拖左半屏调亮度（即 `display.brightness_max`）、右半屏调系统媒体音量；规则见 `27-streaming.md` §3.4。
+- **页面**：`live` 页面（实时活动）不进入横向翻页序列，只能由插件接管进入，左右滑动回到接管前的页面。插件在用户点按自己页面的 5 秒内调用 `tos.page.focus`，不受“本地操作 30 秒内优先”限制（点一首歌就该打开播放页），ASLEEP 与设置页仍然拦截。
+- **存储权限**：设备是 Device Owner 时，启动时用 `setPermissionGrantState` 静默授予 `READ_EXTERNAL_STORAGE`（读 `/sdcard/Music`、`/sdcard/Movies`），否则在首次访问时弹系统对话框。不申请写权限。
+- **配置（ADR-017）**：`media.public_http`、`media.keep_awake_video`，隐藏项 `media.buffer_s`（30 秒，10–120）与 `media.buffer_mb`（48 MB，8–96）。缓冲上限是内存预算，不是偏好：ExoPlayer 默认给远程视频 125 MiB，本机放不下。
+- **与 `22-player-plan.md` 的偏离**：不做 `nowplaying` 版式、歌词、频谱、`list.current`（本期只做视频与通用播放，音频页用 `focus` + `seekbar` + `controls`）；播放器是系统插件 `player`，取代 `music`。
+- **边界**：不引入 WebView、Compose、GMS；不依赖 Server；没有新的插件权限名；DRM、RTMP、组播、SMB / NFS、站点解析（B 站 / YouTube 网页链接）不做。
+- **影响**：APK 从 7.4 MB 增到 9.1 MB，其中 FFmpeg 扩展的 armv7 原生库约 1.4 MB（压缩后）。性能与验收记录见 `27-streaming.md`。
+- **来源**：用户要求“为 ThinkOS 完整实现流媒体播放，支持常见视频格式、网络串流”，并确认设备已通过有线连接用于验收。
+
+## ADR-031 投屏接收（2026-11-01，草案）
+
+- **状态**：草案。**DLNA、AirPlay 视频推送、Miracast 投屏、AirPlay 屏幕镜像与声音都已实现**（`cast.enabled` / `cast.airplay`（`cast.airplay_mirror`）/ `cast.miracast`，默认关；真机上用脚本扮演的发送端通过 34 / 37 / 27 / 45 项检查）；**真实发送端里，macOS 与 iPhone Air 的 AirPlay 屏幕镜像已连上并有画面（2026-11-02）；华为的 Miracast、Windows、AirPlay 视频推送、各 App 的 DLNA 还没测**；确认页与 `tos.cast`（API 8）未做。用户要求利用 weekdayjast/MiracastReceiver 推进投屏接收，并明确沿用系统已有播放器。计划、取舍与验证记录见 `28-casting.md`。
+- **决策**：协议层（DLNA、AirPlay、Miracast）由 OS 内的 `CastHost` 实现；播放一律走 `MediaEngine` 与 `video` / `controls` / `seekbar`，不引入第二个播放器。镜像来源用引擎内部的 `MirrorSource`（`MediaEntry.mirror`，只有 OS 能创建，插件不能构造；有界队列，满了丢最旧的）与低延迟缓冲档，并由 `MirrorPace` 追赶再生以压低延迟。协议不进 Lua。
+- **网络与安全**：监听只接受私网来源；推来的 URL 受 `media.public_http` 约束；总开关默认关；凭据不进日志与状态；日志里不写完整地址。全部在设备本机完成，不依赖 Server（ADR-015）。
+- **参考项目的用法**：当协议层零件库，固定在提交 `d1aea7e`，MIT，重写（不复制代码），见 `THIRD_PARTY_NOTICES.md`。其 `playfair`（FairPlay）上游为 GPLv3，MIT 标签不覆盖；**用户已决定以 GPLv3 分发（ADR-034），所以 AirPlay 镜像与 FairPlay 做了**：`playfair` 与它的 GPLv3 许可证文本按原样纳入（来自 RPiPlay 的固定提交），见 `28-casting.md` §15。
+- **已定**：Miracast 的系统权限由系统层模块的 root 守护进程行使（ADR-033）；音频只声明 AAC（ExoPlayer 的 TS 解复用读不了 WFD 的 LPCM）；视频只声明 720p 以内（面板 1280×800）。
+- **待定**：镜像延迟关口要在真实 Source 上复测（模拟源上约 320 ms，关口 ≤ 约 400 ms）；AirPlay 视频推送在真实 iPhone 上要不要 FairPlay、要不要更多的 features；第一次连接要不要屏幕确认。
+- **更正**：此前记录的“低延迟档 353 ms 过关”偏小约 0.5 秒（测试源的读取预热），更正后单靠缓冲参数是 870 ms，见 `28-casting.md` §8 ②。
+- **来源**：用户“我准备继续推进项目的投屏接收功能……播放器我还是希望沿用我们系统里已有的播放器”与“开始进行”（2026-11-01）；“考虑到 root 权限和一些这个模块，我觉得我们 think os 不只是一个安卓应用，我们也是一套整体对安卓修改的方案，所以你在项目里也要增加一些这个模块的代码。我手上有华为和 iPhone。……开始实现，直到验收”（2026-11-01）。
+
+## ADR-032 系统级单位设置（2026-11-01）
+
+- **决策**：单位体系是 OS 提供的系统设置，不由各插件自带：`units.system`（`metric` / `imperial`，决定温度 °C / °F）与 `units.wind`（`auto` 跟随单位制 / `kmh` / `ms` / `mph` / `kn`）。设置页新增“单位”分组，沿用 §9 / §10 的 `choice` 就地展开行，没有新控件、没有新样式。
+- **插件接口**：`tos.units.get()`、`tos.units.temperature(celsius)`、`tos.units.wind(kmh)` 只读且无需权限，变化时发 `units` 事件。插件内部一律用摄氏与 km/h 存数据和判阈值，只在显示时换算；换算在 OS 里做一次，保证各插件结果一致。插件不能写这些设置（ADR-017）。
+- **取舍**：温度不单独成项，随单位制走；风速单独成项，因为公制地区常用 m/s 或节。降水、气压、距离等还没有用到它们的插件，用到时再按同样方式加词汇，不预先建空设置。
+- **迁移**：天气插件移除 `temp_unit`，Server 下发的旧键会被当作未知键拒绝；需要时改下发 `units.system`。
+- **来源**：用户“增加一个开关，控制单位体系是公制还是华氏，另外风速的单位是什么……系统提供的一套设置，所有插件也可以读取沿用”。
+
+## ADR-033 系统层：Magisk 模块（2026-11-01）
+
+- **决策**：ThinkOS 不只是一个安卓应用，也是一套对安卓的整体改动。需要系统权限的能力放进仓库的 `system/`，做成 Magisk 模块；第一个是 `thinkos-cast`（Miracast 的 WFD 元素）。应用一侧只通过一个很窄的接口（抽象 socket、三个命令）和模块说话，应用自己不 `su`。
+- **为什么是 root 守护进程而不是别的办法**：`CONFIGURE_WIFI_DISPLAY` 是 signature 级，ThinkOS 的 APK 没有平台签名（重签名要重装，会丢掉 Device Owner）；这台设备的 `su` 只放行 adb shell。运行时 `su`（原参考项目的做法）会让一个解析漏洞变成 root，而应用要解析局域网里不可信的数据。
+- **边界**：守护进程只认 root 与 ThinkOS 应用（`SO_PEERCRED`），只做写死的命令集，输入有界（256 字节一行、2 秒读完、名字只收可见字符）；应用一侧只相信 root 回的答案。**没有模块时应用照常工作**（ADR-015）：Miracast 不出现，别的不受影响。
+- **谁做什么**：源码、构建、主机测试、在设备上不持久地跑一份来测试，都由开发 Agent 做；**把模块持久装进设备**（`system/install.sh`）、重启，由人工做（AGENTS.md）。
+- **取舍**：守护进程不处理 P2P 连接请求（确认框由 Android 的 Wi-Fi Direct 栈弹出）；在 SELinux enforcing 下没有验证（设备是 permissive），带了一条被日志里的拒绝记录所要求的 `sepolicy.rule`。
+- **来源**：用户“考虑到 root 权限和一些这个模块，我觉得我们 think os 不只是一个安卓应用，我们也是一套整体对安卓修改的方案，所以你在项目里也要增加一些这个模块的代码”（2026-11-01）。
+
+## ADR-034 项目以 GPLv3 分发（2026-11-01）
+
+- **决策**：ThinkOS 开源后以 GNU GPL 第 3 版分发。
+- **为什么**：AirPlay 屏幕镜像要求接收端用 FairPlay 握手拿密钥，唯一可用的实现 `playfair` 是 GPLv3（RPiPlay / UxPlay 里那一份，逆向苹果协议得来）；FFmpeg 音频扩展也是 GPL-3.0。项目一旦分发，含有 GPLv3 代码的整个应用就必须按 GPLv3 提供源码。用户明确选择这样做，而不是不做镜像或另找实现（没有许可证干净的替代）。
+- **已落实的**：`playfair` 与它的 `LICENSE.md` 原样放在 `android/app/src/main/cpp/playfair/`，`ORIGIN.md` 写明来源提交；`THIRD_PARTY_NOTICES.md` 记录；`-Pthinkos.ffmpeg=false` 这个开关保留（想出一个不含 FFmpeg 的构建时仍可用），但不再是“为了能分发”必须关。
+- **发布前还要做的**（这些不是开发 Agent 能替项目所有者决定的）：在仓库根放 `LICENSE`（GPLv3 全文）并给源文件加许可证头，版权人写谁由项目所有者定；逐项核对依赖的许可证与 GPLv3 兼容（已知的：Media3、OkHttp、Lottie 是 Apache-2.0，与 GPLv3 兼容；Lua、yyjson 是 MIT；MiracastReceiver 是 MIT；`assets/` 里的素材与字体、`server/` 的 Go 依赖**还没有核对**）；`playfair` 来自对苹果协议的逆向，除版权外是否另有法律风险由项目所有者自己评估。
+- **来源**：用户“开源之后我会以GPLv3的许可分发”（2026-11-01），回答“AirPlay 屏幕镜像和音频为什么没有实现”时的决策问题。
+

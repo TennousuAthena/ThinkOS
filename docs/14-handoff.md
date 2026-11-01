@@ -9,6 +9,8 @@
 
 > **天气续作（同日）**：用户已明确解除天气数据接线暂缓，完成范围为 W0–W2；天气图标、卡片/详情、实时预报、缓存与恢复见 `20-weather-handoff.md` 的续作记录。媒体等其它暂缓项不受影响。
 
+> **流媒体续作（2026-11-01）**：媒体暂缓已解除并完成：`MediaEngine` 接线、`tos.media.*`、`media` 状态与事件、API 7 的 `video` / `controls` / `seekbar`、HLS / DASH / RTSP、FFmpeg 音频扩展、系统插件 `player`（取代 `music`）。上文关于媒体“暂缓 / 未开始 / 接线草稿在 /tmp”的描述是当时的快照，现状与验收见 `27-streaming.md`、`08-decisions.md` ADR-030。
+
 > **相册续作（同日）**：用户已解除相册与通用图片接口的暂缓，并补充要求实现微软每日一图。API 3 的 `image/carousel`、`tos.library.list`、通用网络图片/缓存和 `gallery` 已实现；默认 Bing，可选本地/混合，完整画面平移、不永久裁切。Server 下发/管理暂缓。媒体播放与 HTTP 通知仍暂缓。公开接口与验收见 `21-gallery-handoff.md`、`06-plugins.md`。
 
 ## 0. 接手后的第一小时
