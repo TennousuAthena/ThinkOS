@@ -1,0 +1,6 @@
+id=thinkos-cast
+name=ThinkOS Cast
+version=v1.0
+versionCode=1
+author=ThinkOS
+description=ThinkOS 的投屏接收系统层：以 root 守护进程代 ThinkOS 应用向 wpa_supplicant 设置 Wi-Fi Display（Miracast）Sink 信息，让手机和电脑能把它当作无线显示器发现。只接受 ThinkOS 应用的请求，不改动 /system；附带一条 sepolicy 规则。

@@ -1,0 +1,4 @@
+# wpa_supplicant answers the daemon's commands on the daemon's own datagram socket. With SELinux enforcing that reply is denied
+# (observed on the device, where SELinux is permissive: "avc: denied { sendto } ... hal_wifi_supplicant_default -> magisk").
+# This is the one rule that denial asks for; the type names were checked with `magiskpolicy --live` on the device.
+allow hal_wifi_supplicant_default magisk unix_dgram_socket sendto

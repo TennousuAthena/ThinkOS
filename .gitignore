@@ -41,3 +41,6 @@ __pycache__/
 artifacts/tiles/**/frames-*.txt
 artifacts/tiles/**/memory-*.txt
 
+
+# 系统层模块的构建产物
+system/build/
