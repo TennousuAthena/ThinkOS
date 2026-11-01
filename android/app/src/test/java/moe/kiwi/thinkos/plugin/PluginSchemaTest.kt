@@ -19,6 +19,21 @@ class PluginSchemaTest {
         catch (_: IllegalArgumentException) { }
     }
 
+    @Test fun apiSevenOpensTheMediaComponentsAndNothingEarlierDoes() {
+        PluginSchema.validateManifest(manifest().put("api", 7).put("permissions", JSONArray().put("media")))
+        for (component in listOf("""{"type":"video","fit":"cover"}""", """{"type":"video"}""", """{"type":"controls"}""",
+            """{"type":"controls","mode":"seek"}""", """{"type":"controls","mode":"play","weight":0}""", """{"type":"seekbar","weight":0}""")) {
+            val view = JSONObject("""{"layout":"focus","slots":{"hero":$component}}""")
+            PluginSchema.validateView(view, 7)
+            for (api in 1..6) rejected { PluginSchema.validateView(view, api) }
+        }
+        PluginSchema.validateView(JSONObject("""{"layout":"stage","slots":{"stage":{"type":"video"}}}"""), 7)
+        for (component in listOf("""{"type":"controls","mode":"queue2"}""", """{"type":"seekbar","color":"red"}""",
+            """{"type":"video","url":"https://x.test/a.mp4"}""", """{"type":"controls","buttons":["x"]}""", """{"type":"video","fit":"fill"}""")) {
+            rejected { PluginSchema.validateView(JSONObject("""{"layout":"focus","slots":{"hero":$component}}"""), 7) }
+        }
+    }
+
     @Test fun apiFourTilesColorsAndBoundedContent() {
         val tile = JSONObject("""{"template":"tile","faces":[{"label":"Weather","value":"{{temp}}"}]}""")
         val page = JSONObject("""{"layout":"tiles","slots":{"tiles":[{"widget":"clock.tile","size":"wide"}]}}""")
@@ -78,7 +93,7 @@ class PluginSchemaTest {
     }
 
     @Test fun rejectsNewApiAndPrivateFields() {
-        rejected { PluginSchema.validateManifest(manifest().put("api", 6)) }
+        rejected { PluginSchema.validateManifest(manifest().put("api", 8)) }
         rejected { PluginSchema.validateManifest(manifest().put("privateBridge", true)) }
         rejected { PluginSchema.validateManifest(manifest().put("main", "../escape.lua")) }
     }

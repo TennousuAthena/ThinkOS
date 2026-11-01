@@ -3,6 +3,7 @@ package moe.kiwi.thinkos.ui
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Color
+import android.graphics.Canvas
 import android.graphics.Rect
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
@@ -56,6 +57,7 @@ internal class ComponentGroup(
     val owner: String get() = pluginId
     val floatingClock: Boolean get() = bound.singleOrNull()?.view.let { it is ClockView && it.clockStyle == "float" }
     val photo: Boolean get() = bound.singleOrNull()?.definition?.optString("type").let { it == "image" || it == "carousel" }
+    val video: Boolean get() = bound.singleOrNull()?.definition?.optString("type") == "video"
     var opens: String? = null
     val activeAnimations: Boolean get() = embeddedTile?.activeAnimations == true || bound.any { it.renderer?.animating == true }
     val bottomOverlayInset: Int get() = bound.maxOfOrNull { it.renderer?.bottomOverlayInset ?: 0 } ?: 0
@@ -85,7 +87,7 @@ internal class ComponentGroup(
         visit(definition)
         // Functional media controls consume the OS-owned state without asking plugins to
         // invent redundant bindings just to refresh a play/pause icon or video visibility.
-        if (definition.optString("type") in setOf("controls", "video")) result += Binding.compile("{{media}}")
+        if (definition.optString("type") in setOf("controls", "video", "seekbar")) result += Binding.compile("{{media}}")
         return result
     }
 
@@ -114,6 +116,8 @@ internal class ComponentGroup(
                     "clock" -> ClockView(context, def, compact)
                     "form" -> FormView(context, formHost)
                     "icon" -> IconView(context)
+                    // A media view whose plugin has lost (or never had) the media permission shows nothing rather than crashing the page.
+                    "controls", "video", "seekbar" -> View(context)
                     "text" -> (if(desktop) TileTextView(context) else TextView(context)).apply {
                         gravity = Gravity.CENTER; includeFontPadding = false; maxLines = if(desktop && def.optString("style")=="caption") 4 else 2
                         ellipsize = TextUtils.TruncateAt.END
@@ -213,10 +217,20 @@ internal class ComponentGroup(
     fun night(amount: Float) { embeddedTile?.night(amount) }
     fun burnInOffset(x: Int, y: Int) { bound.forEach { it.renderer?.burnInOffset(x, y) } }
     fun tileViews(): List<TileView> = listOfNotNull(embeddedTile)
-    /** Native visuals stay live above Aero's cached static text/chrome. */
-    fun desktopVisuals(): List<View> = embeddedTile?.let { listOf(it) } ?: bound.filter {
-        it.renderer != null || it.view is ClockView || it.view is IconView
-    }.map { it.view }
+    /** Aero caches static labels, while live components keep their actual native parent chain. */
+    var desktopTextCached = false
+        set(value) { if (field != value) { field = value; invalidate() } }
+    override fun dispatchDraw(canvas: Canvas) {
+        if (!desktop || !desktopTextCached) { super.dispatchDraw(canvas); return }
+        val save = canvas.save()
+        canvas.clipRect(0, 0, width, height)
+        embeddedTile?.let { drawChild(canvas, it, drawingTime) }
+        bound.forEach { item ->
+            if (item.view.visibility == VISIBLE && (item.renderer != null || item.view is ClockView || item.view is IconView))
+                drawChild(canvas, item.view, drawingTime)
+        }
+        canvas.restoreToCount(save)
+    }
     fun desktopText(): List<String> = bound.mapNotNull { (it.view as? TextView)?.text?.toString() }
     fun desktopTextViews(): List<TextView> = bound.mapNotNull { it.view as? TextView }
     fun tick(now: Long, attention: Attention) {
@@ -231,13 +245,20 @@ internal class ComponentGroup(
     fun tapAt(x: Float, y: Float): Boolean = bound.asReversed().any { item ->
         val v = item.view
         val hit = v.visibility == VISIBLE && x >= v.left && x < v.right && y >= v.top && y < v.bottom
-        hit && (item.renderer?.tap() == true || item.definition.optString("tap").isNotBlank() && v.performClick())
+        hit && (item.renderer?.tapAt(x - v.left, y - v.top) == true || item.definition.optString("tap").isNotBlank() && v.performClick())
+    }
+    /** A finger went down on the page: components that want to know where (the cinema view) are told before anything is decided. */
+    fun touchDown(x: Float, y: Float) {
+        for (item in bound) {
+            val v = item.view
+            if (v.visibility == VISIBLE && x >= v.left && x < v.right && y >= v.top && y < v.bottom) item.renderer?.touchDown(x - v.left, y - v.top)
+        }
     }
     fun dragVerticalAt(x: Float, y: Float, offset: Float): RenderComponent? {
         for (item in bound.asReversed()) {
             val v = item.view
             if (v.visibility == VISIBLE && x >= v.left && x < v.right && y >= v.top && y < v.bottom &&
-                item.renderer?.dragVertical(offset) == true) return item.renderer
+                item.renderer?.dragVerticalFrom(x - v.left, y - v.top, offset) == true) return item.renderer
         }
         return null
     }
@@ -251,6 +272,12 @@ internal class ComponentGroup(
         val interactive = item.renderer?.interactive == true || item.definition.optString("tap").isNotBlank() || view is FormView
         interactive && view.visibility == VISIBLE && x >= view.left + view.translationX && x < view.right + view.translationX &&
             y >= view.top + view.translationY && y < view.bottom + view.translationY
+    }
+    fun capturesHorizontalAt(x: Float, y: Float): Boolean = bound.asReversed().any { item ->
+        val view = item.view
+        view.visibility == VISIBLE && x >= view.left + view.translationX && x < view.right + view.translationX &&
+            y >= view.top + view.translationY && y < view.bottom + view.translationY &&
+            item.renderer?.capturesHorizontalAt(x - view.left - view.translationX, y - view.top - view.translationY) == true
     }
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val w = MeasureSpec.getSize(widthMeasureSpec); val h = MeasureSpec.getSize(heightMeasureSpec)
@@ -382,23 +409,28 @@ internal class PageView(
     private val stackItems = mutableMapOf<String, JSONArray>()
     private var dragging: StackSlot? = null
     private var previousLayout = ""
-    private var photoDriftX = 0
-    private var photoDriftY = 0
+    private var contentDriftX = 0
+    private var contentDriftY = 0
     private val cadence = TileCadence()
+    private var title: TextView? = null
+    private var titleBox: RenderGeometry.Box? = null
+    private var backdrop: TileBackdrop? = null
     private fun liveTiles(): List<TileView> = tiles.values.filter { it.visibility == VISIBLE } + stacks.values.flatMap { it.tileViews() } + groups.values.flatMap { it.tileViews() }
     private var active = false
     fun active(value: Boolean) { if (!value) cadence.reset(); active = value; aero?.active(value); groups.values.forEach { it.active(value) }; stacks.values.forEach { it.active(value) }; tiles.values.forEach { it.active(value && it.visibility == VISIBLE) } }
     private val layout get() = page.view.optString("layout")
-    val opaque: Boolean get() = layout in setOf("tiles", "aero") || photoStage
+    val opaque: Boolean get() = layout in setOf("tiles", "aero") || photoStage || videoStage
     private val slotNames get() = LayoutVocabulary.slots[layout].orEmpty()
     private val roles get() = LayoutVocabulary.roles[layout].orEmpty()
     val photoStage: Boolean get() = layout == "stage" && groups.any { (name, group) -> roles[name] == "stage" && group.photo }
+    /** A film fills the screen edge to edge like a photo does: if it drifted with the burn-in nudge, the backdrop would show along two edges. */
+    val videoStage: Boolean get() = layout == "stage" && groups.any { (name, group) -> roles[name] == "stage" && group.video }
     val activeAnimations: Boolean get() = aero?.activeAnimations == true || groups.values.any { it.activeAnimations } || stacks.values.any { it.activeAnimations } || tiles.values.any { it.activeAnimations }
     val ambientAnimations: Boolean get() = aero?.ambientAnimations == true || groups.values.any { it.ambientAnimations } || stacks.values.any { it.ambientAnimations } || tiles.values.any { it.ambientAnimations }
 
     init { clipChildren = false; clipToPadding = false; update(page, widgets) }
     private fun resolve(name: String, index: Int): Triple<String, JSONObject, String?> {
-        return resolveStackItem(page.pluginId, stackItems[name]?.opt(index), widgets)
+        return resolveStackItem(page.pluginId, stackItems[name]?.opt(index), widgets, "glance")
     }
     fun update(next: PluginPage, nextWidgets: List<PluginWidget>) {
         page = next
@@ -408,10 +440,11 @@ internal class PageView(
             removeAllViews()
             aero?.active(false); aero = null
             tiles.clear(); tileItems = JSONArray(); tileBoxes = emptyList()
+            title = null; titleBox = null; backdrop = null; background = null
             groups.clear()
             stacks.clear()
             definitions.clear()
-            photoDriftX = 0; photoDriftY = 0
+            contentDriftX = 0; contentDriftY = 0
         }
         previousLayout = layout
         contentDescription = page.title
@@ -424,13 +457,14 @@ internal class PageView(
         for (name in slotNames) {
             if (roles[name] == "tiles") {
                 tileItems = slots.optJSONArray(name) ?: JSONArray()
+                ensureTitle()
                 tiles.keys.filter { it >= tileItems.length() }.toList().forEach { i -> tiles.remove(i)?.let { it.active(false); removeView(it) } }
                 for (i in 0 until tileItems.length()) {
                     val reference = tileItems.getJSONObject(i)
-                    val (owner, definition, opens) = resolveStackItem(page.pluginId, reference, widgets)
+                    val (owner, definition, opens) = resolveStackItem(page.pluginId, reference, widgets, "tile")
                     val tile = tiles.getOrPut(i) { TileView(context, state, { variant }, events).also { addView(it) } }
                     tile.update(page.pluginId, owner, definition, reference, opens, reference.optString("size"))
-                    tile.colors(palette)
+                    tile.colors(Palette.DARK)
                 }
             } else if (roles[name] == "stack") {
                 val items = slots.optJSONArray(name) ?: JSONArray()
@@ -450,14 +484,16 @@ internal class PageView(
                     definitions[name] = signature
                 }
             } else {
-                val definition = slots.optJSONObject(name)
-                if (definition == null) { groups.remove(name)?.let(::removeView); continue }
-                val signature = definition.toString()
+                val declared = slots.optJSONObject(name)
+                if (declared == null) { groups.remove(name)?.let(::removeView); continue }
+                val (owner, definition, opens) = resolveStackItem(page.pluginId, declared, widgets, "glance")
+                val signature = "$owner:$definition:$opens"
                 if (definitions[name] != signature) {
                     val group = groups.getOrPut(name) {
-                        ComponentGroup(context, page.pluginId, definition, state, { variant }, false, false, events).also { addView(it) }
+                        ComponentGroup(context, owner, definition, state, { variant }, false, false, events).also { addView(it) }
                     }
-                    group.update(page.pluginId, definition)
+                    group.opens = opens
+                    group.update(owner, definition)
                     group.colors(palette)
                     definitions[name] = signature
                 }
@@ -474,21 +510,69 @@ internal class PageView(
         stacks.values.forEach { it.bind(pluginId, paths) }
         tiles.values.forEach { it.bind(pluginId, paths) }
     }
-    fun colors(value: Palette) { palette = value; if (layout == "tiles") setBackgroundColor(value.bg) else background = null; aero?.colors(value); groups.values.forEach { it.colors(value) }; stacks.values.forEach { it.colors(value) }; tiles.values.forEach { it.colors(value) } }
-    fun localeChanged() { aero?.localeChanged(); groups.values.forEach { it.localeChanged() }; stacks.values.forEach { it.localeChanged() }; tiles.values.forEach { it.localeChanged() } }
-    /** Photos already pan inside a fixed viewport. Only their stationary foreground needs drift. */
+    // The tile page is always the dark Start screen, whatever the theme (ADR-028).
+    fun colors(value: Palette) { palette = value; applyBackdrop(); aero?.colors(value); groups.values.forEach { it.colors(value) }; stacks.values.forEach { it.colors(value) }; tiles.values.forEach { it.colors(Palette.DARK) } }
+    private fun applyBackdrop() {
+        if (layout != "tiles") { background = null; backdrop = null; return }
+        val wanted = TileBackdrop.Variant.of(events.tilesBackground)
+        if (backdrop?.variant != wanted) { backdrop = TileBackdrop(wanted); background = backdrop }
+    }
+    /** `tiles.background` changed in the settings page. */
+    fun renderSettingsChanged() { if (layout == "tiles") applyBackdrop() }
+    private fun ensureTitle() {
+        val view = title ?: TextView(context).apply {
+            setTextColor(0xf2ffffff.toInt())
+            typeface = Typeface.create("sans-serif-thin", Typeface.NORMAL)
+            includeFontPadding = false
+            maxLines = 1
+            gravity = Gravity.START or Gravity.TOP
+            setAutoSizeTextTypeUniformWithConfiguration(20, 40, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
+            importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO
+        }.also { title = it; addView(it) }
+        val text = page.titleKey?.let { events.text(page.pluginId, it) } ?: page.title
+        if (view.text.toString() != text) view.text = text
+    }
+    fun localeChanged() { title?.let { ensureTitle() }; aero?.localeChanged(); groups.values.forEach { it.localeChanged() }; stacks.values.forEach { it.localeChanged() }; tiles.values.forEach { it.localeChanged() } }
+    /** The stage pins opaque backdrops; their foreground (and adjacent page previews) still drifts. */
     fun burnInOffset(x: Int, y: Int) {
-        val nextX = if (photoStage) x else 0
-        val nextY = if (photoStage) y else 0
-        if (nextX == photoDriftX && nextY == photoDriftY) return
-        groups.forEach { (name, group) ->
-            if (roles[name] == "stage") group.burnInOffset(nextX, nextY)
-            else if (group.isLaidOut) {
-                group.offsetLeftAndRight(nextX - photoDriftX)
-                group.offsetTopAndBottom(nextY - photoDriftY)
+        if (x == contentDriftX && y == contentDriftY) return
+        aero?.burnInOffset(x, y)
+        fun move(view: View) {
+            if (view.isLaidOut) {
+                view.offsetLeftAndRight(x - contentDriftX)
+                view.offsetTopAndBottom(y - contentDriftY)
             }
         }
-        photoDriftX = nextX; photoDriftY = nextY
+        groups.forEach { (name, group) ->
+            if ((photoStage || videoStage) && roles[name] == "stage") group.burnInOffset(x, y)
+            else move(group)
+        }
+        stacks.values.forEach(::move)
+        tiles.values.forEach(::move)
+        title?.let(::move)
+        contentDriftX = x; contentDriftY = y
+    }
+    private var pressed: TileView? = null
+    /** A finger went down on the Start page: the tile under it tilts toward the touch. */
+    fun pressAt(x: Float, y: Float) {
+        releasePress()
+        groups.values.forEach { it.touchDown(x - it.left - it.translationX, y - it.top - it.translationY) }
+        if (layout != "tiles") return
+        val tile = tileAt(x, y) ?: return
+        pressed = tile
+        tile.press(x - tile.left, y - tile.top)
+    }
+    fun releasePress() { pressed?.release(); pressed = null }
+    /** The page was opened rather than dragged in: its tiles rise in, one after another. */
+    fun enterAnimation() {
+        if (layout != "tiles") return
+        tiles.entries.sortedBy { it.key }.map { it.value }.filter { it.visibility == VISIBLE }
+            .forEachIndexed { index, tile -> tile.enter(minOf(index * 38L, 380L)) }
+    }
+    /** A plugin asked for a named tile animation (`tos.tile.animate`); only its own visible tiles play it. */
+    fun playTileAnimation(owner: String, name: String) {
+        if (!active || !events.tilesLive) return
+        liveTiles().filter { it.owner == owner }.forEach { it.play(name) }
     }
     fun tick(now: Long, attention: Attention) {
         aero?.tick(now,attention)
@@ -542,9 +626,15 @@ internal class PageView(
     }
     /** The plugin under a point: the card's own plugin on a stacked page, otherwise the page's plugin. */
     private fun tileAt(x: Float, y: Float): TileView? = tiles.values.firstOrNull { it.visibility == VISIBLE && x >= it.left && x < it.right && y >= it.top && y < it.bottom }
+    /** The topmost slot under a point: an overlay is what was touched, not a referenced widget beneath it. */
+    private fun slotAt(x: Float, y: Float): ComponentGroup? = groups.values.toList().asReversed().firstOrNull {
+        x >= it.left && x < it.right && y >= it.top && y < it.bottom
+    }
     fun ownerAt(x: Float, y: Float): String = aero?.ownerAt(x,y) ?: tileAt(x, y)?.owner ?:
-        stacks.values.firstOrNull { x >= it.left && x <= it.right && y >= it.top && y <= it.bottom }?.current?.owner ?: page.pluginId
-    fun openAt(x: Float, y: Float): String? = tileAt(x, y)?.opens ?: stacks.values.firstOrNull { x >= it.left && x <= it.right && y >= it.top && y <= it.bottom }?.current?.opens
+        stacks.values.firstOrNull { x >= it.left && x <= it.right && y >= it.top && y <= it.bottom }?.current?.owner ?:
+        slotAt(x, y)?.owner ?: page.pluginId
+    fun openAt(x: Float, y: Float): String? = tileAt(x, y)?.opens ?: stacks.values.firstOrNull { x >= it.left && x <= it.right && y >= it.top && y <= it.bottom }?.current?.opens ?:
+        slotAt(x, y)?.opens
     fun tapAt(x: Float, y: Float): Boolean = aero?.tapAt(x,y) == true || groups.values.toList().asReversed().any {
         it.tapAt(x - it.left - it.translationX, y - it.top - it.translationY)
     }
@@ -557,6 +647,15 @@ internal class PageView(
         }
         return stacks.values.any { slot -> slot.current?.let { group ->
             group.interactiveAt(x - slot.left - group.left - group.translationX, y - slot.top - group.top - group.translationY)
+        } == true }
+    }
+    /** True when the touch starts on a component that owns horizontal drags (the seek bar). */
+    fun capturesHorizontalAt(x: Float, y: Float): Boolean {
+        for (group in groups.values.toList().asReversed()) {
+            if (group.capturesHorizontalAt(x - group.left - group.translationX, y - group.top - group.translationY)) return true
+        }
+        return stacks.values.any { slot -> slot.current?.let { group ->
+            group.capturesHorizontalAt(x - slot.left - group.left - group.translationX, y - slot.top - group.top - group.translationY)
         } == true }
     }
     private fun rectangle(name: String, spec: LayoutSpec): Rect {
@@ -592,6 +691,12 @@ internal class PageView(
             view.measure(MeasureSpec.makeMeasureSpec(rect.width(), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(rect.height(), MeasureSpec.EXACTLY))
         }
         tileBoxes = RenderGeometry.tiles(List(tileItems.length()) { tileItems.getJSONObject(it).optString("size") }, w, h, spec.density, layoutDirection == LAYOUT_DIRECTION_RTL)
+        titleBox = if (layout == "tiles") RenderGeometry.tileTitle(w, h, spec.density, layoutDirection == LAYOUT_DIRECTION_RTL) else null
+        title?.let { view ->
+            val box = titleBox
+            view.visibility = if (box == null) GONE else VISIBLE
+            view.measure(MeasureSpec.makeMeasureSpec(box?.width ?: 0, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(box?.height ?: 0, MeasureSpec.EXACTLY))
+        }
         tiles.forEach { (i, view) ->
             val box = tileBoxes.getOrNull(i)
             view.visibility = if (box == null) GONE else VISIBLE
@@ -605,20 +710,26 @@ internal class PageView(
     }
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         aero?.layout(0,0,width,height)
+        aero?.burnInOffset(contentDriftX, contentDriftY)
         val spec = LayoutSpec(width, height, resources.displayMetrics.density)
-        tiles.forEach { (i, v) -> tileBoxes.getOrNull(i)?.let { v.layout(it.left, it.top, it.right, it.bottom) } }
+        tiles.forEach { (i, v) -> tileBoxes.getOrNull(i)?.let {
+            v.layout(it.left + contentDriftX, it.top + contentDriftY, it.right + contentDriftX, it.bottom + contentDriftY)
+        } }
+        title?.let { view -> titleBox?.let { view.layout(it.left + contentDriftX, it.top + contentDriftY, it.right + contentDriftX, it.bottom + contentDriftY) } }
+        // A photo or a film is pinned to the screen edges; only the rest of the page wanders with the burn-in nudge.
+        val pinned = photoStage || videoStage
         slots().forEach { (name, view) ->
             val x = view.left
             val y = view.top
             val wasLaid = view.isLaidOut
             val rect = rectangle(name, spec)
-            if (photoStage && roles[name] != "stage") rect.offset(photoDriftX, photoDriftY)
+            if (!pinned || roles[name] != "stage") rect.offset(contentDriftX, contentDriftY)
             view.layout(rect.left, rect.top, rect.right, rect.bottom)
-            if (photoStage && roles[name] == "stage") {
+            if (pinned && roles[name] == "stage") {
                 // Neither attention nor resize transitions may reveal the backdrop at an edge.
                 view.animate().cancel()
                 view.alpha = 1f; view.translationX = 0f; view.translationY = 0f
-                (view as? ComponentGroup)?.burnInOffset(photoDriftX, photoDriftY)
+                (view as? ComponentGroup)?.burnInOffset(contentDriftX, contentDriftY)
             } else if (changed && wasLaid && (x != rect.left || y != rect.top)) {
                 view.translationX = (x - rect.left).toFloat()
                 view.translationY = (y - rect.top).toFloat()

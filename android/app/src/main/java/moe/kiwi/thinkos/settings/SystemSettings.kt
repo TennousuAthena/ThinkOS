@@ -3,6 +3,7 @@ package moe.kiwi.thinkos.settings
 import android.util.AtomicFile
 import moe.kiwi.thinkos.core.AttentionTimings
 import moe.kiwi.thinkos.core.ThemeThresholds
+import moe.kiwi.thinkos.media.MediaPolicy
 import moe.kiwi.thinkos.tz.Zones
 import org.json.JSONObject
 import java.io.File
@@ -18,8 +19,11 @@ object SystemSettings {
         const val NIGHT_BELOW = "theme.night_below_lux"
         const val NIGHT_ABOVE = "theme.night_above_lux"
         const val ORIENTATION = "display.orientation"
+        const val UNITS_SYSTEM = "units.system"
+        const val UNITS_WIND = "units.wind"
         const val TILES_LIVE = "tiles.live"
         const val TILES_INTERVAL = "tiles.interval"
+        const val TILES_BACKGROUND = "tiles.background"
         const val CLOCK_MOTION = "motion.clock"
         const val BRIGHTNESS_MAX = "display.brightness_max"
         const val AWAKE_TO_AMBIENT = "attention.awake_to_ambient_s"
@@ -30,7 +34,7 @@ object SystemSettings {
         const val SERVER_TOKEN = "server.token"
         const val KIOSK_LOCK = "kiosk.lock"
         const val NTP_SERVERS = "time.ntp_servers"
-        const val TIME_SYNC_HOUR = "time.sync_hour"
+        const val TIME_SYNC_INTERVAL = "time.sync_interval"
         const val LOCATION_MODE = "location.mode"
         const val LOCATION_NAME = "location.name"
         const val LOCATION_LATITUDE = "location.latitude"
@@ -38,6 +42,15 @@ object SystemSettings {
         const val LOCATION_ELEVATION = "location.elevation"
         const val LOCATION_TIMEZONE = "location.timezone"
         const val LOCATION_SEARCH_URL = "location.search_url"
+        const val MEDIA_PUBLIC_HTTP = "media.public_http"
+        const val MEDIA_KEEP_AWAKE_VIDEO = "media.keep_awake_video"
+        const val MEDIA_BUFFER_S = "media.buffer_s"
+        const val MEDIA_BUFFER_MB = "media.buffer_mb"
+        const val CAST_ENABLED = "cast.enabled"
+        const val CAST_AIRPLAY = "cast.airplay"
+        const val CAST_AIRPLAY_MIRROR = "cast.airplay_mirror"
+        const val CAST_MIRACAST = "cast.miracast"
+        const val CAST_NAME = "cast.name"
     }
 
     fun parse(json: String, sources: OptionSource = AnyOption): SettingsScope {
@@ -84,9 +97,15 @@ class SystemValues(private val store: SettingsStore) {
     /** `auto`, `landscape` or `portrait`. */
     val orientation: String get() = string(SystemSettings.Keys.ORIENTATION)
 
+    /** Measurement units: `metric` or `imperial`, and the wind speed unit (`auto` follows the system). */
+    val units: Units get() = Units(string(SystemSettings.Keys.UNITS_SYSTEM), string(SystemSettings.Keys.UNITS_WIND))
+
     /** `none`, `roll`, `fade`, `drop`, `flip` or `zoom`: how clock digits change. */
     val tilesLive: Boolean get() = bool(SystemSettings.Keys.TILES_LIVE)
     val tilesIntervalMillis: Long get() = (number(SystemSettings.Keys.TILES_INTERVAL) * 1000).toLong()
+
+    /** `indigo`, `teal` or `wine`: the tile page backdrop. */
+    val tilesBackground: String get() = string(SystemSettings.Keys.TILES_BACKGROUND)
 
     val clockMotion: String get() = string(SystemSettings.Keys.CLOCK_MOTION)
 
@@ -99,7 +118,29 @@ class SystemValues(private val store: SettingsStore) {
     val kioskLock: Boolean get() = bool(SystemSettings.Keys.KIOSK_LOCK)
     /** Host names, comma or whitespace separated. */
     val ntpServers: List<String> get() = string(SystemSettings.Keys.NTP_SERVERS).split(',', ' ', '\n').filter { it.isNotBlank() }
-    val timeSyncHour: Int get() = number(SystemSettings.Keys.TIME_SYNC_HOUR).toInt()
+    val timeSyncIntervalMillis: Long get() = (number(SystemSettings.Keys.TIME_SYNC_INTERVAL) * 3_600_000).toLong()
+
+    /** Buffering budget and the cleartext rule for the media channel; read whenever a queue is loaded. */
+    val mediaPolicy: MediaPolicy
+        get() = MediaPolicy(
+            bufferMillis = (number(SystemSettings.Keys.MEDIA_BUFFER_S) * 1000).toInt(),
+            bufferBytes = (number(SystemSettings.Keys.MEDIA_BUFFER_MB) * 1024 * 1024).toInt(),
+            publicCleartext = bool(SystemSettings.Keys.MEDIA_PUBLIC_HTTP),
+        )
+
+    /** Receive casts from phones and computers on the local network (ADR-031). Off until a person turns it on. */
+    val castEnabled: Boolean get() = bool(SystemSettings.Keys.CAST_ENABLED)
+    /** Video from apps on iPhones, iPads and Macs (AirPlay). Off until a person turns it on. */
+    val castAirplay: Boolean get() = bool(SystemSettings.Keys.CAST_AIRPLAY)
+    /** Whole-screen sharing over AirPlay as well as video apps; only means something while [castAirplay] is on. */
+    val castAirplayMirror: Boolean get() = bool(SystemSettings.Keys.CAST_AIRPLAY_MIRROR)
+    /** Screen sharing from Android phones and Windows PCs (Miracast); needs the ThinkOS Cast system module. */
+    val castMiracast: Boolean get() = bool(SystemSettings.Keys.CAST_MIRACAST)
+    /** The name controllers list this device under. */
+    val castName: String get() = string(SystemSettings.Keys.CAST_NAME).trim()
+
+    /** Video playback keeps the display at least awake: a film must not fall into the ambient clock. */
+    val keepAwakeVideo: Boolean get() = bool(SystemSettings.Keys.MEDIA_KEEP_AWAKE_VIDEO)
 }
 
 /** Timezone options are exactly the zones the bundled IANA database knows; aliases normalise to canonical ids. */

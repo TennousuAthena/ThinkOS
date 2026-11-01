@@ -1,5 +1,6 @@
 package moe.kiwi.thinkos.time
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -39,5 +40,15 @@ class SntpClientTest {
         assertNull(SntpClient.parse("s", req, reply(req, t0, t0, header = 0xE4), t0, t0 + 10))
         assertNull(SntpClient.parse("s", req, reply(req, t0, t0, header = 0x23), t0, t0 + 10))
         assertNotNull(SntpClient.parse("s", req, reply(req, t0, t0), t0, t0 + 10))
+    }
+
+    @Test fun theAnchorIsTheMiddleOfTheExchangeOnTheServersClock() {
+        // The system clock is 350 ms slow. The exchange left at system time t0 / monotonic 9_000, took 60 ms.
+        val req = request(t0)
+        val sample = SntpClient.parse("s", req, reply(req, t0 + 350 + 30, t0 + 350 + 31), t0, t0 + 60)!!
+        val anchored = SntpClient.anchored(sample, t0, 9_000, 60)
+        assertEquals(9_030L, anchored.anchorElapsedMillis)
+        // At the middle of the exchange the server read t0 + 380; the system clock t0 + 30.
+        assertTrue(Math.abs(anchored.anchorWallMillis - (t0 + 380)) <= 1)
     }
 }

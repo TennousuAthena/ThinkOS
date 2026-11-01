@@ -19,6 +19,11 @@ interface RenderComponent {
     val animating: Boolean get() = false
     /** Measured native photo captions reserve the bottom band from other stage overlays. */
     val bottomOverlayInset: Int get() = 0
+    /**
+     * A drag that starts at ([x], [y]) in this component's own coordinates belongs to the component (a seek bar):
+     * the stage must not turn it into a page swipe.
+     */
+    fun capturesHorizontalAt(x: Float, y: Float): Boolean = false
     /** Move stationary photo labels without moving the edge-to-edge image viewport. */
     fun burnInOffset(x: Int, y: Int) {}
     fun bind(snapshot: JSONObject, variant: String, strings: (String) -> String?)
@@ -27,8 +32,17 @@ interface RenderComponent {
     fun active(value: Boolean) {}
     /** Native capability tap without taking ownership of the OS's swipe/long-press gestures. */
     fun tap(): Boolean = false
+    /** A finger went down at ([x], [y]) in this component's own coordinates, before it is known to be a tap or a drag. */
+    fun touchDown(x: Float, y: Float) {}
+    /** [tap] for a component that cares where: the tap landed at ([x], [y]) in its own coordinates. */
+    fun tapAt(x: Float, y: Float): Boolean = tap()
     /** OS-owned vertical content browsing; horizontal navigation and long press stay with the stage. */
     fun dragVertical(offset: Float): Boolean = false
+    /**
+     * [dragVertical] for the call that begins a drag: it began at ([x], [y]) in this component's own coordinates. Once a
+     * component has taken the drag, later moves arrive through [dragVertical] alone.
+     */
+    fun dragVerticalFrom(x: Float, y: Float, offset: Float): Boolean = dragVertical(offset)
     fun releaseVertical(offset: Float, velocity: Float) {}
     fun tick(monotonic: Long, attention: Attention) {}
     fun localeChanged() {}

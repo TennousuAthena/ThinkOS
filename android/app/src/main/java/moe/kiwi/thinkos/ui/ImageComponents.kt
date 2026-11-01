@@ -2,6 +2,7 @@ package moe.kiwi.thinkos.ui
 
 import android.content.Context
 import android.animation.ValueAnimator
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Handler
@@ -26,8 +27,23 @@ import java.util.concurrent.Future
 import kotlin.math.abs
 
 /** API 3 factory. Plugins declare data; gestures, pixels and motion remain OS-owned. */
-internal class ImageComponents(private val loader: ImageLoader) {
+internal class ImageComponents(private val loader: ImageLoader, private val authorize: (String, String) -> String? = { _, _ -> null }) {
     private val positions = mutableMapOf<String, String>()
+    private data class Poster(val grant: ImageOwner, val src: String, val width: Int, val height: Int, val bitmap: Bitmap)
+    // Immutable decoded pixels only: no Views, requests or disk leases survive page removal.
+    private val posters = LinkedHashMap<String, Poster>(4, .75f, true)
+    private var posterBytes = 0
+    private fun remember(key: String, grant: ImageOwner, photo: Photo, width: Int, height: Int, bitmap: Bitmap) {
+        posters.remove(key)?.let { posterBytes -= it.bitmap.allocationByteCount }
+        // Mutable library files are refreshed asynchronously when their retained page resumes.
+        if (photo.src.startsWith('/') || photo.src.startsWith("file:")) return
+        if (bitmap.allocationByteCount > 12 * 1024 * 1024) return
+        posters[key] = Poster(grant, photo.src, width, height, bitmap)
+        posterBytes += bitmap.allocationByteCount
+        while (posters.size > 4 || posterBytes > 12 * 1024 * 1024) {
+            posterBytes -= posters.remove(posters.keys.first())!!.bitmap.allocationByteCount
+        }
+    }
     fun create(context: Context, pluginId: String, definition: JSONObject): RenderComponent? =
         if (definition.optString("type") in setOf("image", "carousel")) Picture(context, pluginId, definition) else null
 
@@ -35,6 +51,9 @@ internal class ImageComponents(private val loader: ImageLoader) {
         private val handler = Handler(Looper.getMainLooper())
         private val carousel = definition.optString("type") == "carousel"
         private val key = "$owner:$definition"
+        private val exportAlias = moe.kiwi.thinkos.plugin.PublicData.imageAlias(definition)
+        /** A public export's images load under its provider's grant; nothing else crosses plugins. */
+        private fun authority() = if (exportAlias == null) owner else authorize(owner, exportAlias).orEmpty()
         private val sequence = PhotoSequence().apply { current = positions[key] }
         private val failed = hashSetOf<String>()
         private var grant: ImageOwner? = null
@@ -159,7 +178,7 @@ internal class ImageComponents(private val loader: ImageLoader) {
                 val path = definition.optString("items").removePrefix("{{").removeSuffix("}}").trim()
                 PhotoSequence.parse(Binding.lookup(snapshot, path) as? JSONArray)
             } else text("src", "").takeIf { it.isNotBlank() }?.let { listOf(Photo(it, it)) }.orEmpty()
-            val nextGrant = loader.grant(owner)
+            val nextGrant = loader.grant(authority())
             val revoked = grant !== nextGrant
             val changed = sequence.items.toSet() != source.toSet() || revoked
             grant = nextGrant
@@ -169,27 +188,74 @@ internal class ImageComponents(private val loader: ImageLoader) {
             reconcile()
         }
         private fun settings() = listOf(interval, duration, fit, pan, speed, panDuration, panDirection, transition, caption, captionHold, shuffle)
-        override fun colors(value: Palette) { root.setBackgroundColor(value.bg) }
-        override fun active(value: Boolean) { if (foreground != value) { foreground = value; reconcile() } }
+        override fun colors(value: Palette) { root.setBackgroundColor(Color.BLACK) }
+        override fun active(value: Boolean) {
+            if (foreground == value) return
+            val retained = current != null
+            foreground = value
+            reconcile()
+            if (value && retained && running()) resume()
+        }
         override fun tick(monotonic: Long, attention: Attention) {
             val scale = Settings.Global.getFloat(root.context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f).coerceAtLeast(0f)
             val waking = this.attention == Attention.ASLEEP && attention != Attention.ASLEEP
             val disabled = scale == 0f || !android.animation.ValueAnimator.areAnimatorsEnabled()
             val changed = scale != animateScale || reduced != disabled
             this.attention = attention; animateScale = scale; reduced = disabled
-            if (attention == Attention.ASLEEP) stop()
+            if (attention == Attention.ASLEEP) { pause(); cancelRequest() }
             else if (changed) { stop(); reconcile() }
-            else if (waking) reconcile()
+            else if (waking) { reconcile(); if (running()) resume() }
+            followGrant()
+        }
+        /** A restart or upgrade changes the grant with no state change to bind, and drops requests unanswered. */
+        private fun followGrant() {
+            val next = loader.grant(authority())
+            if (next === grant) return
+            grant = next
+            cancelRequest(); failed.clear()
+            // What is on screen stays until the plugin is back; only new requests need the grant.
+            if (next != null) { reconcile(); if (running()) schedule(incoming ?: current) }
         }
         override fun localeChanged() { stop(); reconcile() }
         private fun scaled(ms: Long) = (ms * animateScale).toLong().coerceAtLeast(1L)
-        private fun running() = foreground && attention != Attention.ASLEEP && root.isAttachedToWindow && root.windowVisibility == View.VISIBLE && root.width > 0 && root.height > 0
-        private fun reconcile() { if (!running()) stop() else if (shown == null && pending == null) sequence.selected()?.let(::load) }
+        // Attached previews may decode a still image; only the selected page advances or pans.
+        private fun drawable() = root.isAttachedToWindow && root.windowVisibility == View.VISIBLE && root.width > 0 && root.height > 0
+        private fun readable() = drawable() && attention != Attention.ASLEEP
+        private fun running() = foreground && readable()
+        private fun reconcile() {
+            if (!drawable()) { stop(); return }
+            if (!readable()) { pause(); cancelRequest(); return }
+            if (!foreground) pause()
+            if (shown == null && pending == null) sequence.selected()?.let(::load)
+        }
+        private fun resume() {
+            handler.removeCallbacks(finish)
+            discardBrowse(true); cleanRetired()
+            showCaption()
+            val layer = incoming ?: current
+            (incoming ?: current?.takeIf { it.view.alpha < 1f })?.let {
+                val length = if (incoming != null) duration else Motion.NUMBER
+                val remaining = (length * (1f - it.view.alpha).coerceIn(0f, 1f)).toLong()
+                if (reduced || remaining == 0L) {
+                    it.view.alpha = 1f; it.view.translationX = 0f; it.view.scaleX = 1f; it.view.scaleY = 1f
+                    finish.run()
+                } else {
+                    reveal(it, remaining)
+                    handler.postDelayed(finish, scaled(remaining))
+                }
+            }
+            layer?.let { startPan(it); schedule(it) }
+            shown?.takeIf { it.src.startsWith('/') || it.src.startsWith("file:") }?.let(::load)
+        }
+        private fun reveal(layer: Layer, millis: Long) {
+            layer.view.animate().alpha(1f).translationX(0f).scaleX(1f).scaleY(1f)
+                .setDuration(millis).setInterpolator(Motion.EASE).start()
+        }
         private fun cancelRequest() { serial++; pending?.cancel(true); pending = null }
         private fun request(photo: Photo, success: (LoadedImage) -> Unit, failure: () -> Unit) {
             val token = ++serial
-            pending = loader.load(owner, photo.src, root.width, root.height) { result ->
-                if (token != serial || !running()) { result.getOrNull()?.close(); return@load }
+            pending = loader.load(authority(), photo.src, root.width, root.height) { result ->
+                if (token != serial || !readable()) { result.getOrNull()?.close(); return@load }
                 pending = null
                 result.fold(success, { error ->
                     failed += photo.id
@@ -206,11 +272,17 @@ internal class ImageComponents(private val loader: ImageLoader) {
             load(next)
         }
         private fun load(photo: Photo) {
-            request(photo, { decoded ->
+            fun display(decoded: LoadedImage, cached: Boolean = false) {
                 handler.removeCallbacks(finish); finish.run(); cleanRetired()
                 val layer = createLayer(decoded)
-                select(photo)
-                if (current == null) current = layer else {
+                select(photo, layer)
+                if (current == null) {
+                    current = layer
+                    if (!cached && running() && root.isShown && !reduced && ValueAnimator.areAnimatorsEnabled()) {
+                        layer.view.alpha = 0f
+                        reveal(layer, Motion.NUMBER)
+                    }
+                } else {
                     incoming = layer
                     val type = if (reduced) "fade" else if (transition == "random") listOf("fade", "slide", "zoom").random() else transition
                     val ms = if (reduced) 0L else duration
@@ -220,8 +292,13 @@ internal class ImageComponents(private val loader: ImageLoader) {
                     layer.view.animate().alpha(1f).translationX(0f).scaleX(1f).scaleY(1f).setDuration(ms).setInterpolator(Motion.EASE).start()
                     handler.postDelayed(finish, scaled(ms))
                 }
-                startPan(layer); schedule(layer)
-            }, { sequence.next(failed)?.let(::load) })
+                if (running()) { startPan(layer); schedule(layer) }
+            }
+            val poster = posters[key]?.takeIf {
+                it.grant === grant && it.src == photo.src && it.width == root.width && it.height == root.height
+            }
+            if (current == null && poster != null) display(LoadedImage(poster.bitmap), true)
+            else request(photo, { display(it) }, { sequence.next(failed)?.let(::load) })
         }
         private fun rtl() = android.text.TextUtils.getLayoutDirectionFromLocale(java.util.Locale.getDefault()) == View.LAYOUT_DIRECTION_RTL
         private fun createLayer(asset: LoadedImage): Layer {
@@ -242,7 +319,13 @@ internal class ImageComponents(private val loader: ImageLoader) {
             }
             return Layer(view, image, frame, asset).also { layers += it; addLayer(view) }
         }
-        private fun addLayer(view: View) { root.addView(view, root.indexOfChild(captionBlock), FrameLayout.LayoutParams(-1, -1)) }
+        private fun addLayer(view: View) {
+            root.addView(view, root.indexOfChild(captionBlock), FrameLayout.LayoutParams(-1, -1))
+            // A poster can arrive from onSizeChanged, inside layout: unmeasured, this layer would keep a 0x0 frame.
+            view.measure(View.MeasureSpec.makeMeasureSpec(root.width, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(root.height, View.MeasureSpec.EXACTLY))
+            view.layout(0, 0, root.width, root.height)
+        }
         private fun startPan(layer: Layer) {
             stopPan(); panLayer = layer
             fun leg(frame: ImageGeometry.Frame) {
@@ -266,11 +349,12 @@ internal class ImageComponents(private val loader: ImageLoader) {
         }
         private fun schedule(layer: Layer?) {
             handler.removeCallbacks(advance)
-            if (carousel && sequence.items.size > 1 && layer != null && browse == null)
+            if (running() && carousel && sequence.items.size > 1 && layer != null && browse == null)
                 handler.postDelayed(advance, maxOf(interval, scaled(layer.frame.dwellMillis)) + if (incoming != null) scaled(duration) else 0L)
         }
-        private fun select(photo: Photo) {
+        private fun select(photo: Photo, layer: Layer) {
             sequence.current = photo.id; positions[key] = photo.id; shown = photo
+            grant?.let { remember(key, it, photo, root.width, root.height, layer.asset.bitmap) }
             root.contentDescription = photo.title.takeIf(String::isNotBlank)
             showCaption(revealNext); revealNext = false
             if (moe.kiwi.thinkos.BuildConfig.DEBUG) android.util.Log.d("ThinkOS", "[image:$owner] displayed ${photo.id}")
@@ -285,7 +369,7 @@ internal class ImageComponents(private val loader: ImageLoader) {
             }
             captionView.visibility = if (carousel && caption != "off" && (caption == "auto" || tapped) && captionView.text.isNotEmpty()) View.VISIBLE else View.GONE
             captionView.alpha = 1f
-            if (captionView.visibility == View.VISIBLE) handler.postDelayed(hideCaption, captionHold)
+            if (running() && captionView.visibility == View.VISIBLE) handler.postDelayed(hideCaption, captionHold)
         }
 
         override fun dragVertical(offset: Float): Boolean {
@@ -410,7 +494,7 @@ internal class ImageComponents(private val loader: ImageLoader) {
             if (session.commit && layer != null && target != null) {
                 current?.let(::removeLayer)
                 current = layer; layer.view.translationY = 0f
-                select(target); showCaption(true); startPan(layer)
+                select(target, layer); showCaption(true); startPan(layer)
             } else {
                 current?.view?.translationY = 0f
                 layer?.let(::removeLayer)
@@ -441,6 +525,13 @@ internal class ImageComponents(private val loader: ImageLoader) {
                 if (browse?.released != true && incoming == null) { cancelBrowse(false); failed.clear(); revealNext = true; showNext() }
             }
             return true
+        }
+        /** Losing selection pauses work; the on-screen frame belongs to the exit transition. */
+        private fun pause() {
+            if (shown != null) cancelRequest()
+            cancelSettling(); stopPan(); handler.removeCallbacksAndMessages(null)
+            layers.forEach { it.view.animate().cancel() }
+            captionView.animate().cancel()
         }
         private fun stop() {
             cancelRequest(); cancelSettling(); stopPan(); handler.removeCallbacksAndMessages(null)

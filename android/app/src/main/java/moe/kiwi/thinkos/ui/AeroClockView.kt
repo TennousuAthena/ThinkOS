@@ -13,6 +13,7 @@ import android.view.animation.LinearInterpolator
 import android.widget.TextView
 import kotlin.math.cos
 import kotlin.math.sin
+import moe.kiwi.thinkos.anim.ClockTicker
 import moe.kiwi.thinkos.core.Attention
 import moe.kiwi.thinkos.core.WallClock
 import moe.kiwi.thinkos.tz.ZoneFormat
@@ -23,7 +24,7 @@ import org.json.JSONObject
  * Aero's smooth analogue gadget. Dial and hands are recorded once; RenderThread rotates real
  * visible hands, without redrawing a window or polling the UI at 60fps.
  */
-internal class AeroClockView(context: Context) : ViewGroup(context), RenderComponent {
+internal class AeroClockView(context: Context) : ViewGroup(context), RenderComponent, ClockTicker.Listener {
     override val view: View
         get() = this
 
@@ -132,12 +133,21 @@ internal class AeroClockView(context: Context) : ViewGroup(context), RenderCompo
         hands.forEach { it.animate().cancel() }
     }
 
+    override val periodMillis: Long get() = 1_000L
+
+    /** The heartbeat reached a second boundary: the hands start their next second from exactly here. */
+    override fun onTick(wall: Long) = update(wall)
+
+    /** The stage's own tick: it learns of attention changes and catches a second the heartbeat missed. */
     override fun tick(monotonic: Long, attention: Attention) {
         if (this.attention != attention) {
             this.attention = attention
             lastSecond = -1
         }
-        val wall = WallClock.now()
+        update(WallClock.now())
+    }
+
+    private fun update(wall: Long) {
         if (wall / 1000 == lastSecond) return
         lastSecond = wall / 1000
         val synced = wall >= 1_577_836_800_000L
@@ -179,7 +189,14 @@ internal class AeroClockView(context: Context) : ViewGroup(context), RenderCompo
         contentDescription = ZoneFormat.format("@timeSeconds", wall, zone)
     }
 
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        lastSecond = -1
+        ClockTicker.add(this)
+    }
+
     override fun onDetachedFromWindow() {
+        ClockTicker.remove(this)
         stop()
         super.onDetachedFromWindow()
     }

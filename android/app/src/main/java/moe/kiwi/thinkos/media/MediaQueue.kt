@@ -1,49 +1,6 @@
 package moe.kiwi.thinkos.media
 
-import java.net.URI
 import kotlin.random.Random
-
-/** One playback item. Disk and network IO are deliberately absent from validation. */
-data class MediaEntry(
-    val url: String,
-    val title: String = "",
-    val artist: String = "",
-    val album: String = "",
-    val art: String = "",
-    val kind: String = "audio",
-    val mimeType: String? = null,
-) {
-    init {
-        require(url.isNotBlank() && url.length <= 8192) { "Invalid media URL" }
-        require(kind in setOf("audio", "video")) { "Media kind must be audio or video" }
-        require(listOf(title, artist, album).all { it.length <= 2048 } && art.length <= 8192) { "Media metadata too large" }
-        require(mimeType == null || mimeType.length <= 128 &&
-            (mimeType.startsWith("audio/") || mimeType.startsWith("video/"))) { "Invalid media MIME type" }
-        val uri = URI(normalizedUrl)
-        require(uri.userInfo == null && uri.fragment == null) { "Media URL cannot contain credentials or a fragment" }
-        when (uri.scheme) {
-            "http", "https" -> require(!uri.host.isNullOrBlank() && (uri.port == -1 || uri.port in 1..65535)) { "Invalid media HTTP URL" }
-            "file" -> require(uri.host.isNullOrEmpty() || uri.host == "localhost") { "Remote file URLs are not supported" }
-            "content" -> require(!uri.authority.isNullOrBlank()) { "Invalid content URL" }
-            else -> throw IllegalArgumentException("Media URL must be HTTP(S), file, content or an absolute path")
-        }
-        if (uri.scheme in setOf("file", "content")) require(uri.path?.startsWith('/') == true) { "Invalid media file path" }
-    }
-
-    /** Convert an absolute local path without probing the filesystem on the UI thread. */
-    val normalizedUrl: String get() = if (url.startsWith('/')) URI("file", null, url, null).toASCIIString() else url
-
-    companion object {
-        fun fromMap(value: Map<*, *>): MediaEntry {
-            fun string(key: String, default: String = ""): String =
-                value[key]?.let { require(it is String) { "media.$key must be a string" }; it } ?: default
-            return MediaEntry(string("url"), string("title"), string("artist"), string("album"),
-                string("art"), string("kind", "audio"), value["mime"]?.let {
-                    require(it is String) { "media.mime must be a string" }; it
-                })
-        }
-    }
-}
 
 enum class MediaRepeat(val id: String) {
     OFF("off"), ONE("one"), ALL("all");
@@ -61,8 +18,13 @@ data class MediaOptions(
     val autoplay: Boolean = true,
     /** Null preserves the device's existing media gain. */
     val volume: Float? = null,
+    /** Where the first item starts, in milliseconds; 0 means its default position (the live edge for live streams). */
+    val start: Long = 0,
 ) {
-    init { require(volume == null || volume.isFinite() && volume in 0f..1f) { "Media volume must be 0..1" } }
+    init {
+        require(volume == null || volume.isFinite() && volume in 0f..1f) { "Media volume must be 0..1" }
+        require(start >= 0) { "Media start position cannot be negative" }
+    }
 }
 
 /**
@@ -107,6 +69,12 @@ class MediaQueue(private val random: Random = Random.Default) {
         repeat = MediaRepeat.OFF
     }
 
+    /** Make the item at Lua position [index] (1 based, original order) current; the playback order is kept. */
+    fun select(index: Int) {
+        require(index in 1..count) { "Media index out of range" }
+        playerIndex = order.indexOf(index - 1)
+    }
+
     fun selectPlayerIndex(index: Int) {
         require(index in order.indices) { "Player index out of range" }
         playerIndex = index
@@ -147,8 +115,16 @@ class MediaQueue(private val random: Random = Random.Default) {
     companion object {
         /** Hard memory budget, not a user preference. */
         const val MAX_ITEMS = 512
+        /**
+         * ExoPlayer prepares every item of a queue at once, and an HLS or DASH item fetches its manifest when prepared.
+         * A list of hundreds of channels must be played one at a time, not queued.
+         */
+        const val MAX_ADAPTIVE = 16
         fun validate(items: List<MediaEntry>, options: MediaOptions) {
             require(items.isNotEmpty() && items.size <= MAX_ITEMS) { "Media queue must contain 1..$MAX_ITEMS items" }
+            require(items.count { it.effectiveType == MediaSourceType.HLS || it.effectiveType == MediaSourceType.DASH } <= MAX_ADAPTIVE) {
+                "A queue holds at most $MAX_ADAPTIVE HLS or DASH items; load a channel list one item at a time"
+            }
             require(options.index in 1..items.size) { "Media index out of range" }
         }
     }

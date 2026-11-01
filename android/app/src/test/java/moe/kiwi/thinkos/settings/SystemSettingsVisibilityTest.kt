@@ -17,7 +17,7 @@ class SystemSettingsVisibilityTest {
     @Test fun theDeviceListsOnlyWhatAPersonWouldChange() {
         // A set: org.json on the JVM does not keep key order (Android's does), and order is not the point here.
         assertEquals(
-            setOf("theme.mode", "theme.night", "display.orientation", "motion.clock", "display.brightness_max", "server.url", "server.token", "location.name", "kiosk.lock", "tiles.live", "tiles.interval"),
+            setOf("theme.mode", "theme.night", "display.orientation", "motion.clock", "display.brightness_max", "units.system", "units.wind", "server.url", "server.token", "location.name", "kiosk.lock", "tiles.live", "tiles.interval", "tiles.background", "media.public_http", "cast.enabled", "cast.airplay", "cast.airplay_mirror", "cast.miracast", "cast.name", "media.keep_awake_video"),
             scope.visibleFields.map { it.key }.toSet())
     }
 
@@ -29,7 +29,7 @@ class SystemSettingsVisibilityTest {
     @Test fun tuningAndCoordinatesAreHiddenYetServerDeliverable() {
         val hidden = listOf("theme.dark_below_lux", "theme.light_above_lux", "theme.night_below_lux", "theme.night_above_lux",
             "attention.awake_to_ambient_s", "attention.to_asleep_s", "attention.engaged_idle_s", "attention.ambient_page_after_s",
-            "location.mode", "location.latitude", "location.longitude", "location.elevation", "location.timezone", "location.search_url", "time.ntp_servers", "time.sync_hour")
+            "location.mode", "location.latitude", "location.longitude", "location.elevation", "location.timezone", "location.search_url", "time.ntp_servers", "time.sync_interval", "media.buffer_s", "media.buffer_mb")
         hidden.forEach { assertTrue("$it should be hidden", scope.fields.getValue(it).hidden) }
 
         val store = SettingsStore(object : SettingsPersistence {

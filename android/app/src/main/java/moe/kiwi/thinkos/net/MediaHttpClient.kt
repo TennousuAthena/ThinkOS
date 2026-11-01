@@ -14,8 +14,9 @@ import java.util.concurrent.TimeUnit
 
 /** The media HTTP stack obeys the same cleartext/private-address gate as [PluginHttp]. */
 internal object MediaHttpClient {
-    fun create(resolver: Dns = Dns.SYSTEM): OkHttpClient {
-        val dns = RequestDns(resolver)
+    /** [allowPublicCleartext] is the system `media.public_http` setting, read on every connection. */
+    fun create(resolver: Dns = Dns.SYSTEM, allowPublicCleartext: () -> Boolean = { false }): OkHttpClient {
+        val dns = RequestDns(resolver, allowPublicCleartext)
         return OkHttpClient.Builder()
             .dns(dns)
             // A configured device proxy must not bypass our actual-origin socket-address check.
@@ -27,21 +28,25 @@ internal object MediaHttpClient {
             .addInterceptor(Redirects(dns))
             .addNetworkInterceptor { chain ->
                 val request = chain.request()
-                validateConnected(request.url.toUri(), chain.connection()?.socket()?.inetAddress)
+                validateConnected(request.url.toUri(), chain.connection()?.socket()?.inetAddress, allowPublicCleartext)
                 chain.proceed(request)
             }
             .build()
     }
 
-    internal fun validateConnected(uri: URI, address: InetAddress?) {
+    internal fun validateConnected(uri: URI, address: InetAddress?, allowPublic: () -> Boolean = { false }) {
         ioPolicy {
             LocalNetworkPolicy.validate(uri)
             if (uri.scheme == "http") {
                 require(address != null) { "Cleartext connection has no resolved address" }
-                LocalNetworkPolicy.requirePrivate(arrayOf(address))
+                if (!allowPublic()) LocalNetworkPolicy.requirePrivate(arrayOf(address))
             }
         }
     }
+
+    /** Framing and content negotiation headers, `Referer` and the like; anything else may carry a token. */
+    private val PORTABLE_ON_REDIRECT = setOf("host", "user-agent", "accept", "accept-encoding", "accept-language", "range", "if-range",
+        "referer", "origin", "connection", "content-length", "content-type")
 
     internal fun redirect(request: Request, response: Response, number: Int): Request? {
         if (response.code !in setOf(301, 302, 303, 307, 308)) return null
@@ -54,7 +59,8 @@ internal object MediaHttpClient {
         }
         val builder = request.newBuilder().url(next)
         if (request.url.scheme != next.scheme || request.url.host != next.host || request.url.port != next.port) {
-            builder.removeHeader("Authorization").removeHeader("Cookie")
+            // Another origin gets the request line and the harmless headers, never anything that could be a credential.
+            request.headers.names().filter { it.lowercase() !in PORTABLE_ON_REDIRECT }.forEach { builder.removeHeader(it) }
         }
         if (response.code == 303 || response.code in setOf(301, 302) && request.method == "POST") {
             builder.method("GET", null).removeHeader("Content-Length").removeHeader("Content-Type")
@@ -67,7 +73,7 @@ internal object MediaHttpClient {
      * redirects are disabled: each hop gets a new scheme-aware scope and address validation.
      * Connection reuse still goes through the network interceptor's actual peer-address gate.
      */
-    internal class RequestDns(private val resolver: Dns) : Dns {
+    internal class RequestDns(private val resolver: Dns, private val allowPublic: () -> Boolean = { false }) : Dns {
         private data class Scope(val host: String, val cleartext: Boolean, var addresses: List<InetAddress>? = null)
         private val current = ThreadLocal<Scope?>()
 
@@ -89,7 +95,7 @@ internal object MediaHttpClient {
             val scope = current.get()?.takeIf { it.host.equals(hostname, ignoreCase = true) }
             scope?.addresses?.let { return it }
             val addresses = resolver.lookup(hostname)
-            if (scope?.cleartext == true) ioPolicy { LocalNetworkPolicy.requirePrivate(addresses.toTypedArray()) }
+            if (scope?.cleartext == true && !allowPublic()) ioPolicy { LocalNetworkPolicy.requirePrivate(addresses.toTypedArray()) }
             if (scope != null) scope.addresses = addresses.toList()
             return addresses
         }

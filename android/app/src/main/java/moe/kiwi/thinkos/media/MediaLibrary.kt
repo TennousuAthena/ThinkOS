@@ -72,9 +72,12 @@ class MediaLibrary(context: Context) {
 internal enum class LibraryKind(val id: String, val folder: String, val extensions: Map<String, String>) {
     AUDIO("audio", "Music", mapOf("mp3" to "audio/mpeg", "flac" to "audio/flac", "ogg" to "audio/ogg",
         "oga" to "audio/ogg", "opus" to "audio/ogg", "m4a" to "audio/mp4", "aac" to "audio/aac",
-        "wav" to "audio/wav", "amr" to "audio/amr")),
+        "wav" to "audio/wav", "amr" to "audio/amr", "mka" to "audio/x-matroska", "ac3" to "audio/ac3",
+        "eac3" to "audio/eac3", "dts" to "audio/vnd.dts")),
     VIDEO("video", "Movies", mapOf("mp4" to "video/mp4", "m4v" to "video/mp4", "3gp" to "video/3gpp",
-        "webm" to "video/webm", "mkv" to "video/x-matroska", "ts" to "video/mp2t")),
+        "webm" to "video/webm", "mkv" to "video/x-matroska", "ts" to "video/mp2t", "mov" to "video/quicktime",
+        "avi" to "video/x-msvideo", "flv" to "video/x-flv", "mpg" to "video/mpeg", "mpeg" to "video/mpeg",
+        "vob" to "video/mpeg")),
     IMAGE("image", "Pictures", mapOf("jpg" to "image/jpeg", "jpeg" to "image/jpeg", "png" to "image/png",
         "webp" to "image/webp", "gif" to "image/gif", "bmp" to "image/bmp"));
 }
@@ -364,7 +367,10 @@ private class AndroidLibraryMetadata(private val access: LibraryAccess) {
             } else {
                 val retriever = MediaMetadataRetriever()
                 try {
-                    retriever.setDataSource(descriptor.fileDescriptor)
+                    // The platform parser does not know every container the player does (AVI, FLV, MPEG-PS...).
+                    // Such a file is still listed by its extension; the player says so itself if it cannot play it.
+                    try { retriever.setDataSource(descriptor.fileDescriptor) }
+                    catch (_: RuntimeException) { return@use LibraryMetadata(mime = fallbackMime) }
                     LibraryCancellation.check()
                     fun text(key: Int): String? {
                         LibraryCancellation.check()

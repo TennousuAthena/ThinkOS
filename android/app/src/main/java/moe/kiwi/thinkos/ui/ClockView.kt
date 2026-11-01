@@ -5,7 +5,10 @@ import android.content.Context
 import android.graphics.*
 import android.os.SystemClock
 import android.view.View
+import moe.kiwi.thinkos.BuildConfig
 import moe.kiwi.thinkos.R
+import moe.kiwi.thinkos.anim.ClockStats
+import moe.kiwi.thinkos.anim.ClockTicker
 import moe.kiwi.thinkos.anim.Motion
 import moe.kiwi.thinkos.anim.MotionPrefs
 import moe.kiwi.thinkos.anim.PropertyBreath
@@ -28,7 +31,7 @@ data class ClockZone(val id: String, val label: String? = null)
  * saving is right even where the ROM's is stale), text follows the system locale and 12/24-hour setting,
  * and city names come from the platform's CLDR data. Plugins choose a style, a format and the zones.
  */
-class ClockView(context: Context, private val declaration: JSONObject, private val compact: Boolean) : View(context) {
+class ClockView(context: Context, private val declaration: JSONObject, private val compact: Boolean) : View(context), ClockTicker.Listener {
     var palette = Palette.DARK
         set(value) { if (field != value) { field = value; dialTint.colorFilter = PorterDuffColorFilter(value.secondary, PorterDuff.Mode.SRC_IN); invalidate() } }
     var clockStyle = "digital"
@@ -90,15 +93,29 @@ class ClockView(context: Context, private val declaration: JSONObject, private v
         invalidate()
     }
 
+    /** How often what this face shows changes. */
+    override val periodMillis: Long get() = when {
+        attention == Attention.ASLEEP -> 60_000L
+        clockStyle == "analog" || clockStyle == "float" -> 1_000L
+        layout.second != null -> 1_000L
+        else -> 60_000L
+    }
+
+    /** The heartbeat reached a boundary: [wall] is the time the frame being recorded is shown at. */
+    override fun onTick(wall: Long) = showTime(wall)
+
+    /** The stage's own tick. The heartbeat normally got there first; this only catches a face it missed. */
     fun tick(monotonic: Long, level: Attention) {
+        val moved = level != attention
         attention = level
-        val wall = WallClock.now()
-        val interval = when {
-            level == Attention.ASLEEP -> 60_000L
-            clockStyle == "analog" || clockStyle == "float" -> 1_000L
-            layout.second != null -> 1_000L
-            else -> 60_000L
-        }
+        if (moved) ClockTicker.rearm()
+        showTime(WallClock.now())
+        updatePulse()
+    }
+
+    private fun showTime(wall: Long) {
+        val level = attention
+        val interval = periodMillis
         val bucket = wall / interval
         if (bucket != lastBucket) {
             val first = lastBucket < 0L
@@ -119,7 +136,6 @@ class ClockView(context: Context, private val declaration: JSONObject, private v
             if (changed || first) contentDescription = if (synced) ZoneFormat.format("@time", wall, home) else "--:--"
             if (first || changed || clockStyle in setOf("analog", "solar", "world", "float")) invalidate()
         }
-        updatePulse()
     }
 
     private fun updatePulse() {
@@ -130,13 +146,21 @@ class ClockView(context: Context, private val declaration: JSONObject, private v
             alpha = 1f
         }
     }
-    override fun onAttachedToWindow() { super.onAttachedToWindow(); updatePulse() }
-    override fun onDetachedFromWindow() { pulse.stop(); super.onDetachedFromWindow() }
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        // Whatever this face showed while away is old: take the time now, then follow the heartbeat.
+        lastBucket = -1
+        showTime(WallClock.now())
+        ClockTicker.add(this)
+        updatePulse()
+    }
+    override fun onDetachedFromWindow() { ClockTicker.remove(this); pulse.stop(); super.onDetachedFromWindow() }
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) { dialCache = null }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (width == 0 || height == 0) return
+        if (BuildConfig.DEBUG && lastBucket >= 0) ClockStats.drawn(System.identityHashCode(this), periodMillis, lastBucket)
         paint.color = palette.primary
         if (now < SYNCED_AFTER && clockStyle != "float") { text(canvas, "--:--", width / 2f, height / 2f, min(width * .25f, height * .5f)); return }
         when (clockStyle) {
@@ -300,7 +324,12 @@ class ClockView(context: Context, private val declaration: JSONObject, private v
         val cy = height * .40f
         val r = min(width * .35f, height * .30f)
         daylight.draw(canvas, cx, cy, r, sun, now, palette, dp)
-        text(canvas, parts.main, cx, cy, min(width * .22f, height * .21f))
+        // The time sits inside the ring: with seconds it is far wider than HH:MM, so size it to the ring's inner width.
+        val inside = (2 * r - 44 * dp).coerceAtLeast(0f)
+        paint.textSize = min(width * .22f, height * .21f)
+        val fit = paint.measureText(parts.main)
+        val size = if (fit > inside && fit > 0f) paint.textSize * inside / fit else paint.textSize
+        text(canvas, parts.main, cx, cy, size, maxWidth = inside)
         val zone = Zones.clock(sun?.optString("timezone"))
         fun event(key: String) = (sun?.opt(key) as? Number)?.toLong()?.let { ZoneFormat.format("@time", it, zone) } ?: "—"
         text(canvas, "↑ ${event("sunrise")}     ↓ ${event("sunset")}", cx, height * .83f,

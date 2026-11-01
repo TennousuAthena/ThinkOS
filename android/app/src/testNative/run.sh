@@ -10,6 +10,8 @@ clang -O2 -I"$JAVA_TEST_HOME/include" -I"$JAVA_TEST_HOME/include/darwin" -I"$CPP
 "$TEST_TEMP/budget-test"
 clang -O2 -I"$JAVA_TEST_HOME/include" -I"$JAVA_TEST_HOME/include/darwin" -I"$CPP_DIR/lua" "$TEST_DIR/weather_test.c" $LUA_SOURCES "$CPP_DIR/json/yyjson.c" -lm -o "$TEST_TEMP/weather-test"
 "$TEST_TEMP/weather-test" "$TEST_DIR/../../../../tools/tests/weather_test.lua" "$TEST_DIR/../../../../plugins/weather/main.lua" "$TEST_DIR/../../../../plugins/weather/forecast.lua" "$TEST_DIR/../../../../plugins/weather/codes.lua" "$TEST_DIR/../../../../tools/tests/fixtures/weather/forecast.json" "$TEST_DIR/../../../../plugins/weather/manifest.json" "$TEST_DIR/../../../../plugins/weather/i18n/en.json"
+clang -O2 -I"$JAVA_TEST_HOME/include" -I"$JAVA_TEST_HOME/include/darwin" -I"$CPP_DIR/lua" "$TEST_DIR/player_test.c" $LUA_SOURCES "$CPP_DIR/json/yyjson.c" -lm -o "$TEST_TEMP/player-test"
+"$TEST_TEMP/player-test" "$TEST_DIR/../../../../tools/tests/player_test.lua" "$TEST_DIR/../../../../plugins/player/main.lua" "$TEST_DIR/../../../../plugins/player/m3u.lua" "$TEST_DIR/../../../../plugins/player/library.lua" "$TEST_DIR/../../../../plugins/player/manifest.json" "$TEST_DIR/../../../../plugins/player/i18n/en.json"
 clang -O2 -I"$CPP_DIR/lua" "$CPP_DIR/lua/lua.c" "$TEST_DIR/feedback_cli.c" $LUA_SOURCES -lm -o "$TEST_TEMP/lua"
 "$TEST_TEMP/lua" "$TEST_DIR/../../../../tools/tests/settings_feedback_test.lua" "$TEST_DIR/../../../../plugins/settings/main.lua"
 "$TEST_TEMP/lua" "$TEST_DIR/../../../../tools/tests/gallery_test.lua" "$TEST_DIR/../../../../plugins/gallery/main.lua"

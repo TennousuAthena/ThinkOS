@@ -5,38 +5,80 @@ import kotlin.math.floor
 
 /** Integer geometry shared by native renderers; independent of Android so edge cases run on JVM. */
 object RenderGeometry {
+    /**
+     * The fixed tile grid: 8x6 landscape, 6x8 portrait. The cell size is limited by the short axis, and the
+     * grid is anchored to the far end of the long axis so the remainder becomes a title rail (left in LTR
+     * landscape, top in portrait). Every metric is derived here so placement and the title share it.
+     */
+    class TileGrid(val cols: Int, val rows: Int, val cell: Int, val gap: Int, val edge: Int, val left: Int, val top: Int,
+        val width: Int, val height: Int, val landscape: Boolean) {
+        val gridWidth get() = cols * cell + (cols - 1) * gap
+        val gridHeight get() = rows * cell + (rows - 1) * gap
+    }
+    private fun dp(value: Double, density: Float): Int {
+        val d = density.takeIf { it.isFinite() && it > 0 } ?: 1f
+        return (value * d).coerceAtMost(Int.MAX_VALUE.toDouble()).toInt()
+    }
+    fun tileGrid(width: Int, height: Int, density: Float): TileGrid? {
+        if (width <= 0 || height <= 0) return null
+        val landscape = width > height
+        val cols = if (landscape) 8 else 6
+        val rows = if (landscape) 6 else 8
+        val edge = minOf(dp(20.0, density), width / 2, height / 2)
+        val gap = minOf(dp(8.0, density), (width - edge * 2) / (cols - 1), (height - edge * 2) / (rows - 1))
+        val long = if (landscape) width else height
+        val shortAxis = if (landscape) height else width
+        val longCount = if (landscape) cols else rows
+        val shortCount = if (landscape) rows else cols
+        val rail = minOf(dp(112.0, density), long / 4)
+        val usableShort = shortAxis - edge * 2 - gap * (shortCount - 1)
+        val usableLong = long - edge * 2 - gap * (longCount - 1) - rail
+        if (usableShort < shortCount || usableLong < longCount) return null
+        val cell = minOf(usableShort / shortCount, usableLong / longCount)
+        val gridW = cols * cell + (cols - 1) * gap
+        val gridH = rows * cell + (rows - 1) * gap
+        // Far end on the long axis, centred on the short one.
+        val left = if (landscape) width - edge - gridW else (width - gridW) / 2
+        val top = if (landscape) (height - gridH) / 2 else height - edge - gridH
+        return TileGrid(cols, rows, cell, gap, edge, left, top, width, height, landscape)
+    }
     /** First fit in declaration order. Missing boxes retain their input index (dropped tiles). */
     fun tiles(sizes: List<String>, width: Int, height: Int, density: Float, rtl: Boolean = false): List<Box?> {
-        if (width <= 0 || height <= 0) return sizes.map { null }
-        val cols = if (width > height) 6 else 4
-        val rows = if (width > height) 4 else 6
-        val d = density.takeIf { it.isFinite() && it > 0 } ?: 1f
-        val edge = minOf((20.0 * d).coerceAtMost(Int.MAX_VALUE.toDouble()).toInt(), width / 2, height / 2)
-        val gap = minOf((8.0 * d).coerceAtMost(Int.MAX_VALUE.toDouble()).toInt(),
-            (width - edge * 2) / (cols - 1), (height - edge * 2) / (rows - 1))
-        val usableW = width - edge * 2 - gap * (cols - 1)
-        val usableH = height - edge * 2 - gap * (rows - 1)
-        if (usableW < cols || usableH < rows) return sizes.map { null }
-        val cell = minOf(usableW / cols, usableH / rows)
-        val occupied = Array(rows) { BooleanArray(cols) }
+        val grid = tileGrid(width, height, density) ?: return sizes.map { null }
+        val cell = grid.cell; val gap = grid.gap
+        val occupied = Array(grid.rows) { BooleanArray(grid.cols) }
         return sizes.map { size ->
             val (cw, ch) = when (size) {
                 "small" -> 1 to 1; "medium" -> 2 to 2; "wide" -> 4 to 2; "large" -> 4 to 4
                 else -> 0 to 0
             }
             var box: Box? = null
-            if (cw > 0) search@ for (y in 0..rows - ch) for (x in 0..cols - cw) {
+            if (cw > 0) search@ for (y in 0..grid.rows - ch) for (x in 0..grid.cols - cw) {
                 if ((y until y + ch).any { row -> (x until x + cw).any { occupied[row][it] } }) continue
                 for (row in y until y + ch) for (col in x until x + cw) occupied[row][col] = true
-                val left = edge + cell * x + gap * x
-                val right = edge + cell * (x + cw) + gap * (x + cw - 1)
-                val top = edge + cell * y + gap * y
-                val bottom = edge + cell * (y + ch) + gap * (y + ch - 1)
+                val left = grid.left + cell * x + gap * x
+                val right = grid.left + cell * (x + cw) + gap * (x + cw - 1)
+                val top = grid.top + cell * y + gap * y
+                val bottom = grid.top + cell * (y + ch) + gap * (y + ch - 1)
                 box = if (rtl) Box(width - right, top, width - left, bottom) else Box(left, top, right, bottom)
                 break@search
             }
             box
         }
+    }
+    /** The page title beside (landscape) or above (portrait) the grid; null when the rail is too small. */
+    fun tileTitle(width: Int, height: Int, density: Float, rtl: Boolean = false): Box? {
+        val grid = tileGrid(width, height, density) ?: return null
+        val edge = grid.edge
+        val box = if (grid.landscape) {
+            val right = grid.left - edge
+            Box(edge, edge, right, edge + minOf(dp(72.0, density), height - 2 * edge))
+        } else {
+            val bottom = grid.top - grid.gap
+            Box(edge, edge, width - edge, edge + minOf(dp(72.0, density), bottom - edge))
+        }
+        if (box.width < dp(64.0, density) || box.height < dp(40.0, density)) return null
+        return if (rtl) Box(width - box.right, box.top, width - box.left, box.bottom) else box
     }
     /** Fixed photo-clock placement, not a plugin alignment/style option. */
     fun photoClock(width: Int, height: Int, density: Float): Box {

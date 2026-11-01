@@ -1,8 +1,10 @@
 package moe.kiwi.thinkos
 
 import android.app.Activity
+import android.Manifest
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Bundle
 import android.os.Process
@@ -29,13 +31,17 @@ class MainActivity : Activity(), RuntimeHost.Observer {
     private lateinit var kiosk: KioskPolicy
     private var reportedDrawn = false
     private var lastLocale: java.util.Locale = java.util.Locale.getDefault()
+    private var storageRequest: Long? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (BuildConfig.DEBUG) TouchInjection.sink = { event -> dispatchTouchEvent(event) }
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         immersive()
         host = (application as ThinkApplication).runtime
         kiosk = KioskPolicy(this)
+        // Reading /sdcard/Music needs a runtime permission; as Device Owner we grant it without a dialog.
+        kiosk.grantStorageRead()
         host.store.update { it.copy(safeMode = CrashRecovery.isSafeMode(this)) }
         stage = ThinkStage(this, host.store, host.router, { host.sensors.touch() }, { showMaintenance() }, host.pageEvents, host::openSettings)
         setContentView(stage)
@@ -48,7 +54,7 @@ class MainActivity : Activity(), RuntimeHost.Observer {
     override fun onResume() {
         super.onResume()
         KioskState.resumed = true
-        KioskState.maintenanceUntil = 0
+        if (storageRequest == null) KioskState.maintenanceUntil = 0 else KioskState.allowSystemSettings()
         immersive()
         kiosk.apply(this, host.system.kioskLock)   // coming back from Android's settings locks again
         stage.start()
@@ -59,6 +65,10 @@ class MainActivity : Activity(), RuntimeHost.Observer {
         super.onPause()
     }
     override fun onDestroy() {
+        if (BuildConfig.DEBUG) TouchInjection.sink = null
+        // An Activity cannot leave Lua suspended on a permission dialog it is no longer able to show.
+        storageRequest?.let(host::storagePermissionHostClosed)
+        storageRequest = null
         host.removeObserver(this)
         maintenance?.dismiss()
         super.onDestroy()
@@ -109,7 +119,31 @@ class MainActivity : Activity(), RuntimeHost.Observer {
     override fun onKioskLock(locked: Boolean) { kiosk.apply(this, locked) }
     override fun onSettingsUnavailable() { showMaintenance() }
     override fun onRenderSettingsChanged() { stage.refreshSettings() }
+    override fun onTileAnimation(pluginId: String, name: String) { stage.playTileAnimation(pluginId, name) }
     override fun onLocaleChanged() { stage.localeChanged() }
+    override fun onStoragePermissionRequest(requestId: Long): Boolean {
+        if (isFinishing || isDestroyed || storageRequest != null) return false
+        storageRequest = requestId
+        KioskState.allowSystemSettings() // The watchdog must not cover Android's permission dialog.
+        return try {
+            requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), STORAGE_PERMISSION_REQUEST)
+            true
+        } catch (error: RuntimeException) {
+            storageRequest = null
+            false
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode != STORAGE_PERMISSION_REQUEST) return
+        val request = storageRequest ?: return
+        storageRequest = null
+        val index = permissions.indexOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+        host.storagePermissionResult(request, index >= 0 && grantResults.getOrNull(index) == PackageManager.PERMISSION_GRANTED)
+        if (KioskState.resumed) KioskState.maintenanceUntil = 0
+        immersive()
+    }
     override fun onBrightness(value: Float) {
         window.attributes = window.attributes.apply { screenBrightness = value.coerceIn(0.03f, 1f) }
     }
@@ -166,4 +200,9 @@ class MainActivity : Activity(), RuntimeHost.Observer {
         maintenance?.show()
         maintenance?.readableButtons(theme)
     }
+
+    private companion object { const val STORAGE_PERMISSION_REQUEST = 1027 }
+
+    /** Debug builds only (set in onCreate): the way the debug receiver puts a touch through exactly the path a finger takes. */
+    object TouchInjection { @Volatile var sink: ((MotionEvent) -> Unit)? = null }
 }

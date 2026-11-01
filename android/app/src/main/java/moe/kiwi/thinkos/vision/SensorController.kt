@@ -51,6 +51,13 @@ class SensorController(
         handler.post(ticker)
     }
     fun stop() { active = false; manager.unregisterListener(this); handler.removeCallbacks(ticker); brightnessAnimator?.cancel() }
+    private var mediaHold = false
+    /** While a video plays the display stays at least AWAKE; a touch still raises it to ENGAGED. */
+    fun mediaPlaying(value: Boolean) {
+        if (mediaHold == value) return
+        mediaHold = value
+        evaluate()
+    }
     fun debugHoldAttention(value: Attention?) {
         if (!BuildConfig.DEBUG) return
         heldAttention = value
@@ -73,9 +80,11 @@ class SensorController(
         }
         evaluate()
     }
-    private fun evaluate() {
+    /** The brightness cap changed (a drag on a film): follow it now, not at the next once-a-second look. */
+    fun refreshBrightness() = evaluate(immediate = true)
+    private fun evaluate(immediate: Boolean = false) {
         val now = SystemClock.elapsedRealtime()
-        val level = heldAttention ?: attention.level(now, settingsOpen())
+        val level = heldAttention ?: attention.level(now, settingsOpen()).let { if (mediaHold && it < Attention.AWAKE) Attention.AWAKE else it }
         val nextTheme = heldTheme ?: (injectedLux ?: light)?.let { theme.sample(it, now, level == Attention.ENGAGED) } ?: run {
             // No usable light sensor: a pinned or sun-scheduled mode still applies, otherwise fall back to the clock.
             theme.scheduled() ?: if (Calendar.getInstance().get(Calendar.HOUR_OF_DAY) in 7..18) Theme.LIGHT else Theme.DARK
@@ -93,7 +102,7 @@ class SensorController(
         }
         if (brightness != target) {
             brightnessAnimator?.cancel()
-            if (brightness < 0f) { displayedBrightness = target; onBrightness(target) }
+            if (brightness < 0f || immediate) { displayedBrightness = target; onBrightness(target) }
             else {
                 brightnessAnimator = ValueAnimator.ofFloat(displayedBrightness, target).apply {
                     duration = if (nextTheme == Theme.NIGHT) Motion.NIGHT else Motion.THEME

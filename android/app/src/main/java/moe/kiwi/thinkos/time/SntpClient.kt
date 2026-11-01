@@ -5,8 +5,12 @@ import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
 
-/** One SNTP exchange (RFC 4330). [offsetMillis] is server time minus system time; [rttMillis] is the network round trip. */
-class SntpSample(val server: String, val offsetMillis: Long, val rttMillis: Long)
+/**
+ * One SNTP exchange (RFC 4330). [offsetMillis] is server time minus system time; [rttMillis] is the network round trip.
+ * [anchorWallMillis] is true time at the middle of the exchange, which was [anchorElapsedMillis] on the monotonic
+ * clock: that pair is what the OS keeps time from, so the system clock's own error never enters it.
+ */
+data class SntpSample(val server: String, val offsetMillis: Long, val rttMillis: Long, val anchorWallMillis: Long = 0, val anchorElapsedMillis: Long = 0)
 
 object SntpClient {
     private const val PORT = 123
@@ -23,9 +27,18 @@ object SntpClient {
             val reply = ByteArray(48)
             socket.receive(DatagramPacket(reply, reply.size))
             val rtt = SystemClock.elapsedRealtime() - sentTick
-            parse(address.hostAddress.orEmpty(), request, reply, sentWall, sentWall + rtt)
+            parse(address.hostAddress.orEmpty(), request, reply, sentWall, sentWall + rtt)?.let { anchored(it, sentWall, sentTick, rtt) }
         }
     }.getOrNull()
+
+    /**
+     * Pins [sample] to the monotonic clock: the exchange was sent at system time [sentWall] / monotonic [sentTick] and took
+     * [roundTrip] by the monotonic clock. The server's time applies to the middle of it.
+     */
+    fun anchored(sample: SntpSample, sentWall: Long, sentTick: Long, roundTrip: Long) = sample.copy(
+        anchorWallMillis = sentWall + roundTrip / 2 + sample.offsetMillis,
+        anchorElapsedMillis = sentTick + roundTrip / 2,
+    )
 
     /** [t0]/[t3]: system time when the request left and the reply arrived. Null for anything that is not a sane answer to [request]. */
     fun parse(server: String, request: ByteArray, reply: ByteArray, t0: Long, t3: Long): SntpSample? {

@@ -49,6 +49,16 @@ dependencies {
     // 1.9.x is the newest line that builds against compileSdk 35; 1.10+ needs 36.
     implementation("androidx.media3:media3-exoplayer:1.9.2")
     implementation("androidx.media3:media3-datasource-okhttp:1.9.2")
+    // Streaming protocols. Each AAR is pure Java (no jni/ directory), so the APK stays armv7-only.
+    implementation("androidx.media3:media3-exoplayer-hls:1.9.2")
+    implementation("androidx.media3:media3-exoplayer-dash:1.9.2")
+    implementation("androidx.media3:media3-exoplayer-rtsp:1.9.2")
+    // AC-3, E-AC-3, DTS and ALAC audio: the platform has no decoder for them. Jellyfin's prebuilt FFmpeg extension
+    // ships an armeabi-v7a libffmpegJNI.so but is GPL-3.0 (ADR-030). A build that will be distributed turns it off
+    // with -Pthinkos.ffmpeg=false; every format it covers then ends in an explicit "cannot decode" message.
+    if (providers.gradleProperty("thinkos.ffmpeg").orNull != "false") {
+        implementation("org.jellyfin.media3:media3-ffmpeg-decoder:1.9.0+1")
+    }
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")
 }

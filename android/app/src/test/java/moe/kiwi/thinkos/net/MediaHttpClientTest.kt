@@ -45,6 +45,21 @@ class MediaHttpClientTest {
         MediaHttpClient.validateConnected(URI("https://media.test/a"), public)
     }
 
+    @Test fun theUserCanOpenPlainHttpToPublicHostsButStillNotHttpsDowngrades() {
+        var allowed = false
+        val dns = MediaHttpClient.RequestDns(resolver { listOf(public) }) { allowed }
+        assertThrows(IOException::class.java) { dns.forRequest("http://tv.test/live".toHttpUrl()) { fail("refused while the switch is off") } }
+        allowed = true
+        dns.forRequest("http://tv.test/live".toHttpUrl()) { assertEquals(listOf(public), dns.lookup("tv.test")) }
+        MediaHttpClient.validateConnected(URI("http://tv.test/live"), public) { true }
+        assertThrows(IOException::class.java) { MediaHttpClient.validateConnected(URI("http://tv.test/live"), public) { false } }
+        // The switch widens cleartext addresses only; an HTTPS page still cannot send the player to HTTP.
+        val request = Request.Builder().url("https://tv.test/one").build()
+        assertThrows(IOException::class.java) { MediaHttpClient.redirect(request, response(request, 302, "http://tv.test/two"), 0) }
+        // A cleartext connection with no peer address is never waved through, even with the switch on.
+        assertThrows(IOException::class.java) { MediaHttpClient.validateConnected(URI("http://tv.test/live"), null) { true } }
+    }
+
     @Test fun failedRequestScopeIsRemovedBeforeTheNextRequest() {
         val dns = MediaHttpClient.RequestDns(resolver { listOf(local) })
         assertThrows(IOException::class.java) {
@@ -84,6 +99,19 @@ class MediaHttpClientTest {
         assertNull(next.header("Cookie"))
         assertEquals("GET", next.method)
         assertNull(MediaHttpClient.redirect(request, response(request, 200, null), 0))
+    }
+
+    @Test fun anyTokenStyleHeaderStaysWithItsOriginWhenARedirectLeaves() {
+        val request = Request.Builder().url("https://media.test/one").header("Authorization", "Bearer token").header("X-Api-Key", "k")
+            .header("Token", "t").header("User-Agent", "Player/1").header("Referer", "https://media.test/").header("Range", "bytes=10-").build()
+        val away = MediaHttpClient.redirect(request, response(request, 302, "https://cdn.test/two"), 0)!!
+        assertNull(away.header("Authorization")); assertNull(away.header("X-Api-Key")); assertNull(away.header("Token"))
+        assertEquals("Player/1", away.header("User-Agent"))
+        assertEquals("https://media.test/", away.header("Referer"))
+        assertEquals("bytes=10-", away.header("Range"))
+        val same = MediaHttpClient.redirect(request, response(request, 302, "https://media.test/two"), 0)!!
+        assertEquals("k", same.header("X-Api-Key"))
+        assertEquals("Bearer token", same.header("Authorization"))
     }
 
     private fun resolver(block: (String) -> List<InetAddress>): Dns = object : Dns {

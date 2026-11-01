@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.SystemClock
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import moe.kiwi.thinkos.plugin.PluginPage
 import org.json.JSONArray
 import org.json.JSONObject
@@ -32,7 +33,14 @@ class DeckRouter(
     val currentPage get() = pages.firstOrNull { it.key == store.current.deck.page }
 
     /** Pages reachable by swiping. The settings page is entered by long press and is never in the sequence. */
-    val navigablePages: List<PluginPage> get() = pages.filter { "settings" !in it.roles && (store.current.theme != Theme.NIGHT || "ambient" !in it.roles) }
+    val navigablePages: List<PluginPage> get() = pages.filter {
+        "settings" !in it.roles && (store.current.theme != Theme.NIGHT || "ambient" !in it.roles) &&
+            // A live page is entered by its plugin (a film, an alarm), never by swiping through the deck.
+            (!it.live || it.key == store.current.deck.page)
+    }
+
+    /** Leaving a live page by swiping goes back to where the takeover started. */
+    private fun liveReturn(): PluginPage? = if (currentPage?.live == true) previousLive?.let { old -> pages.firstOrNull { it.key == old.page } } else null
 
     private var previousTheme = store.current.theme
     fun applyTheme(theme: Theme) {
@@ -88,6 +96,7 @@ class DeckRouter(
         else if (store.current.deck.variant !in current.variants && current.variants.isNotEmpty()) select(current, 0, false)
     }
     fun previewPage(delta: Int): PluginPage? {
+        if (!settingsOpen) liveReturn()?.let { return it }
         val deck = navigablePages
         if (deck.size < 2 || settingsOpen) return null
         val index = deck.indexOfFirst { it.key == store.current.deck.page }.coerceAtLeast(0)
@@ -101,6 +110,13 @@ class DeckRouter(
     }
     fun rememberedVariant(page: PluginPage): String = preferences.getString(page.key, null)?.takeIf { it in page.variants } ?: page.variants.firstOrNull() ?: "digital"
     fun navigate(delta: Int) {
+        if (!settingsOpen) liveReturn()?.let { back ->
+            val variant = previousLive?.variant
+            lastLocal = SystemClock.elapsedRealtime()
+            previousLive = null; livePage = null
+            select(back, delta, false, variant, reason = "swipe")
+            return
+        }
         val deck = navigablePages
         if (deck.size < 2 || settingsOpen) return
         lastLocal = SystemClock.elapsedRealtime()
@@ -126,7 +142,8 @@ class DeckRouter(
         store.update { it.copy(deck = it.deck.copy(variant = variant, direction = delta, vertical = true)) }
         onPageEvent(page.pluginId, "variant", JSONArray().put(page.id).put(variant))
     }
-    fun requestFocus(pageKey: String, live: Boolean, release: Boolean) {
+    /** [answersTap]: the request answers a tap the user just made on this plugin's own page, so it is not a background takeover. */
+    fun requestFocus(pageKey: String, live: Boolean, release: Boolean, answersTap: Boolean = false) {
         val page = pages.firstOrNull { it.key == pageKey } ?: return
         if (settingsOpen) return              // nothing may pull the user out of the settings page
         if (release) {
@@ -138,7 +155,7 @@ class DeckRouter(
             return
         }
         val now = SystemClock.elapsedRealtime()
-        if (store.current.attention == Attention.ASLEEP || lastLocal != Long.MIN_VALUE && now - lastLocal < 30_000) return
+        if (store.current.attention == Attention.ASLEEP || !answersTap && lastLocal != Long.MIN_VALUE && now - lastLocal < 30_000) return
         if (live && !page.live) return
         val active = currentPage
         if (livePage != null && active != null && page.priority < active.priority) return
@@ -154,7 +171,8 @@ class DeckRouter(
         if (level == Attention.AMBIENT) handler.postDelayed(ambientRole, ambientDelayMillis())
         when {
             level == Attention.ASLEEP -> pages.firstOrNull { "sleep" in it.roles }?.let { select(it, 0, false) }
-            wasAsleep -> pages.firstOrNull { "home" in it.roles }?.let { select(it, 0, false) }
+            // Waking from sleep goes home, unless a live page already has the screen (a film started while it slept).
+            wasAsleep && currentPage?.live != true -> pages.firstOrNull { "home" in it.roles }?.let { select(it, 0, false) }
         }
     }
     private fun select(page: PluginPage, direction: Int, vertical: Boolean, forcedVariant: String? = null, params: JSONObject? = null, reason: String = "system") {
@@ -163,7 +181,10 @@ class DeckRouter(
             return
         }
         val old = currentPage
-        if (old?.key != page.key) { lastNavigationReason = reason; navigationGeneration++ }
+        if (old?.key != page.key) {
+            lastNavigationReason = reason; navigationGeneration++
+            Log.i("ThinkOS", "page=${page.key} from=${old?.key} reason=$reason attention=${store.current.attention}")
+        }
         val stored = forcedVariant ?: preferences.getString(page.key, null)
         val variant = stored?.takeIf { it in page.variants } ?: page.variants.firstOrNull() ?: "digital"
         if (old?.key != page.key) old?.let { onPageEvent(it.pluginId, "page.leave", JSONArray().put(it.id)) }

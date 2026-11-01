@@ -18,6 +18,10 @@ class StatePatchTest {
     @Test fun encodedPatchesCannotReplaceReservedSettingsOrBypassByteAndDepthLimits() {
         assertThrows(IllegalArgumentException::class.java) { PluginRuntime.statePatch("""{"config":{"pan":false}}""") }
         assertThrows(IllegalArgumentException::class.java) { PluginRuntime.statePatch(mapOf("config" to emptyMap<String,Any>())) }
+        assertThrows(IllegalArgumentException::class.java) { PluginRuntime.statePatch("""{"uses":{"daily":{}}}""") }
+        assertThrows(IllegalArgumentException::class.java) { PluginRuntime.statePatch(mapOf("uses" to emptyMap<String,Any>())) }
+        // API 1-5 plugins predate the reservation and may hold their own state under this name.
+        assertTrue(PluginRuntime.statePatch(mapOf("uses" to 3), reserveUses = false).has("uses"))
         assertThrows(IllegalArgumentException::class.java) { PluginRuntime.statePatch("{\"text\":\"" + "汉".repeat(90_000) + "\"}") }
         assertThrows(IllegalArgumentException::class.java) { PluginRuntime.statePatch("{\"a\":" + "[".repeat(33) + "0" + "]".repeat(33) + "}") }
         assertThrows(RuntimeException::class.java) { PluginRuntime.statePatch("[]") }

@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.*
 import android.os.Handler
 import android.os.Looper
+import android.os.MessageQueue
 import android.os.SystemClock
 import android.provider.Settings
 import android.view.Gravity
@@ -44,6 +45,28 @@ class ThinkStage(
     private var widgets = emptyList<PluginWidget>()
     private var current: PageView? = null
     private var neighbor: PageView? = null
+    private var prepared: PageView? = null
+    private var previewQueued = false
+    private var previewChecked = false
+    private var touching = false
+    private val previewIdle = MessageQueue.IdleHandler {
+        previewQueued = false
+        if (canPreparePreview()) {
+            previewChecked = true
+            val page = listOf(-1, 1).firstNotNullOfOrNull { direction ->
+                router.previewPage(direction)?.takeIf(::photoPage)
+            }
+            if (page != null) {
+                prepared = newPage(page, router.rememberedVariant(page)).also {
+                    it.visibility = INVISIBLE
+                    pageHost.addView(it, LayoutParams(-1, -1))
+                    it.measure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY))
+                    it.layout(0, 0, width, height)
+                }
+            }
+        }
+        false
+    }
     private var deck = DeckState()
     private var lastAttention = store.current.attention
     private var palette = Palette.forTheme(store.current.theme)
@@ -89,6 +112,7 @@ class ThinkStage(
         pageHost.animate().cancel()
         pageHost.scaleX = 1f
         pageHost.scaleY = 1f
+        current?.releasePress()
         onLongPress(current?.ownerAt(downX, downY) ?: return@Runnable)
     }
     private fun armLongPress() {
@@ -96,8 +120,10 @@ class ThinkStage(
         longPressFired = false
         handler.postDelayed(pressFeedback, FEEDBACK_AFTER_MILLIS)
         handler.postDelayed(longPress, LONG_PRESS_MILLIS)
+        current?.pressAt(downX, downY)
     }
     private fun disarmLongPress() {
+        current?.releasePress()
         if (longPressArmed) pageHost.animate().cancel().also { pageHost.animate().scaleX(1f).scaleY(1f).setDuration(160).start() }
         longPressArmed = false
         handler.removeCallbacks(pressFeedback)
@@ -131,6 +157,7 @@ class ThinkStage(
                 router.applyAttention(value.attention)
                 router.applyTheme(value.theme)
                 if (value.theme != theme) {
+                    clearPrepared()
                     theme = value.theme
                     fromPalette = palette
                     targetPalette = Palette.forTheme(theme)
@@ -144,6 +171,8 @@ class ThinkStage(
                 overlayText.text = message.orEmpty()
                 overlayText.visibility = if (message == null) GONE else VISIBLE
                 if (lastAttention != value.attention) {
+                    prepared?.tick(SystemClock.uptimeMillis(), value.attention)
+                    if (value.attention == Attention.ASLEEP) clearPrepared()
                     val waking = value.attention in setOf(Attention.AWAKE, Attention.ENGAGED) && lastAttention in setOf(Attention.ASLEEP, Attention.AMBIENT)
                     if (waking) {
                         system.wakeAt = SystemClock.uptimeMillis()
@@ -158,6 +187,7 @@ class ThinkStage(
         }
         clock.start()
         current?.active(true)
+        queuePreview()
     }
     fun stop() {
         collection?.cancel()
@@ -165,6 +195,8 @@ class ThinkStage(
         scope?.cancel()
         scope = null
         clock.stop()
+        touching = false
+        clearPrepared()
         current?.active(false)
         ambient.pause()
         current?.tick(SystemClock.uptimeMillis(), Attention.ASLEEP)
@@ -174,6 +206,7 @@ class ThinkStage(
         maintenanceArmed = false
     }
     fun updateCatalog(nextPages: List<PluginPage>, nextWidgets: List<PluginWidget>) {
+        clearPrepared()
         pages = nextPages
         widgets = nextWidgets
         val visible = current
@@ -184,18 +217,70 @@ class ThinkStage(
         }
         renderDeck(store.current.deck)
         applyDrift()
+        queuePreview()
     }
     /** Language, 12/24-hour setting or time zone changed in Android's settings. */
     fun localeChanged() {
         layoutDirection = android.text.TextUtils.getLayoutDirectionFromLocale(java.util.Locale.getDefault())
         current?.localeChanged()
         neighbor?.localeChanged()
+        prepared?.localeChanged()
     }
     fun updatePluginState(pluginId: String, state: JSONObject) {
         val changed = Binding.changed(states.put(pluginId, state), state)
         if (changed.isEmpty()) return
         current?.bind(pluginId, changed)
         neighbor?.bind(pluginId, changed)
+        prepared?.bind(pluginId, changed)
+    }
+    private fun photoPage(page: PluginPage): Boolean {
+        if (page.view.optString("layout") != "stage") return false
+        val slot = page.view.optJSONObject("slots")?.optJSONObject("stage") ?: return false
+        val children = slot.optJSONArray("children")
+        val component = if (children == null) slot else children.takeIf { it.length() == 1 }?.optJSONObject(0)
+        return component?.optString("type").let { it == "image" || it == "carousel" }
+    }
+    private fun canPreparePreview() = collection != null && !touching && axis == 0 && neighbor == null &&
+        prepared == null && current?.isLaidOut == true && width > 0 && height > 0 &&
+        store.current.attention != Attention.ASLEEP &&
+        abs(current?.translationX ?: 0f) < .5f && abs(current?.translationY ?: 0f) < .5f
+    private fun queuePreview() {
+        if (previewQueued || previewChecked || !canPreparePreview()) return
+        previewQueued = true
+        Looper.getMainLooper().queue.addIdleHandler(previewIdle)
+    }
+    private fun clearPrepared() {
+        Looper.getMainLooper().queue.removeIdleHandler(previewIdle)
+        previewQueued = false; previewChecked = false
+        prepared?.let(pageHost::removeView)
+        prepared = null
+    }
+    private fun takePrepared(page: PluginPage, variant: String): PageView? {
+        val view = prepared?.takeIf { it.page.key == page.key && it.variant == variant }
+        if (view != null) {
+            prepared = null
+            view.visibility = VISIBLE
+            view.tick(SystemClock.uptimeMillis(), store.current.attention)
+        }
+        clearPrepared()
+        return view
+    }
+    private fun retire(view: PageView) {
+        val adjacent = listOf(-1, 1).any { direction ->
+            router.previewPage(direction)?.let { it.key == view.page.key && router.rememberedVariant(it) == view.variant } == true
+        }
+        if (view.parent === pageHost && prepared == null && collection != null &&
+            store.current.attention != Attention.ASLEEP && adjacent &&
+            (view.photoStage || current?.photoStage == true)) {
+            // Keep one adjacent page warm for an immediate reversal; it owns no running animation.
+            view.visibility = INVISIBLE
+            view.translationX = 0f; view.translationY = 0f
+            view.tick(SystemClock.uptimeMillis(), Attention.AMBIENT)
+            prepared = view
+        } else pageHost.removeView(view)
+        if (neighbor === view) neighbor = null
+        applyDrift()
+        queuePreview()
     }
     private fun newPage(page: PluginPage, variant: String): PageView = PageView(context, page, variant, widgets, events) { states[it] ?: JSONObject() }.also {
         it.colors(palette)
@@ -207,7 +292,7 @@ class ThinkStage(
         val page = pages.firstOrNull { it.key == next.page } ?: return
         val old = current
         val preview = neighbor?.takeIf { it.page.key == next.page && it.variant == next.variant && commitDrag }
-        val incoming = preview ?: newPage(page, next.variant).also { pageHost.addView(it, LayoutParams(-1, -1)) }
+        val incoming = preview ?: takePrepared(page, next.variant) ?: newPage(page, next.variant).also { pageHost.addView(it, LayoutParams(-1, -1)) }
         if (preview == null) neighbor?.let(pageHost::removeView)
         neighbor = old
         current = incoming
@@ -223,9 +308,7 @@ class ThinkStage(
             incoming.scaleX = .99f
             incoming.scaleY = .99f
             incoming.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(200).withEndAction {
-                pageHost.removeView(old)
-                if (neighbor === old) neighbor = null
-                applyDrift()
+                retire(old)
             }.start()
             old.animate().alpha(0f).setDuration(180).start()
         } else if (old != null && !governor.reducedMotion) {
@@ -233,15 +316,15 @@ class ThinkStage(
             val speed = if (commitDrag) velocity?.let { if (vertical) it.yVelocity else it.xVelocity } ?: 0f else 0f
             springs += Motion.spring(position(incoming, vertical), 0f, speed, { position(incoming, it, vertical) })
             springs += Motion.spring(position(old, vertical), -direction * extent, speed, { position(old, it, vertical) }) {
-                pageHost.removeView(old)
-                if (neighbor === old) neighbor = null
-                applyDrift()
+                retire(old)
             }
         } else {
-            old?.let(pageHost::removeView)
+            old?.let(::retire)
             neighbor = null
             position(incoming, 0f, vertical)
         }
+        // A page opened by tap or command rises in; one the finger already dragged into view must not blink.
+        if (preview == null && old?.page?.key != next.page && !governor.reducedMotion) incoming.enterAnimation()
         commitDrag = false
         deck = next
         val navigable = router.navigablePages
@@ -251,6 +334,7 @@ class ThinkStage(
         system.variantIndex = page.variants.indexOf(next.variant)
         system.shownAt = SystemClock.uptimeMillis()
         applyDrift()
+        queuePreview()
         clock.wake()
     }
     private fun position(view: View, vertical: Boolean): Float = if (vertical) view.translationY else view.translationX
@@ -259,11 +343,12 @@ class ThinkStage(
     }
     private fun syncAmbient() { ambient.covered(current?.opaque == true && neighbor == null && axis == 0) }
     private fun applyDrift() {
-        val photoVisible = current?.photoStage == true || neighbor?.photoStage == true
-        pageHost.translationX = if (photoVisible) 0f else driftX
-        pageHost.translationY = if (photoVisible) 0f else driftY
-        val x = if (photoVisible) driftX.roundToInt() else 0
-        val y = if (photoVisible) driftY.roundToInt() else 0
+        // Full-screen backdrops stay at the viewport edges, including in swipe previews.
+        val backdropVisible = current?.opaque == true || neighbor?.opaque == true
+        pageHost.translationX = if (backdropVisible) 0f else driftX
+        pageHost.translationY = if (backdropVisible) 0f else driftY
+        val x = if (backdropVisible) driftX.roundToInt() else 0
+        val y = if (backdropVisible) driftY.roundToInt() else 0
         current?.burnInOffset(x, y)
         neighbor?.burnInOffset(x, y)
     }
@@ -276,8 +361,8 @@ class ThinkStage(
         val page = if (vertical) router.currentPage else router.previewPage(direction)
         val variant = if (vertical) router.previewVariant(direction) else page?.let(router::rememberedVariant)
         if (page != null && variant != null) {
-            neighbor = newPage(page, variant).also { pageHost.addView(it, LayoutParams(-1, -1)) }
-        }
+            neighbor = takePrepared(page, variant) ?: newPage(page, variant).also { pageHost.addView(it, LayoutParams(-1, -1)) }
+        } else clearPrepared()
         applyDrift()
     }
     private fun cancelGesture() {
@@ -293,9 +378,15 @@ class ThinkStage(
         commitDrag = false
         velocity?.recycle()
         velocity = null
+        previewChecked = false
         applyDrift()
     }
-    fun refreshSettings() { current?.tick(SystemClock.uptimeMillis(), store.current.attention); clock.wake() }
+    /** `tos.tile.animate` from a plugin (ADR-028). */
+    fun playTileAnimation(pluginId: String, name: String) { current?.playTileAnimation(pluginId, name) }
+    fun refreshSettings() {
+        current?.renderSettingsChanged(); neighbor?.renderSettingsChanged(); prepared?.renderSettingsChanged()
+        current?.tick(SystemClock.uptimeMillis(), store.current.attention); clock.wake()
+    }
     private fun tick(now: Long) {
         if (themeAnimating) {
             val t = ((now - themeStart).toFloat() / Motion.THEME).coerceIn(0f, 1f)
@@ -311,8 +402,7 @@ class ThinkStage(
         current?.tick(now, governor.attention)
         neighbor?.tick(now, governor.attention)
         if (now - lastDrift >= 1_000) {
-            driftX = (round(sin(now / 180_000.0 * Math.PI) * 64) / 8).toFloat()
-            driftY = (round(cos(now / 240_000.0 * Math.PI) * 48) / 8).toFloat()
+            BurnIn.offset(now).let { driftX = it.first; driftY = it.second }
             lastDrift = now
         }
         applyDrift()
@@ -323,12 +413,14 @@ class ThinkStage(
         }
         governor.activeAnimations = themeAnimating || systemActive || current?.activeAnimations == true || neighbor?.activeAnimations == true
         governor.ambientAnimations = current?.ambientAnimations == true || neighbor?.ambientAnimations == true
+        queuePreview()
     }
     private fun applyColors(value: Palette) {
         ambient.colors(value)
         boot.setTextColor(value.primary)
         current?.colors(value)
         neighbor?.colors(value)
+        prepared?.colors(value)
         overlayText.setTextColor(value.secondary)
         system.palette = value
         system.invalidate()
@@ -336,6 +428,7 @@ class ThinkStage(
     private fun applyNight() {
         current?.night(night)
         neighbor?.night(night)
+        prepared?.night(night)
         if (night <= 0f) { setLayerType(LAYER_TYPE_NONE, null); return }
         val gray = floatArrayOf(.2126f, .7152f, .0722f)
         val matrix = FloatArray(20)
@@ -345,12 +438,20 @@ class ThinkStage(
         nightPaint.colorFilter = ColorMatrixColorFilter(matrix)
         setLayerType(LAYER_TYPE_HARDWARE, nightPaint)
     }
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        super.onLayout(changed, left, top, right, bottom)
+        queuePreview()
+    }
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
+        clearPrepared()
         cancelGesture()
+        touching = false
         store.update { it.copy(orientation = if (w > h) Orientation.LANDSCAPE else Orientation.PORTRAIT) }
     }
     private var nativeTouch = false
+    /** The touch began on a seek bar: the component, not the page swipe, owns its horizontal movement. */
+    private var nativeHorizontal = false
     private var gestureDownTime = -1L
 
     private fun beginTouch(event: MotionEvent) {
@@ -371,12 +472,14 @@ class ThinkStage(
             MotionEvent.ACTION_DOWN -> {
                 beginTouch(event)
                 nativeTouch = current?.interactiveAt(event.x, event.y) == true
+                nativeHorizontal = nativeTouch && current?.capturesHorizontalAt(event.x, event.y) == true
                 return !nativeTouch
             }
             MotionEvent.ACTION_MOVE -> if (nativeTouch) {
                 val dx = event.x - downX; val dy = event.y - downY
                 velocity?.addMovement(event)
                 if (max(abs(dx), abs(dy)) > slop) disarmLongPress()
+                if (nativeHorizontal) return false
                 if (event.pointerCount == 1 && abs(dx) > slop && abs(dx) > abs(dy)) {
                     nativeTouch = false
                     axis = 1
@@ -388,6 +491,7 @@ class ThinkStage(
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> if (nativeTouch) {
                 disarmLongPress()
                 nativeTouch = false
+                nativeHorizontal = false
                 velocity?.recycle(); velocity = null
                 return false
             }
@@ -405,7 +509,7 @@ class ThinkStage(
             MotionEvent.ACTION_POINTER_DOWN, MotionEvent.ACTION_POINTER_UP -> router.noteInteraction()
         }
         when (event.actionMasked) {
-            MotionEvent.ACTION_DOWN -> { maintenanceX = event.x; maintenanceY = event.y }
+            MotionEvent.ACTION_DOWN -> { touching = true; maintenanceX = event.x; maintenanceY = event.y }
             MotionEvent.ACTION_POINTER_DOWN -> if (event.pointerCount == 2 && maintenanceX < width * .25f && maintenanceY < height * .25f) {
                 maintenanceArmed = true
                 handler.removeCallbacks(maintenance)
@@ -420,7 +524,14 @@ class ThinkStage(
                 maintenanceArmed = false
             }
         }
-        return super.dispatchTouchEvent(event)
+        val handled = super.dispatchTouchEvent(event)
+        // A seek bar owns its whole gesture, so its parent no longer sees the moves that would cancel the long press.
+        if (nativeHorizontal && event.actionMasked == MotionEvent.ACTION_DOWN) disarmLongPress()
+        if (event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_CANCEL) {
+            touching = false
+            queuePreview()
+        }
+        return handled
     }
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.actionMasked) {
@@ -473,8 +584,7 @@ class ThinkStage(
                         current?.let { view -> springs += Motion.spring(position(view, vertical), 0f, speed, { position(view, it, vertical) }) }
                         neighbor?.let { view ->
                             springs += Motion.spring(position(view, vertical), dragDirection * extent.toFloat(), speed, { position(view, it, vertical) }) {
-                                pageHost.removeView(view)
-                                if (neighbor === view) neighbor = null
+                                retire(view)
                             }
                         }
                     }

@@ -13,9 +13,11 @@ import android.view.ViewGroup
 import android.widget.TextView
 import moe.kiwi.thinkos.core.Attention
 import moe.kiwi.thinkos.core.Theme
+import moe.kiwi.thinkos.anim.MotionClock
 import moe.kiwi.thinkos.ui.TileView
 import moe.kiwi.thinkos.ui.ThinkStage
 import org.json.JSONArray
+import moe.kiwi.thinkos.settings.SettingsStore
 import org.json.JSONObject
 import java.io.File
 import java.util.Locale
@@ -29,7 +31,11 @@ class TileInstrumentation : Instrumentation() {
     private val passed = JSONArray()
     private val screens = JSONArray()
     private var arguments = Bundle()
-    private fun main(block: () -> Unit) = runOnMainSync(block)
+    private fun main(block: () -> Unit) {
+        var failure: Throwable? = null
+        runOnMainSync { try { block() } catch(t: Throwable) { failure=t } }
+        failure?.let { throw it }
+    }
     private fun <T> read(block: () -> T): T { var answer: T? = null; main { answer = block() }; return answer!! }
     private fun field(v: Any, name: String): Any? = v.javaClass.getDeclaredField(name).also { it.isAccessible = true }.get(v)
     private fun all(v: View = stage): List<View> = listOf(v) + if (v is ViewGroup) (0 until v.childCount).flatMap { all(v.getChildAt(it)) } else emptyList()
@@ -73,6 +79,70 @@ class TileInstrumentation : Instrumentation() {
         if (dx!=0f || dy!=0f) repeat(12) { i -> SystemClock.sleep(25); event(MotionEvent.ACTION_MOVE,x+dx*(i+1)/12,y+dy*(i+1)/12) }
         else SystemClock.sleep(if(long)850 else 70)
         event(MotionEvent.ACTION_UP,x+dx,y+dy); SystemClock.sleep(800)
+    }
+    /** ADR-028: press tilt, page entrance and the animations a plugin can request by name. */
+    private fun motionChecks() {
+        page("tiles.main")
+        val clock=read { tiles().first { it.owner=="clock" } }
+        main { clock.press(clock.width*.92f,clock.height/2f) };SystemClock.sleep(220)
+        check(read { clock.rotationY>3f && clock.scaleX<.99f }) { "Press did not tilt away from the touch: ${clock.rotationY}" }
+        main { clock.release() }
+        waitFor("Pressed tile did not return") { read { clock.rotationY==0f && clock.rotationX==0f && clock.scaleX==1f } }
+        pass("press tilts the tile away from the touch point and release returns it")
+        // The stage drives it from a real touch: only the touched tile moves, a cancel releases it without a tap.
+        val point=read { floatArrayOf(clock.left+clock.width*.1f,clock.top+clock.height*.5f) }
+        val start=SystemClock.uptimeMillis()
+        fun event(action: Int) { main { MotionEvent.obtain(start,SystemClock.uptimeMillis(),action,point[0],point[1],0).also { stage.dispatchTouchEvent(it); it.recycle() } } }
+        event(MotionEvent.ACTION_DOWN);SystemClock.sleep(220)
+        check(read { clock.rotationY<-3f && tiles().filter { it !== clock }.all { it.rotationY==0f && it.scaleX==1f } }) { "Stage press moved the wrong tiles" }
+        event(MotionEvent.ACTION_CANCEL)
+        waitFor("Cancelled press did not release") { read { clock.rotationY==0f && clock.scaleX==1f } }
+        check(read { host.store.current.deck.page=="tiles.main" }) { "A cancelled press must not open a page" }
+        pass("a stage touch tilts only the touched tile; cancel releases it without opening anything")
+        page("clock.face")
+        main { host.router.open("tiles.main") };SystemClock.sleep(90)
+        check(read { tiles().minOf { it.alpha }<.9f }) { "Tiles did not start hidden for their entrance" }
+        waitFor("Tiles did not finish entering") { read { tiles().all { it.alpha==1f && it.translationY==0f && it.scaleX==1f } } }
+        pass("opening the page raises its tiles in, then leaves them untouched")
+        page("tile-motion.main")
+        val mine=read { tiles().filter { it.owner=="tile-motion" } }
+        check(mine.size==2) { "Motion fixture tiles: ${mine.size}" }
+        fun send(name: String) { host.plugins.event("tile-motion","command",JSONArray().put(name)) }
+        @Suppress("UNCHECKED_CAST") fun result() = read { (field(host,"states") as Map<String,JSONObject>)["tile-motion"]?.optString("lastResult") }
+        fun sample(duration: Long, probe: () -> Float): Float {
+            var peak=0f;val until=SystemClock.uptimeMillis()+duration
+            while(SystemClock.uptimeMillis()<until) { peak=maxOf(peak,kotlin.math.abs(read(probe)));SystemClock.sleep(12) }
+            return peak
+        }
+        send("pulse")
+        check(sample(500) { mine[0].scaleX-1f }>.05f) { "pulse never grew the tile" }
+        waitFor("pulse did not settle") { read { mine.all { it.scaleX==1f && it.scaleY==1f } } }
+        check(result()=="ok") { "pulse result ${result()}" }
+        send("pulse");waitFor("a repeated pulse was not refused") { result()=="cooldown" }
+        send("bogus");waitFor("an unknown animation was not refused") { result()=="unknown" }
+        send("nudge")
+        check(sample(500) { mine[0].translationX }>4f) { "nudge never moved the tile" }
+        waitFor("nudge did not settle") { read { mine.all { it.translationX==0f } } }
+        val face=read { field(mine[0],"faceIndex") }
+        send("flip");waitFor("flip did not change the face") { read { field(mine[0],"faceIndex")!=face } }
+        pass("plugin animations pulse, nudge and flip run on the plugin's own tiles; repeats and unknown names are refused")
+        // The user's "animate tile content" setting also silences what a plugin asks for.
+        try {
+            main { host.settings.set(SettingsStore.SYSTEM,"tiles.live",false) }
+            SystemClock.sleep(1100);send("pulse")
+            check(sample(500) { mine[0].scaleX-1f }<.01f) { "pulse ignored tiles.live=false" }
+        } finally { main { host.settings.reset(SettingsStore.SYSTEM,"tiles.live") } }
+        pass("turning off animated tile content stops plugin-requested animations")
+        // The backdrop is a system setting: each choice has to reach the visible page, then the default returns.
+        try {
+            page("tiles.main")
+            for (variant in listOf("teal","wine","indigo")) {
+                main { host.settings.set(SettingsStore.SYSTEM,"tiles.background",variant) }
+                waitFor("Backdrop did not become $variant") { read { val current=field(stage,"current") ?: return@read false; field(current,"backdrop")?.let { field(it,"variant") }?.toString()==variant.uppercase() } }
+                SystemClock.sleep(300);screenshot("start-backdrop-$variant")
+            }
+        } finally { main { host.settings.reset(SettingsStore.SYSTEM,"tiles.background") } }
+        pass("tiles.background switches the visible Start backdrop between indigo, teal and wine")
     }
     private fun liveChecks() {
         val live=read { host.settings.resolved("system","tiles.live") }
@@ -118,6 +188,76 @@ class TileInstrumentation : Instrumentation() {
                 if(interval.overridden)host.settings.set("system","tiles.interval",interval.value) else host.settings.reset("system","tiles.interval")
             }
         }
+    }
+    private fun backdropChecks() {
+        val clock=field(stage,"clock") as MotionClock
+        val dx=ThinkStage::class.java.getDeclaredField("driftX").also { it.isAccessible=true }
+        val dy=ThinkStage::class.java.getDeclaredField("driftY").also { it.isAccessible=true }
+        val apply=ThinkStage::class.java.getDeclaredMethod("applyDrift").also { it.isAccessible=true }
+        val samples=JSONArray()
+        fun offset(x: Int,y: Int) = main { dx.setFloat(stage,x.toFloat());dy.setFloat(stage,y.toFloat());apply.invoke(stage) }
+        fun position(v: View) = IntArray(2).also(v::getLocationOnScreen)
+        fun checkBackdrop(desktop: View,wallpaper: View,bar: View) = main {
+            val origin=position(stage)
+            check(position(desktop).contentEquals(origin) && desktop.width==stage.width && desktop.height==stage.height) { "Aero desktop moved off viewport" }
+            check(position(wallpaper).contentEquals(origin) && wallpaper.width==stage.width && wallpaper.height==stage.height) { "Aero wallpaper exposed an edge" }
+            val visible=android.graphics.Rect();wallpaper.getGlobalVisibleRect(visible)
+            check(visible==android.graphics.Rect(origin[0],origin[1],origin[0]+stage.width,origin[1]+stage.height)) { "Aero wallpaper clipped: $visible" }
+            val barOrigin=position(bar)
+            check(barOrigin[0]==origin[0] && barOrigin[1]==origin[1]+stage.height-bar.height && bar.width==stage.width) { "Taskbar background exposed an edge" }
+        }
+        try {
+            for(orientation in listOf(0,1)) {
+                main { activity.requestedOrientation=moe.kiwi.thinkos.core.DeviceOrientation.forced(orientation) }
+                waitFor("Orientation unavailable") { read { (stage.width>stage.height)==(orientation==0) } }
+                for(theme in listOf(Theme.LIGHT,Theme.DARK,Theme.NIGHT)) {
+                    main { clock.start() };debugTheme(theme);page("aero.main")
+                    val desktop=read { all().first { it.javaClass.simpleName=="AeroHomeView" } }
+                    val wallpaper=field(desktop,"wallpaper") as View
+                    val bar=field(desktop,"taskbar") as View
+                    val window=read { all().first { it.javaClass.simpleName=="AeroWindow" } }
+                    main { clock.stop() }
+                    for(attention in listOf(Attention.AMBIENT,Attention.AWAKE)) {
+                        main { host.sensors.debugHoldAttention(attention) };SystemClock.sleep(650)
+                        offset(0,0);val base=read { position(window) }
+                        for((x,y) in listOf(-8 to -6,8 to -6,-8 to 6,8 to 6)) {
+                            offset(x,y);SystemClock.sleep(50);checkBackdrop(desktop,wallpaper,bar)
+                            main {
+                                val actual=position(window)
+                                check(actual[0]==base[0]+x && actual[1]==base[1]+y) { "Foreground window lost drift" }
+                                desktop.requestLayout()
+                            }
+                            SystemClock.sleep(50);checkBackdrop(desktop,wallpaper,bar)
+                            main {
+                                val actual=position(window)
+                                check(actual[0]==base[0]+x && actual[1]==base[1]+y) { "Relayout lost foreground drift" }
+                            }
+                            samples.put(JSONObject().put("orientation",orientation).put("theme",theme.name).put("attention",attention.name).put("x",x).put("y",y))
+                        }
+                    }
+                    screenshot("aero-drift-${if(orientation==0)"landscape" else "portrait"}-${theme.name.lowercase()}")
+                }
+            }
+            result.put("backdropCases",samples)
+            pass("48 Aero drift extremes; fixed wallpaper/taskbar; live foreground retained across relayout")
+            main { clock.start();activity.requestedOrientation=moe.kiwi.thinkos.core.DeviceOrientation.LANDSCAPE }
+            debugTheme(Theme.DARK);page("tiles.main");main { clock.stop() }
+            val first=read { tiles().first() }
+            offset(0,0);val base=read { position(first) }
+            for((x,y) in listOf(-8 to -6,8 to -6,-8 to 6,8 to 6)) {
+                offset(x,y)
+                main {
+                    val page=field(stage,"current") as View
+                    check(position(page).contentEquals(position(stage))) { "Tile backdrop moved off viewport" }
+                    val actual=position(first)
+                    check(actual[0]==base[0]+x && actual[1]==base[1]+y) { "Tiles lost foreground drift" }
+                    page.requestLayout()
+                }
+                SystemClock.sleep(50)
+                main { val actual=position(first);check(actual[0]==base[0]+x && actual[1]==base[1]+y) { "Tile relayout lost drift" } }
+            }
+            pass("Tile backdrop pinned at all four extremes; tile positions and relayout retain drift")
+        } finally { main { clock.start() } }
     }
     private fun aeroChecks() {
         for (orientation in listOf(0,1)) {
@@ -167,11 +307,11 @@ class TileInstrumentation : Instrumentation() {
     }
     private fun pluginChecks() {
         page("tiles.main")
-        check(read { tiles().size==3 && tiles().all { it.owner in setOf("clock","weather","gallery") } })
-        screenshot("builtin-tiles");pass("pure declaration tiles page resolves all three API 4 plugins")
+        check(read { tiles().size==10 && tiles().all { it.owner in setOf("clock","weather","gallery") } })
+        screenshot("builtin-tiles");pass("pure declaration Start page resolves ten tiles from the clock, weather and gallery plugins")
         val point=read { val t=tiles().first { it.owner=="weather" };floatArrayOf(t.left+t.width/2f,t.top+t.height/2f) }
         touch(point[0],point[1],true)
-        check(read { host.router.settingsOpen && all().filterIsInstance<TextView>().any { it.text.toString()==host.plugins.text("weather","setting.temp_unit") } })
+        check(read { host.router.settingsOpen && all().filterIsInstance<TextView>().any { it.text.toString()==host.plugins.text("weather","setting.interval") } })
         pass("cross-plugin long press opens weather settings, not tiles settings")
         main { host.router.closeSettings() };SystemClock.sleep(700)
         // Bundled plugins have factory fallback. Exercise catalog removal and directory reinstall
@@ -185,7 +325,7 @@ class TileInstrumentation : Instrumentation() {
                 removed=active.remove("weather")
                 runtime.javaClass.getDeclaredMethod("publishCatalog").also { it.isAccessible=true }.invoke(runtime)
             }
-            waitFor("Missing weather did not become empty") { read { tiles().size==3 && tiles().none { it.owner=="weather" } } }
+            waitFor("Missing weather did not become empty") { read { tiles().size==10 && tiles().none { it.owner=="weather" } } }
             screenshot("weather-removed");pass("weather removal publishes empty placeholder without crashing")
         } finally {
             workerCall {
@@ -211,8 +351,16 @@ class TileInstrumentation : Instrumentation() {
             activity=startActivitySync(Intent(targetContext,MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) as MainActivity
             stage=field(activity,"stage") as ThinkStage; host=(activity.application as ThinkApplication).runtime
             initialOrientation=read { activity.requestedOrientation }
-            waitFor("Fixture missing") { read { host.router.pages.any { it.key=="tile-probe.grid" } } }
             main { host.sensors.debugHoldAttention(Attention.AWAKE); host.sensors.stop() }
+            if(arguments.getString("backdrop")=="true") {
+                waitFor("Aero catalog missing") { read { host.router.pages.any { it.key=="aero.main" } } }
+                backdropChecks();success=true;return
+            }
+            if(arguments.getString("motion")=="true") {
+                waitFor("Motion fixture missing") { read { host.router.pages.any { it.key=="tile-motion.main" } } }
+                motionChecks();success=true;return
+            }
+            waitFor("Fixture missing") { read { host.router.pages.any { it.key=="tile-probe.grid" } } }
             if(arguments.getString("aero")=="true") { aeroChecks();success=true;return }
             if(arguments.getString("plugins")=="true") { pluginChecks();success=true;return }
             if(arguments.getString("live")=="true") { liveChecks();success=true;return }

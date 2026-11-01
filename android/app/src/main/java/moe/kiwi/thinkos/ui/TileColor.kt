@@ -21,10 +21,12 @@ object TileColor {
         val x = luminance(a); val y = luminance(b)
         return (maxOf(x, y) + .05) / (minOf(x, y) + .05)
     }
-    fun foreground(background: Int): Int {
-        val l = luminance(background) + .05
-        return if (l / .05 >= 1.05 / l) 0xff000000.toInt() else -1
-    }
+    /**
+     * Metro tiles are white-on-colour. Black is only for light fills where white cannot reach this contrast.
+     * Below the threshold black always passes: contrast(white) * contrast(black) is 21, so black exceeds 4.6.
+     */
+    const val WHITE_MIN = 4.55
+    fun foreground(background: Int): Int = if (contrast(background, -1) >= WHITE_MIN) -1 else 0xff000000.toInt()
 
     /** Same matrix as ThinkStage. Black/white are chosen after composition in night mode. */
     fun filtered(color: Int, night: Float): Int {
@@ -36,9 +38,7 @@ object TileColor {
     }
     fun nightForeground(color: Int, night: Float): Int {
         if (night <= 0) return foreground(color)
-        val l = luminance(filtered(color, night)) + .05
-        val white = luminance(filtered(-1, night)) + .05
-        return if (l / .05 >= white / l) 0xff000000.toInt() else -1
+        return if (contrast(filtered(color, night), filtered(-1, night)) >= WHITE_MIN) -1 else 0xff000000.toInt()
     }
 
     /** The red matrix compresses contrast. Adjust only when neither composed foreground is readable. */

@@ -2,6 +2,7 @@ package moe.kiwi.thinkos.ui
 
 import android.animation.ValueAnimator
 import android.content.Context
+import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.text.TextUtils
@@ -46,7 +47,17 @@ internal class TileView(
     private var colorAnimation: ValueAnimator? = null
     private var active = false
     private var night = 0f
+    /** Distinct content components of this tile; a face may bring its own (API 6) or share the tile's. */
+    private var contentGroups = emptyList<ComponentGroup>()
+    private var faceContents = emptyList<ComponentGroup?>()
     private var content: ComponentGroup? = null
+    private var picture: RenderComponent? = null
+    private var pictureSource = Binding.compile("")
+    private var showingPicture = false
+    private val scrim = View(context).apply {
+        background = GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, intArrayOf(0, 0xC0000000.toInt()))
+        visibility = GONE
+    }
     private val icon = IconView(context)
 
     private fun text(sp: Float, medium: Boolean = false) =
@@ -61,18 +72,9 @@ internal class TileView(
             fontFeatureSettings = "tnum"
         }
 
-    private val value =
-        text(56f).apply {
-            typeface = Typeface.create("sans-serif-light", Typeface.NORMAL)
-            setAutoSizeTextTypeUniformWithConfiguration(
-                18,
-                56,
-                1,
-                android.util.TypedValue.COMPLEX_UNIT_SP,
-            )
-        }
-    private val label = text(14f)
-    private val detail = text(16f)
+    private val value = text(56f)
+    private val label = text(12f)
+    private val detail = text(13f).apply { typeface = Typeface.create("sans-serif-light", Typeface.NORMAL) }
     private val badge = text(14f, true).apply { gravity = Gravity.END or Gravity.CENTER_VERTICAL }
     private val positions = mutableMapOf<View, RenderGeometry.Box>()
     private val face =
@@ -97,7 +99,7 @@ internal class TileView(
         get() = active && icon.visibility == VISIBLE && icon.animating
 
     val activeAnimations
-        get() = colorAnimation?.isRunning == true || flipping
+        get() = colorAnimation?.isRunning == true || flipping || picture?.animating == true
 
     var flipping = false
         private set
@@ -111,6 +113,7 @@ internal class TileView(
         clipToOutline = true
         clipChildren = true
         listOf(icon, value, detail).forEach { face.addView(it) }
+        addView(scrim)
         addView(face)
         addView(label)
         addView(badge)
@@ -119,7 +122,114 @@ internal class TileView(
 
     private fun dp(n: Int) = (n * resources.displayMetrics.density).toInt()
 
+    // ---- Metro micro-animations (ADR-028). Poses are OS vocabulary: plugins can only ask for a name.
+
+    /** Tilt toward the finger like a physical button; [x] and [y] are in this tile's own coordinates. */
+    fun press(x: Float, y: Float) {
+        if (!ValueAnimator.areAnimatorsEnabled() || width == 0 || height == 0 || visibility != VISIBLE) return
+        cameraDistance = resources.displayMetrics.density * 1400f
+        val nx = (x / width * 2f - 1f).coerceIn(-1f, 1f)
+        val ny = (y / height * 2f - 1f).coerceIn(-1f, 1f)
+        animate().cancel()
+        animate()
+            .rotationY(nx * TILT_DEGREES)
+            .rotationX(-ny * TILT_DEGREES)
+            .scaleX(PRESSED_SCALE)
+            .scaleY(PRESSED_SCALE)
+            .alpha(1f)
+            .setStartDelay(0)
+            .setDuration(90)
+            .setInterpolator(Motion.EASE)
+            .start()
+    }
+
+    /** Spring back, with the slight overshoot that makes the press feel physical. */
+    fun release() {
+        if (rotationX == 0f && rotationY == 0f && scaleX == 1f && scaleY == 1f) return
+        animate().cancel()
+        animate()
+            .rotationX(0f)
+            .rotationY(0f)
+            .scaleX(1f)
+            .scaleY(1f)
+            .setStartDelay(0)
+            .setDuration(300)
+            .setInterpolator(android.view.animation.OvershootInterpolator(2.6f))
+            .start()
+    }
+
+    /** Page entrance: each tile rises into place after the one before it. */
+    fun enter(delay: Long) {
+        if (!ValueAnimator.areAnimatorsEnabled()) return
+        animate().cancel()
+        alpha = 0f
+        scaleX = .9f
+        scaleY = .9f
+        translationY = dp(26).toFloat()
+        animate()
+            .alpha(1f)
+            .scaleX(1f)
+            .scaleY(1f)
+            .translationY(0f)
+            .setStartDelay(delay)
+            .setDuration(380)
+            .setInterpolator(Motion.EASE)
+            .start()
+    }
+
+    /** A plugin asked for [name]. Returns false when nothing was played. */
+    fun play(name: String): Boolean {
+        if (!ValueAnimator.areAnimatorsEnabled() || width == 0) return false
+        when (name) {
+            "pulse" -> {
+                animate().cancel()
+                animate()
+                    .scaleX(1.08f)
+                    .scaleY(1.08f)
+                    .setStartDelay(0)
+                    .setDuration(110)
+                    .setInterpolator(Motion.EASE)
+                    .withEndAction {
+                        animate()
+                            .scaleX(1f)
+                            .scaleY(1f)
+                            .setDuration(340)
+                            .setInterpolator(android.view.animation.OvershootInterpolator(3f))
+                            .start()
+                    }
+                    .start()
+            }
+            "nudge" -> {
+                val d = dp(10).toFloat()
+                animate().cancel()
+                translationX = 0f
+                android.animation.ObjectAnimator.ofFloat(this, TRANSLATION_X, 0f, -d, d, -d * .6f, d * .6f, -d * .25f, 0f)
+                    .setDuration(360)
+                    .start()
+            }
+            "flip" -> {
+                if (!canFlip || flipping) return false
+                flip()
+            }
+            else -> return false
+        }
+        return true
+    }
+
+    private fun resetMotion() {
+        animate().cancel()
+        alpha = 1f
+        scaleX = 1f
+        scaleY = 1f
+        translationY = 0f
+        rotationX = 0f
+        rotationY = 0f
+    }
+
     private fun exact(n: Int) = MeasureSpec.makeMeasureSpec(n.coerceAtLeast(0), MeasureSpec.EXACTLY)
+
+    /** Height of the fixed name rail: the label never slides with the face. */
+    private fun rail() = if (size == "small") dp(8 + 16) else dp(12 + 20 + 2)
 
     fun update(
         pageOwner: String,
@@ -138,12 +248,6 @@ internal class TileView(
         this.size = size
         signature = next
         definition = declaration
-        value.setAutoSizeTextTypeUniformWithConfiguration(
-            18,
-            if (size == "small") 28 else 56,
-            1,
-            android.util.TypedValue.COMPLEX_UNIT_SP,
-        )
         val tile = declaration.optString("template") == "tile"
         if (!tile && declaration.has("template"))
             Log.w("ThinkOS", "glance in tiles: $owner; displaying empty tile")
@@ -159,30 +263,100 @@ internal class TileView(
             declaration.optString("color").takeIf { tile && it.isNotEmpty() }?.let(Binding::compile)
         pageColor = reference.optString("color").takeIf(String::isNotEmpty)?.let(Binding::compile)
         badgeTemplate = Binding.compile(if (tile) declaration.optString("badge") else "")
-        content?.let {
+        contentGroups.forEach {
             it.active(false)
             face.removeView(it)
         }
+        contentGroups = emptyList()
+        faceContents = emptyList()
         content = null
-        if (tile && size in setOf("wide", "large"))
-            declaration.optJSONObject("content")?.let {
-                content =
-                    ComponentGroup(context, owner, it, state, variant, false, true, events).also { v
-                        ->
-                        face.addView(v)
-                        v.active(active)
+        picture?.let {
+            it.active(false)
+            removeView(it.view)
+        }
+        picture = null
+        showingPicture = false
+        val photo = declaration.optJSONObject("image").takeIf { tile }
+        pictureSource = Binding.compile(photo?.optString("src").orEmpty())
+        picture = photo?.let { events.component(context, owner, it) }?.also {
+            addView(it.view, 0)
+            it.colors(palette)
+            it.active(active)
+        }
+        // Content shows only where there is room for it. A face's own content wins over the tile's.
+        if (tile && size in setOf("wide", "large")) {
+            val groups = linkedMapOf<String, ComponentGroup>()
+            faceContents =
+                List(array?.length() ?: 0) { i ->
+                    val declared =
+                        array!!.getJSONObject(i).optJSONObject("content")
+                            ?: declaration.optJSONObject("content")
+                    declared?.let {
+                        groups.getOrPut(it.toString()) {
+                            ComponentGroup(context, owner, it, state, variant, false, true, events)
+                                .also { v ->
+                                    v.visibility = GONE
+                                    face.addView(v)
+                                }
+                        }
                     }
-            }
+                }
+            contentGroups = groups.values.toList()
+        }
         faceIndex = 0
+        styleTexts()
         bind(owner, setOf(""), true)
+    }
+
+    /** Value is a big light number, except over a photo where it is a two-line title. */
+    private fun styleTexts() {
+        if (showingPicture) {
+            value.setAutoSizeTextTypeWithDefaults(TextView.AUTO_SIZE_TEXT_TYPE_NONE)
+            value.textSize = if (size == "large") 17f else 15f
+            value.maxLines = 2
+            value.typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+            detail.textSize = 11f
+            detail.maxLines = 2
+        } else {
+            val (low, high) =
+                when (size) {
+                    "small" -> 12 to 24
+                    "medium" -> 12 to 56
+                    "wide" -> 12 to 60
+                    else -> 12 to 72
+                }
+            value.maxLines = 1
+            value.typeface = Typeface.create("sans-serif-light", Typeface.NORMAL)
+            value.setAutoSizeTextTypeUniformWithConfiguration(
+                low,
+                high,
+                1,
+                android.util.TypedValue.COMPLEX_UNIT_SP,
+            )
+            detail.textSize = 13f
+            detail.maxLines = 1
+        }
+        label.textSize = if (size == "small") 10f else if (size == "medium") 12f else 13f
     }
 
     fun bind(id: String, paths: Set<String>, force: Boolean = false) {
         if (!force && id != owner && id != pageOwner) return
         if (id == owner || force) {
-            content?.bind(owner, paths, force)
+            contentGroups.forEach { it.bind(owner, paths, force) }
             val snapshot = state(owner)
             val strings: (String) -> String? = { events.text(owner, it) }
+            picture?.let { photo ->
+                photo.bind(snapshot, variant(), strings)
+                val next = pictureSource.render(snapshot, variant(), strings).isNotBlank()
+                if (next != showingPicture) {
+                    showingPicture = next
+                    photo.view.visibility = if (next) VISIBLE else GONE
+                    scrim.visibility = photo.view.visibility
+                    styleTexts()
+                    face.requestLayout()
+                    applyFill(fill)
+                }
+            }
             if (force || faces.any { f -> f.values.any { it.affected(paths) } }) {
                 rendered = faces.map { f ->
                     f.mapValues { it.value.render(snapshot, variant(), strings) }
@@ -190,7 +364,8 @@ internal class TileView(
                 eligibleFaces =
                     rendered.indices.filter { i ->
                         rendered[i]["value"].orEmpty().isNotBlank() ||
-                            rendered[i]["detail"].orEmpty().isNotBlank()
+                            rendered[i]["detail"].orEmpty().isNotBlank() ||
+                            faceContents.getOrNull(i) != null
                     }
                 if (faceIndex !in eligibleFaces) faceIndex = eligibleFaces.firstOrNull() ?: 0
                 showFace()
@@ -220,6 +395,19 @@ internal class TileView(
         text(label, f["label"].orEmpty())
         text(detail, f["detail"].orEmpty())
         if (hadValue != value.text.isNotEmpty()) requestLayout()
+        val nextContent = faceContents.getOrNull(faceIndex)
+        if (nextContent !== content) {
+            content?.let {
+                it.active(false)
+                it.visibility = GONE
+            }
+            content = nextContent
+            content?.let {
+                it.visibility = VISIBLE
+                it.active(active)
+            }
+            requestLayout()
+        }
         val description =
             listOf(label.text, value.text, detail.text)
                 .filter { it.isNotBlank() }
@@ -268,13 +456,15 @@ internal class TileView(
         shape.setColor(safe)
         val fg = TileColor.nightForeground(safe, night)
         val derived = Palette(safe, safe, fg, fg, fg, fg, fg, fg, fg)
-        listOf(value, label, detail, badge).forEach { it.setTextColor(fg) }
+        // A photo sits under its own scrim, whatever the fallback colour would have chosen.
+        listOf(value, label, detail, badge).forEach { it.setTextColor(if (showingPicture) Color.WHITE else fg) }
         icon.palette = derived
-        content?.colors(derived)
+        contentGroups.forEach { it.colors(derived) }
     }
 
     fun colors(palette: Palette) {
         this.palette = palette
+        picture?.colors(palette)
         refreshColor(false)
         applyFill(fill)
     }
@@ -287,14 +477,18 @@ internal class TileView(
     }
 
     fun localeChanged() {
-        content?.localeChanged()
+        contentGroups.forEach { it.localeChanged() }
+        picture?.localeChanged()
         bind(owner, setOf(""), true)
     }
 
     fun active(value: Boolean) {
+        val was = active
         active = value
         content?.active(value)
+        picture?.active(value)
         if (!value) {
+            if (was) resetMotion()
             stopFlip()
             colorAnimation?.cancel()
             colorAnimation = null
@@ -305,6 +499,7 @@ internal class TileView(
 
     fun tick(now: Long, attention: Attention) {
         content?.tick(now, if (active) attention else Attention.AMBIENT)
+        picture?.tick(now, if (active) attention else Attention.AMBIENT)
         if (icon.visibility == VISIBLE) icon.tick(now, if (active) attention else Attention.AMBIENT)
         if (attention !in setOf(Attention.AWAKE, Attention.ENGAGED)) stopFlip()
     }
@@ -320,7 +515,7 @@ internal class TileView(
         }
         flipping = true
         face.setLayerType(LAYER_TYPE_HARDWARE, null)
-        val distance = (height - if (size == "small") 0 else dp(42)).toFloat()
+        val distance = (height - rail()).toFloat()
         face
             .animate()
             .translationY(-distance)
@@ -351,9 +546,15 @@ internal class TileView(
         flipping = false
     }
 
+    /**
+     * Metro layout: icon top-left, a large light number, a name on a fixed bottom rail. Wide tiles add a
+     * detail line and, when the face brings one, a content component filling the middle. All geometry is OS
+     * owned; the face only supplies text, an icon and optionally one of the fixed content components.
+     */
     private fun arrange(w: Int, h: Int) {
         positions.clear()
-        val p = minOf(dp(12), w / 2, h / 2)
+        val small = size == "small"
+        val p = minOf(dp(if (small) 8 else 12), w / 2, h / 2)
         val iw = (w - 2 * p).coerceAtLeast(0)
         val ih = (h - 2 * p).coerceAtLeast(0)
         val rtl = layoutDirection == LAYOUT_DIRECTION_RTL
@@ -372,72 +573,78 @@ internal class TileView(
                 v.layoutParams.height = box.height
             }
         }
-        val line = dp(30)
-        val valH = dp(72)
-        val iconSize =
-            minOf(dp(if (size == "small") 64 else if (size == "medium") 68 else 36), iw, ih)
-        if (size == "small") {
-            place(
-                icon,
-                (iw - iconSize) / 2,
-                (ih - iconSize) / 2,
-                iconSize,
-                iconSize,
-                icon.name.isNotBlank(),
-            )
-            place(value, 0, 0, iw, ih, icon.name.isBlank())
-            value.gravity = Gravity.CENTER
-            place(label, 0, 0, 0, 0, false)
-            place(detail, 0, 0, 0, 0, false)
-        } else {
-            value.gravity = Gravity.START or Gravity.CENTER_VERTICAL
-            val hasContent = content != null
-            val textW = if (size == "wide") (iw - dp(8)) / 2 else iw
-            if (size == "medium") {
-                val bodyH = (ih - line).coerceAtLeast(0)
-                val hasValue = value.text.isNotEmpty()
-                val glyph = if (hasValue) iconSize else minOf(dp(116), iw, bodyH)
-                val hasIcon = icon.name.isNotBlank()
-                val left = if (hasIcon && hasValue) glyph + dp(8) else 0
-                place(
-                    icon,
-                    if (hasValue) 0 else (iw - glyph) / 2,
-                    (bodyH - glyph) / 2,
-                    glyph,
-                    glyph,
-                    hasIcon,
-                )
-                place(value, left, 0, (iw - left).coerceAtLeast(0), bodyH, hasValue)
-                place(
-                    label,
-                    0,
-                    ih - line,
-                    iw - if (badge.visibility == VISIBLE) dp(30) else 0,
-                    line,
-                )
-                place(detail, 0, 0, 0, 0, false)
-                return
-            }
-            val textY =
-                if (size == "large" && hasContent) (ih * .55f).toInt()
-                else ((ih - line - iconSize - valH) / 2).coerceAtLeast(0)
-            place(icon, 0, textY, iconSize, iconSize, icon.name.isNotBlank())
-            val y = textY + if (icon.name.isNotBlank()) iconSize else 0
-            place(value, 0, y, textW, valH, value.text.isNotEmpty())
-            place(label, 0, ih - line, textW, line)
-            if (size == "wide") {
-                place(detail, textW + dp(8), 0, textW, ih, !hasContent)
-                content?.let { place(it, textW + dp(8), 0, textW, ih) }
-            } else {
-                place(detail, 0, (ih - line * 2).coerceAtLeast(0), iw, line, size == "large")
-                content?.let { place(it, 0, 0, iw, (ih * .5f).toInt()) }
-            }
+        val labelH = dp(if (small) 16 else 20)
+        val hasLabel = label.text.isNotEmpty()
+        val body = (ih - if (hasLabel) labelH + dp(4) else 0).coerceAtLeast(0)
+        val hasIcon = icon.name.isNotBlank()
+        val hasValue = value.text.isNotEmpty()
+        val hasDetail = detail.text.isNotEmpty()
+        val badgeReserve = if (badge.visibility == VISIBLE) dp(30) else 0
+        place(label, 0, ih - labelH, iw - badgeReserve, labelH, hasLabel)
+        content?.let { place(it, 0, 0, 0, 0, false) }
+
+        if (showingPicture) {
+            // A full-bleed photo: a title and a credit stack above the name, over the scrim.
+            val credit = if (hasDetail && !small) dp(30) else 0
+            val title = if (hasValue && !small) dp(if (size == "large") 46 else 40) else 0
+            value.gravity = Gravity.START or Gravity.BOTTOM
+            detail.gravity = Gravity.START or Gravity.TOP
+            place(icon, 0, 0, 0, 0, false)
+            place(detail, 0, body - credit, iw, credit, credit > 0)
+            place(value, 0, body - credit - title, iw, title, title > 0)
+            return
         }
+        value.gravity = Gravity.START or Gravity.CENTER_VERTICAL
+        detail.gravity = Gravity.START or Gravity.CENTER_VERTICAL
+        if (small) {
+            val glyph = minOf(dp(36), iw, body)
+            place(icon, (iw - glyph) / 2, (body - glyph) / 2, glyph, glyph, hasIcon && !hasValue)
+            place(value, 0, 0, iw, body, hasValue)
+            place(detail, 0, 0, 0, 0, false)
+            return
+        }
+        if (size == "medium") {
+            val glyph = if (hasValue) minOf(dp(36), body, iw) else minOf(dp(76), iw, body)
+            place(icon, if (hasValue) 0 else (iw - glyph) / 2, if (hasValue) 0 else (body - glyph) / 2, glyph, glyph, hasIcon)
+            val top = if (hasIcon && hasValue) glyph + dp(2) else 0
+            place(value, 0, top, iw, body - top, hasValue)
+            place(detail, 0, 0, 0, 0, false)
+            return
+        }
+        // wide and large
+        val detailH = if (hasDetail) dp(22) else 0
+        val box = content
+        if (box != null) {
+            var y = 0
+            if (size == "large") {
+                val shown = (body * .5f).toInt()
+                place(box, 0, 0, iw, shown)
+                y = shown + dp(4)
+            }
+            val rowH = if (size == "large") dp(56) else dp(32)
+            if (hasValue) {
+                place(value, 0, y, iw, rowH)
+                y += rowH
+            } else place(value, 0, 0, 0, 0, false)
+            place(detail, 0, y, iw, detailH, hasDetail)
+            y += detailH
+            if (size == "wide") place(box, 0, y + dp(4), iw, (body - y - dp(4)).coerceAtLeast(0))
+            place(icon, 0, 0, 0, 0, false)
+            return
+        }
+        val glyph = if (size == "large") dp(40) else dp(30)
+        place(icon, 0, 0, glyph, glyph, hasIcon)
+        val top = if (hasIcon) glyph + dp(2) else 0
+        value.gravity = Gravity.START or Gravity.BOTTOM
+        place(detail, 0, body - detailH, iw, detailH, hasDetail)
+        place(value, 0, top, iw, (body - detailH - top).coerceAtLeast(0), hasValue)
     }
 
     override fun onMeasure(wSpec: Int, hSpec: Int) {
         val w = MeasureSpec.getSize(wSpec)
         val h = MeasureSpec.getSize(hSpec)
+        picture?.view?.measure(exact(w), exact(h))
+        scrim.measure(exact(w), exact((h * .62f).toInt()))
         face.measure(exact(w), exact(h))
         badge.measure(
             exact(minOf(dp(52), (w - dp(24)).coerceAtLeast(0) / 2)),
@@ -447,6 +654,8 @@ internal class TileView(
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+        picture?.view?.layout(0, 0, width, height)
+        scrim.layout(0, height - scrim.measuredHeight, width, height)
         face.layout(0, 0, width, height)
         positions[label]?.let { label.layout(it.left, it.top, it.right, it.bottom) }
         val p = minOf(dp(12), width / 2)
@@ -457,13 +666,10 @@ internal class TileView(
 
     override fun dispatchDraw(canvas: android.graphics.Canvas) {
         val time = drawingTime
+        picture?.view?.takeIf { it.visibility == VISIBLE }?.let { drawChild(canvas, it, time) }
+        if (scrim.visibility == VISIBLE) drawChild(canvas, scrim, time)
         canvas.save()
-        canvas.clipRect(
-            0,
-            0,
-            width,
-            if (size == "small") height else (height - dp(42)).coerceAtLeast(0),
-        )
+        canvas.clipRect(0, 0, width, if (size == "small") height else (height - rail()).coerceAtLeast(0))
         drawChild(canvas, face, time)
         canvas.restore()
         if (label.visibility == VISIBLE) drawChild(canvas, label, time)
@@ -473,5 +679,10 @@ internal class TileView(
     override fun onDetachedFromWindow() {
         active(false)
         super.onDetachedFromWindow()
+    }
+
+    private companion object {
+        const val TILT_DEGREES = 7f
+        const val PRESSED_SCALE = .965f
     }
 }

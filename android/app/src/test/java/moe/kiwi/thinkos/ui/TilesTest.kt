@@ -16,11 +16,40 @@ class TilesTest {
         }
     }
     @Test fun firstFitDropAndPortraitCapacity() {
-        assertNull(RenderGeometry.tiles(listOf("large", "wide"), 1280, 800, 1.625f)[1])
-        assertTrue(RenderGeometry.tiles(listOf("large", "wide"), 800, 1280, 1.625f).all { it != null })
+        val mixed = listOf("large", "large", "wide", "wide")
+        assertTrue(RenderGeometry.tiles(mixed, 1280, 800, 1.625f).all { it != null })
+        assertEquals(listOf(false, false, true, true), RenderGeometry.tiles(mixed, 800, 1280, 1.625f).map { it == null })
+        assertNull(RenderGeometry.tiles(listOf("large", "large", "large"), 1280, 800, 1.625f)[2])
+        assertNull(RenderGeometry.tiles(listOf("large", "large", "large"), 800, 1280, 1.625f)[2])
         assertEquals(listOf(null), RenderGeometry.tiles(listOf("small"), 0, 800, 1f))
         assertEquals(listOf(null), RenderGeometry.tiles(listOf("small"), 800, 0, 1f))
         assertEquals(listOf(null), RenderGeometry.tiles(listOf("huge"), 800, 1280, 1f))
+    }
+    @Test fun theStartPageFillsEveryCellInBothOrientationsAndTheTitleRailStaysClear() {
+        val start = listOf("wide", "medium", "medium", "large", "wide", "medium", "small", "small", "small", "small")
+        for ((w, h) in listOf(1280 to 800, 800 to 1280)) {
+            val grid = RenderGeometry.tileGrid(w, h, 1.625f)!!
+            assertEquals(if (w > h) 8 else 6, grid.cols)
+            val boxes = RenderGeometry.tiles(start, w, h, 1.625f)
+            assertTrue(boxes.all { it != null })
+            val cells = boxes.filterNotNull().sumOf { box ->
+                ((box.width + grid.gap) / (grid.cell + grid.gap)) * ((box.height + grid.gap) / (grid.cell + grid.gap))
+            }
+            assertEquals(grid.cols * grid.rows, cells)
+            val title = RenderGeometry.tileTitle(w, h, 1.625f)!!
+            for (box in boxes.filterNotNull()) assertTrue(title.right <= box.left || title.bottom <= box.top)
+            val mirrored = RenderGeometry.tileTitle(w, h, 1.625f, true)!!
+            assertEquals(RenderGeometry.Box(w - title.right, title.top, w - title.left, title.bottom), mirrored)
+            // The grid sits on the far edge with the standard margin, the remainder is the rail.
+            val rightmost = boxes.filterNotNull().maxOf { it.right }; val bottommost = boxes.filterNotNull().maxOf { it.bottom }
+            if (w > h) assertEquals(w - grid.edge, rightmost) else assertEquals(h - grid.edge, bottommost)
+        }
+    }
+    @Test fun noTitleRailMeansNoTitleAndNoGridMeansNoTiles() {
+        assertNull(RenderGeometry.tileTitle(0, 800, 1.625f))
+        assertNull(RenderGeometry.tileGrid(40, 30, 1.625f))
+        assertNull(RenderGeometry.tileTitle(40, 30, 1.625f))
+        assertNull(RenderGeometry.tileGrid(800, 0, 1f))
     }
     @Test fun geometryIsDeterministicMirroredBoundedAndDisjoint() {
         val random = Random(25)
@@ -47,6 +76,14 @@ class TilesTest {
             assertTrue(TileColor.contrast(color, TileColor.foreground(color)) >= 4.5)
         }
         for (color in listOf(0xff000000.toInt(), -1, 0xff808080.toInt())) assertTrue(TileColor.contrast(color, TileColor.foreground(color)) >= 4.5)
+    }
+    @Test fun tilesAreWhiteOnColourUnlessWhiteCannotBeRead() {
+        for (hex in listOf("#0B5CC4", "#C2410C", "#B3173B", "#0F766E", "#6D28D9", "#A21CAF", "#15803D", "#475569", "#0E7490"))
+            assertEquals(hex, -1, TileColor.foreground(TileColor.parse(hex)!!))
+        for (hex in listOf("#FFB900", "#E9B35A", "#F2F3F5", "#FFFFFF"))
+            assertEquals(hex, 0xff000000.toInt(), TileColor.foreground(TileColor.parse(hex)!!))
+        // The Windows blue is right at the limit: white reaches only 4.50, so the stricter rule picks black.
+        assertEquals(0xff000000.toInt(), TileColor.foreground(TileColor.parse("#0078D7")!!))
     }
     @Test fun nightCompositionAlsoPreservesReadableContrast() {
         for (n in listOf(0f, .25f, .5f, .75f, 1f)) for (r in 0..15) for (g in 0..15) for (b in 0..15) {

@@ -15,6 +15,8 @@ import moe.kiwi.thinkos.i18n.Labels
 import moe.kiwi.thinkos.i18n.LocaleChain
 import moe.kiwi.thinkos.i18n.StringTable
 import moe.kiwi.thinkos.i18n.SystemStrings
+import moe.kiwi.thinkos.media.MediaEngine
+import moe.kiwi.thinkos.media.StoragePermission
 import moe.kiwi.thinkos.net.PluginHttp
 import moe.kiwi.thinkos.settings.SettingError
 import moe.kiwi.thinkos.settings.SettingField
@@ -34,13 +36,19 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 
 /** Lua is confined to PluginThread. Network and durable writes never block that thread. */
-class PluginRuntime(context: Context, private val callbacks: Callbacks, private val settings: SettingsStore) {
+class PluginRuntime(
+    context: Context, private val callbacks: Callbacks, private val settings: SettingsStore,
+    private val media: MediaEngine, storagePermission: StoragePermission,
+) {
     interface Callbacks {
         fun onCatalog(pages: List<PluginPage>, widgets: List<PluginWidget>)
         fun onState(pluginId: String, state: JSONObject)
-        fun onFocus(pageKey: String, live: Boolean, release: Boolean)
+        fun onFocus(pageKey: String, live: Boolean, release: Boolean, answersTap: Boolean = false)
+        fun onTileAnimation(pluginId: String, name: String) {}
         fun onError(pluginId: String, message: String)
     }
     private val app = context.applicationContext
@@ -71,6 +79,46 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
     fun text(pluginId: String, key: String): String? = stringTables[pluginId]?.format(key, Locale.getDefault())
     @Volatile private var imageOwners = emptyMap<String, moe.kiwi.thinkos.image.ImageOwner>()
     internal fun imageOwner(pluginId: String) = imageOwners[pluginId]
+    /** Immutable per-consumer map of usable aliases to their providers, safe to read from the UI thread. */
+    @Volatile private var useAuthorities = emptyMap<String, Map<String, String?>>()
+    /** Declared but unusable aliases have no authority. A plugin that never declared the alias owns its own state. */
+    internal fun imageAuthority(pluginId: String, alias: String): String? {
+        val declared = useAuthorities[pluginId]
+        return if (declared == null || alias !in declared) pluginId else declared[alias]
+    }
+    /** Which permissions each running plugin holds, readable from the UI thread (media controls check it per tap). */
+    @Volatile private var permissionSnapshot = emptyMap<String, Set<String>>()
+    fun hasPermission(pluginId: String, permission: String): Boolean = permission in permissionSnapshot[pluginId].orEmpty()
+    private var mediaSnapshot: Map<String, Any?> = emptyMap()
+    private var mediaJson = JSONObject()
+    /** Worker-thread copy of each plugin's last published state, so a position tick re-sends only the `media` key. */
+    private val published = mutableMapOf<String, JSONObject>()
+
+    /** OS position updates bypass Lua; every interested view receives the same immutable snapshot. */
+    fun mediaState(state: Map<String, Any?>) {
+        val snapshot = MediaCapability.publicState(state)
+        worker.post {
+            if (closed || snapshot == mediaSnapshot) return@post
+            mediaSnapshot = snapshot
+            mediaJson = JsonDocument.fromHost(snapshot) as JSONObject
+            active.values.filter { "media" in it.permissions && !it.disabled }.forEach { instance ->
+                // Not published yet: the first publication carries the current media state itself.
+                val base = published[instance.bundle.id] ?: return@forEach
+                val names = base.names()
+                val next = JSONObject(base, Array(names?.length() ?: 0) { names!!.getString(it) }).put("media", mediaJson)
+                published[instance.bundle.id] = next
+                main.post { if (!closed) callbacks.onState(instance.bundle.id, next) }
+            }
+        }
+    }
+
+    /** Media events carry an instance token so callbacks cannot enter a replacement's Lua VM. */
+    fun mediaEvent(owner: String, name: String, payload: Map<String, Any?>) {
+        worker.post {
+            val instance = (active.values + pending.values).firstOrNull { it.mediaOwner == owner && it.mediaLive.get() } ?: return@post
+            execute(instance) { it.dispatch(name, arrayOf(payload)) }
+        }
+    }
     private val refreshDev = Runnable { scanDev() }
     private val systemStrings = SystemStrings(app.resources, app.packageName)
     private val labels = Labels(
@@ -82,13 +130,16 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
         else (active[scope] ?: pending[scope])?.let { labels.resolve(scope, it.bundle.manifest.optString("name", scope), locale) } ?: scope
     }
     private val location = moe.kiwi.thinkos.location.LocationProvider(settings)
+    private val systemValues = moe.kiwi.thinkos.settings.SystemValues(settings)
     private val astronomy = AstroHost { location.get().toMap() }
+    private val mediaCapability = MediaCapability(app, media, storagePermission, io, main)
     /** Settings changed (Server delivery or the device's own settings page): tell the plugin that owns them. */
     private val settingsListener = SettingsStore.Listener { scope, keys ->
         if (scope != SettingsStore.SYSTEM) worker.post { if (!closed) active[scope]?.let(::configChanged) }
         else if (keys.any { it.startsWith("location.") }) {
             event(null, "location", JSONArray())
         }
+        if (scope == SettingsStore.SYSTEM && keys.any { it.startsWith("units.") }) event(null, "units", JSONArray())
     }
     init { settings.addListener(settingsListener) }
 
@@ -134,8 +185,23 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
         JSONObject()
     }
     private inner class Instance(val bundle: Bundle, previous: Instance? = null) {
-        val imageOwner = moe.kiwi.thinkos.image.ImageOwner(bundle.directory,
-            arrayValues(bundle.manifest.optJSONArray("permissions")).map(Any::toString).toSet())
+        val permissions = arrayValues(bundle.manifest.optJSONArray("permissions")).map(Any::toString).toSet()
+        /** Names this instance's media session; a replacement gets a new token, so late callbacks cannot reach it. */
+        val mediaOwner = "${bundle.id}:${NEXT_INSTANCE.incrementAndGet()}"
+        val mediaLive = AtomicBoolean(true)
+        val imageOwner = moe.kiwi.thinkos.image.ImageOwner(bundle.directory, permissions)
+        val exports = PublicData.exports(bundle.manifest)
+        val uses = PublicData.uses(bundle.manifest)
+        val calls = PublicData.calls(bundle.manifest)
+        val publicCommands = PublicData.publicCommands(bundle.manifest)
+        // A restart or upgrade keeps published values and cooldowns, so consumers do not flash empty meanwhile.
+        private val predecessor = previous ?: active[bundle.id]
+        val exportValues: MutableMap<String, ExportValue> = predecessor?.exportValues ?: linkedMapOf()
+        val commandGate: CommandGate = predecessor?.commandGate ?: CommandGate()
+        val animationGate: CommandGate = predecessor?.animationGate ?: CommandGate()
+        var seenUses = emptyMap<String, UseResolution>()
+        val dataPending = mutableSetOf<String>()
+        val dataDelivered = mutableMapOf<String, Long>()
         var lua: NativeLua? = null
         val state: JsonDocument = previous?.state ?: JsonDocument()
         val strings: StringTable = StringTable.load(bundle.directory)
@@ -163,13 +229,18 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
             val variants = page.optJSONArray("variants") ?: view.optJSONArray("variants")
             PluginPage(bundle.id, page.getString("id"), label(page.optString("title", page.getString("id"))), view,
                 arrayValues(variants).map { if (it is JSONObject) it.getString("id") else it.toString() },
-                arrayValues(page.optJSONArray("roles")).map(Any::toString), page.optInt("priority"), page.optBoolean("live"))
+                arrayValues(page.optJSONArray("roles")).map(Any::toString), page.optInt("priority"), page.optBoolean("live"),
+                page.optString("title").takeIf { it.startsWith("@") && !it.startsWith("@@") }?.substring(1))
         }
         val widgets = arrayObjects(bundle.manifest.optJSONArray("widgets")).map { widget ->
+            val alternates = widget.optJSONObject("alternates")
             PluginWidget(bundle.id, widget.getString("id"), readObject(resolve(bundle.directory, widget.getString("view"))),
-                widget.optString("opens").takeIf(String::isNotBlank))
+                widget.optString("opens").takeIf(String::isNotBlank),
+                alternates?.keys()?.asSequence()?.associateWith { readObject(resolve(bundle.directory, alternates.getString(it))) }.orEmpty())
         }
         fun terminate(sendStop: Boolean) {
+            mediaLive.set(false)
+            main.post { runCatching { media.releaseOwner(mediaOwner) }.onFailure { Log.w(TAG, "Media owner cleanup failed", it) } }
             if (sendStop) runCatching { slice(this) { lua?.dispatch("stop") } }
             timers.values.forEach(worker::removeCallbacks)
             timers.clear()
@@ -241,7 +312,10 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
             } catch (e: Exception) { loading = false; report("runtime", e); publishCatalog() }
         }
     }
+    /** When each plugin's own page was last tapped, so a page change it asks for in reply is allowed through. */
+    private val tapped = java.util.concurrent.ConcurrentHashMap<String, Long>()
     fun event(pluginId: String?, name: String, args: JSONArray = JSONArray()) {
+        if (pluginId != null && name == "tap") tapped[pluginId] = SystemClock.elapsedRealtime()
         val values = (JsonDocument.toHost(args) as List<*>).toTypedArray()
         worker.post {
             if (pluginId == null && name == "attention") currentAttention = values
@@ -332,6 +406,7 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
         val previous = active.put(instance.bundle.id, instance)
         if (previous != null && previous.bundle.directory != instance.bundle.directory) previousDirectories[instance.bundle.id] = previous.bundle.directory
         previous?.terminate(true)
+        if (instance.exports.isNotEmpty() || instance.exportValues.isNotEmpty()) captureExports(instance, instance.state.snapshot())
         // A plugin installed/replaced while already asleep must learn that state before
         // its deferred work starts, even when the sensors have no new transition to emit.
         worker.post {
@@ -415,7 +490,7 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
         return when (method) {
             "config" -> LinkedHashMap(settings.snapshot(bundle.id))
             "state.set" -> {
-                val patch = statePatch(arg(0))
+                val patch = statePatch(arg(0), reserveUses = bundle.manifest.getInt("api") >= 6)
                 instance.state.merge(patch); publishState(instance); null
             }
             "settings.list" -> { requireSettingsAdmin(instance); describer.list(Locale.getDefault()) }
@@ -450,7 +525,24 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
                 val params = (arg(1) as? Map<*, *>)?.entries?.associate { (k, v) -> k.toString() to v }.orEmpty()
                 instance.strings.format(arg(0) as String, Locale.getDefault(), params) ?: arg(0)
             }
-            "state.get" -> JsonDocument.toHost(path(instance.state.value, arg(0) as? String ?: ""))
+            "state.get" -> {
+                val requested = arg(0) as? String ?: ""
+                if (requested == "media" || requested.startsWith("media.")) {
+                    require("media" in instance.permissions) { "media permission required" }
+                    JsonDocument.toHost(path(mediaJson, requested.removePrefix("media").removePrefix(".")))
+                } else JsonDocument.toHost(path(instance.state.value, requested))
+            }
+            "tile.animate" -> {
+                val name = arg(0) as? String
+                if (name == null || name !in TileAnimations.names) mapOf("error" to "unknown")
+                else if (!instance.animationGate.allow(name, SystemClock.elapsedRealtime(), TileAnimations.COOLDOWN_MILLIS)) mapOf("error" to "cooldown")
+                else {
+                    main.post { if (!closed) callbacks.onTileAnimation(bundle.id, name) }
+                    mapOf("ok" to true)
+                }
+            }
+            "data.get" -> readUse(instance, arg(0) as String)
+            "command.call" -> callCommand(instance, arg(0) as String, arg(1))
             "store.get" -> JsonDocument.toHost(instance.store.document.value.opt(arg(0) as String))
             "store.set" -> { instance.store.set(arg(0) as String, arg(1)); null }
             "time.now" -> WallClock.now().takeIf { it >= 1_577_836_800_000L }
@@ -478,6 +570,9 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
                 null
             }
             "astro.seasons" -> astronomy.call(method, args)
+            "units.get" -> systemValues.units.toMap()
+            "units.temperature" -> number(0).let { require(it.isFinite()); systemValues.units.temperature(it) }
+            "units.wind" -> number(0).let { require(it.isFinite()); systemValues.units.wind(it) }
             "locale" -> {
                 val locale = Locale.getDefault()
                 mapOf("tag" to locale.toLanguageTag(), "language" to locale.language, "region" to locale.country,
@@ -510,23 +605,16 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
                 worker.postDelayed({ resume(instance, taskId, emptyArray()) }, (number(0) * 1000).toLong())
                 null
             }
-            "library.list" -> {
-                require(arrayValues(bundle.manifest.optJSONArray("permissions")).contains("library")) { "library permission required" }
+            "media.load", "media.play", "media.pause", "media.toggle", "media.next", "media.prev", "media.seek",
+            "media.volume", "media.stop", "media.shuffle", "media.repeat", "media.jump", "media.live", "media.audioTrack",
+            "media.textTrack", "library.list" -> {
                 require(taskId != 0 && instance.awaits.size < 8 && (active.values + pending.values).sumOf { it.awaits.size } < 32)
-                val options = arg(0) as? Map<*, *> ?: error("Library options must be a table")
-                instance.awaits[taskId] = null
-                instance.awaits[taskId] = io.submit {
-                    // Large metadata arrays cross JNI once as text; the budgeted C codec
-                    // reconstructs the same public table without thousands of JNI calls.
-                    val result = runCatching {
-                        val value = moe.kiwi.thinkos.media.MediaLibrary(app).list(options).toHost()
-                        JsonDocument.fromHost(value).toString().also {
-                            require(it.toByteArray(Charsets.UTF_8).size <= 1024 * 1024) { "Library response exceeds 1 MiB" }
-                        }
-                    }
-                    worker.post { resume(instance, taskId, if (result.isSuccess) arrayOf(result.getOrThrow(), null)
-                        else arrayOf(null, result.exceptionOrNull()?.message ?: "Library scan failed")) }
+                // Playback, storage permission prompts and library scans run on the main/IO threads; the plugin only waits.
+                val job = CapabilityAwait({ !closed && instance.mediaLive.get() }) { values ->
+                    worker.post { resume(instance, taskId, values) }
                 }
+                instance.awaits[taskId] = job
+                mediaCapability.call(instance.mediaOwner, instance.permissions, method, args, job)
                 null
             }
             "http.get", "http.post" -> {
@@ -546,7 +634,8 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
                 val id = (arg(0) as String).removePrefix("${bundle.id}.")
                 val page = instance.pages.firstOrNull { it.id == id } ?: error("page does not belong to plugin")
                 val live = arg(1) == true; require(!live || page.live)
-                main.post { if (!closed) callbacks.onFocus(page.key, live, method == "page.release") }
+                val answersTap = SystemClock.elapsedRealtime() - (tapped[bundle.id] ?: Long.MIN_VALUE / 2) < TAP_ANSWER_MILLIS
+                main.post { if (!closed) callbacks.onFocus(page.key, live, method == "page.release", answersTap) }
                 null
             }
             "log" -> {
@@ -604,10 +693,16 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
     private fun install(index: PluginFiles.Index, open: (String) -> InputStream): Bundle {
         val digest = index.digest
         val staging = File(root, ".stage-$digest")
-        PluginFiles.deleteTree(staging)
+        val destination = File(root, "${index.id}/${index.version}-$digest")
+        // A version directory is only ever published by renaming a verified staging copy, and its name carries the digest of
+        // the files. The APK that holds the originals is signature-checked by Android, so copying and hashing them again on
+        // every start would only repeat that (about a second of cold start with eight plugins). It is still validated below.
+        val installed = destination.isDirectory && runCatching { File(destination, "index.json").readText(Charsets.UTF_8) == index.json.toString() }.getOrDefault(false)
+        if (!installed) PluginFiles.deleteTree(staging)
+        val source = if (installed) destination else staging
         try {
-            PluginFiles.copy(index, staging, open)
-            val manifest = readObject(resolve(staging, "manifest.json"))
+            if (!installed) PluginFiles.copy(index, staging, open)
+            val manifest = readObject(resolve(source, "manifest.json"))
             PluginSchema.validateManifest(manifest)
             require(manifest.getInt("api") <= PluginSchema.API)
             val id = manifest.getString("id"); val version = manifest.getString("version")
@@ -615,25 +710,37 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
             require(id.matches(Regex("[a-z][a-z0-9-]{0,63}")))
             require(version.matches(Regex("[0-9]+\\.[0-9]+\\.[0-9]+(?:-[A-Za-z0-9.-]+)?")))
             require(!manifest.has("sources")) { "sources are supported from M1" }
-            if (manifest.has("main")) require(resolve(staging, manifest.getString("main")).let { it.isFile && it.length() <= MAX_STATE })
+            if (manifest.has("main")) require(resolve(source, manifest.getString("main")).let { it.isFile && it.length() <= MAX_STATE })
             for (collection in listOf("pages", "widgets")) {
                 val ids = mutableSetOf<String>()
                 arrayObjects(manifest.optJSONArray(collection)).forEach { item ->
                     require(ids.add(item.getString("id"))) { "duplicate $collection id" }
-                    val view = readObject(resolve(staging, item.getString("view")))
+                    val view = readObject(resolve(source, item.getString("view")))
                     PluginSchema.validateView(view, manifest.getInt("api"))
+                    require(!MediaViews.used(view) || arrayValues(manifest.optJSONArray("permissions")).contains("media")) {
+                        "controls, video and seekbar need the media permission"
+                    }
                     require(view.has(if (collection == "pages") "layout" else "template")) { "wrong view kind for $collection" }
+                    item.optJSONObject("alternates")?.let { alternates ->
+                        alternates.keys().forEach { template ->
+                            val alternate = readObject(resolve(source, alternates.getString(template)))
+                            PluginSchema.validateView(alternate, manifest.getInt("api"))
+                            require(!MediaViews.used(alternate) || arrayValues(manifest.optJSONArray("permissions")).contains("media")) {
+                                "controls, video and seekbar need the media permission"
+                            }
+                            require(alternate.optString("template") == template) { "alternate view has a different template" }
+                        }
+                    }
                     if (item.has("variants") && view.has("variants")) {
                         fun ids(a: JSONArray) = arrayValues(a).map { if (it is JSONObject) it.getString("id") else it.toString() }
                         require(ids(item.getJSONArray("variants")) == ids(view.getJSONArray("variants"))) { "manifest/view variants disagree" }
                     }
                 }
             }
-            val destination = File(root, "$id/$version-$digest")
             destination.parentFile!!.mkdirs()
-            if (destination.exists()) PluginFiles.deleteTree(staging) else check(staging.renameTo(destination))
+            if (!installed) { if (destination.exists()) PluginFiles.deleteTree(staging) else check(staging.renameTo(destination)) }
             return Bundle(destination, manifest, digest)
-        } catch (e: Exception) { PluginFiles.deleteTree(staging); throw e }
+        } catch (e: Exception) { if (!installed) PluginFiles.deleteTree(staging); throw e }
     }
 
     private fun publishCatalog() {
@@ -646,20 +753,112 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
         stringTables = active.values.associate { it.bundle.id to it.strings }
         imageOwners = active.values.filter { !it.disabled && (!it.bundle.manifest.has("main") || it.lua != null) }
             .associate { it.bundle.id to it.imageOwner }
+        permissionSnapshot = active.values.filter { !it.disabled && (!it.bundle.manifest.has("main") || it.lua != null) }
+            .associate { it.bundle.id to it.permissions }
+        published.keys.retainAll(active.keys)
+        refreshConsumers()
         main.post { if (!closed) callbacks.onCatalog(pages, widgets) }
     }
-    private fun publishState(instance: Instance) {
+    private fun publishState(instance: Instance) = schedulePublish(instance, 50)
+    private fun schedulePublish(instance: Instance, delay: Long) {
         if (instance.publishPending) return
         instance.publishPending = true
         worker.postDelayed({
             instance.publishPending = false
             if (active[instance.bundle.id] !== instance || closed) return@postDelayed
             val snapshot = instance.state.snapshot()
+            // Read before `config` joins the snapshot: an export can only ever carry published state.
+            // A candidate still starting shares this state; it publishes when it commits, not half way.
+            if (pending[instance.bundle.id] == null && captureExports(instance, snapshot)) refreshConsumers()
             // `config` is reserved: the effective settings, so views can bind {{config.city}}.
             snapshot.put("config", JSONObject(settings.snapshot(instance.bundle.id)))
+            // `uses` is reserved too: the public data this plugin declared, so views can bind {{uses.daily.cover}}.
+            if (instance.uses.isNotEmpty()) snapshot.put("uses", JSONObject().also { uses ->
+                instance.uses.forEach { (alias, use) -> resolveUse(instance, use).value?.let { uses.put(alias, it.value) } }
+            })
+            // `media` is reserved as well: the OS media session, for plugins that hold the media permission.
+            if ("media" in instance.permissions) snapshot.put("media", mediaJson)
+            published[instance.bundle.id] = snapshot
             main.post { if (!closed) callbacks.onState(instance.bundle.id, snapshot) }
             updateDiagnostics()
-        }, 50)
+        }, delay)
+    }
+    /** Keeps the previous object for an unchanged value: consumers then share it and diff by identity. */
+    private fun captureExports(instance: Instance, snapshot: JSONObject): Boolean {
+        var changed = instance.exportValues.keys.retainAll(instance.exports.keys)
+        instance.exports.forEach { (name, export) ->
+            val value = PublicData.read(snapshot, export.path)
+            if (value == null) { if (instance.exportValues.remove(name) != null) changed = true }
+            else {
+                val text = PublicData.encode(value)
+                val previous = instance.exportValues[name]
+                if (previous?.text != text && !PublicData.same(previous?.value, value)) { instance.exportValues[name] = ExportValue(value, text); changed = true }
+            }
+        }
+        return changed
+    }
+    private fun resolveUse(consumer: Instance, use: PublicUse): UseResolution {
+        val provider = active[use.provider]?.takeUnless { it.disabled } ?: return UseResolution(UseStatus.MISSING, use.provider, null)
+        val status = PublicData.status(use, provider.exports[use.export], consumer.permissions)
+        return UseResolution(status, use.provider, provider.exportValues[use.export].takeIf { status == UseStatus.AVAILABLE })
+    }
+    /** Republishes only consumers whose data changed, whichever way it did: new value, upgrade, removal or quarantine. */
+    private fun refreshConsumers() {
+        val authorities = mutableMapOf<String, Map<String, String?>>()
+        active.values.filter { it.uses.isNotEmpty() }.forEach { consumer ->
+            val resolved = consumer.uses.mapValues { (_, use) -> resolveUse(consumer, use) }
+            // Borrowed grants end with the consumer's own, like its imageOwners entry.
+            val running = !consumer.disabled && (!consumer.bundle.manifest.has("main") || consumer.lua != null)
+            authorities[consumer.bundle.id] = resolved.mapValues { (_, it) -> it.provider.takeIf { _ -> running && it.status == UseStatus.AVAILABLE } }
+            val changed = resolved.filter { (alias, next) ->
+                val seen = consumer.seenUses[alias]
+                if (seen?.status != next.status && next.status != UseStatus.AVAILABLE) {
+                    Log.w(TAG, "[plugin:${consumer.bundle.id}] uses.$alias -> ${consumer.uses.getValue(alias).let { "${it.provider}.${it.export}" }}: ${next.status.code}")
+                }
+                seen?.status != next.status || seen.value !== next.value
+            }.keys
+            consumer.seenUses = resolved
+            if (changed.isNotEmpty()) {
+                // A chatty provider must not drive every consumer's main-thread diff at its own rate.
+                schedulePublish(consumer, PublicData.CONSUMER_PUBLISH_DELAY)
+                changed.forEach { scheduleData(consumer, it) }
+            }
+        }
+        useAuthorities = authorities
+    }
+    /** The `data` event says which alias changed; the plugin reads it when it wants to, at most once a second. */
+    private fun scheduleData(instance: Instance, alias: String) {
+        if (!instance.bundle.manifest.has("main") || !instance.dataPending.add(alias)) return
+        val elapsed = SystemClock.elapsedRealtime() - (instance.dataDelivered[alias] ?: Long.MIN_VALUE / 2)
+        worker.postDelayed({
+            instance.dataPending.remove(alias)
+            if (active[instance.bundle.id] === instance && !closed) {
+                instance.dataDelivered[alias] = SystemClock.elapsedRealtime()
+                execute(instance) { it.dispatch("data", arrayOf(alias)) }
+            }
+        }, (PublicData.DATA_EVENT_INTERVAL - elapsed).coerceAtLeast(0))
+    }
+    private fun readUse(consumer: Instance, alias: String): Map<String, Any> {
+        val use = consumer.uses[alias] ?: return mapOf("error" to "undeclared")
+        val resolved = resolveUse(consumer, use)
+        if (resolved.status != UseStatus.AVAILABLE) return mapOf("error" to resolved.status.code)
+        val value = resolved.value ?: return mapOf("error" to "empty")
+        // A large list crosses JNI once as text, like tos.library.list, and must still fit a Lua budget.
+        if (!PublicData.fitsLua(value.text)) return mapOf("error" to "too_large")
+        return mapOf("text" to value.text)
+    }
+    private fun callCommand(caller: Instance, target: String, args: Any?): Map<String, Any> {
+        if (target !in caller.calls) return mapOf("error" to "undeclared")
+        val provider = active[target.substringBefore('.')]?.takeUnless { it.disabled || it.lua == null } ?: return mapOf("error" to "unavailable")
+        val command = target.substringAfter('.')
+        val cooldown = provider.publicCommands[command] ?: return mapOf("error" to "not_public")
+        val encoded = JsonDocument.fromHost(args)
+        if (PublicData.encode(encoded).toByteArray(Charsets.UTF_8).size > PublicData.MAX_COMMAND_ARGS) return mapOf("error" to "too_large")
+        if (!provider.commandGate.allow(command, SystemClock.elapsedRealtime(), cooldown)) return mapOf("error" to "cooldown")
+        val delivered = arrayOf<Any?>(command, JsonDocument.toHost(encoded), "plugin", caller.bundle.id)
+        // Never re-enter another plugin from inside this one's slice; its own budget applies.
+        worker.post { execute(provider) { it.dispatch("command", delivered) } }
+        return mapOf("ok" to true)
     }
     /** City, country, coordinates and today's offset for an IANA id or alias; null if unknown. */
     private fun zoneInfo(id: String): Map<String, Any?>? {
@@ -684,7 +883,12 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
         require(factory[instance.bundle.id]?.digest == instance.bundle.digest) { "system.settings is only granted to built-in plugins" }
     }
     private fun updateDiagnostics() {
-        diagnosticSnapshot = active.values.map { PluginDiagnostic(it.bundle.id, it.bundle.version, it.lua?.bytes() ?: 0, it.disabled, it.error) }
+        diagnosticSnapshot = active.values.map { instance ->
+            PluginDiagnostic(instance.bundle.id, instance.bundle.version, instance.lua?.bytes() ?: 0, instance.disabled, instance.error,
+                instance.seenUses.mapNotNull { (alias, it) ->
+                    if (it.status != UseStatus.AVAILABLE) "$alias:${it.status.code}" else if (it.value == null) "$alias:empty" else null
+                })
+        }
     }
     private fun persistInstalled(candidate: Instance? = null) {
         if (loading) return // Initial catalog is committed once, after all bundled candidates.
@@ -710,6 +914,8 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
     companion object {
         private const val TAG = "ThinkOS"
         private const val MAX_STATE = 256 * 1024
+        private val NEXT_INSTANCE = AtomicLong()
+        private const val TAP_ANSWER_MILLIS = 5_000L
         private fun arrayValues(array: JSONArray?): List<Any> = if (array == null) emptyList() else (0 until array.length()).map(array::get)
         private fun arrayObjects(array: JSONArray?): List<JSONObject> = arrayValues(array).map { it as JSONObject }
         private fun path(state: JSONObject, path: String): Any? {
@@ -730,12 +936,14 @@ class PluginRuntime(context: Context, private val callbacks: Callbacks, private 
             return parseObject(file.readText())
         }
         /** API 3 also accepts an encoded object to avoid large typed-JNI patches on armv7. */
-        internal fun statePatch(value: Any?): JSONObject {
+        internal fun statePatch(value: Any?, reserveUses: Boolean = true): JSONObject {
             val patch = if (value is String) {
                 require(value.toByteArray(Charsets.UTF_8).size <= MAX_STATE) { "State patch exceeds 256 KiB" }
                 parseObject(value)
             } else JsonDocument.fromHost(value) as JSONObject
             require(!patch.has("config")) { "'config' is reserved for the plugin's settings" }
+            require(!patch.has("media")) { "'media' is reserved for the OS media session" }
+            require(!reserveUses || !patch.has("uses")) { "'uses' is reserved for the plugin's declared public data" }
             return patch
         }
         private fun parseObject(text: String): JSONObject {

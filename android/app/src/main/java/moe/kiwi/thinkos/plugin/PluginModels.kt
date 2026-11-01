@@ -7,13 +7,24 @@ data class PluginPage(
     val pluginId: String, val id: String, val title: String, val view: JSONObject,
     val variants: List<String> = emptyList(), val roles: List<String> = emptyList(),
     val priority: Int = 0, val live: Boolean = false,
+    /** The `@key` of a translated title, kept so a page that shows its title can follow a language change. */
+    val titleKey: String? = null,
 ) { val key: String get() = "$pluginId.$id" }
 
-data class PluginWidget(val pluginId: String, val id: String, val view: JSONObject, val opens: String? = null) {
+data class PluginWidget(val pluginId: String, val id: String, val view: JSONObject, val opens: String? = null,
+    val alternates: Map<String, JSONObject> = emptyMap()) {
     val key: String get() = "$pluginId.$id"
 }
 
-data class PluginDiagnostic(val id: String, val version: String, val bytes: Long, val disabled: Boolean, val error: String?)
+/** The tile animations a plugin may request by name (ADR-028). The OS owns how each one looks. */
+object TileAnimations {
+    val names = setOf("pulse", "flip", "nudge")
+    /** Per plugin and animation; a plugin cannot use this as a strobe. */
+    const val COOLDOWN_MILLIS = 1_000L
+}
+
+data class PluginDiagnostic(val id: String, val version: String, val bytes: Long, val disabled: Boolean, val error: String?,
+    val unresolved: List<String> = emptyList())
 
 internal class NativeLua(private val bridge: (String, Array<Any?>, Int) -> Any?) {
     data class Step(val taskId: Int, val status: Int, val message: String?, val cpuMicros: Long, val wallMicros: Long) {

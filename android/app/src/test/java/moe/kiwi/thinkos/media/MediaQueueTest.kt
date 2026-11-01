@@ -77,6 +77,36 @@ class MediaQueueTest {
         assertEquals(MediaRepeat.OFF, queue.repeat)
     }
 
+    @Test fun jumpingSelectsByTheLuaIndexWhateverTheShuffleOrderIs() {
+        val queue = MediaQueue(Random(7))
+        queue.load(items, MediaOptions(index = 1, shuffle = true))
+        queue.select(4)
+        assertEquals(4, queue.index)
+        assertEquals("Track 4", queue.current!!.title)
+        assertThrows(IllegalArgumentException::class.java) { queue.select(0) }
+        assertThrows(IllegalArgumentException::class.java) { queue.select(6) }
+        queue.setShuffle(false)
+        queue.select(2)
+        assertEquals(1, queue.playerIndex)
+        assertEquals(3, queue.next())
+    }
+
+    @Test fun aQueueMayNotHoldManyAdaptiveStreams() {
+        fun hls(n: Int) = (1..n).map { MediaEntry("https://tv.test/$it/index.m3u8", kind = "video") }
+        MediaQueue.validate(hls(MediaQueue.MAX_ADAPTIVE), MediaOptions())
+        assertThrows(IllegalArgumentException::class.java) { MediaQueue.validate(hls(MediaQueue.MAX_ADAPTIVE + 1), MediaOptions()) }
+        val dash = MediaEntry("https://tv.test/m.mpd", kind = "video")
+        assertThrows(IllegalArgumentException::class.java) { MediaQueue.validate(hls(MediaQueue.MAX_ADAPTIVE) + dash, MediaOptions()) }
+        // Files and progressive downloads are prepared lazily, so a long list of them is fine.
+        MediaQueue.validate((1..300).map { MediaEntry("https://tv.test/$it.mp4", kind = "video") }, MediaOptions())
+        MediaQueue.validate(listOf(MediaEntry("rtsp://192.168.1.9/live", kind = "video")) + (1..300).map { MediaEntry("file:///sdcard/Music/$it.mp3") }, MediaOptions())
+    }
+
+    @Test fun aStartPositionIsNeverNegative() {
+        assertEquals(90_000L, MediaOptions(start = 90_000).start)
+        assertThrows(IllegalArgumentException::class.java) { MediaOptions(start = -1) }
+    }
+
     @Test fun mediaInputsAreValidatedBeforeTheyCanClaimASession() {
         for (url in listOf("", "relative.mp3", "ftp://example.com/a.mp3", "file://remote/a.mp3",
             "https://user:secret@example.com/a", "https://example.com/a#fragment", "http://example.com:0/a")) {

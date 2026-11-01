@@ -23,6 +23,20 @@ class KioskPolicy(private val context: Context) {
 
     val isDeviceOwner: Boolean get() = dpm.isDeviceOwnerApp(context.packageName)
 
+    /**
+     * The shared music/video folders need READ_EXTERNAL_STORAGE. A wall display has nobody to answer the
+     * system dialog, so a Device Owner grants it silently; otherwise the dialog is shown on first use.
+     */
+    fun grantStorageRead() {
+        if (!isDeviceOwner) return
+        runCatching {
+            val permission = android.Manifest.permission.READ_EXTERNAL_STORAGE
+            if (context.checkSelfPermission(permission) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                dpm.setPermissionGrantState(admin, context.packageName, permission, DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED)
+            }
+        }.onFailure { Log.w("ThinkOS", "Unable to grant storage read as Device Owner", it) }
+    }
+
     /** Switch the policy on or off (the `kiosk.lock` setting); call on the main thread. */
     fun apply(activity: Activity, locked: Boolean) {
         if (!isDeviceOwner) {

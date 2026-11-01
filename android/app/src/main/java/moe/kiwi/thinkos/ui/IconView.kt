@@ -211,7 +211,7 @@ internal class IconView(context: Context) : ViewGroup(context) {
             }
             in staticNames -> add(name)
             "" -> Unit
-            else -> add("unknown")
+            else -> add(if (name.startsWith("moon-phase-")) name else "unknown")
         }
         if (name in weatherNames && name != "clear-night") {
             sprite =
@@ -509,6 +509,82 @@ private object WeatherAtlas {
 /** Both OS glyph families have a bounded set of 256px alpha masks (under 4 MiB). */
 private object IconArt {
     private val masks = mutableMapOf<String, Bitmap>()
+    private val cut = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        xfermode = android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.CLEAR)
+        strokeCap = Paint.Cap.ROUND
+        strokeJoin = Paint.Join.ROUND
+    }
+
+    /** Metro tile glyphs are solid shapes with cut-outs, not outlines. */
+    private fun drawSolid(name: String, canvas: Canvas, paint: Paint): Boolean {
+        val fill = Paint(paint).apply { style = Paint.Style.FILL }
+        cut.style = Paint.Style.STROKE
+        cut.strokeWidth = 7f
+        when (name) {
+            "clock" -> {
+                canvas.drawCircle(64f, 64f, 42f, fill)
+                canvas.drawLine(64f, 64f, 64f, 36f, cut)
+                canvas.drawLine(64f, 64f, 84f, 78f, cut)
+            }
+            "calendar" -> {
+                canvas.drawRoundRect(24f, 30f, 104f, 106f, 7f, 7f, fill)
+                canvas.drawRoundRect(40f, 18f, 50f, 40f, 4f, 4f, fill)
+                canvas.drawRoundRect(78f, 18f, 88f, 40f, 4f, 4f, fill)
+                cut.strokeWidth = 4f
+                canvas.drawLine(24f, 56f, 104f, 56f, cut)
+                cut.style = Paint.Style.FILL
+                for (row in 0..1) for (column in 0..2) {
+                    val x = 38f + column * 20f; val y = 68f + row * 18f
+                    canvas.drawRect(x, y, x + 12f, y + 11f, cut)
+                }
+            }
+            "photo" -> {
+                canvas.drawRoundRect(20f, 26f, 108f, 102f, 7f, 7f, fill)
+                cut.style = Paint.Style.FILL
+                canvas.drawCircle(84f, 50f, 9f, cut)
+                cut.style = Paint.Style.STROKE
+                cut.strokeWidth = 6f
+                val ridge = Path().apply {
+                    moveTo(24f, 94f); lineTo(51f, 62f); lineTo(72f, 84f); lineTo(86f, 70f); lineTo(104f, 90f)
+                }
+                canvas.drawPath(ridge, cut)
+            }
+            "music" -> {
+                canvas.drawOval(26f, 76f, 54f, 98f, fill)
+                canvas.drawOval(70f, 68f, 98f, 90f, fill)
+                val stems = Paint(fill).apply { style = Paint.Style.STROKE; strokeWidth = 7f }
+                canvas.drawLine(51f, 86f, 51f, 34f, stems)
+                canvas.drawLine(95f, 78f, 95f, 26f, stems)
+                canvas.drawRect(48f, 24f, 98f, 40f, fill)
+            }
+            else -> return false
+        }
+        return true
+    }
+
+    /** `moon-phase-<w|n>-<0..100>`: lit fraction in tens of percent; w is the northern waxing (lit right) side. */
+    private fun drawMoonPhase(name: String, canvas: Canvas, paint: Paint) {
+        val parts = name.split('-')
+        val waxing = parts.getOrNull(2) != "n"
+        val lit = ((parts.getOrNull(3)?.toIntOrNull() ?: 50).coerceIn(0, 100)) / 100f
+        val cx = 64f; val cy = 64f; val r = 40f
+        val shape = Paint(paint).apply { style = Paint.Style.FILL }
+        // The dark side stays faintly visible so a new moon is still a disc.
+        canvas.drawCircle(cx, cy, r, Paint(shape).apply { alpha = 70 })
+        if (lit <= .02f) return
+        canvas.save()
+        if (!waxing) canvas.scale(-1f, 1f, cx, cy)
+        if (lit >= .98f) canvas.drawCircle(cx, cy, r, shape)
+        else {
+            val rx = r * kotlin.math.abs(1f - 2f * lit)
+            val path = Path()
+            path.arcTo(RectF(cx - r, cy - r, cx + r, cy + r), -90f, 180f)
+            path.arcTo(RectF(cx - rx, cy - r, cx + rx, cy + r), 90f, if (lit < .5f) -180f else 180f)
+            path.close()
+            canvas.drawPath(path, shape)
+        }
+        canvas.restore()
+    }
 
     @Synchronized
     fun mask(key: String): Bitmap =
@@ -526,6 +602,11 @@ private object IconArt {
                     strokeWidth = if (metro) 6f else 3.2f
                 }
             val path = Path()
+            if (metro && drawSolid(name, canvas, paint)) return@getOrPut bitmap
+            if (name.startsWith("moon-phase-")) {
+                drawMoonPhase(name, canvas, paint)
+                return@getOrPut bitmap
+            }
             if (
                 metro &&
                     name in

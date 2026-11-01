@@ -7,6 +7,8 @@ import org.json.JSONObject
 interface PageEvents {
     val tilesLive: Boolean
     val tilesIntervalMillis: Long
+    /** `indigo`, `teal` or `wine`. */
+    val tilesBackground: String get() = "indigo"
     /** Delivers a UI event (`form.change`, `form.reset`, …) to the plugin that owns the page. */
     fun send(pluginId: String, name: String, args: List<Any?>)
 

@@ -18,7 +18,9 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import moe.kiwi.thinkos.R
+import moe.kiwi.thinkos.anim.ClockTicker
 import moe.kiwi.thinkos.core.Attention
+import moe.kiwi.thinkos.core.WallClock
 import moe.kiwi.thinkos.plugin.PluginWidget
 import moe.kiwi.thinkos.tz.ZoneFormat
 import org.json.JSONArray
@@ -30,7 +32,7 @@ internal class AeroHomeView(
     private val events: PageEvents,
     private val state: (String) -> JSONObject,
     private val variant: () -> String,
-) : ViewGroup(context) {
+) : ViewGroup(context), ClockTicker.Listener {
     private data class Window(
         val owner: String,
         val opens: String?,
@@ -71,6 +73,8 @@ internal class AeroHomeView(
     private var minute = -1L
     private var night = 0f
     private var owner = ""
+    private var driftX = 0
+    private var driftY = 0
     val activeAnimations: Boolean
         get() = windows.any { it.body.activeAnimations }
 
@@ -113,7 +117,7 @@ internal class AeroHomeView(
         menu.removeAllViews()
         for (i in 0 until references.length()) {
             val (plugin, declaration, opens) =
-                resolveStackItem(pageOwner, references.opt(i), widgets)
+                resolveStackItem(pageOwner, references.opt(i), widgets, "glance")
             val body =
                 ComponentGroup(
                     context,
@@ -228,6 +232,19 @@ internal class AeroHomeView(
 
     fun ownerAt(x: Float, y: Float) = windows.firstOrNull { hit(it.view, x, y) }?.owner ?: owner
 
+    /** Keep the wallpaper and full-width taskbar fixed while their foreground avoids static pixels. */
+    fun burnInOffset(x: Int, y: Int) {
+        if (x == driftX && y == driftY) return
+        for (i in 0 until childCount) {
+            val view = getChildAt(i)
+            if (view !== wallpaper && view !== taskbar && view.isLaidOut) {
+                view.offsetLeftAndRight(x - driftX)
+                view.offsetTopAndBottom(y - driftY)
+            }
+        }
+        driftX = x; driftY = y
+    }
+
     fun bind(plugin: String, paths: Set<String>) {
         windows.forEach {
             val previous = it.body.desktopText()
@@ -252,7 +269,15 @@ internal class AeroHomeView(
 
     fun tick(now: Long, attention: Attention) {
         windows.forEach { it.body.tick(now, if (active) attention else Attention.AMBIENT) }
-        val wall = System.currentTimeMillis()
+        showTime(WallClock.now())
+    }
+
+    /** The taskbar clock changes once a minute, exactly when the minute does (and uses the corrected time). */
+    override val periodMillis: Long get() = 60_000L
+
+    override fun onTick(wall: Long) = showTime(wall)
+
+    private fun showTime(wall: Long) {
         if (wall / 60_000 != minute) {
             minute = wall / 60_000
             val zone = moe.kiwi.thinkos.tz.Zones.home()
@@ -261,6 +286,18 @@ internal class AeroHomeView(
                     "\n" +
                     ZoneFormat.format("@date", wall, zone)
         }
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        minute = -1
+        showTime(WallClock.now())
+        ClockTicker.add(this)
+    }
+
+    override fun onDetachedFromWindow() {
+        ClockTicker.remove(this)
+        super.onDetachedFromWindow()
     }
 
     fun localeChanged() {
@@ -427,7 +464,11 @@ internal class AeroHomeView(
     }
 
     override fun onLayout(c: Boolean, l: Int, t: Int, r: Int, b: Int) {
-        boxes.forEach { (v, box) -> v.layout(box.left, box.top, box.right, box.bottom) }
+        boxes.forEach { (v, box) ->
+            val x = if (v === wallpaper || v === taskbar) 0 else driftX
+            val y = if (v === wallpaper || v === taskbar) 0 else driftY
+            v.layout(box.left + x, box.top + y, box.right + x, box.bottom + y)
+        }
     }
 }
 
@@ -709,17 +750,14 @@ private class AeroWindow(context: Context, title: String, private val body: Comp
         if (staticDirty || staticBitmap == null) requestRaster(style)
         val bitmap = staticBitmap
         if (bitmap == null) {
+            body.desktopTextCached = false
             drawChrome(canvas, style)
             super.dispatchDraw(canvas)
             return
         }
         canvas.drawBitmap(bitmap, 0f, 0f, bitmapPaint)
-        canvas.save()
-        canvas.clipRect(body.left, body.top, body.right, body.bottom)
-        canvas.translate(body.left.toFloat(), body.top.toFloat())
-        for (v in body.desktopVisuals()) if (v.visibility == VISIBLE)
-            drawChild(canvas, v, drawingTime)
-        canvas.restore()
+        body.desktopTextCached = true
+        drawChild(canvas, body, drawingTime)
     }
 
     override fun onMeasure(wSpec: Int, hSpec: Int) {
