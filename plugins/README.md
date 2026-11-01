@@ -20,10 +20,12 @@ plugins/<id>/
 | `clock` | 时间卡片 + 全屏时钟页面（多种表盘） |
 | `weather` | 天气卡片 + 详情页 |
 | `gallery` | 默认 Bing 每日一图，可选本地/混合；API 3 平移轮播、预览和离线缓存，无需 Server |
-| `tiles` | API 4 纯声明磁贴页面，引用时钟、天气与相册的 tile |
+| `tiles` | API 6 纯声明的开始屏：10 张磁贴，引用时钟、天气与相册的 tile |
 | `aero` | API 5 纯声明原生 Aero 桌面，引用 clock.desktop、weather.now、gallery.preview |
+| `player` | API 7 媒体库与播放：本地音乐 / 视频、串流地址、M3U 播放列表、最近播放与续播；播放页与影院页由 OS 绘制（HLS / DASH / RTSP / 渐进式 HTTP，ADR-030），设计与验收见 `../docs/27-streaming.md` |
 | `settings` | 原生设置页 |
-| `music` | 待实现 |
+
+`gallery` 公开 `gallery.daily`，`weather` 公开 `weather.now`，其他插件声明后可直接绑定（API 6，见 `../docs/06-plugins.md` §6.8）。
 | `notify` | 待实现 |
 
 ## 写插件

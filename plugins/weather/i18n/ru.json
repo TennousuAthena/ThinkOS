@@ -33,7 +33,6 @@
   "group.data": "Данные погоды",
   "group.recovery": "Восстановление связи",
   "group.relevance": "Пороги внимания",
-  "setting.temp_unit": "Единица температуры",
   "setting.interval": "Частота обновления",
   "setting.stale_after": "Срок актуальности",
   "setting.endpoint": "Адрес прогноза",
@@ -51,8 +50,14 @@
   "temperature": "{value}°",
   "unit.c": "°C",
   "unit.f": "°F",
-  "unit.kmh": "km/h",
-  "unit.mph": "mph",
+  "unit.kmh": "км/ч",
+  "unit.ms": "м/с",
+  "unit.kn": "уз",
+  "unit.mph": "миль/ч",
   "source": "Open-Meteo.com",
-  "licence": "CC BY 4.0"
+  "licence": "CC BY 4.0",
+  "tile.humidity": "Влажность",
+  "tile.wind": "Ветер {unit}",
+  "tile.rain": "Осадки",
+  "tile.feels": "Ощущается"
 }

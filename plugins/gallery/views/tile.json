@@ -1,19 +1,22 @@
 {
   "template": "tile",
   "color": "#8764B8",
+  "image": {
+    "type": "image",
+    "src": "{{public.daily.cover}}",
+    "fit": "pan",
+    "pan": "{{config.pan}}",
+    "interval": "{{config.interval}}",
+    "pan_speed": "{{config.pan_speed}}",
+    "pan_seconds": "{{config.pan_seconds}}",
+    "pan_direction": "{{config.pan_direction}}"
+  },
   "faces": [
     {
       "icon": "photo",
-      "value": "{{photoCount}}",
-      "label": "@name",
-      "detail": "{{coverTitle}}"
-    },
-    {
-      "icon": "photo",
-      "value": "",
-      "label": "@name",
-      "detail": "{{coverTitle}}"
+      "value": "{{public.daily.coverTitle}}",
+      "label": "@daily",
+      "detail": "{{public.daily.coverCredit}}"
     }
-  ],
-  "badge": "{{photoCount}}"
+  ]
 }

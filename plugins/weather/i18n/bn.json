@@ -33,7 +33,6 @@
   "group.data": "আবহাওয়ার তথ্য",
   "group.recovery": "সংযোগ পুনরুদ্ধার",
   "group.relevance": "মনোযোগের সীমা",
-  "setting.temp_unit": "তাপমাত্রার একক",
   "setting.interval": "হালনাগাদের বিরতি",
   "setting.stale_after": "তথ্যের মেয়াদ",
   "setting.endpoint": "পূর্বাভাসের ঠিকানা",
@@ -52,7 +51,13 @@
   "unit.c": "°C",
   "unit.f": "°F",
   "unit.kmh": "km/h",
+  "unit.ms": "m/s",
+  "unit.kn": "নট",
   "unit.mph": "mph",
   "source": "Open-Meteo.com",
-  "licence": "CC BY 4.0"
+  "licence": "CC BY 4.0",
+  "tile.humidity": "আর্দ্রতা",
+  "tile.wind": "বাতাস {unit}",
+  "tile.rain": "বৃষ্টি",
+  "tile.feels": "অনুভূত"
 }

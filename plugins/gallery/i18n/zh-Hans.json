@@ -46,5 +46,6 @@
   "direction.random": "随机方向",
   "direction.forward": "从起点到终点",
   "direction.reverse": "从终点到起点",
-  "help.pan_seconds": "流畅扫过整张照片后停留。全景照片可能需要更久。"
+  "help.pan_seconds": "流畅扫过整张照片后停留。全景照片可能需要更久。",
+  "daily": "每日一图"
 }

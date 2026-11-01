@@ -1,0 +1,10 @@
+{
+  "template": "tile",
+  "color": "#0E7490",
+  "faces": [
+    {
+      "value": "{{tileHumidity}}",
+      "label": "@tile.humidity"
+    }
+  ]
+}

@@ -46,5 +46,6 @@
   "direction.random": "Aleatória",
   "direction.forward": "Do início ao fim",
   "direction.reverse": "Do fim ao início",
-  "help.pan_seconds": "Percorre suavemente toda a foto e pausa. Panoramas podem demorar mais."
+  "help.pan_seconds": "Percorre suavemente toda a foto e pausa. Panoramas podem demorar mais.",
+  "daily": "Foto do dia"
 }

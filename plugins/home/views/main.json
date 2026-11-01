@@ -15,6 +15,9 @@
       },
       {
         "widget": "gallery.preview"
+      },
+      {
+        "widget": "player.now"
       }
     ]
   }

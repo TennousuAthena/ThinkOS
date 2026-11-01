@@ -1,6 +1,7 @@
 -- Sources provide metadata through tos.*. OS image/carousel owns HTTP image bytes and pixels.
 local localPhotos,dailyPhotos={},{}
 local photos=tos.json.decode("[]")
+local shownCover
 local localNotice,dailyNotice,directory="loading","loading",""
 local stopped,sleeping=false,false
 local scanBusy,scanAgain,scanGeneration=false,false,0
@@ -15,6 +16,22 @@ local function dailyEnabled() return source()=="bing" or source()=="all" end
 local function bing() if not Bing then Bing=require("sources.bing") end; return Bing end
 local function identity()
   return bing().market(tos.locale(),tos.config.market),tos.config.endpoint
+end
+-- Public contract photos/1 (ADR-027): only the Bing daily list, never local paths.
+local function dailyExport()
+  local list=tos.json.decode("[]")
+  local bytes=0
+  for _,item in ipairs(dailyEnabled() and dailyPhotos or {}) do
+    local title=type(item.title)=="string" and item.title or ""
+    local credit=type(item.credit)=="string" and item.credit or ""
+    local id=type(item.id)=="string" and item.id or item.src
+    local cost=#item.src+#id+(#title+#credit)*6+128
+    if bytes+cost>48*1024 then break end
+    bytes=bytes+cost
+    list[#list+1]={id=id,src=item.src,title=title,credit=credit}
+  end
+  local first=list[1]
+  return {photos=list,cover=first and first.src or "",coverTitle=first and first.title or "",coverCredit=first and first.credit or ""}
 end
 local function render()
   local list=tos.json.decode("[]")
@@ -35,13 +52,17 @@ local function render()
     if localEnabled() then append(localPhotos[i]) end
   end
   photos=list
+  -- A new daily photo: ask the OS to pulse this plugin's tiles. Never on the first render.
+  local cover=list[1] and list[1].id or nil
+  if shownCover and cover and cover~=shownCover then tos.tile.animate("pulse") end
+  shownCover=cover or shownCover
   local notice
   if #photos==0 then notice=dailyEnabled() and dailyNotice or localNotice
   elseif dailyEnabled() and dailyNotice=="offline" then notice="offline"
   elseif not dailyEnabled() and localNotice=="unavailable" then notice="unavailable" end
   tos.state.set(tos.json.encode({photos=photos,photoCount=tostring(#photos),cover=photos[1] and photos[1].src or "",
     coverTitle=photos[1] and photos[1].title or tos.i18n.t(notice or "name"),
-    coverCredit=photos[1] and photos[1].credit or "",notice=notice and tos.i18n.t(notice) or "",directory=directory}))
+    coverCredit=photos[1] and photos[1].credit or "",notice=notice and tos.i18n.t(notice) or "",directory=directory,public={daily=dailyExport()}}))
 end
 local function cancelScan() if scanTimer then tos.timer.cancel(scanTimer); scanTimer=nil end end
 local function cancelDaily() if dailyTimer then tos.timer.cancel(dailyTimer); dailyTimer=nil end end

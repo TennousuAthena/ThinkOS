@@ -11,8 +11,36 @@
         "size": "medium"
       },
       {
-        "widget": "gallery.tile",
+        "widget": "clock.date",
         "size": "medium"
+      },
+      {
+        "widget": "gallery.tile",
+        "size": "large"
+      },
+      {
+        "widget": "weather.forecast",
+        "size": "wide"
+      },
+      {
+        "widget": "clock.moon",
+        "size": "medium"
+      },
+      {
+        "widget": "weather.humidity",
+        "size": "small"
+      },
+      {
+        "widget": "weather.wind",
+        "size": "small"
+      },
+      {
+        "widget": "clock.sunrise",
+        "size": "small"
+      },
+      {
+        "widget": "weather.rain",
+        "size": "small"
       }
     ]
   }

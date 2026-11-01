@@ -1,30 +1,20 @@
 {
   "id": "weather",
   "name": "@name",
-  "version": "0.2.0",
-  "api": 4,
+  "version": "0.4.0",
+  "api": 6,
   "main": "main.lua",
   "permissions": [
     "network",
     "location"
   ],
+  "exports": {
+    "now": {
+      "path": "public.now",
+      "shape": "weather-now/1"
+    }
+  },
   "settings": {
-    "temp_unit": {
-      "type": "choice",
-      "label": "@setting.temp_unit",
-      "default": "c",
-      "choices": [
-        {
-          "value": "c",
-          "label": "@unit.c"
-        },
-        {
-          "value": "f",
-          "label": "@unit.f"
-        }
-      ],
-      "group": "@group.display"
-    },
     "interval": {
       "type": "choice",
       "label": "@setting.interval",
@@ -139,17 +129,42 @@
     {
       "id": "now",
       "view": "views/now.json",
-      "opens": "detail"
+      "opens": "detail",
+      "alternates": {
+        "tile": "views/tile.json"
+      }
     },
     {
       "id": "tile",
       "view": "views/tile.json",
       "opens": "detail"
+    },
+    {
+      "id": "forecast",
+      "view": "views/forecast.json",
+      "opens": "detail"
+    },
+    {
+      "id": "humidity",
+      "view": "views/humidity.json",
+      "opens": "detail"
+    },
+    {
+      "id": "wind",
+      "view": "views/wind.json",
+      "opens": "detail"
+    },
+    {
+      "id": "rain",
+      "view": "views/rain.json",
+      "opens": "detail"
     }
   ],
   "commands": [
     {
-      "id": "refresh"
+      "id": "refresh",
+      "public": true,
+      "cooldown": 300
     }
   ]
 }

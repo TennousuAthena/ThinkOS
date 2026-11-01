@@ -1,13 +1,19 @@
 {
   "id": "gallery",
   "name": "@name",
-  "version": "0.4.0",
-  "api": 4,
+  "version": "0.5.1",
+  "api": 6,
   "main": "main.lua",
   "permissions": [
     "library",
     "network"
   ],
+  "exports": {
+    "daily": {
+      "path": "public.daily",
+      "shape": "photos/1"
+    }
+  },
   "settings": {
     "source": {
       "type": "choice",
@@ -316,7 +322,10 @@
     {
       "id": "preview",
       "view": "views/preview.json",
-      "opens": "slideshow"
+      "opens": "slideshow",
+      "alternates": {
+        "tile": "views/tile.json"
+      }
     },
     {
       "id": "tile",
@@ -326,7 +335,9 @@
   ],
   "commands": [
     {
-      "id": "refresh"
+      "id": "refresh",
+      "public": true,
+      "cooldown": 300
     }
   ]
 }

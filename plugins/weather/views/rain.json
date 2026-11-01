@@ -1,0 +1,10 @@
+{
+  "template": "tile",
+  "color": "#0B5CC4",
+  "faces": [
+    {
+      "value": "{{tileRain}}",
+      "label": "@tile.rain"
+    }
+  ]
+}

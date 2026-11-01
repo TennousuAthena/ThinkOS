@@ -33,7 +33,6 @@
   "group.data": "Dados do tempo",
   "group.recovery": "Reconexão",
   "group.relevance": "Limiares de atenção",
-  "setting.temp_unit": "Unidade de temperatura",
   "setting.interval": "Intervalo de atualização",
   "setting.stale_after": "Validade dos dados",
   "setting.endpoint": "URL da previsão",
@@ -52,7 +51,13 @@
   "unit.c": "°C",
   "unit.f": "°F",
   "unit.kmh": "km/h",
+  "unit.ms": "m/s",
+  "unit.kn": "nós",
   "unit.mph": "mph",
   "source": "Open-Meteo.com",
-  "licence": "CC BY 4.0"
+  "licence": "CC BY 4.0",
+  "tile.humidity": "Humidade",
+  "tile.wind": "Vento {unit}",
+  "tile.rain": "Chuva",
+  "tile.feels": "Sensação"
 }

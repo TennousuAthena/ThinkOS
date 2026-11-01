@@ -46,5 +46,6 @@
   "direction.random": "Random",
   "direction.forward": "Start to end",
   "direction.reverse": "End to start",
-  "help.pan_seconds": "Smoothly sweep across the complete photo, then hold. Wide photos can take longer."
+  "help.pan_seconds": "Smoothly sweep across the complete photo, then hold. Wide photos can take longer.",
+  "daily": "Daily photo"
 }

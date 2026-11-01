@@ -1,0 +1,20 @@
+{
+  "template": "glance",
+  "children": [
+    {
+      "type": "text",
+      "value": "@name",
+      "style": "caption"
+    },
+    {
+      "type": "text",
+      "value": "{{nowTitle}}",
+      "style": "title"
+    },
+    {
+      "type": "controls",
+      "mode": "queue"
+    }
+  ],
+  "relevance": "{{relevance}}"
+}

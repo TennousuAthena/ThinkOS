@@ -1,24 +1,16 @@
 {
   "template": "tile",
-  "color": "{{mood | default \"#2D89EF\"}}",
+  "color": "{{tileColor | default \"#475569\"}}",
   "faces": [
     {
       "icon": "{{icon}}",
       "value": "{{temperature}}",
-      "label": "{{location}}",
-      "detail": "{{summary}}"
+      "label": "{{location}}"
     },
     {
       "icon": "cloud",
-      "value": "{{metrics}}",
-      "label": "@name",
-      "detail": "{{status}}"
+      "value": "{{feelsValue}}",
+      "label": "@tile.feels"
     }
-  ],
-  "content": {
-    "type": "chart",
-    "values": "{{hourly}}",
-    "style": "area",
-    "highlight": "{{highlight}}"
-  }
+  ]
 }

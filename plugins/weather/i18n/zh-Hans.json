@@ -33,7 +33,6 @@
   "group.data": "天气数据",
   "group.recovery": "连接恢复",
   "group.relevance": "关注阈值",
-  "setting.temp_unit": "温度单位",
   "setting.interval": "刷新间隔",
   "setting.stale_after": "数据过期时间",
   "setting.endpoint": "天气接口地址",
@@ -52,7 +51,13 @@
   "unit.c": "°C",
   "unit.f": "°F",
   "unit.kmh": "km/h",
+  "unit.ms": "m/s",
+  "unit.kn": "节",
   "unit.mph": "mph",
   "source": "Open-Meteo.com",
-  "licence": "CC BY 4.0"
+  "licence": "CC BY 4.0",
+  "tile.humidity": "湿度",
+  "tile.wind": "风速 {unit}",
+  "tile.rain": "降水",
+  "tile.feels": "体感"
 }

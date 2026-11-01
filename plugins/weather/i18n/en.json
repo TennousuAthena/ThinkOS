@@ -33,7 +33,6 @@
   "group.data": "Weather data",
   "group.recovery": "Connection recovery",
   "group.relevance": "Attention thresholds",
-  "setting.temp_unit": "Temperature unit",
   "setting.interval": "Refresh interval",
   "setting.stale_after": "Mark expired after",
   "setting.endpoint": "Forecast endpoint",
@@ -52,7 +51,13 @@
   "unit.c": "°C",
   "unit.f": "°F",
   "unit.kmh": "km/h",
+  "unit.ms": "m/s",
+  "unit.kn": "kn",
   "unit.mph": "mph",
   "source": "Open-Meteo.com",
-  "licence": "CC BY 4.0"
+  "licence": "CC BY 4.0",
+  "tile.humidity": "Humidity",
+  "tile.wind": "Wind {unit}",
+  "tile.rain": "Rain",
+  "tile.feels": "Feels like"
 }

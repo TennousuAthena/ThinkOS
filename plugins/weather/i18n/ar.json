@@ -33,7 +33,6 @@
   "group.data": "بيانات الطقس",
   "group.recovery": "استعادة الاتصال",
   "group.relevance": "حدود الاهتمام",
-  "setting.temp_unit": "وحدة الحرارة",
   "setting.interval": "فترة التحديث",
   "setting.stale_after": "صلاحية البيانات",
   "setting.endpoint": "عنوان التوقعات",
@@ -51,8 +50,14 @@
   "temperature": "{value}°",
   "unit.c": "°C",
   "unit.f": "°F",
-  "unit.kmh": "km/h",
-  "unit.mph": "mph",
+  "unit.kmh": "كم/س",
+  "unit.ms": "م/ث",
+  "unit.kn": "عقدة",
+  "unit.mph": "ميل/س",
   "source": "Open-Meteo.com",
-  "licence": "CC BY 4.0"
+  "licence": "CC BY 4.0",
+  "tile.humidity": "الرطوبة",
+  "tile.wind": "الرياح {unit}",
+  "tile.rain": "المطر",
+  "tile.feels": "المحسوسة"
 }

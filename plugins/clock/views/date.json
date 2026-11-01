@@ -1,0 +1,10 @@
+{
+  "template": "tile",
+  "color": "#B3173B",
+  "faces": [
+    {
+      "value": "{{dayNumber}}",
+      "label": "{{weekday}}"
+    }
+  ]
+}

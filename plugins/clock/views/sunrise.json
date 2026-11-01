@@ -1,0 +1,14 @@
+{
+  "template": "tile",
+  "color": "#A21CAF",
+  "faces": [
+    {
+      "value": "{{sunriseText}}",
+      "label": "@sunrise"
+    },
+    {
+      "value": "{{sunsetText}}",
+      "label": "@sunset"
+    }
+  ]
+}

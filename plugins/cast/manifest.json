@@ -1,0 +1,12 @@
+{
+  "id": "cast",
+  "name": "@name",
+  "version": "0.1.0",
+  "api": 7,
+  "main": "main.lua",
+  "permissions": ["media"],
+  "pages": [
+    { "id": "video", "title": "@page.video", "view": "views/video.json", "live": true },
+    { "id": "audio", "title": "@page.audio", "view": "views/audio.json", "live": true }
+  ]
+}

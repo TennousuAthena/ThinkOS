@@ -1,0 +1,10 @@
+{
+  "template": "tile",
+  "color": "#475569",
+  "faces": [
+    {
+      "icon": "{{moonIcon}}",
+      "label": "{{moonName}}"
+    }
+  ]
+}

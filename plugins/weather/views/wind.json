@@ -1,0 +1,10 @@
+{
+  "template": "tile",
+  "color": "#15803D",
+  "faces": [
+    {
+      "value": "{{tileWind}}",
+      "label": "{{tileWindLabel}}"
+    }
+  ]
+}

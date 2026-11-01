@@ -33,7 +33,6 @@
   "group.data": "موسم کا ڈیٹا",
   "group.recovery": "رابطہ بحالی",
   "group.relevance": "توجہ کی حدیں",
-  "setting.temp_unit": "درجہ حرارت کی اکائی",
   "setting.interval": "اپ ڈیٹ کا وقفہ",
   "setting.stale_after": "ڈیٹا کی میعاد",
   "setting.endpoint": "پیش گوئی کا پتہ",
@@ -52,7 +51,13 @@
   "unit.c": "°C",
   "unit.f": "°F",
   "unit.kmh": "km/h",
+  "unit.ms": "m/s",
+  "unit.kn": "ناٹ",
   "unit.mph": "mph",
   "source": "Open-Meteo.com",
-  "licence": "CC BY 4.0"
+  "licence": "CC BY 4.0",
+  "tile.humidity": "نمی",
+  "tile.wind": "ہوا {unit}",
+  "tile.rain": "بارش",
+  "tile.feels": "محسوس"
 }

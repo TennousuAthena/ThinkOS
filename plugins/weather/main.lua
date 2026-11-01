@@ -3,6 +3,7 @@ local forecast, condition = require("forecast"), require("codes")
 local raw, refreshTimer, minuteTimer, previousConfig
 local attention, inflight, dirty, stopped, failed = "AWAKE", false, false, false, false
 local generation, failures, relevance = 0, 0, nil
+local shownTemperature
 local due, awaitingClock = true, false
 local refresh
 local textCache, degreeCache = {}, {}
@@ -12,11 +13,15 @@ local function t(key, args)
   return textCache[key]
 end
 local function emptyArray() return tos.json.decode("[]") end
+-- Tile colours by condition: every one keeps white text at 4.55:1 or better and stays off the Start backdrops.
+local tileColors = {
+  ["clear-day"] = "#C2410C", ["partly-day"] = "#B45309", ["clear-night"] = "#6D28D9", ["partly-night"] = "#5B21B6",
+  cloud = "#475569", fog = "#0E7490", rain = "#1D4ED8", shower = "#1D4ED8", snow = "#0369A1", thunder = "#86198F",
+}
 local function round(value) return value < 0 and math.ceil(value - .5) or math.floor(value + .5) end
 local function degrees(value)
-  local fahrenheit = tos.config.temp_unit == "f"
-  local rounded = round(forecast.temperature(value, fahrenheit))
-  local key = tostring(rounded) .. (fahrenheit and "f" or "c")
+  local rounded = round(tos.units.temperature(value))
+  local key = tostring(rounded) .. tos.units.get().temperature
   if not degreeCache[key] then degreeCache[key] = t("temperature", { value = rounded }) end
   return degreeCache[key]
 end
@@ -30,9 +35,12 @@ local function old(now)
 end
 local function render()
   local now, place = tos.time.now(), tos.location.get()
+  local units = tos.units.get()
   local state = { temperature = "—", summary = t("waiting"), metrics = "", location = place.name,
     status = t("waiting"), stale = true, hourly = emptyArray(), days = emptyArray(), highlight = 0,
-    icon = "unknown", mood = "#94a7cb", hourlyTitle = t("hourly", { unit = t(tos.config.temp_unit == "f" and "unit.f" or "unit.c") }),
+    icon = "unknown", mood = "#94a7cb", tileColor = "#475569", tileHumidity = "—", tileWind = "—", tileRain = "—", feelsValue = "—",
+    tileWindLabel = t("tile.wind", { unit = t("unit." .. units.wind) }),
+    hourlyTitle = t("hourly", { unit = t("unit." .. units.temperature) }),
     hourlyRange = "", source = t("source"), licence = t("licence") }
   local nextRelevance = .3
   if raw then
@@ -45,11 +53,15 @@ local function render()
     local day = math.floor((reference + offset) / 86400)
     state.temperature, state.icon, state.mood = degrees(current.temperature_2m), icon, mood
     state.summary = t(key)
+    state.tileColor = tileColors[icon] or "#475569"
+    state.tileHumidity = round(current.relative_humidity_2m) .. "%"
+    state.tileWind = tostring(round(tos.units.wind(current.wind_speed_10m)))
+    state.feelsValue = degrees(current.apparent_temperature)
     state.location = same and place.name or raw.place.name
     state.metrics = t("feels", { value = degrees(current.apparent_temperature) }) .. " · "
       .. t("humidity", { value = round(current.relative_humidity_2m) }) .. "\n"
-      .. t("wind", { value = round(current.wind_speed_10m * (tos.config.temp_unit == "f" and .621371 or 1)),
-        unit = t(tos.config.temp_unit == "f" and "unit.mph" or "unit.kmh") })
+      .. t("wind", { value = round(tos.units.wind(current.wind_speed_10m)),
+        unit = t("unit." .. units.wind) })
     for i, timestamp in ipairs(weather.daily.time) do
       if math.floor((timestamp + offset) / 86400) >= day and #state.days < 5 then
         local dailyIcon, dailyKey = condition(weather.daily.weather_code[i], true)
@@ -59,13 +71,16 @@ local function render()
         state.days[#state.days+1] = { title = tos.time.format((timestamp + offset) * 1000, "@weekday", "UTC"),
           subtitle = t(dailyKey) .. " · " .. t("rain_chance", { value = round(weather.daily.precipitation_probability_max[i]) }),
           trailing = range, icon = dailyIcon }
-        if math.floor((timestamp + offset) / 86400) == day then state.summary = state.summary .. " · " .. range end
+        if math.floor((timestamp + offset) / 86400) == day then
+          state.summary = state.summary .. " · " .. range
+          state.tileRain = round(weather.daily.precipitation_probability_max[i]) .. "%"
+        end
       end
     end
     local first, last
     for i, timestamp in ipairs(weather.hourly.time) do
       if timestamp >= hour and #state.hourly < 24 then
-        state.hourly[#state.hourly+1] = forecast.temperature(weather.hourly.temperature_2m[i], tos.config.temp_unit == "f")
+        state.hourly[#state.hourly+1] = tos.units.temperature(weather.hourly.temperature_2m[i])
         first, last = first or timestamp, timestamp
         if timestamp == hour then state.highlight = #state.hourly end
       end
@@ -89,6 +104,8 @@ local function render()
   elseif failed then state.summary, state.status = t("unavailable"), t("retrying")
   elseif not now then state.status = t("time_unknown") end
   state.cardInfo = state.location .. " · " .. state.status
+  -- Public contract weather-now/1 (ADR-027): conditions only, never the place.
+  state.public = { now = { temperature = state.temperature, icon = state.icon, condition = state.summary, stale = state.stale } }
   -- Avoid writing relevance on the per-minute timestamp updates.
   if relevance ~= nextRelevance then state.relevance = nextRelevance; relevance = nextRelevance end
   tos.state.set(state)
@@ -125,6 +142,10 @@ refresh = function()
     tos.store.set("forecast", tos.json.encode(raw))
     failures, failed, awaitingClock = 0, false, not raw.fetchedAt
     tos.log.info("weather refresh ok", place.latitude, place.longitude)
+    -- New numbers on the Start screen: ask the OS to pulse this plugin's tiles. Never on the first load.
+    local shown = degrees(result.current.temperature_2m)
+    if shownTemperature and shown ~= shownTemperature then tos.tile.animate("pulse") end
+    shownTemperature = shown
   else
     failures, failed = failures + 1, true
     awaitingClock = not tos.time.now()
@@ -167,6 +188,7 @@ tos.on("locale", function()
   if raw and not forecast.same(raw.place, place) then generation = generation + 1; schedule(.05) end
   render()
 end)
+tos.on("units", function() degreeCache = {}; render() end)
 tos.on("location", function() generation = generation + 1; failures = 0; render(); schedule(.05) end)
 tos.on("attention", function(level)
   local sleeping = attention == "ASLEEP"

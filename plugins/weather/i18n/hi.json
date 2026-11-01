@@ -33,7 +33,6 @@
   "group.data": "मौसम डेटा",
   "group.recovery": "कनेक्शन बहाली",
   "group.relevance": "ध्यान सीमाएँ",
-  "setting.temp_unit": "तापमान इकाई",
   "setting.interval": "अपडेट अंतराल",
   "setting.stale_after": "डेटा की वैधता",
   "setting.endpoint": "पूर्वानुमान पता",
@@ -52,7 +51,13 @@
   "unit.c": "°C",
   "unit.f": "°F",
   "unit.kmh": "km/h",
+  "unit.ms": "m/s",
+  "unit.kn": "नॉट",
   "unit.mph": "mph",
   "source": "Open-Meteo.com",
-  "licence": "CC BY 4.0"
+  "licence": "CC BY 4.0",
+  "tile.humidity": "नमी",
+  "tile.wind": "हवा {unit}",
+  "tile.rain": "बारिश",
+  "tile.feels": "महसूस"
 }

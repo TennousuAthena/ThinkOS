@@ -5,8 +5,12 @@
     {
       "type": "image",
       "src": "{{cover}}",
-      "fit": "contain",
-      "pan": false,
+      "fit": "pan",
+      "pan": true,
+      "interval": "{{config.interval}}",
+      "pan_speed": "{{config.pan_speed}}",
+      "pan_seconds": "{{config.pan_seconds}}",
+      "pan_direction": "{{config.pan_direction}}",
       "weight": 1
     },
     {

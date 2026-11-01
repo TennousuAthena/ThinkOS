@@ -1,0 +1,16 @@
+{
+  "template": "tile",
+  "color": "#0F766E",
+  "faces": [
+    {
+      "detail": "{{summary}}",
+      "label": "{{hourlyTitle}}",
+      "content": {
+        "type": "chart",
+        "values": "{{hourly}}",
+        "style": "area",
+        "highlight": "{{highlight}}"
+      }
+    }
+  ]
+}

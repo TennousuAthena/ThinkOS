@@ -1,8 +1,8 @@
 {
   "id": "clock",
   "name": "@name",
-  "version": "0.4.0",
-  "api": 4,
+  "version": "0.5.0",
+  "api": 6,
   "main": "main.lua",
   "permissions": [
     "location"
@@ -75,6 +75,21 @@
     {
       "id": "desktop",
       "view": "views/desktop.json",
+      "opens": "face"
+    },
+    {
+      "id": "date",
+      "view": "views/date.json",
+      "opens": "face"
+    },
+    {
+      "id": "moon",
+      "view": "views/moon.json",
+      "opens": "face"
+    },
+    {
+      "id": "sunrise",
+      "view": "views/sunrise.json",
       "opens": "face"
     }
   ]

@@ -46,5 +46,6 @@
   "direction.random": "Aleatoria",
   "direction.forward": "Del inicio al final",
   "direction.reverse": "Del final al inicio",
-  "help.pan_seconds": "Recorre suavemente la foto completa y se detiene. Las panorámicas pueden tardar más."
+  "help.pan_seconds": "Recorre suavemente la foto completa y se detiene. Las panorámicas pueden tardar más.",
+  "daily": "Foto del día"
 }

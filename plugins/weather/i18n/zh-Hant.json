@@ -33,7 +33,6 @@
   "group.data": "天氣資料",
   "group.recovery": "連線恢復",
   "group.relevance": "關注門檻",
-  "setting.temp_unit": "溫度單位",
   "setting.interval": "更新間隔",
   "setting.stale_after": "資料過期時間",
   "setting.endpoint": "天氣介面地址",
@@ -52,7 +51,13 @@
   "unit.c": "°C",
   "unit.f": "°F",
   "unit.kmh": "km/h",
+  "unit.ms": "m/s",
+  "unit.kn": "節",
   "unit.mph": "mph",
   "source": "Open-Meteo.com",
-  "licence": "CC BY 4.0"
+  "licence": "CC BY 4.0",
+  "tile.humidity": "濕度",
+  "tile.wind": "風速 {unit}",
+  "tile.rain": "降水",
+  "tile.feels": "體感"
 }
