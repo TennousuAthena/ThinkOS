@@ -1,0 +1,46 @@
+{
+  "complete": true,
+  "scenes": {
+    "gallery": {
+      "seconds": 600.9865842500003,
+      "frames": 14199,
+      "jankyFrames": 95,
+      "jankyPercent": 0.6690612014930629,
+      "maxDrawMs": 7.676198,
+      "maxFrameMs": 32.152138,
+      "sampledFrames": 14199,
+      "frameCoverage": 1.0,
+      "peakPssMiB": 117.595703125,
+      "peakLuaMiB": 0.32763671875,
+      "sameProcess": true,
+      "frameWarnings": 0,
+      "frameCountSkew": 0,
+      "initialState": {
+        "page": "gallery.slideshow",
+        "attention": "AWAKE",
+        "theme": "DARK",
+        "orientation": "LANDSCAPE",
+        "pid": "18636",
+        "touches": "0",
+        "navigationReason": "open",
+        "luaBytes": "309977",
+        "navigationGeneration": "2"
+      },
+      "finalState": {
+        "page": "gallery.slideshow",
+        "attention": "AWAKE",
+        "theme": "DARK",
+        "orientation": "LANDSCAPE",
+        "pid": "18636",
+        "touches": "0",
+        "navigationReason": "open",
+        "luaBytes": "343552",
+        "navigationGeneration": "2"
+      },
+      "flaggedFrames": 0,
+      "inputFrames": 0
+    }
+  },
+  "failures": [],
+  "settingsRestored": true
+}

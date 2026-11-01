@@ -1,0 +1,503 @@
+--------- beginning of main
+10-31 18:44:30.807 32658 32658 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=public-reader.stage, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=aero, version=0.1.0, bytes=0, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=clock, version=0.4.0, bytes=45098, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=gallery, version=0.5.0, bytes=109217, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=settings, version=0.1.0, bytes=41333, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=weather, version=0.3.0, bytes=114412, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=public-provider, version=1.0.0, bytes=106398, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=public-reader, version=1.0.0, bytes=0, disabled=false, error=null, unresolved=[wrong:shape_mismatch, absent:missing]), PluginDiagnostic(id=public-script, version=1.0.0, bytes=46589, disabled=false, error=null, unresolved=[wrong:shape_mismatch, secure:permission_required])]
+--------- beginning of system
+10-31 18:44:31.711  1623  1623 I ThinkOS : tzdata 2026e (419 zones)
+10-31 18:44:31.966  1623  1623 I ThinkOS : Runtime started; local mode, safe=false
+10-31 18:44:31.969  1623  1623 I ThinkOS : Activity created; orientation=1
+10-31 18:44:32.069  1623  1671 W ThinkOS : time sync failed (1); retry in 30s
+10-31 18:44:32.339  1623  1672 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 18:44:32.861  1623  1623 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 18:44:32.872  1623  1672 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 36665 bytes
+10-31 18:44:33.299  1623  1672 I ThinkOS : [plugin:gallery] loaded 0.5.0; Lua 108247 bytes
+10-31 18:44:33.342  1623  1672 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 18:44:33.499  1623  1672 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40409 bytes
+10-31 18:44:33.639  1623  1672 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 18:44:33.940  1623  1672 I ThinkOS : [plugin:weather] loaded 0.3.0; Lua 109530 bytes
+10-31 18:44:34.320  1623  1672 I ThinkOS : [plugin:public-provider] loaded 1.0.0; Lua 103449 bytes
+10-31 18:44:34.430  1623  1672 W ThinkOS : [plugin:public-reader] uses.wrong -> gallery.daily: shape_mismatch
+10-31 18:44:34.430  1623  1672 W ThinkOS : [plugin:public-reader] uses.absent -> no-such.thing: missing
+10-31 18:44:34.436  1623  1672 I ThinkOS : [plugin:public-reader] loaded 1.0.0; Lua 0 bytes
+10-31 18:44:34.505  1623  1672 I ThinkOS : [plugin:public-script] public-probe undeclared err=undeclared
+10-31 18:44:34.505  1623  1672 I ThinkOS : [plugin:public-script] public-probe wrong err=shape_mismatch
+10-31 18:44:34.506  1623  1672 I ThinkOS : [plugin:public-script] public-probe call-private-weather nil not_public
+10-31 18:44:34.506  1623  1672 I ThinkOS : [plugin:public-script] public-probe call-undeclared nil undeclared
+10-31 18:44:34.506  1623  1672 I ThinkOS : [plugin:public-script] public-probe reserved false
+10-31 18:44:34.522  1623  1672 W ThinkOS : [plugin:public-script] uses.wrong -> gallery.daily: shape_mismatch
+10-31 18:44:34.522  1623  1672 W ThinkOS : [plugin:public-script] uses.secure -> public-provider.secure: permission_required
+10-31 18:44:34.529  1623  1672 I ThinkOS : [plugin:public-script] loaded 1.0.0; Lua 37929 bytes
+10-31 18:44:34.633  1623  1672 I ThinkOS : [plugin:public-script] public-probe data daily photos=13
+10-31 18:44:34.637  1623  1672 I ThinkOS : [plugin:public-script] public-probe data wrong err=shape_mismatch
+10-31 18:44:34.640  1623  1672 I ThinkOS : [plugin:public-script] public-probe deep err=invalid
+10-31 18:44:34.691  1623  1672 I ThinkOS : [plugin:public-script] public-probe bomb err=too_large
+10-31 18:44:34.692  1623  1672 I ThinkOS : [plugin:public-script] public-probe secure err=permission_required
+10-31 18:44:35.112  1623  1623 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=public-reader.stage, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=aero, version=0.1.0, bytes=0, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=clock, version=0.4.0, bytes=39063, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=gallery, version=0.5.0, bytes=109217, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=settings, version=0.1.0, bytes=41333, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=weather, version=0.3.0, bytes=112426, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=public-provider, version=1.0.0, bytes=104373, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=public-reader, version=1.0.0, bytes=0, disabled=false, error=null, unresolved=[wrong:shape_mismatch, absent:missing]), PluginDiagnostic(id=public-script, version=1.0.0, bytes=59635, disabled=false, error=null, unresolved=[wrong:shape_mismatch, secure:permission_required])]
+10-31 18:44:35.214  1623  1623 D ThinkOS : [image:public-reader] displayed OHR.FrankfurtHalloween
+10-31 18:44:35.219  1623  1623 D ThinkOS : [image:public-reader] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 18:44:37.000  1623  1672 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:116: Failed to connect to api.open-meteo.com/188.40.99.226:443
+10-31 18:44:42.277  1623  1672 E ThinkOS : [plugin:public-provider] plugin must be a directory
+10-31 18:44:42.278  1623  1623 E ThinkOS : [plugin:public-provider] plugin must be a directory
+10-31 18:44:42.278  1623  1623 W ThinkOS : Plugin error shown in diagnostics: public-provider
+10-31 18:45:26.368  1623  1671 I ThinkOS : time sync: 2.pool.ntp.org 139.199.214.202 offset=299ms rtt=25ms
+10-31 18:45:43.108  1623  1672 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:116: failed to connect to api.open-meteo.com/188.40.99.226 (port 443) from /192.168.3.167 (port 36279) after 3000ms
+10-31 18:46:32.440  1623  1623 I ThinkOS : attention=AMBIENT
+10-31 18:47:46.882  1623  1672 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 18:47:48.904  1623  1911 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-31 18:48:15.601  1623  1623 I ThinkOS : attention=AWAKE
+10-31 18:50:21.956  1623  1623 I ThinkOS : attention=AMBIENT
+10-31 18:53:30.967  1623  1623 I ThinkOS : attention=AWAKE
+10-31 18:53:43.325  1623  1623 I ThinkOS : attention=ENGAGED
+10-31 18:53:44.684  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 18:53:44.687  1623  1623 D ThinkOS : [image:gallery] native-pan -249.0,0.0->0.0,0.0 12000ms
+10-31 18:53:44.905  1623  1623 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 18:53:44.907  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 18:53:45.445  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 18:53:45.446  1623  1623 D ThinkOS : [image:gallery] native-pan -249.0,0.0->0.0,0.0 12000ms
+10-31 18:53:46.810  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 18:53:46.811  1623  1623 D ThinkOS : [image:gallery] native-pan -249.0,0.0->0.0,0.0 12000ms
+10-31 18:53:47.244  1623  1623 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 18:53:47.322  1623  1623 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 18:53:47.600  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 18:53:47.600  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+10-31 18:54:09.885  1623  1623 I ThinkOS : attention=AWAKE
+10-31 18:54:12.464  1623  1623 I ThinkOS : attention=ENGAGED
+10-31 18:54:12.683  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 18:54:16.201  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 18:54:16.247  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+10-31 18:54:16.818  1623  1623 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 18:54:31.045  1623  1623 I ThinkOS : attention=AWAKE
+10-31 18:54:37.229  1623  1623 I ThinkOS : attention=ENGAGED
+10-31 18:54:40.135  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 18:54:40.157  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+10-31 18:54:44.967  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 18:54:44.968  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+10-31 18:54:45.449  1623  1623 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 18:54:46.167  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 18:54:49.416  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 18:54:49.417  1623  1623 D ThinkOS : [image:gallery] native-pan -281.0,0.0->0.0,0.0 12000ms
+10-31 18:54:50.019  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 18:54:50.570  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 18:54:50.611  1623  1623 D ThinkOS : [image:gallery] native-pan -249.0,0.0->0.0,0.0 12000ms
+10-31 18:54:51.430  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 18:54:51.593  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 18:54:52.650  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 18:54:55.726  1623  1623 D ThinkOS : [image:gallery] displayed OHR.AutumnCranes
+10-31 18:54:55.729  1623  1623 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 18:54:56.772  1623  1623 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 18:54:56.774  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 18:54:57.211  1623  1623 D ThinkOS : [image:gallery] displayed OHR.AutumnCranes
+10-31 18:54:57.212  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 18:54:58.923  1623  1623 D ThinkOS : [image:gallery] displayed OHR.AveburyStones
+10-31 18:54:58.924  1623  1623 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 18:55:04.010  1623  1623 D ThinkOS : [image:gallery] displayed OHR.KuneticeCastle
+10-31 18:55:04.011  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 18:55:05.660  1623  1623 D ThinkOS : [image:gallery] displayed OHR.PondCypress
+10-31 18:55:05.661  1623  1623 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 18:55:06.902  1623  1623 D ThinkOS : [image:gallery] displayed OHR.SitovoWaterfall
+10-31 18:55:06.903  1623  1623 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 18:55:08.813  1623  1623 D ThinkOS : [image:gallery] displayed OHR.MaligneFest
+10-31 18:55:08.814  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 18:55:10.463  1623  1623 D ThinkOS : [image:gallery] displayed OHR.YellowstoneWolves
+10-31 18:55:10.464  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 18:55:12.158  1623  1623 D ThinkOS : [image:gallery] displayed OHR.NaejangsanNP
+10-31 18:55:12.159  1623  1623 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 18:55:13.731  1623  1623 D ThinkOS : [image:gallery] displayed OHR.VietnamBridge
+10-31 18:55:13.732  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 18:55:15.454  1623  1623 D ThinkOS : [image:gallery] displayed OHR.BrownSloth
+10-31 18:55:15.455  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 18:55:16.804  1623  1623 D ThinkOS : [image:gallery] displayed OHR.VeniceSunrise
+10-31 18:55:16.805  1623  1623 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 18:55:18.064  1623  1623 D ThinkOS : [image:gallery] displayed OHR.DolbadarnWales
+10-31 18:55:18.065  1623  1623 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 18:55:19.420  1623  1623 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 18:55:19.421  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 18:55:20.841  1623  1623 D ThinkOS : [image:gallery] displayed OHR.AutumnCranes
+10-31 18:55:20.842  1623  1623 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 18:55:22.282  1623  1623 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 18:55:22.284  1623  1623 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 18:55:23.019  1623  1623 D ThinkOS : [image:gallery] displayed OHR.AutumnCranes
+10-31 18:55:23.021  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 18:55:27.029  1623  1623 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 18:55:27.032  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 18:55:36.419  1623  1623 D ThinkOS : [image:gallery] displayed OHR.AutumnCranes
+10-31 18:55:36.422  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 18:55:37.069  1623  1623 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 18:55:37.072  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 18:55:39.059  1623  1623 D ThinkOS : [image:gallery] displayed OHR.AutumnCranes
+10-31 18:55:39.062  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 18:55:39.793  1623  1623 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 18:55:39.795  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 18:55:40.587  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 18:55:40.608  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-281.0,0.0 12000ms
+10-31 18:55:45.390  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 18:55:45.402  1623  1623 D ThinkOS : [image:gallery] native-pan -281.0,0.0->0.0,0.0 12000ms
+10-31 18:55:45.980  1623  1623 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 18:55:46.200  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 18:55:46.726  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 18:55:46.750  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+10-31 18:56:02.438  1623  1623 I ThinkOS : attention=AWAKE
+10-31 18:59:06.414  1623  1623 I ThinkOS : attention=ENGAGED
+10-31 18:59:06.669  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 18:59:07.304  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 18:59:07.325  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+10-31 18:59:08.270  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 18:59:08.284  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+10-31 18:59:08.721  1623  1623 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 18:59:08.733  1623  1623 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 18:59:09.357  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 18:59:09.358  1623  1623 D ThinkOS : [image:gallery] native-pan -281.0,0.0->0.0,0.0 12000ms
+10-31 18:59:25.846  1623  1623 I ThinkOS : attention=AWAKE
+10-31 19:01:10.015  1623  1623 I ThinkOS : attention=AMBIENT
+10-31 19:02:50.369  1623  1672 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 19:02:52.396  1623  1911 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-31 19:05:00.431  1623  1623 I ThinkOS : attention=AWAKE
+10-31 19:11:36.907  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:11:36.907  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-281.0,0.0 12000ms
+10-31 19:11:37.451  1623  1623 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:11:53.089  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:11:53.090  1623  1623 D ThinkOS : [image:gallery] native-pan -281.0,0.0->0.0,0.0 12000ms
+10-31 19:11:53.625  1623  1623 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:12:09.365  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:12:09.366  1623  1623 D ThinkOS : [image:gallery] native-pan -281.0,0.0->0.0,0.0 12000ms
+10-31 19:12:09.898  1623  1623 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:12:25.551  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:12:25.551  1623  1623 D ThinkOS : [image:gallery] native-pan -281.0,0.0->0.0,0.0 12000ms
+10-31 19:12:26.091  1623  1623 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:12:41.727  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:12:41.727  1623  1623 D ThinkOS : [image:gallery] native-pan -281.0,0.0->0.0,0.0 12000ms
+10-31 19:12:42.264  1623  1623 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:12:56.067  1623  1623 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 19:13:10.382  1623  1623 D ThinkOS : [image:gallery] native-pan -281.0,0.0->0.0,0.0 12000ms
+10-31 19:13:24.766  1623  1623 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 19:13:42.601  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:13:42.602  1623  1623 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+10-31 19:13:57.534  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:13:57.534  1623  1623 D ThinkOS : [image:gallery] native-pan -281.0,0.0->0.0,0.0 12000ms
+10-31 19:13:58.080  1623  1623 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:13:59.255  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:13:59.255  1623  1623 D ThinkOS : [image:gallery] native-pan -249.0,0.0->0.0,0.0 12000ms
+10-31 19:13:59.791  1623  1623 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:14:14.409  1623  1623 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:14:14.409  1623  1623 D ThinkOS : [image:gallery] native-pan -281.0,0.0->0.0,0.0 12000ms
+10-31 19:14:14.945  1623  1623 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:14:16.117  1623  1623 I ThinkOS : attention=AWAKE
+10-31 19:14:16.212  1623  1623 I ThinkOS : attention=AMBIENT
+10-31 19:14:31.532  1623  1623 I ThinkOS : attention=ASLEEP
+10-31 19:14:33.720  1623  1623 I ThinkOS : attention=AWAKE
+10-31 19:14:48.743  1623  1623 I ThinkOS : Configuration changed without Activity recreation: 1
+10-31 19:15:04.686  1623  1623 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 19:15:20.589  1623  1623 I ThinkOS : theme=LIGHT lux=31.875
+10-31 19:15:35.505  1623  1623 I ThinkOS : theme=DARK lux=28.5
+10-31 19:15:35.691  1623  1623 I ThinkOS : attention=AMBIENT
+10-31 19:16:26.045  4062  4062 I ThinkOS : tzdata 2026e (419 zones)
+10-31 19:16:26.327  4062  4062 I ThinkOS : Runtime started; local mode, safe=false
+10-31 19:16:26.330  4062  4062 I ThinkOS : Activity created; orientation=1
+10-31 19:16:26.481  4062  4062 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 19:16:26.679  4062  4089 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 19:16:27.215  4062  4089 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 36665 bytes
+10-31 19:16:27.635  4062  4089 I ThinkOS : [plugin:gallery] loaded 0.5.0; Lua 108247 bytes
+10-31 19:16:27.675  4062  4089 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 19:16:27.839  4062  4089 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40409 bytes
+10-31 19:16:27.980  4062  4089 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 19:16:28.281  4062  4089 I ThinkOS : [plugin:weather] loaded 0.3.0; Lua 109533 bytes
+10-31 19:16:32.652  4062  4089 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 19:16:32.766  4062  4062 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:16:32.768  4062  4062 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-281.0,0.0 12000ms
+10-31 19:16:33.324  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:16:34.668  4062  4141 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-31 19:16:36.992  4062  4062 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:16:36.995  4062  4062 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-281.0,0.0 12000ms
+10-31 19:16:37.541  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:16:38.116  4062  4088 I ThinkOS : time sync: 1.pool.ntp.org 139.199.214.202 offset=306ms rtt=28ms
+10-31 19:16:41.346  4062  4062 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:16:41.348  4062  4062 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-281.0,0.0 12000ms
+10-31 19:16:41.904  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:16:45.619  4062  4062 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:16:45.621  4062  4062 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-281.0,0.0 12000ms
+10-31 19:16:46.171  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:16:49.908  4062  4062 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:16:49.909  4062  4062 D ThinkOS : [image:gallery] native-pan -281.0,0.0->0.0,0.0 12000ms
+10-31 19:16:50.457  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:16:54.182  4062  4062 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:16:54.183  4062  4062 D ThinkOS : [image:gallery] native-pan -281.0,0.0->0.0,0.0 12000ms
+10-31 19:16:54.736  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:16:56.727  4062  4062 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 19:17:02.383  4062  4062 D ThinkOS : [image:gallery] native-pan -281.0,0.0->0.0,0.0 12000ms
+10-31 19:17:04.947  4062  4062 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 19:17:09.811  4062  4062 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:17:09.814  4062  4062 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+10-31 19:17:12.988  4062  4062 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:17:12.990  4062  4062 D ThinkOS : [image:gallery] native-pan -281.0,0.0->0.0,0.0 12000ms
+10-31 19:17:13.538  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:17:14.680  4062  4062 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:17:14.681  4062  4062 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+10-31 19:17:15.233  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:17:18.443  4062  4062 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:17:18.444  4062  4062 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-281.0,0.0 12000ms
+10-31 19:17:18.997  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:17:23.225  4062  4062 I ThinkOS : attention=ASLEEP
+10-31 19:17:25.471  4062  4062 I ThinkOS : attention=AWAKE
+10-31 19:17:40.433  4062  4062 I ThinkOS : Configuration changed without Activity recreation: 1
+10-31 19:17:56.528  4062  4062 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 19:18:12.526  4062  4062 I ThinkOS : theme=LIGHT lux=31.949997
+10-31 19:18:27.447  4062  4062 I ThinkOS : theme=DARK lux=31.949997
+10-31 19:18:27.696  4062  4062 I ThinkOS : attention=AMBIENT
+10-31 19:19:24.530  4062  4062 I ThinkOS : attention=AWAKE
+10-31 19:19:25.023  4062  4062 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:19:25.024  4062  4062 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-281.0,0.0 12000ms
+10-31 19:19:25.562  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:19:27.320  4062  4062 I ThinkOS : attention=ASLEEP
+10-31 19:19:30.699  4062  4062 I ThinkOS : attention=AWAKE
+10-31 19:19:34.587  4062  4062 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:19:34.588  4062  4062 D ThinkOS : [image:gallery] native-pan -281.0,0.0->0.0,0.0 12000ms
+10-31 19:19:35.132  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:19:38.907  4062  4062 I ThinkOS : attention=AMBIENT
+10-31 19:20:11.120  4062  4062 I ThinkOS : attention=AWAKE
+10-31 19:20:16.003  4062  4062 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:20:16.004  4062  4062 D ThinkOS : [image:gallery] native-pan -281.0,0.0->0.0,0.0 12000ms
+10-31 19:20:16.539  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:20:20.403  4062  4062 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:20:20.404  4062  4062 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-281.0,0.0 12000ms
+10-31 19:20:20.955  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:20:24.704  4062  4062 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:20:24.705  4062  4062 D ThinkOS : [image:gallery] native-pan -281.0,0.0->0.0,0.0 12000ms
+10-31 19:20:25.243  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:20:28.993  4062  4062 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:20:28.993  4062  4062 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-281.0,0.0 12000ms
+10-31 19:20:29.531  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:20:33.296  4062  4062 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:20:33.297  4062  4062 D ThinkOS : [image:gallery] native-pan -281.0,0.0->0.0,0.0 12000ms
+10-31 19:20:33.826  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:20:35.888  4062  4062 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 19:20:41.972  4062  4062 D ThinkOS : [image:gallery] native-pan -281.0,0.0->0.0,0.0 12000ms
+10-31 19:20:44.690  4062  4062 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 19:20:50.938  4062  4062 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:20:50.938  4062  4062 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+10-31 19:20:54.775  4062  4062 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:20:54.776  4062  4062 D ThinkOS : [image:gallery] native-pan -281.0,0.0->0.0,0.0 12000ms
+10-31 19:20:55.305  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:20:56.551  4062  4062 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:20:56.552  4062  4062 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+10-31 19:20:57.075  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:21:00.039  4062  4062 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:21:00.040  4062  4062 D ThinkOS : [image:gallery] native-pan -281.0,0.0->0.0,0.0 12000ms
+10-31 19:21:00.584  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:21:04.855  4062  4062 I ThinkOS : attention=ASLEEP
+10-31 19:21:07.057  4062  4062 I ThinkOS : attention=AWAKE
+10-31 19:21:09.331  4062  4062 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:21:09.332  4062  4062 D ThinkOS : [image:gallery] native-pan -281.0,0.0->0.0,0.0 12000ms
+10-31 19:21:09.882  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:21:11.977  4062  4062 I ThinkOS : Configuration changed without Activity recreation: 1
+10-31 19:21:12.217  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:21:16.127  4062  4062 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 19:21:16.364  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:21:20.205  4062  4062 I ThinkOS : theme=LIGHT lux=22.5
+10-31 19:21:20.224  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:21:23.244  4062  4062 I ThinkOS : theme=DARK lux=24.449997
+10-31 19:21:23.264  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:21:23.480  4062  4062 I ThinkOS : attention=AMBIENT
+10-31 19:23:01.536  4062  4062 I ThinkOS : attention=AWAKE
+10-31 19:23:40.997  4062  4089 I ThinkOS : [plugin:gallery] loaded 0.5.0; Lua 62598 bytes
+10-31 19:23:41.038  4062  4089 W ThinkOS : [plugin:gallery] Local gallery scan failed Library directory does not exist: /storage/emulated/0/Android/data/moe.kiwi.thinkos/files/Pictures/thinkos-empty
+10-31 19:23:49.006  4062  4089 I ThinkOS : [plugin:gallery] loaded 0.5.0; Lua 108247 bytes
+10-31 19:23:49.124  4062  4062 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:23:49.125  4062  4062 D ThinkOS : [image:gallery] native-pan -281.0,0.0->0.0,0.0 12000ms
+10-31 19:23:49.244  4062  4062 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:24:08.788  5441  5441 I ThinkOS : tzdata 2026e (419 zones)
+10-31 19:24:09.107  5441  5441 I ThinkOS : Runtime started; local mode, safe=false
+10-31 19:24:09.536  5441  5441 I ThinkOS : Activity created; orientation=2
+10-31 19:24:09.631  5441  5489 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 19:24:10.175  5441  5489 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 36665 bytes
+10-31 19:24:10.602  5441  5489 I ThinkOS : [plugin:gallery] loaded 0.5.0; Lua 108247 bytes
+10-31 19:24:10.645  5441  5489 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 19:24:10.803  5441  5489 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40409 bytes
+10-31 19:24:10.923  5441  5489 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 19:24:11.208  5441  5489 I ThinkOS : [plugin:weather] loaded 0.3.0; Lua 109530 bytes
+10-31 19:24:11.793  5441  5489 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 43140 bytes
+10-31 19:24:11.956  5441  5489 I ThinkOS : [plugin:legacy-three] loaded 1.0.0; Lua 41905 bytes
+10-31 19:24:13.450  5630  5630 I ThinkOS : tzdata 2026e (419 zones)
+10-31 19:24:13.713  5630  5630 I ThinkOS : Runtime started; local mode, safe=false
+10-31 19:24:13.717  5630  5630 I ThinkOS : Activity created; orientation=1
+10-31 19:24:14.074  5630  5630 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 19:24:14.079  5630  5649 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 19:24:14.613  5630  5649 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 36665 bytes
+10-31 19:24:15.032  5630  5649 I ThinkOS : [plugin:gallery] loaded 0.5.0; Lua 108247 bytes
+10-31 19:24:15.074  5630  5649 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 19:24:15.231  5630  5649 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40409 bytes
+10-31 19:24:15.370  5630  5649 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 19:24:15.680  5630  5649 I ThinkOS : [plugin:weather] loaded 0.3.0; Lua 109530 bytes
+10-31 19:24:15.891  5630  5649 I ThinkOS : [plugin:legacy-three] loaded 1.0.0; Lua 41905 bytes
+10-31 19:24:16.410  5630  5649 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 43140 bytes
+10-31 19:24:16.985  5630  5630 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:24:16.989  5630  5630 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-281.0,0.0 12000ms
+10-31 19:24:18.977  5630  5649 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 19:24:20.286  5630  5630 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:24:20.288  5630  5630 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-281.0,0.0 12000ms
+10-31 19:24:20.999  5630  5674 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-31 19:24:21.901  5630  5630 D ThinkOS : [image:legacy-three] displayed asset:assets/sample.png
+10-31 19:24:22.604  5630  5630 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:24:22.923  5630  5630 D ThinkOS : [image:legacy-three] displayed asset:assets/sample.png
+10-31 19:24:22.933  5630  5630 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:24:23.458  5630  5630 I ThinkOS : attention=ENGAGED
+10-31 19:24:24.061  5682  5682 I ThinkOS : tzdata 2026e (419 zones)
+10-31 19:24:31.104  5837  5837 I ThinkOS : tzdata 2026e (419 zones)
+10-31 19:24:31.502  5837  5837 I ThinkOS : Runtime started; local mode, safe=false
+10-31 19:24:31.724  5837  5837 I ThinkOS : Activity created; orientation=2
+10-31 19:24:31.935  5837  5880 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 19:24:32.484  5837  5880 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 36665 bytes
+10-31 19:24:32.911  5837  5880 I ThinkOS : [plugin:gallery] loaded 0.5.0; Lua 108247 bytes
+10-31 19:24:32.956  5837  5880 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 19:24:33.113  5837  5880 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40409 bytes
+10-31 19:24:33.234  5837  5880 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 19:24:33.521  5837  5880 I ThinkOS : [plugin:weather] loaded 0.3.0; Lua 109530 bytes
+10-31 19:24:34.141  5837  5880 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 43140 bytes
+10-31 19:24:35.125  5997  5997 I ThinkOS : tzdata 2026e (419 zones)
+10-31 19:24:35.489  5997  5997 I ThinkOS : Runtime started; local mode, safe=false
+10-31 19:24:35.491  5997  5997 I ThinkOS : Activity created; orientation=1
+10-31 19:24:35.613  5997  5997 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 19:24:35.863  5997  6017 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 19:24:36.394  5997  6017 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 36665 bytes
+10-31 19:24:36.815  5997  6017 I ThinkOS : [plugin:gallery] loaded 0.5.0; Lua 108247 bytes
+10-31 19:24:36.858  5997  6017 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 19:24:37.014  5997  6017 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40409 bytes
+10-31 19:24:37.152  5997  6017 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 19:24:37.459  5997  6017 I ThinkOS : [plugin:weather] loaded 0.3.0; Lua 109530 bytes
+10-31 19:24:38.071  5997  6017 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 43140 bytes
+10-31 19:24:40.353  5997  6017 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 19:24:42.230  5997  6016 I ThinkOS : time sync: 1.pool.ntp.org 139.199.215.251 offset=310ms rtt=30ms
+10-31 19:24:42.370  5997  6037 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-31 19:24:45.066  5997  5997 I ThinkOS : theme=DARK lux=53.699997
+10-31 19:24:52.405  5997  5997 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+10-31 19:24:54.782  5997  5997 I ThinkOS : Configuration changed without Activity recreation: 1
+10-31 19:24:55.757  5997  5997 I ThinkOS : theme=DARK lux=53.699997
+10-31 19:25:00.363  5997  5997 I ThinkOS : theme=DARK lux=53.699997
+10-31 19:25:02.794  5997  5997 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+10-31 19:25:10.285  5997  5997 I ThinkOS : theme=DARK lux=53.699997
+10-31 19:25:14.133  5997  5997 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+10-31 19:25:15.257  5997  6017 I ThinkOS : [plugin:gallery] Bing gallery refreshed en-US 13 photos
+10-31 19:25:17.273  5997  6037 D ThinkOS : [store:gallery] persisted coalesced snapshot
+10-31 19:25:19.702  5997  5997 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 19:25:26.145  5997  5997 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+10-31 19:25:30.248  5997  5997 I ThinkOS : theme=DARK lux=53.699997
+10-31 19:25:38.154  5997  5997 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+10-31 19:25:38.448  5997  5997 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+10-31 19:25:41.886  5997  5997 W ThinkOS : glance in tiles: clock; displaying empty tile
+10-31 19:25:43.345  5997  6017 I ThinkOS : [plugin:gallery] Bing gallery refreshed zh-CN 13 photos
+10-31 19:25:43.454  5997  5997 I ThinkOS : attention=ENGAGED
+10-31 19:25:44.141  6073  6073 I ThinkOS : tzdata 2026e (419 zones)
+10-31 19:25:52.780  6267  6267 I ThinkOS : tzdata 2026e (419 zones)
+10-31 19:25:53.098  6267  6267 I ThinkOS : Runtime started; local mode, safe=false
+10-31 19:25:53.487  6267  6312 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 19:25:53.522  6267  6267 I ThinkOS : Activity created; orientation=2
+10-31 19:25:54.070  6267  6312 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 36665 bytes
+10-31 19:25:54.472  6267  6312 I ThinkOS : [plugin:gallery] loaded 0.5.0; Lua 83214 bytes
+10-31 19:25:54.515  6267  6312 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 19:25:54.674  6267  6312 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40409 bytes
+10-31 19:25:54.795  6267  6312 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 19:25:55.083  6267  6312 I ThinkOS : [plugin:weather] loaded 0.3.0; Lua 109530 bytes
+10-31 19:25:55.902  6267  6312 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 43140 bytes
+10-31 19:25:56.929  6451  6451 I ThinkOS : tzdata 2026e (419 zones)
+10-31 19:25:57.201  6451  6451 I ThinkOS : Runtime started; local mode, safe=false
+10-31 19:25:57.204  6451  6451 I ThinkOS : Activity created; orientation=1
+10-31 19:25:57.534  6451  6451 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 19:25:57.553  6451  6470 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 19:25:58.089  6451  6470 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 36665 bytes
+10-31 19:25:58.466  6451  6470 I ThinkOS : [plugin:gallery] loaded 0.5.0; Lua 83214 bytes
+10-31 19:25:58.509  6451  6470 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 19:25:58.665  6451  6470 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40409 bytes
+10-31 19:25:58.807  6451  6470 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 19:25:59.123  6451  6470 I ThinkOS : [plugin:weather] loaded 0.3.0; Lua 109530 bytes
+10-31 19:25:59.733  6451  6470 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 43140 bytes
+10-31 19:26:00.645  6451  6470 I ThinkOS : [plugin:gallery] Bing gallery refreshed zh-CN 13 photos
+10-31 19:26:02.663  6451  6494 D ThinkOS : [store:gallery] persisted coalesced snapshot
+10-31 19:26:05.683  6451  6469 I ThinkOS : time sync: 1.pool.ntp.org 139.199.214.202 offset=308ms rtt=25ms
+10-31 19:26:06.188  6451  6470 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 19:26:08.201  6451  6494 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-31 19:26:11.776  6451  6451 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+10-31 19:26:23.028  6451  6451 I ThinkOS : attention=AMBIENT
+10-31 19:26:23.784  6451  6451 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+10-31 19:26:29.056  6451  6451 I ThinkOS : attention=AWAKE
+10-31 19:26:41.281  6451  6451 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:26:44.813  6451  6451 I ThinkOS : attention=ENGAGED
+10-31 19:26:45.403  6515  6515 I ThinkOS : tzdata 2026e (419 zones)
+10-31 19:26:51.863  6675  6675 I ThinkOS : tzdata 2026e (419 zones)
+10-31 19:26:52.162  6675  6675 I ThinkOS : Runtime started; local mode, safe=false
+10-31 19:26:52.543  6675  6721 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 19:26:52.573  6675  6675 I ThinkOS : Activity created; orientation=2
+10-31 19:26:53.145  6675  6721 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 36665 bytes
+10-31 19:26:53.563  6675  6721 I ThinkOS : [plugin:gallery] loaded 0.5.0; Lua 108247 bytes
+10-31 19:26:53.606  6675  6721 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 19:26:53.764  6675  6721 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40409 bytes
+10-31 19:26:53.888  6675  6721 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 19:26:54.172  6675  6721 I ThinkOS : [plugin:weather] loaded 0.3.0; Lua 109530 bytes
+10-31 19:26:54.836  6675  6721 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 43140 bytes
+10-31 19:26:55.986  6842  6842 I ThinkOS : tzdata 2026e (419 zones)
+10-31 19:26:56.357  6842  6842 I ThinkOS : Runtime started; local mode, safe=false
+10-31 19:26:56.359  6842  6842 I ThinkOS : Activity created; orientation=1
+10-31 19:26:56.500  6842  6842 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 19:26:56.713  6842  6861 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 19:26:57.251  6842  6861 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 36665 bytes
+10-31 19:26:57.663  6842  6861 I ThinkOS : [plugin:gallery] loaded 0.5.0; Lua 108247 bytes
+10-31 19:26:57.706  6842  6861 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 19:26:57.860  6842  6861 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40409 bytes
+10-31 19:26:58.001  6842  6861 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 19:26:58.306  6842  6861 I ThinkOS : [plugin:weather] loaded 0.3.0; Lua 109530 bytes
+10-31 19:26:58.934  6842  6861 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 43140 bytes
+10-31 19:27:02.006  6842  6861 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 19:27:02.805  6842  6842 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:27:02.808  6842  6842 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+10-31 19:27:03.344  6842  6842 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:27:04.027  6842  6885 D ThinkOS : [store:weather] persisted coalesced snapshot
+10-31 19:27:04.502  6842  6842 I ThinkOS : theme=DARK lux=53.699997
+10-31 19:27:05.222  6842  6860 I ThinkOS : time sync: 1.pool.ntp.org 139.199.215.251 offset=306ms rtt=32ms
+10-31 19:27:06.110  6842  6842 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:27:12.521  6842  6842 I ThinkOS : Configuration changed without Activity recreation: 1
+10-31 19:27:12.710  6842  6842 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:27:12.714  6842  6842 D ThinkOS : [image:gallery] native-pan -499.0,0.0->0.0,0.0 12000ms
+10-31 19:27:13.497  6842  6842 I ThinkOS : theme=DARK lux=53.699997
+10-31 19:27:13.746  6842  6842 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:27:17.339  6842  6842 I ThinkOS : theme=DARK lux=53.699997
+10-31 19:27:18.356  6842  6842 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:27:25.020  6842  6842 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 19:27:25.161  6842  6842 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:27:25.164  6842  6842 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+10-31 19:27:25.794  6842  6842 I ThinkOS : theme=DARK lux=53.699997
+10-31 19:27:26.027  6842  6842 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:27:28.153  6842  6842 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:27:28.154  6842  6842 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+10-31 19:27:28.167  6842  6842 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:27:30.394  6842  6842 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:27:30.395  6842  6842 D ThinkOS : [image:gallery] native-pan -249.0,0.0->0.0,0.0 12000ms
+10-31 19:27:30.405  6842  6842 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:27:31.245  6842  6842 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:27:31.262  6842  6842 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:27:31.264  6842  6842 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+10-31 19:27:31.348  6842  6861 I ThinkOS : [plugin:gallery] Bing gallery refreshed en-US 13 photos
+10-31 19:27:32.681  6842  6842 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:27:32.682  6842  6842 D ThinkOS : [image:gallery] native-pan -249.0,0.0->0.0,0.0 12000ms
+10-31 19:27:32.691  6842  6842 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:27:33.367  6842  6885 D ThinkOS : [store:gallery] persisted coalesced snapshot
+10-31 19:27:34.935  6842  6842 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:27:34.936  6842  6842 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+10-31 19:27:34.948  6842  6842 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:27:37.168  6842  6842 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:27:37.169  6842  6842 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+10-31 19:27:37.175  6842  6842 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:27:41.839  6842  6842 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:27:41.840  6842  6842 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+10-31 19:27:42.433  6842  6842 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:27:44.504  6842  6842 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:27:44.505  6842  6842 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+10-31 19:27:45.081  6842  6842 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:27:46.264  6842  6842 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:27:46.264  6842  6842 D ThinkOS : [image:gallery] native-pan -249.0,0.0->0.0,0.0 12000ms
+10-31 19:27:46.849  6842  6842 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:27:47.435  6842  6842 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 19:27:48.265  6842  6842 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:27:48.266  6842  6842 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 19:27:48.279  6842  6842 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:27:48.625  6842  6842 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 19:27:48.627  6842  6842 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 19:27:48.653  6842  6842 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 19:27:48.718  6842  6861 I ThinkOS : [plugin:gallery] Bing gallery refreshed zh-CN 13 photos
+10-31 19:27:48.806  6842  6842 I ThinkOS : attention=ENGAGED
+10-31 19:27:49.430  6912  6912 I ThinkOS : tzdata 2026e (419 zones)

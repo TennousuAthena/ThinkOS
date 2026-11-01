@@ -10,7 +10,7 @@
     "the generated settings and declaration-only card survive an application restart"
   ],
   "issues": [],
-  "initialPid": "23849",
+  "initialPid": "10340",
   "switchAccessibility": {
     "index": "1",
     "text": "",
@@ -28,7 +28,7 @@
     "long-clickable": "false",
     "password": "false",
     "selected": "false",
-    "bounds": "[199,198][1097,289]"
+    "bounds": "[189,206][1087,297]"
   },
   "resetTargetPx": [
     78,
@@ -42,7 +42,7 @@
     308,
     68
   ],
-  "restartedPid": "24970",
+  "restartedPid": "11460",
   "settingsRestored": true,
-  "elapsedSeconds": 85.33
+  "elapsedSeconds": 84.29
 }

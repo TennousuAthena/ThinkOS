@@ -1,0 +1,414 @@
+[
+  {
+    "case": "progressive http 480p",
+    "pass": true,
+    "detail": {
+      "status": "playing",
+      "pos": 3798,
+      "source": "progressive",
+      "decoder": "OMX.qcom.video.decoder.avc",
+      "error": null
+    }
+  },
+  {
+    "case": "progressive http seeks with Range",
+    "pass": true,
+    "detail": {
+      "status": "playing",
+      "pos": 10007,
+      "source": "progressive",
+      "decoder": "OMX.qcom.video.decoder.avc",
+      "error": null
+    }
+  },
+  {
+    "case": "audio over http (mp3)",
+    "pass": true,
+    "detail": {
+      "status": "playing",
+      "pos": 3299,
+      "source": "progressive",
+      "decoder": "OMX.google.mp3.decoder",
+      "error": null
+    }
+  },
+  {
+    "case": "Authorization header reaches the origin",
+    "pass": true,
+    "detail": {
+      "status": "playing",
+      "pos": 3220,
+      "source": "progressive",
+      "decoder": "OMX.qcom.video.decoder.avc",
+      "error": null
+    }
+  },
+  {
+    "case": "missing Authorization is a plain 401 (no retry storm)",
+    "pass": true,
+    "detail": {
+      "status": "error",
+      "error": {
+        "category": "http",
+        "status": 401,
+        "name": "ERROR_CODE_IO_BAD_HTTP_STATUS",
+        "message": "Source error"
+      },
+      "retries_seen": 0
+    }
+  },
+  {
+    "case": "Referer header",
+    "pass": true,
+    "detail": {
+      "status": "playing",
+      "pos": 3227,
+      "source": "progressive",
+      "decoder": "OMX.qcom.video.decoder.avc",
+      "error": null
+    }
+  },
+  {
+    "case": "missing Referer is 403",
+    "pass": true,
+    "detail": {
+      "status": "error",
+      "error": {
+        "category": "http",
+        "status": 403,
+        "name": "ERROR_CODE_IO_BAD_HTTP_STATUS",
+        "message": "Source error"
+      },
+      "retries_seen": 0
+    }
+  },
+  {
+    "case": "custom User-Agent",
+    "pass": true,
+    "detail": {
+      "status": "playing",
+      "pos": 3208,
+      "source": "progressive",
+      "decoder": "OMX.qcom.video.decoder.avc",
+      "error": null
+    }
+  },
+  {
+    "case": "3 redirects are followed",
+    "pass": true,
+    "detail": {
+      "status": "playing",
+      "pos": 3177,
+      "source": "progressive",
+      "decoder": "OMX.qcom.video.decoder.avc",
+      "error": null
+    }
+  },
+  {
+    "case": "4 redirects are refused",
+    "pass": true,
+    "detail": {
+      "status": "error",
+      "error": {
+        "category": "network",
+        "status": null,
+        "name": "ERROR_CODE_IO_NETWORK_CONNECTION_FAILED",
+        "message": "Source error"
+      },
+      "retries_seen": 0
+    }
+  },
+  {
+    "case": "404 is final",
+    "pass": true,
+    "detail": {
+      "status": "error",
+      "error": {
+        "category": "http",
+        "status": 404,
+        "name": "ERROR_CODE_IO_BAD_HTTP_STATUS",
+        "message": "Source error"
+      },
+      "retries_seen": 0
+    }
+  },
+  {
+    "case": "plain HTTP to a public host is refused",
+    "pass": true,
+    "detail": {
+      "status": "error",
+      "error": {
+        "category": "policy",
+        "status": null,
+        "name": "ERROR_CODE_IO_NETWORK_CONNECTION_FAILED",
+        "message": "Source error"
+      },
+      "retries_seen": 0
+    }
+  },
+  {
+    "case": "a corrupt file is a format error",
+    "pass": true,
+    "detail": {
+      "status": "error",
+      "error": {
+        "category": "format",
+        "status": null,
+        "name": "ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED",
+        "message": "Source error"
+      },
+      "retries_seen": 0
+    }
+  },
+  {
+    "case": "connection cut mid-file is retried",
+    "pass": true,
+    "detail": {
+      "status": "playing",
+      "pos": 3167,
+      "source": "progressive",
+      "decoder": "OMX.qcom.video.decoder.avc",
+      "error": null,
+      "max_retry_seen": 0,
+      "reconnecting_seen": false
+    }
+  },
+  {
+    "case": "throttled link buffers then plays",
+    "pass": true,
+    "detail": {
+      "status": "playing",
+      "pos": 3417,
+      "source": "progressive",
+      "decoder": "OMX.qcom.video.decoder.avc",
+      "error": null
+    }
+  },
+  {
+    "case": "503 is retried with backoff, then reported",
+    "pass": true,
+    "detail": {
+      "status": "error",
+      "error": {
+        "category": "http",
+        "status": 503,
+        "name": "ERROR_CODE_IO_BAD_HTTP_STATUS",
+        "message": "Source error"
+      },
+      "retries_seen": 6
+    }
+  },
+  {
+    "case": "HLS VOD (TS segments)",
+    "pass": true,
+    "detail": {
+      "status": "playing",
+      "pos": 3852,
+      "source": "hls",
+      "decoder": "OMX.qcom.video.decoder.avc",
+      "error": null
+    }
+  },
+  {
+    "case": "HLS VOD (fMP4 segments)",
+    "pass": true,
+    "detail": {
+      "status": "playing",
+      "pos": 3938,
+      "source": "hls",
+      "decoder": "OMX.qcom.video.decoder.avc",
+      "error": null
+    }
+  },
+  {
+    "case": "HLS AES-128",
+    "pass": true,
+    "detail": {
+      "status": "playing",
+      "pos": 3976,
+      "source": "hls",
+      "decoder": "OMX.qcom.video.decoder.avc",
+      "error": null
+    }
+  },
+  {
+    "case": "HLS master with two renditions",
+    "pass": true,
+    "detail": {
+      "status": "playing",
+      "pos": 3973,
+      "source": "hls",
+      "decoder": "OMX.qcom.video.decoder.avc",
+      "error": null
+    }
+  },
+  {
+    "case": "DASH VOD",
+    "pass": true,
+    "detail": {
+      "status": "playing",
+      "pos": 3952,
+      "source": "dash",
+      "decoder": "OMX.qcom.video.decoder.avc",
+      "error": null
+    }
+  },
+  {
+    "case": "live HLS",
+    "pass": true,
+    "detail": {
+      "status": "playing",
+      "pos": 3265,
+      "source": "hls",
+      "decoder": "OMX.qcom.video.decoder.avc",
+      "error": null
+    }
+  },
+  {
+    "case": "live DASH",
+    "pass": true,
+    "detail": {
+      "status": "playing",
+      "pos": 3141,
+      "source": "dash",
+      "decoder": "OMX.qcom.video.decoder.avc",
+      "error": null
+    }
+  },
+  {
+    "case": "live HLS recovers after falling out of the window",
+    "pass": true,
+    "detail": {
+      "status": "playing",
+      "error": null
+    }
+  },
+  {
+    "case": "server outage ends in reconnect, then playback resumes (or a clear error)",
+    "pass": true,
+    "detail": {
+      "during": "reconnecting",
+      "after": "playing",
+      "error": null
+    }
+  },
+  {
+    "case": "sidecar SRT over http",
+    "pass": true,
+    "detail": {
+      "status": "playing",
+      "pos": 3222,
+      "source": "progressive",
+      "decoder": "OMX.qcom.video.decoder.avc",
+      "error": null
+    }
+  },
+  {
+    "case": "sidecar VTT over http",
+    "pass": true,
+    "detail": {
+      "status": "playing",
+      "pos": 3250,
+      "source": "progressive",
+      "decoder": "OMX.qcom.video.decoder.avc",
+      "error": null
+    }
+  },
+  {
+    "case": "HTTPS progressive MP4",
+    "pass": true,
+    "detail": {
+      "status": "playing",
+      "pos": 3942,
+      "source": "progressive",
+      "decoder": "OMX.qcom.video.decoder.avc",
+      "error": null
+    }
+  },
+  {
+    "case": "HTTPS HLS (Apple bipbop, master playlist)",
+    "pass": true,
+    "detail": {
+      "status": "playing",
+      "pos": 3345,
+      "source": "hls",
+      "decoder": "OMX.qcom.video.decoder.avc",
+      "error": null
+    }
+  },
+  {
+    "case": "HTTPS DASH (Shaka demo, Angel One)",
+    "pass": true,
+    "detail": {
+      "status": "playing",
+      "pos": 3345,
+      "source": "dash",
+      "decoder": "OMX.qcom.video.decoder.vp9",
+      "error": null
+    }
+  },
+  {
+    "case": "RTSP over interleaved TCP",
+    "pass": true,
+    "detail": {
+      "status": "playing",
+      "pos": 3948,
+      "source": "rtsp",
+      "decoder": "OMX.qcom.video.decoder.avc",
+      "error": null
+    }
+  },
+  {
+    "case": "RTSP to a public host is refused",
+    "pass": true,
+    "detail": {
+      "status": "error",
+      "error": {
+        "category": "policy",
+        "status": null,
+        "name": "ERROR_CODE_IO_UNSPECIFIED",
+        "message": "Source error"
+      },
+      "retries_seen": 0
+    }
+  },
+  {
+    "case": "RTSP with credentials in the URL",
+    "pass": true,
+    "detail": {
+      "status": "playing",
+      "pos": 3977,
+      "source": "rtsp",
+      "decoder": "OMX.qcom.video.decoder.avc",
+      "error": null
+    }
+  },
+  {
+    "case": "RTSP credentials never reach the log",
+    "pass": true,
+    "detail": []
+  },
+  {
+    "case": "RTSP with the wrong password is a final error",
+    "pass": true,
+    "detail": {
+      "status": "error",
+      "error": {
+        "category": "http",
+        "status": 401,
+        "name": "ERROR_CODE_IO_UNSPECIFIED",
+        "message": "Source error"
+      },
+      "retries_seen": 0
+    }
+  },
+  {
+    "case": "RTSP source restart ends in reconnect or a clear error",
+    "pass": true,
+    "detail": {
+      "during": "reconnecting",
+      "after": "playing",
+      "error": null
+    }
+  }
+]

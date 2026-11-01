@@ -1,0 +1,486 @@
+[
+  {
+    "scenario": "idle: clock face, nothing playing",
+    "all_cores": 0.909,
+    "top": [
+      [
+        0.43,
+        "oe.kiwi.thinkos"
+      ],
+      [
+        0.29,
+        "surfaceflinger"
+      ],
+      [
+        0.082,
+        "composer@2.1-se"
+      ],
+      [
+        0.027,
+        "kgsl_worker_thr"
+      ],
+      [
+        0.02,
+        "kworker/u16:0"
+      ],
+      [
+        0.018,
+        "system_server"
+      ],
+      [
+        0.018,
+        "kworker/u16:3"
+      ]
+    ],
+    "seconds": 45.2,
+    "frames": 3094,
+    "janky": 19,
+    "pss_mb": 78.2,
+    "video": "",
+    "decoder": "",
+    "size": "0x0",
+    "fps": 0,
+    "dropped": 0,
+    "status": ""
+  },
+  {
+    "scenario": "audio: FLAC 24-bit, clock face visible",
+    "all_cores": 1.215,
+    "top": [
+      [
+        0.701,
+        "oe.kiwi.thinkos"
+      ],
+      [
+        0.282,
+        "surfaceflinger"
+      ],
+      [
+        0.084,
+        "composer@2.1-se"
+      ],
+      [
+        0.075,
+        "omx@1.0-service"
+      ],
+      [
+        0.027,
+        "kgsl_worker_thr"
+      ],
+      [
+        0.019,
+        "kworker/u16:5"
+      ],
+      [
+        0.016,
+        "kworker/u16:3"
+      ]
+    ],
+    "seconds": 45.2,
+    "frames": 2732,
+    "janky": 21,
+    "pss_mb": 84.2,
+    "video": "",
+    "decoder": "OMX.google.flac.decoder",
+    "size": "0x0",
+    "fps": 0,
+    "dropped": 0,
+    "status": "playing"
+  },
+  {
+    "scenario": "audio: MP3, clock face visible",
+    "all_cores": 1.204,
+    "top": [
+      [
+        0.662,
+        "oe.kiwi.thinkos"
+      ],
+      [
+        0.287,
+        "surfaceflinger"
+      ],
+      [
+        0.086,
+        "omx@1.0-service"
+      ],
+      [
+        0.084,
+        "composer@2.1-se"
+      ],
+      [
+        0.027,
+        "kgsl_worker_thr"
+      ],
+      [
+        0.021,
+        "kworker/u16:5"
+      ],
+      [
+        0.015,
+        "audioserver"
+      ]
+    ],
+    "seconds": 45.2,
+    "frames": 2732,
+    "janky": 27,
+    "pss_mb": 81.4,
+    "video": "",
+    "decoder": "OMX.google.mp3.decoder",
+    "size": "0x0",
+    "fps": 0,
+    "dropped": 0,
+    "status": "playing"
+  },
+  {
+    "scenario": "video: H.264 480p30",
+    "all_cores": 1.482,
+    "top": [
+      [
+        0.771,
+        "oe.kiwi.thinkos"
+      ],
+      [
+        0.284,
+        "omx@1.0-service"
+      ],
+      [
+        0.267,
+        "surfaceflinger"
+      ],
+      [
+        0.08,
+        "composer@2.1-se"
+      ],
+      [
+        0.024,
+        "kgsl_worker_thr"
+      ],
+      [
+        0.021,
+        "kworker/u16:6"
+      ],
+      [
+        0.019,
+        "system_server"
+      ]
+    ],
+    "seconds": 45.2,
+    "frames": 2731,
+    "janky": 0,
+    "pss_mb": 94.5,
+    "video": "avc",
+    "decoder": "OMX.qcom.video.decoder.avc",
+    "size": "854x480",
+    "fps": 29.9502010345459,
+    "dropped": 0,
+    "status": "playing"
+  },
+  {
+    "scenario": "video: H.264 720p30",
+    "all_cores": 1.462,
+    "top": [
+      [
+        0.751,
+        "oe.kiwi.thinkos"
+      ],
+      [
+        0.307,
+        "omx@1.0-service"
+      ],
+      [
+        0.264,
+        "surfaceflinger"
+      ],
+      [
+        0.079,
+        "composer@2.1-se"
+      ],
+      [
+        0.024,
+        "kgsl_worker_thr"
+      ],
+      [
+        0.016,
+        "kworker/u16:3"
+      ],
+      [
+        0.015,
+        "audioserver"
+      ]
+    ],
+    "seconds": 45.2,
+    "frames": 2733,
+    "janky": 0,
+    "pss_mb": 105.1,
+    "video": "avc",
+    "decoder": "OMX.qcom.video.decoder.avc",
+    "size": "1280x720",
+    "fps": 29.9502010345459,
+    "dropped": 0,
+    "status": "playing"
+  },
+  {
+    "scenario": "video: H.264 1080p30",
+    "all_cores": 1.477,
+    "top": [
+      [
+        0.742,
+        "oe.kiwi.thinkos"
+      ],
+      [
+        0.322,
+        "omx@1.0-service"
+      ],
+      [
+        0.261,
+        "surfaceflinger"
+      ],
+      [
+        0.077,
+        "composer@2.1-se"
+      ],
+      [
+        0.024,
+        "kgsl_worker_thr"
+      ],
+      [
+        0.019,
+        "kworker/u16:2"
+      ],
+      [
+        0.019,
+        "system_server"
+      ]
+    ],
+    "seconds": 45.2,
+    "frames": 2732,
+    "janky": 0,
+    "pss_mb": 118.8,
+    "video": "avc",
+    "decoder": "OMX.qcom.video.decoder.avc",
+    "size": "1920x1080",
+    "fps": 29.9502010345459,
+    "dropped": 0,
+    "status": "playing"
+  },
+  {
+    "scenario": "video: H.264 1080p60",
+    "all_cores": 1.565,
+    "top": [
+      [
+        0.755,
+        "oe.kiwi.thinkos"
+      ],
+      [
+        0.442,
+        "omx@1.0-service"
+      ],
+      [
+        0.223,
+        "surfaceflinger"
+      ],
+      [
+        0.065,
+        "composer@2.1-se"
+      ],
+      [
+        0.02,
+        "kgsl_worker_thr"
+      ],
+      [
+        0.019,
+        "kworker/u16:3"
+      ],
+      [
+        0.019,
+        "kworker/u16:6"
+      ]
+    ],
+    "seconds": 45.2,
+    "frames": 2734,
+    "janky": 1,
+    "pss_mb": 122.7,
+    "video": "avc",
+    "decoder": "OMX.qcom.video.decoder.avc",
+    "size": "1920x1080",
+    "fps": 59.90037155151367,
+    "dropped": 0,
+    "status": "playing"
+  },
+  {
+    "scenario": "video: H.264 1080p60, controls shown",
+    "all_cores": 1.617,
+    "top": [
+      [
+        0.724,
+        "oe.kiwi.thinkos"
+      ],
+      [
+        0.42,
+        "omx@1.0-service"
+      ],
+      [
+        0.221,
+        "surfaceflinger"
+      ],
+      [
+        0.066,
+        "composer@2.1-se"
+      ],
+      [
+        0.019,
+        "kgsl_worker_thr"
+      ],
+      [
+        0.018,
+        "kworker/u16:2"
+      ],
+      [
+        0.017,
+        "kworker/u16:4"
+      ]
+    ],
+    "seconds": 45.2,
+    "frames": 2734,
+    "janky": 0,
+    "pss_mb": 122.1,
+    "video": "avc",
+    "decoder": "OMX.qcom.video.decoder.avc",
+    "size": "1920x1080",
+    "fps": 59.90037155151367,
+    "dropped": 0,
+    "status": "playing"
+  },
+  {
+    "scenario": "video: HEVC 1080p30",
+    "all_cores": 1.478,
+    "top": [
+      [
+        0.744,
+        "oe.kiwi.thinkos"
+      ],
+      [
+        0.311,
+        "omx@1.0-service"
+      ],
+      [
+        0.262,
+        "surfaceflinger"
+      ],
+      [
+        0.078,
+        "composer@2.1-se"
+      ],
+      [
+        0.025,
+        "kworker/u16:6"
+      ],
+      [
+        0.023,
+        "kgsl_worker_thr"
+      ],
+      [
+        0.018,
+        "kworker/u16:2"
+      ]
+    ],
+    "seconds": 45.2,
+    "frames": 2733,
+    "janky": 0,
+    "pss_mb": 125.6,
+    "video": "hevc",
+    "decoder": "OMX.qcom.video.decoder.hevc",
+    "size": "1920x1080",
+    "fps": 29.9502010345459,
+    "dropped": 0,
+    "status": "playing"
+  },
+  {
+    "scenario": "video: VP9 1080p30",
+    "all_cores": 1.467,
+    "top": [
+      [
+        0.751,
+        "oe.kiwi.thinkos"
+      ],
+      [
+        0.299,
+        "omx@1.0-service"
+      ],
+      [
+        0.273,
+        "surfaceflinger"
+      ],
+      [
+        0.079,
+        "composer@2.1-se"
+      ],
+      [
+        0.024,
+        "kgsl_worker_thr"
+      ],
+      [
+        0.019,
+        "kworker/u16:4"
+      ],
+      [
+        0.017,
+        "kworker/u16:6"
+      ]
+    ],
+    "seconds": 45.2,
+    "frames": 2735,
+    "janky": 0,
+    "pss_mb": 133.2,
+    "video": "on2.vp9",
+    "decoder": "OMX.qcom.video.decoder.vp9",
+    "size": "1920x1080",
+    "fps": 0,
+    "dropped": 0,
+    "status": "playing"
+  },
+  {
+    "scenario": "video: VP8 720p30",
+    "all_cores": 1.594,
+    "top": [
+      [
+        0.764,
+        "oe.kiwi.thinkos"
+      ],
+      [
+        0.31,
+        "omx@1.0-service"
+      ],
+      [
+        0.28,
+        "surfaceflinger"
+      ],
+      [
+        0.084,
+        "composer@2.1-se"
+      ],
+      [
+        0.024,
+        "kgsl_worker_thr"
+      ],
+      [
+        0.018,
+        "kworker/u16:4"
+      ],
+      [
+        0.018,
+        "kworker/u16:5"
+      ]
+    ],
+    "seconds": 45.2,
+    "frames": 2730,
+    "janky": 0,
+    "pss_mb": 104.7,
+    "video": "on2.vp8",
+    "decoder": "OMX.qcom.video.decoder.vp8",
+    "size": "1280x720",
+    "fps": 0,
+    "dropped": 0,
+    "status": "playing"
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "complete": true,
+  "passed": [
+    "41 consecutive second changes: p50 14 ms, p95 23 ms, max 25 ms late, none skipped",
+    "the displayed time agrees with fresh time-server readings: +0 ms, +0 ms, +0 ms",
+    "after a process restart the first reading is already right (-4 ms)",
+    "a main thread stalled 700 ms past a boundary shows the true second right after it (late by 735 ms, never stale); the next seconds are back to p95 20 ms"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "sha256": "7cef48ecc8770aa7c8ec6fc377862ebf4d4a9d9d57626d13857de9f57d7242f2",
+  "libraries": [
+    "lib/armeabi-v7a/libtos.so"
+  ],
+  "minSdk": 27,
+  "targetSdk": 27
+}

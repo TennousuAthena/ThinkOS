@@ -1,6 +1,6 @@
 {
   "component_ui": true,
-  "weather_ui": true,
+  "weather_ui": false,
   "settings_ui": true,
   "settingsRestored": true
 }

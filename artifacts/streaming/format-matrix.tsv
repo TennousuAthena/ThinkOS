@@ -1,0 +1,46 @@
+file	expected	outcome	pass	note	video	audio	size	decoder	dropped	tracks	seekable	seek	category	codec	message	warning	status
+video-h264-480p30.mp4	play	PLAY	PASS		avc	mp4a-latm	854x480	OMX.qcom.video.decoder.avc	0	1/0	True	ok					playing
+video-h264-720p30.mp4	play	PLAY	PASS		avc	mp4a-latm	1280x720	OMX.qcom.video.decoder.avc	0	1/0	True	ok					playing
+video-h264-1080p30-high.mp4	play	PLAY	PASS		avc	mp4a-latm	1920x1080	OMX.qcom.video.decoder.avc	0	1/0	True	ok					playing
+video-h264-1080p60.mp4	play	PLAY	PASS		avc	mp4a-latm	1920x1080	OMX.qcom.video.decoder.avc	0	1/0	True	ok					playing
+video-hevc-1080p30-main.mp4	play	PLAY	PASS		hevc	mp4a-latm	1920x1080	OMX.qcom.video.decoder.hevc	0	1/0	True	ok					playing
+video-hevc-1080p30-main10.mp4	unknown	ERROR	PASS	observed error		mp4a-latm	0x0	OMX.qcom.video.decoder.hevc	0	1/0	True		decoder	video/hevc	MediaCodecVideoRenderer error, index=0, format=Format(1, null, video/mp4, video/hevc, hvc1.2.4.L120.90, 2531270, und, [1920, 1080, 30.0, ColorInfo(Unset color space, Limited range, Unset color transfer, false, 10bit Luma, 10bit Chroma)], [-1, -1]), format_supported=YES		error
+video-vp8-720p30.webm	play	PLAY	PASS		on2.vp8	opus	1280x720	OMX.qcom.video.decoder.vp8	0	1/0	True	ok					playing
+video-vp9-1080p30.webm	play	PLAY	PASS		on2.vp9	opus	1920x1080	OMX.qcom.video.decoder.vp9	0	1/0	True	ok					playing
+video-av1-720p30.mp4	video-unsupported	ERROR	PASS			mp4a-latm	0x0	OMX.google.aac.decoder	0	1/0	True		format	video/av01	This device cannot decode av01 video		error
+video-mpeg2-576p25-mp2.ts	unknown	PLAY	PASS	observed play	mpeg2	mpeg-L2	720x576	OMX.qcom.video.decoder.mpeg2	0	1/0	True	ok					playing
+video-mpeg2-576p25-ac3.mpg	play-with-ffmpeg-ext	PLAY	PASS		mpeg2	ac3	720x576	OMX.qcom.video.decoder.mpeg2	0	1/0	True	ok					playing
+video-mpeg1ps-vcd.mpg	container-unsupported	ERROR	PASS				0x0		0	0/0	False		format		Source error		error
+video-mpeg4asp-480p30-mp3.avi	unknown	PLAY	PASS	observed play	mp4v-es	mpeg	854x480	OMX.qcom.video.decoder.mpeg4	0	1/0	True	ok					playing
+video-h264-480p30-aac.flv	play	PLAY	PASS		avc	mp4a-latm	854x480	OMX.qcom.video.decoder.avc	0	1/0	False	n/a					playing
+video-wmv2-480p30.wmv	container-unsupported	ERROR	PASS				0x0		0	0/0	False		format		Source error		error
+video-h264-480p30.mov	play	PLAY	PASS		avc	mp4a-latm	854x480	OMX.qcom.video.decoder.avc	0	1/0	True	ok					playing
+video-h263-cif-aac.3gp	play	PLAY	PASS		3gpp	mp4a-latm	352x288	OMX.qcom.video.decoder.h263	0	1/0	True	ok					playing
+video-h264-480p30-ac3.mkv	play-with-ffmpeg-ext	PLAY	PASS		avc	ac3	854x480	OMX.qcom.video.decoder.avc	0	1/0	True	ok					playing
+video-h264-480p30-eac3.mkv	play-with-ffmpeg-ext	PLAY	PASS		avc	eac3	854x480	OMX.qcom.video.decoder.avc	0	1/0	True	ok					playing
+video-h264-480p30-dts.mkv	play-with-ffmpeg-ext	PLAY	PASS		avc	dts	854x480	OMX.qcom.video.decoder.avc	0	1/0	True	ok					playing
+video-h264-480p30-alac.mp4	play-with-ffmpeg-ext	PLAY	PASS		avc	alac	854x480	OMX.qcom.video.decoder.avc	0	1/0	True	ok					playing
+sub-embedded-srt.mkv	play	PLAY	PASS		avc	mp4a-latm	854x480	OMX.qcom.video.decoder.avc	0	1/1	True	ok					playing
+sub-embedded-movtext.mp4	play	PLAY	PASS		avc	mp4a-latm	854x480	OMX.qcom.video.decoder.avc	0	1/1	True	ok					playing
+video-2audio-embedded-sub.mkv	play	PLAY	PASS		avc	mp4a-latm	854x480	OMX.qcom.video.decoder.avc	0	2/1	True	ok					playing
+sub-base.mp4	play	PLAY	PASS		avc	mp4a-latm	854x480	OMX.qcom.video.decoder.avc	0	1/0	True	ok					playing
+video-h264-portrait-rot90.mp4	play	PLAY	PASS		avc	mp4a-latm	1080x1920	OMX.qcom.video.decoder.avc	0	1/0	True	ok					playing
+video-h264-aspect-2.35.mp4	play	PLAY	PASS		avc	mp4a-latm	1920x816	OMX.qcom.video.decoder.avc	0	1/0	True	ok					playing
+audio-mp3-cbr192.mp3	play	PLAY	PASS			mpeg	0x0	OMX.google.mp3.decoder	0	1/0	True	ok					playing
+audio-mp3-vbr.mp3	play	PLAY	PASS			mpeg	0x0	OMX.google.mp3.decoder	0	1/0	True	ok					playing
+audio-aac-lc.m4a	play	PLAY	PASS			mp4a-latm	0x0	OMX.google.aac.decoder	0	1/0	True	ok					playing
+audio-aac-adts.aac	play	PLAY	PASS			mp4a-latm	0x0	OMX.google.aac.decoder	0	1/0	True	ok					playing
+audio-flac-16bit-44k.flac	play	PLAY	PASS			flac	0x0	OMX.google.flac.decoder	0	1/0	True	ok					playing
+audio-flac-24bit-48k.flac	play	PLAY	PASS			flac	0x0	OMX.google.flac.decoder	0	1/0	True	ok					playing
+audio-vorbis.ogg	play	PLAY	PASS			vorbis	0x0	OMX.google.vorbis.decoder	0	1/0	True	ok					playing
+audio-opus.opus	play	PLAY	PASS			opus	0x0	OMX.google.opus.decoder	0	1/0	True	ok					playing
+audio-opus.ogg	play	PLAY	PASS			opus	0x0	OMX.google.opus.decoder	0	1/0	True	ok					playing
+audio-wav-pcm16.wav	play	PLAY	PASS			raw	0x0		0	1/0	True	ok					playing
+audio-ac3.ac3	play-with-ffmpeg-ext	PLAY	PASS			ac3	0x0	ffmpegLavc60.3.100-ac3	0	1/0	False	n/a					playing
+audio-eac3.eac3	play-with-ffmpeg-ext	PLAY	PASS			eac3	0x0	ffmpegLavc60.3.100-eac3	0	1/0	False	n/a					playing
+audio-dts.dts	container-unsupported	ERROR	PASS				0x0		0	0/0	False		format		Source error		error
+audio-dts.mka	play-with-ffmpeg-ext	PLAY	PASS			dts	0x0	ffmpegLavc60.3.100-dca	0	1/0	True	ok					playing
+audio-alac.m4a	play-with-ffmpeg-ext	PLAY	PASS			alac	0x0	ffmpegLavc60.3.100-alac	0	1/0	True	ok					playing
+audio-wma.wma	container-unsupported	ERROR	PASS				0x0		0	0/0	False		format		Source error		error
+audio-mp3-id3v2-cover.mp3	play	PLAY	PASS			mpeg	0x0	OMX.google.mp3.decoder	0	1/0	True	ok					playing
+audio-flac-comments-cover.flac	play	PLAY	PASS			flac	0x0	OMX.google.flac.decoder	0	1/0	True	ok					playing

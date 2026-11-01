@@ -1,0 +1,18 @@
+--------- beginning of main
+11-01 01:26:09.090  6905  6905 I ThinkOS : DEBUG clock n=5 p50=15ms p95=17ms p99=17ms min=8ms max=735ms skipped=0
+11-01 01:26:25.858  6905  6905 I ThinkOS : DEBUG clock n=15 p50=14ms p95=20ms p99=20ms min=6ms max=21ms skipped=0
+--------- beginning of system
+11-01 01:26:27.880  7027  7027 I ThinkOS : tzdata 2026e (419 zones)
+11-01 01:26:29.223  7027  7027 I ThinkOS : time sync: restored the reading from 39s ago
+11-01 01:26:29.225  7027  7027 I ThinkOS : Runtime started; local mode, safe=false
+11-01 01:26:29.230  7027  7027 I ThinkOS : Activity created; orientation=2
+11-01 01:26:29.606  7027  7061 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+11-01 01:26:30.029  7027  7060 I ThinkOS : time sync: 0.pool.ntp.org 210.28.130.4 system-offset=384ms rtt=68ms corrected-by=24ms
+11-01 01:26:30.215  7027  7061 I ThinkOS : [plugin:clock] loaded 0.5.0; Lua 41371 bytes
+11-01 01:26:30.607  7027  7061 I ThinkOS : [plugin:gallery] loaded 0.5.1; Lua 109009 bytes
+11-01 01:26:30.647  7027  7061 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+11-01 01:26:30.797  7027  7061 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40877 bytes
+11-01 01:26:30.923  7027  7061 I ThinkOS : [plugin:tiles] loaded 0.2.0; Lua 0 bytes
+11-01 01:26:31.254  7027  7061 I ThinkOS : [plugin:weather] loaded 0.4.0; Lua 111862 bytes
+11-01 01:26:33.645  7027  7061 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+11-01 01:26:35.672  7027  7079 D ThinkOS : [store:weather] persisted coalesced snapshot

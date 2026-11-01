@@ -1,0 +1,84 @@
+--------- beginning of main
+10-31 17:51:10.750 16278 16278 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=public-reader.stage, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=aero, version=0.1.0, bytes=0, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=clock, version=0.4.0, bytes=45098, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=gallery, version=0.5.0, bytes=109217, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=settings, version=0.1.0, bytes=41333, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=weather, version=0.3.0, bytes=114412, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=public-provider, version=1.0.0, bytes=106398, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=public-reader, version=1.0.0, bytes=0, disabled=false, error=null, unresolved=[wrong:shape_mismatch, absent:missing]), PluginDiagnostic(id=public-script, version=1.0.0, bytes=38624, disabled=false, error=null, unresolved=[wrong:shape_mismatch, secure:permission_required])]
+--------- beginning of system
+10-31 17:51:11.424  1127  1451 I ActivityManager: START u0 {flg=0x10000000 cmp=moe.kiwi.thinkos/.MainActivity} from uid 2000
+10-31 17:51:11.644 16983 16983 I ThinkOS : tzdata 2026e (419 zones)
+10-31 17:51:11.910 16983 16983 I ThinkOS : Runtime started; local mode, safe=false
+10-31 17:51:11.912 16983 16983 I ThinkOS : Activity created; orientation=1
+10-31 17:51:11.939  1127  1151 I ActivityManager: Config changes=480 {1.0 ?mcc?mnc [zh_CN] ldltr sw492dp w739dp h468dp 260dpi lrg land finger -keyb/v/h -nav/h appBounds=Rect(0, 0 - 1202, 800) s.719}
+10-31 17:51:11.965  1127  1151 I ActivityManager: Override config changes=480 {1.0 ?mcc?mnc [zh_CN] ldltr sw492dp w739dp h468dp 260dpi lrg land finger -keyb/v/h -nav/h appBounds=Rect(0, 0 - 1202, 800) s.719} for displayId=0
+10-31 17:51:12.013 16983 17018 W ThinkOS : time sync failed (1); retry in 30s
+10-31 17:51:12.269 16983 16983 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 17:51:12.319 16983 17019 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 17:51:12.366  1127  1151 I ActivityManager: Displayed moe.kiwi.thinkos/.MainActivity: +922ms
+10-31 17:51:12.841 16983 17019 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 36665 bytes
+10-31 17:51:13.246 16983 17019 I ThinkOS : [plugin:gallery] loaded 0.5.0; Lua 108247 bytes
+10-31 17:51:13.288 16983 17019 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 17:51:13.449 16983 17019 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40409 bytes
+10-31 17:51:13.589 16983 17019 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 17:51:13.887 16983 17019 I ThinkOS : [plugin:weather] loaded 0.3.0; Lua 109530 bytes
+10-31 17:51:14.109  1127  1451 I ActivityManager: Fully drawn moe.kiwi.thinkos/.MainActivity: +2s671ms
+10-31 17:51:14.174 16983 17019 E ThinkOS : [plugin:public-provider] plugin CPU budget exceeded
+10-31 17:51:14.174 16983 17019 E ThinkOS : [plugin:public-provider] slice cpu=161776us wall=165623us
+10-31 17:51:14.180 16983 16983 E ThinkOS : [plugin:public-provider] plugin CPU budget exceeded
+10-31 17:51:14.180 16983 16983 W ThinkOS : Plugin error shown in diagnostics: public-provider
+10-31 17:51:14.293 16983 17019 W ThinkOS : [plugin:public-reader] uses.wrong -> gallery.daily: shape_mismatch
+10-31 17:51:14.293 16983 17019 W ThinkOS : [plugin:public-reader] uses.absent -> no-such.thing: missing
+10-31 17:51:14.299 16983 17019 I ThinkOS : [plugin:public-reader] loaded 1.0.0; Lua 0 bytes
+10-31 17:51:14.360 16983 17019 I ThinkOS : [plugin:public-script] public-probe undeclared err=undeclared
+10-31 17:51:14.360 16983 17019 I ThinkOS : [plugin:public-script] public-probe wrong err=shape_mismatch
+10-31 17:51:14.361 16983 17019 I ThinkOS : [plugin:public-script] public-probe call-private-weather nil not_public
+10-31 17:51:14.361 16983 17019 I ThinkOS : [plugin:public-script] public-probe call-undeclared nil undeclared
+10-31 17:51:14.362 16983 17019 I ThinkOS : [plugin:public-script] public-probe reserved false
+10-31 17:51:14.376 16983 17019 W ThinkOS : [plugin:public-script] uses.wrong -> gallery.daily: shape_mismatch
+10-31 17:51:14.376 16983 17019 W ThinkOS : [plugin:public-script] uses.secure -> public-provider.secure: permission_required
+10-31 17:51:14.383 16983 17019 I ThinkOS : [plugin:public-script] loaded 1.0.0; Lua 37929 bytes
+10-31 17:51:14.540 16983 17019 I ThinkOS : [plugin:public-script] public-probe data daily photos=13
+10-31 17:51:14.542 16983 17019 I ThinkOS : [plugin:public-script] public-probe data wrong err=shape_mismatch
+10-31 17:51:14.545 16983 17019 I ThinkOS : [plugin:public-script] public-probe deep err=invalid
+10-31 17:51:14.587 16983 17019 I ThinkOS : [plugin:public-script] public-probe bomb err=too_large
+10-31 17:51:14.588 16983 17019 I ThinkOS : [plugin:public-script] public-probe secure err=permission_required
+10-31 17:51:15.138 16983 16983 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=public-reader.stage, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=aero, version=0.1.0, bytes=0, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=clock, version=0.4.0, bytes=41076, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=gallery, version=0.5.0, bytes=109217, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=settings, version=0.1.0, bytes=41333, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=weather, version=0.3.0, bytes=112426, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=public-provider, version=1.0.0, bytes=0, disabled=false, error=plugin CPU budget exceeded, unresolved=[]), PluginDiagnostic(id=public-reader, version=1.0.0, bytes=0, disabled=false, error=null, unresolved=[wrong:shape_mismatch, absent:missing]), PluginDiagnostic(id=public-script, version=1.0.0, bytes=59635, disabled=false, error=null, unresolved=[wrong:shape_mismatch, secure:permission_required])]
+10-31 17:51:15.220 16983 16983 D ThinkOS : [image:public-reader] displayed OHR.FrankfurtHalloween
+10-31 17:51:15.225 16983 16983 D ThinkOS : [image:public-reader] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 17:51:16.294 16983 17019 I ThinkOS : [plugin:public-provider] loaded 1.0.0; Lua 103449 bytes
+10-31 17:51:16.951 16983 17019 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:116: Failed to connect to api.open-meteo.com/188.40.99.226:443
+10-31 17:51:22.071 16983 17019 E ThinkOS : [plugin:public-provider] cannot read plugin directory
+10-31 17:51:22.072 16983 16983 E ThinkOS : [plugin:public-provider] cannot read plugin directory
+10-31 17:51:22.072 16983 16983 W ThinkOS : Plugin error shown in diagnostics: public-provider
+10-31 17:51:48.865 16983 17018 I ThinkOS : time sync: 0.pool.ntp.org 139.199.215.251 offset=282ms rtt=43ms
+10-31 17:52:22.065 16983 17019 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+10-31 17:52:23.818  1127  6545 I ActivityManager: Force stopping moe.kiwi.thinkos appid=10074 user=0: from pid 17241
+10-31 17:52:23.818  1127  6545 I ActivityManager: Killing 16983:moe.kiwi.thinkos/u0a74 (adj 0): stop moe.kiwi.thinkos
+10-31 17:52:23.819  1127  6545 W ActivityManager: Scheduling restart of crashed service moe.kiwi.thinkos/.service.KioskService in 1000ms
+10-31 17:52:23.820  1127  6545 W ActivityManager: Force removing ActivityRecord{20eec46 u0 moe.kiwi.thinkos/.MainActivity t390}: app died, no saved state
+10-31 17:52:23.862  1127  6545 I ActivityManager: Config changes=480 {1.0 ?mcc?mnc [zh_CN] ldltr sw492dp w492dp h715dp 260dpi lrg port finger -keyb/v/h -nav/h appBounds=Rect(0, 0 - 800, 1202) s.720}
+10-31 17:52:23.898  1127  6545 I ActivityManager: Override config changes=480 {1.0 ?mcc?mnc [zh_CN] ldltr sw492dp w492dp h715dp 260dpi lrg port finger -keyb/v/h -nav/h appBounds=Rect(0, 0 - 800, 1202) s.720} for displayId=0
+10-31 17:52:23.920  1127  6545 I ActivityManager:   Force stopping service ServiceRecord{6514882 u0 moe.kiwi.thinkos/.service.KioskService}
+10-31 17:52:23.992  1127  1144 W ActivityManager: Slow operation: 51ms so far, now at startProcess: returned from zygote!
+10-31 17:52:23.993  1127  1144 W ActivityManager: Slow operation: 51ms so far, now at startProcess: done updating battery stats
+10-31 17:52:23.993  1127  1144 W ActivityManager: Slow operation: 51ms so far, now at startProcess: building log message
+10-31 17:52:23.993  1127  1144 I ActivityManager: Start proc 17251:moe.kiwi.thinkos/u0a74 for broadcast moe.kiwi.thinkos/.admin.ThinkOSAdminReceiver
+10-31 17:52:23.993  1127  1144 W ActivityManager: Slow operation: 51ms so far, now at startProcess: starting to update pids map
+10-31 17:52:23.993  1127  1144 W ActivityManager: Slow operation: 51ms so far, now at startProcess: done updating pids map
+10-31 17:52:23.993  1127  1144 W ActivityManager: Slow operation: 52ms so far, now at startProcess: done starting proc!
+10-31 17:52:23.994  1127  1151 W ActivityManager: setHasOverlayUi called on unknown pid: 16983
+10-31 17:52:24.000  1127  1787 W ActivityManager: Unable to start service Intent { act=com.android.launcher3.WINDOW_OVERLAY dat=app://org.lineageos.trebuchet:10029?v=7&cv=9 pkg=com.google.android.googlequicksearchbox } U=0: not found
+10-31 17:52:24.053  1127  5665 I ActivityManager: START u0 {flg=0x10000000 cmp=moe.kiwi.thinkos/.MainActivity} from uid 2000
+10-31 17:52:24.443 17251 17251 I ThinkOS : tzdata 2026e (419 zones)
+10-31 17:52:24.689 17251 17251 I ThinkOS : Runtime started; local mode, safe=false
+10-31 17:52:24.691 17251 17251 I ThinkOS : Activity created; orientation=1
+10-31 17:52:24.749 17251 17301 W ThinkOS : time sync failed (1); retry in 30s
+10-31 17:52:25.011  1127  1151 I ActivityManager: Displayed moe.kiwi.thinkos/.MainActivity: +846ms
+10-31 17:52:25.079 17251 17302 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+10-31 17:52:25.488  1127  1151 I ActivityManager: Config changes=480 {1.0 ?mcc?mnc [zh_CN] ldltr sw492dp w739dp h468dp 260dpi lrg land finger -keyb/v/h -nav/h appBounds=Rect(0, 0 - 1202, 800) s.721}
+10-31 17:52:25.525  1127  1151 I ActivityManager: Override config changes=480 {1.0 ?mcc?mnc [zh_CN] ldltr sw492dp w739dp h468dp 260dpi lrg land finger -keyb/v/h -nav/h appBounds=Rect(0, 0 - 1202, 800) s.721} for displayId=0
+10-31 17:52:25.551 17251 17251 I ThinkOS : Configuration changed without Activity recreation: 2
+10-31 17:52:25.621 17251 17302 I ThinkOS : [plugin:clock] loaded 0.4.0; Lua 36665 bytes
+10-31 17:52:26.030 17251 17302 I ThinkOS : [plugin:gallery] loaded 0.5.0; Lua 108247 bytes
+10-31 17:52:26.077 17251 17302 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+10-31 17:52:26.239 17251 17302 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40409 bytes
+10-31 17:52:26.377 17251 17302 I ThinkOS : [plugin:tiles] loaded 0.1.0; Lua 0 bytes
+10-31 17:52:26.677 17251 17302 I ThinkOS : [plugin:weather] loaded 0.3.0; Lua 109530 bytes
+10-31 17:52:26.954  1127 18968 I ActivityManager: Fully drawn moe.kiwi.thinkos/.MainActivity: +2s793ms
+10-31 17:52:27.164 17251 17251 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=aero, version=0.1.0, bytes=0, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=clock, version=0.4.0, bytes=39063, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=gallery, version=0.5.0, bytes=109217, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=settings, version=0.1.0, bytes=41333, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=tiles, version=0.1.0, bytes=0, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=weather, version=0.3.0, bytes=110406, disabled=false, error=null, unresolved=[])]

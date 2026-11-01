@@ -1,0 +1,39 @@
+--------- beginning of main
+11-01 01:39:33.727 12906 12906 I ThinkOS : tzdata 2026e (419 zones)
+11-01 01:39:33.984 12906 12906 I ThinkOS : time sync: restored the reading from 40s ago
+11-01 01:39:33.986 12906 12906 I ThinkOS : Runtime started; local mode, safe=false
+11-01 01:39:33.989 12906 12906 I ThinkOS : Activity created; orientation=1
+11-01 01:39:34.340 12906 12906 I ThinkOS : Configuration changed without Activity recreation: 2
+11-01 01:39:34.369 12906 12943 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+11-01 01:39:34.971 12906 12943 I ThinkOS : [plugin:clock] loaded 0.5.0; Lua 41371 bytes
+11-01 01:39:35.359 12906 12943 I ThinkOS : [plugin:gallery] loaded 0.5.1; Lua 111452 bytes
+11-01 01:39:35.400 12906 12943 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+11-01 01:39:35.558 12906 12943 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40877 bytes
+11-01 01:39:35.699 12906 12943 I ThinkOS : [plugin:tiles] loaded 0.2.0; Lua 0 bytes
+11-01 01:39:36.036 12906 12943 I ThinkOS : [plugin:weather] loaded 0.4.0; Lua 111862 bytes
+11-01 01:39:36.301 12906 12943 E ThinkOS : [plugin:public-provider] plugin CPU budget exceeded
+11-01 01:39:36.301 12906 12943 E ThinkOS : [plugin:public-provider] slice cpu=160212us wall=162839us
+11-01 01:39:36.304 12906 12906 E ThinkOS : [plugin:public-provider] plugin CPU budget exceeded
+11-01 01:39:36.304 12906 12906 W ThinkOS : Plugin error shown in diagnostics: public-provider
+11-01 01:39:36.482 12906 12943 W ThinkOS : [plugin:public-reader] uses.wrong -> gallery.daily: shape_mismatch
+11-01 01:39:36.482 12906 12943 W ThinkOS : [plugin:public-reader] uses.absent -> no-such.thing: missing
+11-01 01:39:36.492 12906 12943 I ThinkOS : [plugin:public-reader] loaded 1.0.0; Lua 0 bytes
+11-01 01:39:36.572 12906 12943 I ThinkOS : [plugin:public-script] public-probe undeclared err=undeclared
+11-01 01:39:36.573 12906 12943 I ThinkOS : [plugin:public-script] public-probe wrong err=shape_mismatch
+11-01 01:39:36.573 12906 12943 I ThinkOS : [plugin:public-script] public-probe call-private-weather nil not_public
+11-01 01:39:36.573 12906 12943 I ThinkOS : [plugin:public-script] public-probe call-undeclared nil undeclared
+11-01 01:39:36.574 12906 12943 I ThinkOS : [plugin:public-script] public-probe reserved false
+11-01 01:39:36.671 12906 12943 W ThinkOS : [plugin:public-script] uses.wrong -> gallery.daily: shape_mismatch
+11-01 01:39:36.671 12906 12943 W ThinkOS : [plugin:public-script] uses.secure -> public-provider.secure: permission_required
+11-01 01:39:36.682 12906 12943 I ThinkOS : [plugin:public-script] loaded 1.0.0; Lua 38397 bytes
+11-01 01:39:36.854 12906 12943 I ThinkOS : [plugin:public-script] public-probe data daily photos=14
+11-01 01:39:36.856 12906 12943 I ThinkOS : [plugin:public-script] public-probe data wrong err=shape_mismatch
+11-01 01:39:36.859 12906 12943 I ThinkOS : [plugin:public-script] public-probe deep err=invalid
+11-01 01:39:36.901 12906 12943 I ThinkOS : [plugin:public-script] public-probe bomb err=too_large
+11-01 01:39:36.902 12906 12943 I ThinkOS : [plugin:public-script] public-probe secure err=permission_required
+11-01 01:39:37.559 12906 12906 I ThinkOS : DEBUG state=DeviceState(attention=AWAKE, deck=DeckState(page=public-reader.stage, variant=digital, direction=1, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=aero, version=0.1.0, bytes=0, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=clock, version=0.5.0, bytes=46522, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=gallery, version=0.5.1, bytes=112422, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=settings, version=0.1.0, bytes=41801, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=tiles, version=0.2.0, bytes=0, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=weather, version=0.4.0, bytes=79463, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=public-provider, version=1.0.0, bytes=0, disabled=false, error=plugin CPU budget exceeded, unresolved=[]), PluginDiagnostic(id=public-reader, version=1.0.0, bytes=0, disabled=false, error=null, unresolved=[wrong:shape_mismatch, absent:missing]), PluginDiagnostic(id=public-script, version=1.0.0, bytes=60674, disabled=false, error=null, unresolved=[wrong:shape_mismatch, secure:permission_required])]
+11-01 01:39:37.618 12906 12906 D ThinkOS : [image:public-reader] displayed OHR.SchwarzwaldAutumn
+11-01 01:39:37.622 12906 12906 D ThinkOS : [image:public-reader] native-pan -143.0,0.0->0.0,0.0 12000ms
+11-01 01:39:38.423 12906 12943 I ThinkOS : [plugin:public-provider] loaded 1.0.0; Lua 103917 bytes
+11-01 01:39:39.078 12906 12942 W ThinkOS : time sync failed (1); retry in 30s
+11-01 01:39:39.080 12906 12943 W ThinkOS : [plugin:weather] weather refresh failed weather/main.lua:131: Failed to connect to api.open-meteo.com/167.114.211.86:443

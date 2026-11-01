@@ -1,0 +1,14 @@
+{
+  "elapsed": 30.958012791001238,
+  "state": {
+    "page": "aero.main",
+    "attention": "AWAKE",
+    "theme": "DARK",
+    "orientation": "LANDSCAPE",
+    "pid": "5478",
+    "touches": "17",
+    "navigationReason": "system",
+    "luaBytes": "329784",
+    "navigationGeneration": "8"
+  }
+}

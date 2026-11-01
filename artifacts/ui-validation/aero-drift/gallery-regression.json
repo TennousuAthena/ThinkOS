@@ -1,0 +1,230 @@
+{
+  "viewportCases": [
+    {
+      "orientation": "landscape",
+      "theme": "LIGHT",
+      "attention": "AMBIENT",
+      "x": -8,
+      "y": -6
+    },
+    {
+      "orientation": "landscape",
+      "theme": "LIGHT",
+      "attention": "AMBIENT",
+      "x": 8,
+      "y": -6
+    },
+    {
+      "orientation": "landscape",
+      "theme": "LIGHT",
+      "attention": "AMBIENT",
+      "x": -8,
+      "y": 6
+    },
+    {
+      "orientation": "landscape",
+      "theme": "LIGHT",
+      "attention": "AMBIENT",
+      "x": 8,
+      "y": 6
+    },
+    {
+      "orientation": "landscape",
+      "theme": "LIGHT",
+      "attention": "AWAKE",
+      "x": -8,
+      "y": -6
+    },
+    {
+      "orientation": "landscape",
+      "theme": "LIGHT",
+      "attention": "AWAKE",
+      "x": 8,
+      "y": -6
+    },
+    {
+      "orientation": "landscape",
+      "theme": "LIGHT",
+      "attention": "AWAKE",
+      "x": -8,
+      "y": 6
+    },
+    {
+      "orientation": "landscape",
+      "theme": "LIGHT",
+      "attention": "AWAKE",
+      "x": 8,
+      "y": 6
+    },
+    {
+      "orientation": "landscape",
+      "theme": "DARK",
+      "attention": "AMBIENT",
+      "x": -8,
+      "y": -6
+    },
+    {
+      "orientation": "landscape",
+      "theme": "DARK",
+      "attention": "AMBIENT",
+      "x": 8,
+      "y": -6
+    },
+    {
+      "orientation": "landscape",
+      "theme": "DARK",
+      "attention": "AMBIENT",
+      "x": -8,
+      "y": 6
+    },
+    {
+      "orientation": "landscape",
+      "theme": "DARK",
+      "attention": "AMBIENT",
+      "x": 8,
+      "y": 6
+    },
+    {
+      "orientation": "landscape",
+      "theme": "DARK",
+      "attention": "AWAKE",
+      "x": -8,
+      "y": -6
+    },
+    {
+      "orientation": "landscape",
+      "theme": "DARK",
+      "attention": "AWAKE",
+      "x": 8,
+      "y": -6
+    },
+    {
+      "orientation": "landscape",
+      "theme": "DARK",
+      "attention": "AWAKE",
+      "x": -8,
+      "y": 6
+    },
+    {
+      "orientation": "landscape",
+      "theme": "DARK",
+      "attention": "AWAKE",
+      "x": 8,
+      "y": 6
+    },
+    {
+      "orientation": "portrait",
+      "theme": "LIGHT",
+      "attention": "AMBIENT",
+      "x": -8,
+      "y": -6
+    },
+    {
+      "orientation": "portrait",
+      "theme": "LIGHT",
+      "attention": "AMBIENT",
+      "x": 8,
+      "y": -6
+    },
+    {
+      "orientation": "portrait",
+      "theme": "LIGHT",
+      "attention": "AMBIENT",
+      "x": -8,
+      "y": 6
+    },
+    {
+      "orientation": "portrait",
+      "theme": "LIGHT",
+      "attention": "AMBIENT",
+      "x": 8,
+      "y": 6
+    },
+    {
+      "orientation": "portrait",
+      "theme": "LIGHT",
+      "attention": "AWAKE",
+      "x": -8,
+      "y": -6
+    },
+    {
+      "orientation": "portrait",
+      "theme": "LIGHT",
+      "attention": "AWAKE",
+      "x": 8,
+      "y": -6
+    },
+    {
+      "orientation": "portrait",
+      "theme": "LIGHT",
+      "attention": "AWAKE",
+      "x": -8,
+      "y": 6
+    },
+    {
+      "orientation": "portrait",
+      "theme": "LIGHT",
+      "attention": "AWAKE",
+      "x": 8,
+      "y": 6
+    },
+    {
+      "orientation": "portrait",
+      "theme": "DARK",
+      "attention": "AMBIENT",
+      "x": -8,
+      "y": -6
+    },
+    {
+      "orientation": "portrait",
+      "theme": "DARK",
+      "attention": "AMBIENT",
+      "x": 8,
+      "y": -6
+    },
+    {
+      "orientation": "portrait",
+      "theme": "DARK",
+      "attention": "AMBIENT",
+      "x": -8,
+      "y": 6
+    },
+    {
+      "orientation": "portrait",
+      "theme": "DARK",
+      "attention": "AMBIENT",
+      "x": 8,
+      "y": 6
+    },
+    {
+      "orientation": "portrait",
+      "theme": "DARK",
+      "attention": "AWAKE",
+      "x": -8,
+      "y": -6
+    },
+    {
+      "orientation": "portrait",
+      "theme": "DARK",
+      "attention": "AWAKE",
+      "x": 8,
+      "y": -6
+    },
+    {
+      "orientation": "portrait",
+      "theme": "DARK",
+      "attention": "AWAKE",
+      "x": -8,
+      "y": 6
+    },
+    {
+      "orientation": "portrait",
+      "theme": "DARK",
+      "attention": "AWAKE",
+      "x": 8,
+      "y": 6
+    }
+  ],
+  "fullBleedWithForegroundDrift": true,
+  "complete": true
+}

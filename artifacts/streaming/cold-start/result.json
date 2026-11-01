@@ -1,0 +1,9 @@
+{
+  "total_ms": 847,
+  "content_ready_ms": 2117,
+  "host_observed_ms": 2514,
+  "wifi_disabled": true,
+  "app_network_blocked": false,
+  "server": "none",
+  "state": "DeviceState(attention=AWAKE, deck=DeckState(page=home.main, variant=digital, direction=0, vertical=false), overlay=OverlayState(message=null), link=UNPAIRED, theme=DARK, orientation=LANDSCAPE, safeMode=false) plugins=[PluginDiagnostic(id=aero, version=0.1.0, bytes=0, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=clock, version=0.5.0, bytes=47505, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=gallery, version=0.5.1, bytes=116113, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=home, version=0.1.0, bytes=0, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=player, version=0.2.0, bytes=120838, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=settings, version=0.1.0, bytes=45516, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=tiles, version=0.2.0, bytes=0, disabled=false, error=null, unresolved=[]), PluginDiagnostic(id=weather, version=0.4.0, bytes=129271, disabled=false, error=null, unresolved=[])]"
+}

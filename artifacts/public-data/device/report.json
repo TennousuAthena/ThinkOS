@@ -1,0 +1,18 @@
+{
+  "complete": true,
+  "passed": [
+    "consumers install and load without any network or library permission",
+    "tos.data and tos.command refuse undeclared, mismatched and private targets; uses cannot be overwritten",
+    "nested or oversized exports return errors to the consumer; requires gates a permissionless reader",
+    "tos.data.get reads the Bing list after a data event",
+    "a permissionless view binds another plugin's data and images; unusable links stay blank and are diagnosed",
+    "a composed image URL does not borrow the provider's network permission",
+    "focus/split/stage slots embed another plugin's widget under that plugin's state and grant",
+    "a tile container picks the widget's tile alternate instead of an empty tile",
+    "a declared public command reaches its provider once; the second call is refused by the cooldown",
+    "a provider upgrade with the same contract keeps values and the consumer carousel keeps advancing",
+    "a provider upgrade with a new shape disconnects consumers and tells them",
+    "restoring the provider reconnects consumers without restarting them",
+    "after an offline restart the consumer reads cached public data and shows cached images"
+  ]
+}

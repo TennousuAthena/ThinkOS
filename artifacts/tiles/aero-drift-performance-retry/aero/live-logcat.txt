@@ -1,0 +1,5 @@
+--------- beginning of main
+10-31 13:52:30.428  5478  5478 I ThinkOS : attention=AWAKE
+10-31 13:52:38.319  5478  5478 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 13:52:45.484  5478  5478 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 13:52:47.040  5478  5566 W ThinkOS : time sync failed (2); retry in 60s

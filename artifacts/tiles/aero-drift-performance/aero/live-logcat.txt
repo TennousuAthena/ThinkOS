@@ -1,0 +1,10 @@
+--------- beginning of main
+10-31 13:48:15.648  4999  4999 I ThinkOS : attention=AWAKE
+10-31 13:48:32.423  4999  5083 W ThinkOS : time sync failed (2); retry in 60s
+10-31 13:48:33.806  4999  4999 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 13:48:34.334  4999  4999 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 13:48:34.335  4999  4999 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-143.0,0.0 12000ms
+10-31 13:48:38.266  4999  4999 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+10-31 13:48:38.649  4999  4999 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+10-31 13:48:38.651  4999  4999 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+10-31 13:48:39.079  4999  4999 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg

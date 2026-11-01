@@ -1,0 +1,38 @@
+Applications Memory Usage (in Kilobytes):
+Uptime: 100577848 Realtime: 100577848
+
+** MEMINFO in pid 18636 [moe.kiwi.thinkos] **
+                   Pss  Private  Private  SwapPss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------
+  Native Heap    22438    22372        0        0        0        0        0
+  Dalvik Heap     2757     2708        0        0        0        0        0
+ Dalvik Other     1588     1588        0        0                           
+        Stack      516      516        0        0                           
+       Ashmem        2        0        0        0                           
+      Gfx dev    16304    16304        0        0                           
+    Other dev        8        0        8        0                           
+     .so mmap     2121      272      412        0                           
+    .apk mmap      470        0       12        0                           
+    .ttf mmap       94        0       32        0                           
+    .dex mmap     6557        4     4880        0                           
+    .oat mmap      441        0       80        0                           
+    .art mmap     3009     2756        8        0                           
+   Other mmap     1167        4      672        0                           
+   EGL mtrack    12540    12540        0        0                           
+    GL mtrack    25824    25824        0        0                           
+      Unknown      540      524        0        0                           
+        TOTAL    96376    85412     6104        0        0        0        0
+ 
+ App Summary
+                       Pss(KB)
+                        ------
+           Java Heap:     5472
+         Native Heap:    22372
+                Code:     5692
+               Stack:      516
+            Graphics:    54668
+       Private Other:     2796
+              System:     4860
+ 
+               TOTAL:    96376       TOTAL SWAP PSS:        0

@@ -1,0 +1,311 @@
+--------- beginning of main
+11-01 01:26:09.090  6905  6905 I ThinkOS : DEBUG clock n=5 p50=15ms p95=17ms p99=17ms min=8ms max=735ms skipped=0
+11-01 01:26:25.858  6905  6905 I ThinkOS : DEBUG clock n=15 p50=14ms p95=20ms p99=20ms min=6ms max=21ms skipped=0
+--------- beginning of system
+11-01 01:26:27.880  7027  7027 I ThinkOS : tzdata 2026e (419 zones)
+11-01 01:26:29.223  7027  7027 I ThinkOS : time sync: restored the reading from 39s ago
+11-01 01:26:29.225  7027  7027 I ThinkOS : Runtime started; local mode, safe=false
+11-01 01:26:29.230  7027  7027 I ThinkOS : Activity created; orientation=2
+11-01 01:26:29.606  7027  7061 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+11-01 01:26:30.029  7027  7060 I ThinkOS : time sync: 0.pool.ntp.org 210.28.130.4 system-offset=384ms rtt=68ms corrected-by=24ms
+11-01 01:26:30.215  7027  7061 I ThinkOS : [plugin:clock] loaded 0.5.0; Lua 41371 bytes
+11-01 01:26:30.607  7027  7061 I ThinkOS : [plugin:gallery] loaded 0.5.1; Lua 109009 bytes
+11-01 01:26:30.647  7027  7061 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+11-01 01:26:30.797  7027  7061 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40877 bytes
+11-01 01:26:30.923  7027  7061 I ThinkOS : [plugin:tiles] loaded 0.2.0; Lua 0 bytes
+11-01 01:26:31.254  7027  7061 I ThinkOS : [plugin:weather] loaded 0.4.0; Lua 111862 bytes
+11-01 01:26:33.645  7027  7061 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+11-01 01:26:35.672  7027  7079 D ThinkOS : [store:weather] persisted coalesced snapshot
+11-01 01:26:45.596  7027  7027 I ThinkOS : theme=NIGHT lux=3.0370026
+11-01 01:28:04.666  7235  7235 I ThinkOS : tzdata 2026e (419 zones)
+11-01 01:28:04.921  7235  7235 I ThinkOS : time sync: restored the reading from 95s ago
+11-01 01:28:04.925  7235  7235 I ThinkOS : Runtime started; local mode, safe=false
+11-01 01:28:05.313  7235  7288 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+11-01 01:28:05.345  7235  7235 I ThinkOS : Activity created; orientation=1
+11-01 01:28:05.497  7235  7235 I ThinkOS : Configuration changed without Activity recreation: 2
+11-01 01:28:05.983  7235  7288 I ThinkOS : [plugin:clock] loaded 0.5.0; Lua 41371 bytes
+11-01 01:28:06.376  7235  7288 I ThinkOS : [plugin:gallery] loaded 0.5.1; Lua 109009 bytes
+11-01 01:28:06.416  7235  7288 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+11-01 01:28:06.571  7235  7288 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40877 bytes
+11-01 01:28:06.694  7235  7288 I ThinkOS : [plugin:tiles] loaded 0.2.0; Lua 0 bytes
+11-01 01:28:07.020  7235  7288 I ThinkOS : [plugin:weather] loaded 0.4.0; Lua 111862 bytes
+11-01 01:28:07.853  7235  7288 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 43674 bytes
+11-01 01:28:08.087  7235  7287 I ThinkOS : time sync: 1.pool.ntp.org 139.199.215.251 system-offset=379ms rtt=27ms corrected-by=11ms
+11-01 01:28:08.888  7408  7408 I ThinkOS : tzdata 2026e (419 zones)
+11-01 01:28:09.250  7408  7408 I ThinkOS : time sync: restored the reading from 1s ago
+11-01 01:28:09.254  7408  7408 I ThinkOS : Runtime started; local mode, safe=false
+11-01 01:28:09.258  7408  7408 I ThinkOS : Activity created; orientation=1
+11-01 01:28:09.384  7408  7408 I ThinkOS : Configuration changed without Activity recreation: 2
+11-01 01:28:09.589  7408  7427 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+11-01 01:28:10.078  7408  7426 I ThinkOS : time sync: 0.pool.ntp.org 210.28.130.4 system-offset=378ms rtt=55ms corrected-by=12ms
+11-01 01:28:10.205  7408  7427 I ThinkOS : [plugin:clock] loaded 0.5.0; Lua 41371 bytes
+11-01 01:28:10.590  7408  7427 I ThinkOS : [plugin:gallery] loaded 0.5.1; Lua 109009 bytes
+11-01 01:28:10.630  7408  7427 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+11-01 01:28:10.781  7408  7427 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40877 bytes
+11-01 01:28:10.918  7408  7427 I ThinkOS : [plugin:tiles] loaded 0.2.0; Lua 0 bytes
+11-01 01:28:11.257  7408  7427 I ThinkOS : [plugin:weather] loaded 0.4.0; Lua 111862 bytes
+11-01 01:28:11.844  7408  7427 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 43674 bytes
+11-01 01:28:15.843  7408  7408 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+11-01 01:28:15.847  7408  7408 D ThinkOS : [image:gallery] native-pan -249.0,0.0->0.0,0.0 12000ms
+11-01 01:28:16.139  7408  7408 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+11-01 01:28:17.309  7408  7408 I ThinkOS : theme=DARK lux=4.199997
+11-01 01:28:18.323  7408  7408 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+11-01 01:28:18.470  7408  7427 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+11-01 01:28:20.496  7408  7453 D ThinkOS : [store:weather] persisted coalesced snapshot
+11-01 01:28:25.331  7408  7408 I ThinkOS : Configuration changed without Activity recreation: 1
+11-01 01:28:25.583  7408  7408 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+11-01 01:28:25.585  7408  7408 D ThinkOS : [image:gallery] native-pan -499.0,0.0->0.0,0.0 12000ms
+11-01 01:28:26.305  7408  7408 I ThinkOS : theme=DARK lux=4.199997
+11-01 01:28:26.532  7408  7408 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+11-01 01:28:30.174  7408  7408 I ThinkOS : theme=DARK lux=4.199997
+11-01 01:28:30.232  7408  7408 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+11-01 01:28:37.894  7408  7408 I ThinkOS : Configuration changed without Activity recreation: 2
+11-01 01:28:38.048  7408  7408 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+11-01 01:28:38.051  7408  7408 D ThinkOS : [image:gallery] native-pan -249.0,0.0->0.0,0.0 12000ms
+11-01 01:28:38.662  7408  7408 I ThinkOS : theme=DARK lux=4.199997
+11-01 01:28:38.911  7408  7408 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+11-01 01:28:41.000  7408  7408 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+11-01 01:28:41.001  7408  7408 D ThinkOS : [image:gallery] native-pan -249.0,0.0->0.0,0.0 12000ms
+11-01 01:28:41.012  7408  7408 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+11-01 01:28:43.222  7408  7408 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.FrankfurtHalloween_ZH-CN5998782698_1920x1080.jpg
+11-01 01:28:43.223  7408  7408 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+11-01 01:28:43.234  7408  7408 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+11-01 01:28:44.115  7408  7408 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+11-01 01:28:44.200  7408  7427 I ThinkOS : [plugin:gallery] Bing gallery refreshed en-US 14 photos
+11-01 01:28:44.925  7408  7408 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.SchwarzwaldAutumn_ZH-CN6323627599_1920x1080.jpg
+11-01 01:28:44.927  7408  7408 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+11-01 01:28:45.347  7408  7408 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.SchwarzwaldAutumn_ZH-CN6323627599_1920x1080.jpg
+11-01 01:28:45.348  7408  7408 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+11-01 01:28:45.357  7408  7408 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+11-01 01:28:46.215  7408  7453 D ThinkOS : [store:gallery] persisted coalesced snapshot
+11-01 01:28:47.599  7408  7408 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.SchwarzwaldAutumn_ZH-CN6323627599_1920x1080.jpg
+11-01 01:28:47.601  7408  7408 D ThinkOS : [image:gallery] native-pan -249.0,0.0->0.0,0.0 12000ms
+11-01 01:28:47.610  7408  7408 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+11-01 01:28:49.820  7408  7408 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.SchwarzwaldAutumn_ZH-CN6323627599_1920x1080.jpg
+11-01 01:28:49.821  7408  7408 D ThinkOS : [image:gallery] native-pan -249.0,0.0->0.0,0.0 12000ms
+11-01 01:28:49.829  7408  7408 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+11-01 01:28:55.069  7408  7408 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.SchwarzwaldAutumn_ZH-CN6323627599_1920x1080.jpg
+11-01 01:28:55.070  7408  7408 D ThinkOS : [image:gallery] native-pan -249.0,0.0->0.0,0.0 12000ms
+11-01 01:28:55.637  7408  7408 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+11-01 01:28:57.720  7408  7408 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.SchwarzwaldAutumn_ZH-CN6323627599_1920x1080.jpg
+11-01 01:28:57.721  7408  7408 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+11-01 01:28:58.272  7408  7408 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+11-01 01:28:59.466  7408  7408 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.SchwarzwaldAutumn_ZH-CN6323627599_1920x1080.jpg
+11-01 01:28:59.467  7408  7408 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-249.0,0.0 12000ms
+11-01 01:29:00.050  7408  7408 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+11-01 01:29:00.647  7408  7408 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+11-01 01:29:01.484  7408  7408 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+11-01 01:29:01.485  7408  7408 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+11-01 01:29:01.499  7408  7408 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.SchwarzwaldAutumn_ZH-CN6323627599_1920x1080.jpg
+11-01 01:29:01.805  7408  7408 D ThinkOS : [image:gallery] displayed OHR.FrankfurtHalloween
+11-01 01:29:01.806  7408  7408 D ThinkOS : [image:gallery] native-pan -143.0,0.0->0.0,0.0 12000ms
+11-01 01:29:01.824  7408  7408 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.SchwarzwaldAutumn_ZH-CN6323627599_1920x1080.jpg
+11-01 01:29:01.889  7408  7427 I ThinkOS : [plugin:gallery] Bing gallery refreshed zh-CN 14 photos
+11-01 01:29:02.011  7408  7408 I ThinkOS : attention=ENGAGED
+11-01 01:29:02.664  7487  7487 I ThinkOS : tzdata 2026e (419 zones)
+11-01 01:29:09.878  7487  7487 I ThinkOS : time sync: restored the reading from 60s ago
+11-01 01:29:09.880  7487  7487 I ThinkOS : Runtime started; local mode, safe=false
+11-01 01:29:10.283  7487  7551 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+11-01 01:29:10.284  7487  7487 I ThinkOS : Activity created; orientation=2
+11-01 01:29:10.792  7487  7550 I ThinkOS : time sync: 0.pool.ntp.org 202.118.1.130 system-offset=382ms rtt=74ms corrected-by=13ms
+11-01 01:29:10.926  7487  7551 I ThinkOS : [plugin:clock] loaded 0.5.0; Lua 41371 bytes
+11-01 01:29:11.365  7487  7551 I ThinkOS : [plugin:gallery] loaded 0.5.1; Lua 84747 bytes
+11-01 01:29:11.424  7487  7551 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+11-01 01:29:11.597  7487  7551 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40877 bytes
+11-01 01:29:11.748  7487  7551 I ThinkOS : [plugin:tiles] loaded 0.2.0; Lua 0 bytes
+11-01 01:29:12.161  7487  7551 I ThinkOS : [plugin:weather] loaded 0.4.0; Lua 111862 bytes
+11-01 01:29:13.273  7487  7551 I ThinkOS : [plugin:gallery] Bing gallery refreshed zh-CN 14 photos
+11-01 01:29:14.383  7700  7700 I ThinkOS : tzdata 2026e (419 zones)
+11-01 01:29:14.830  7700  7700 I ThinkOS : time sync: restored the reading from 4s ago
+11-01 01:29:14.833  7700  7700 I ThinkOS : Runtime started; local mode, safe=false
+11-01 01:29:15.063  7700  7700 I ThinkOS : Activity created; orientation=1
+11-01 01:29:15.202  7700  7743 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+11-01 01:29:15.231  7700  7700 I ThinkOS : Configuration changed without Activity recreation: 2
+11-01 01:29:15.719  7700  7742 I ThinkOS : time sync: 0.pool.ntp.org 210.28.130.4 system-offset=383ms rtt=58ms corrected-by=16ms
+11-01 01:29:15.831  7700  7743 I ThinkOS : [plugin:clock] loaded 0.5.0; Lua 41371 bytes
+11-01 01:29:16.197  7700  7743 I ThinkOS : [plugin:gallery] loaded 0.5.1; Lua 84747 bytes
+11-01 01:29:16.239  7700  7743 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+11-01 01:29:16.390  7700  7743 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40877 bytes
+11-01 01:29:16.519  7700  7743 I ThinkOS : [plugin:tiles] loaded 0.2.0; Lua 0 bytes
+11-01 01:29:16.846  7700  7743 I ThinkOS : [plugin:weather] loaded 0.4.0; Lua 111862 bytes
+11-01 01:29:17.522  7700  7743 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 43674 bytes
+11-01 01:29:18.608  7864  7864 I ThinkOS : tzdata 2026e (419 zones)
+11-01 01:29:18.875  7864  7864 I ThinkOS : time sync: restored the reading from 3s ago
+11-01 01:29:18.882  7864  7864 I ThinkOS : Runtime started; local mode, safe=false
+11-01 01:29:18.884  7864  7864 I ThinkOS : Activity created; orientation=1
+11-01 01:29:19.219  7864  7864 I ThinkOS : Configuration changed without Activity recreation: 2
+11-01 01:29:19.270  7864  7883 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+11-01 01:29:19.807  7864  7882 I ThinkOS : time sync: 0.pool.ntp.org 210.28.130.4 system-offset=379ms rtt=53ms corrected-by=7ms
+11-01 01:29:19.873  7864  7883 I ThinkOS : [plugin:clock] loaded 0.5.0; Lua 41371 bytes
+11-01 01:29:20.228  7864  7883 I ThinkOS : [plugin:gallery] loaded 0.5.1; Lua 84747 bytes
+11-01 01:29:20.269  7864  7883 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+11-01 01:29:20.421  7864  7883 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40877 bytes
+11-01 01:29:20.557  7864  7883 I ThinkOS : [plugin:tiles] loaded 0.2.0; Lua 0 bytes
+11-01 01:29:20.892  7864  7883 I ThinkOS : [plugin:weather] loaded 0.4.0; Lua 111862 bytes
+11-01 01:29:21.485  7864  7883 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 43674 bytes
+11-01 01:29:21.657  7864  7864 W ThinkOS : tile color invalid (tile-probe/card): ''; falling back
+11-01 01:29:21.802  7864  7864 W ThinkOS : tile color invalid (tile-probe/card): ''; falling back
+11-01 01:29:21.835  7864  7864 W ThinkOS : tile color invalid (tile-probe/reference): ''; falling back
+11-01 01:29:22.431  7864  7883 I ThinkOS : [plugin:gallery] Bing gallery refreshed zh-CN 14 photos
+11-01 01:29:24.450  7864  7905 D ThinkOS : [store:gallery] persisted coalesced snapshot
+11-01 01:29:26.789  7864  7883 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+11-01 01:29:28.808  7864  7905 D ThinkOS : [store:weather] persisted coalesced snapshot
+11-01 01:29:30.082  7864  7864 I ThinkOS : theme=DARK lux=2.399994
+11-01 01:29:33.512  7864  7864 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+11-01 01:29:42.426  7864  7864 I ThinkOS : Configuration changed without Activity recreation: 1
+11-01 01:29:43.399  7864  7864 I ThinkOS : theme=DARK lux=2.399994
+11-01 01:29:45.862  7864  7864 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+11-01 01:29:49.607  7864  7864 I ThinkOS : theme=DARK lux=2.399994
+11-01 01:29:58.224  7864  7864 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+11-01 01:30:02.111  7864  7864 I ThinkOS : theme=DARK lux=2.399994
+11-01 01:30:07.375  7864  7883 I ThinkOS : [plugin:gallery] Bing gallery refreshed en-US 14 photos
+11-01 01:30:09.466  7864  7905 D ThinkOS : [store:gallery] persisted coalesced snapshot
+11-01 01:30:09.542  7864  7864 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+11-01 01:30:14.695  7864  7864 I ThinkOS : Configuration changed without Activity recreation: 2
+11-01 01:30:21.559  7864  7864 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+11-01 01:30:25.242  7864  7864 I ThinkOS : theme=DARK lux=2.399994
+11-01 01:30:33.547  7864  7864 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+11-01 01:30:34.384  7864  7864 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+11-01 01:30:38.803  7864  7864 W ThinkOS : glance in tiles: clock; displaying empty tile
+11-01 01:30:41.210  7864  7883 I ThinkOS : [plugin:gallery] Bing gallery refreshed zh-CN 14 photos
+11-01 01:30:41.311  7864  7864 I ThinkOS : attention=ENGAGED
+11-01 01:30:41.900  7928  7928 I ThinkOS : tzdata 2026e (419 zones)
+11-01 01:30:49.489  7928  7928 I ThinkOS : time sync: restored the reading from 90s ago
+11-01 01:30:49.496  7928  7928 I ThinkOS : Runtime started; local mode, safe=false
+11-01 01:30:49.733  7928  7928 I ThinkOS : Activity created; orientation=2
+11-01 01:30:49.897  7928  8010 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+11-01 01:30:50.223  7928  8009 I ThinkOS : time sync: 0.pool.ntp.org 210.28.130.4 system-offset=384ms rtt=58ms corrected-by=18ms
+11-01 01:30:50.504  7928  8010 I ThinkOS : [plugin:clock] loaded 0.5.0; Lua 41371 bytes
+11-01 01:30:50.864  7928  8010 I ThinkOS : [plugin:gallery] loaded 0.5.1; Lua 84747 bytes
+11-01 01:30:50.904  7928  8010 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+11-01 01:30:51.063  7928  8010 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40877 bytes
+11-01 01:30:51.189  7928  8010 I ThinkOS : [plugin:tiles] loaded 0.2.0; Lua 0 bytes
+11-01 01:30:51.533  7928  8010 I ThinkOS : [plugin:weather] loaded 0.4.0; Lua 111862 bytes
+11-01 01:30:52.753  7928  8010 I ThinkOS : [plugin:gallery] Bing gallery refreshed zh-CN 14 photos
+11-01 01:30:55.462  8160  8160 I ThinkOS : tzdata 2026e (419 zones)
+11-01 01:30:55.734  8160  8160 I ThinkOS : time sync: restored the reading from 5s ago
+11-01 01:30:55.737  8160  8160 I ThinkOS : Runtime started; local mode, safe=false
+11-01 01:30:56.115  8160  8203 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+11-01 01:30:56.161  8160  8160 I ThinkOS : Activity created; orientation=1
+11-01 01:30:56.344  8160  8160 I ThinkOS : Configuration changed without Activity recreation: 2
+11-01 01:30:56.788  8160  8203 I ThinkOS : [plugin:clock] loaded 0.5.0; Lua 41371 bytes
+11-01 01:30:57.155  8160  8203 I ThinkOS : [plugin:gallery] loaded 0.5.1; Lua 84747 bytes
+11-01 01:30:57.197  8160  8203 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+11-01 01:30:57.347  8160  8203 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40877 bytes
+11-01 01:30:57.478  8160  8203 I ThinkOS : [plugin:tiles] loaded 0.2.0; Lua 0 bytes
+11-01 01:30:57.804  8160  8203 I ThinkOS : [plugin:weather] loaded 0.4.0; Lua 111862 bytes
+11-01 01:30:58.658  8160  8203 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 43674 bytes
+11-01 01:30:58.788  8160  8203 I ThinkOS : [plugin:legacy-three] loaded 1.0.0; Lua 42439 bytes
+11-01 01:30:59.005  8160  8202 I ThinkOS : time sync: 1.pool.ntp.org 139.199.215.251 system-offset=380ms rtt=24ms corrected-by=4ms
+11-01 01:30:59.525  8160  8203 I ThinkOS : [plugin:gallery] Bing gallery refreshed zh-CN 14 photos
+11-01 01:31:00.185  8343  8343 I ThinkOS : tzdata 2026e (419 zones)
+11-01 01:31:00.544  8343  8343 I ThinkOS : time sync: restored the reading from 1s ago
+11-01 01:31:00.547  8343  8343 I ThinkOS : Runtime started; local mode, safe=false
+11-01 01:31:00.550  8343  8343 I ThinkOS : Activity created; orientation=1
+11-01 01:31:00.688  8343  8343 I ThinkOS : Configuration changed without Activity recreation: 2
+11-01 01:31:00.919  8343  8362 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+11-01 01:31:01.499  8343  8361 I ThinkOS : time sync: 0.pool.ntp.org 210.28.130.4 system-offset=380ms rtt=60ms corrected-by=18ms
+11-01 01:31:01.520  8343  8362 I ThinkOS : [plugin:clock] loaded 0.5.0; Lua 41371 bytes
+11-01 01:31:01.877  8343  8362 I ThinkOS : [plugin:gallery] loaded 0.5.1; Lua 84747 bytes
+11-01 01:31:01.916  8343  8362 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+11-01 01:31:02.069  8343  8362 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40877 bytes
+11-01 01:31:02.208  8343  8362 I ThinkOS : [plugin:tiles] loaded 0.2.0; Lua 0 bytes
+11-01 01:31:02.548  8343  8362 I ThinkOS : [plugin:weather] loaded 0.4.0; Lua 111862 bytes
+11-01 01:31:02.732  8343  8362 I ThinkOS : [plugin:legacy-three] loaded 1.0.0; Lua 42439 bytes
+11-01 01:31:03.240  8343  8362 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 43674 bytes
+11-01 01:31:04.155  8343  8362 I ThinkOS : [plugin:gallery] Bing gallery refreshed zh-CN 14 photos
+11-01 01:31:04.331  8343  8343 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.SchwarzwaldAutumn_ZH-CN6323627599_1920x1080.jpg
+11-01 01:31:04.335  8343  8343 D ThinkOS : [image:gallery] native-pan -376.0,0.0->0.0,0.0 12000ms
+11-01 01:31:06.175  8343  8388 D ThinkOS : [store:gallery] persisted coalesced snapshot
+11-01 01:31:08.244  8343  8343 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.SchwarzwaldAutumn_ZH-CN6323627599_1920x1080.jpg
+11-01 01:31:08.246  8343  8343 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-376.0,0.0 12000ms
+11-01 01:31:08.651  8343  8362 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+11-01 01:31:10.710  8343  8388 D ThinkOS : [store:weather] persisted coalesced snapshot
+11-01 01:31:11.095  8343  8343 D ThinkOS : [image:legacy-three] displayed asset:assets/sample.png
+11-01 01:31:11.801  8343  8343 D ThinkOS : [image:gallery] displayed OHR.SchwarzwaldAutumn
+11-01 01:31:12.102  8343  8343 D ThinkOS : [image:legacy-three] displayed asset:assets/sample.png
+11-01 01:31:12.113  8343  8343 D ThinkOS : [image:gallery] displayed OHR.SchwarzwaldAutumn
+11-01 01:31:12.629  8343  8343 I ThinkOS : theme=NIGHT lux=1.800003
+11-01 01:31:12.635  8343  8343 I ThinkOS : attention=ENGAGED
+11-01 01:31:13.253  8394  8394 I ThinkOS : tzdata 2026e (419 zones)
+11-01 01:31:20.698  8552  8552 I ThinkOS : tzdata 2026e (419 zones)
+11-01 01:31:21.149  8552  8552 I ThinkOS : time sync: restored the reading from 20s ago
+11-01 01:31:21.155  8552  8552 I ThinkOS : Runtime started; local mode, safe=false
+11-01 01:31:21.438  8552  8552 I ThinkOS : Activity created; orientation=2
+11-01 01:31:21.596  8552  8593 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+11-01 01:31:21.973  8552  8592 I ThinkOS : time sync: 0.pool.ntp.org 210.28.130.4 system-offset=379ms rtt=51ms corrected-by=11ms
+11-01 01:31:22.219  8552  8593 I ThinkOS : [plugin:clock] loaded 0.5.0; Lua 41371 bytes
+11-01 01:31:22.622  8552  8593 I ThinkOS : [plugin:gallery] loaded 0.5.1; Lua 111452 bytes
+11-01 01:31:22.661  8552  8593 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+11-01 01:31:22.812  8552  8593 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40877 bytes
+11-01 01:31:22.935  8552  8593 I ThinkOS : [plugin:tiles] loaded 0.2.0; Lua 0 bytes
+11-01 01:31:23.263  8552  8593 I ThinkOS : [plugin:weather] loaded 0.4.0; Lua 111862 bytes
+11-01 01:31:23.925  8552  8593 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 43674 bytes
+11-01 01:31:24.747  8705  8705 I ThinkOS : tzdata 2026e (419 zones)
+11-01 01:31:25.037  8705  8705 I ThinkOS : time sync: restored the reading from 3s ago
+11-01 01:31:25.078  8705  8705 I ThinkOS : Runtime started; local mode, safe=false
+11-01 01:31:25.081  8705  8705 I ThinkOS : Activity created; orientation=1
+11-01 01:31:25.369  8705  8705 I ThinkOS : Configuration changed without Activity recreation: 2
+11-01 01:31:25.427  8705  8724 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+11-01 01:31:26.036  8705  8724 I ThinkOS : [plugin:clock] loaded 0.5.0; Lua 41371 bytes
+11-01 01:31:26.078  8705  8723 I ThinkOS : time sync: 0.pool.ntp.org 210.28.130.4 system-offset=382ms rtt=62ms corrected-by=22ms
+11-01 01:31:26.421  8705  8724 I ThinkOS : [plugin:gallery] loaded 0.5.1; Lua 111452 bytes
+11-01 01:31:26.460  8705  8724 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+11-01 01:31:26.613  8705  8724 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40877 bytes
+11-01 01:31:26.750  8705  8724 I ThinkOS : [plugin:tiles] loaded 0.2.0; Lua 0 bytes
+11-01 01:31:27.085  8705  8724 I ThinkOS : [plugin:weather] loaded 0.4.0; Lua 111862 bytes
+11-01 01:31:27.680  8705  8724 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 43674 bytes
+11-01 01:31:29.388  8705  8724 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+11-01 01:31:31.470  8705  8745 D ThinkOS : [store:weather] persisted coalesced snapshot
+11-01 01:31:39.708  8705  8705 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+11-01 01:31:51.722  8705  8705 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+11-01 01:31:52.540  8705  8705 I ThinkOS : attention=AMBIENT
+11-01 01:31:58.568  8705  8705 I ThinkOS : attention=AWAKE
+11-01 01:32:03.754  8705  8705 W ThinkOS : tile color invalid (tile-probe/reference): 'bad'; falling back
+11-01 01:32:11.524  8705  8705 D ThinkOS : [image:gallery] displayed OHR.SchwarzwaldAutumn
+11-01 01:32:16.906  8705  8705 I ThinkOS : attention=ENGAGED
+11-01 01:32:17.513  8765  8765 I ThinkOS : tzdata 2026e (419 zones)
+11-01 01:32:24.631  8926  8926 I ThinkOS : tzdata 2026e (419 zones)
+11-01 01:32:25.091  8926  8926 I ThinkOS : time sync: restored the reading from 59s ago
+11-01 01:32:25.093  8926  8926 I ThinkOS : Runtime started; local mode, safe=false
+11-01 01:32:25.390  8926  8926 I ThinkOS : Activity created; orientation=2
+11-01 01:32:25.477  8926  8971 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+11-01 01:32:25.978  8926  8970 I ThinkOS : time sync: 0.pool.ntp.org 210.28.130.4 system-offset=381ms rtt=60ms corrected-by=17ms
+11-01 01:32:26.099  8926  8971 I ThinkOS : [plugin:clock] loaded 0.5.0; Lua 41371 bytes
+11-01 01:32:26.500  8926  8971 I ThinkOS : [plugin:gallery] loaded 0.5.1; Lua 111452 bytes
+11-01 01:32:26.540  8926  8971 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+11-01 01:32:26.692  8926  8971 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40877 bytes
+11-01 01:32:26.831  8926  8971 I ThinkOS : [plugin:tiles] loaded 0.2.0; Lua 0 bytes
+11-01 01:32:27.165  8926  8971 I ThinkOS : [plugin:weather] loaded 0.4.0; Lua 111862 bytes
+11-01 01:32:27.779  8926  8971 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 43674 bytes
+11-01 01:32:27.923  8926  8971 I ThinkOS : [plugin:tile-motion] loaded 1.0.0; Lua 42783 bytes
+11-01 01:32:29.227  9109  9109 I ThinkOS : tzdata 2026e (419 zones)
+11-01 01:32:29.606  9109  9109 I ThinkOS : time sync: restored the reading from 4s ago
+11-01 01:32:29.608  9109  9109 I ThinkOS : Runtime started; local mode, safe=false
+11-01 01:32:29.611  9109  9109 I ThinkOS : Activity created; orientation=1
+11-01 01:32:29.697  9109  9128 W ThinkOS : Unclean native execution attributed to plugin clock
+11-01 01:32:29.787  9109  9109 I ThinkOS : Configuration changed without Activity recreation: 2
+11-01 01:32:30.008  9109  9128 I ThinkOS : [plugin:aero] loaded 0.1.0; Lua 0 bytes
+11-01 01:32:30.383  9109  9127 I ThinkOS : time sync: 0.pool.ntp.org 210.28.130.4 system-offset=382ms rtt=57ms corrected-by=19ms
+11-01 01:32:30.615  9109  9128 I ThinkOS : [plugin:clock] loaded 0.5.0; Lua 41371 bytes
+11-01 01:32:31.006  9109  9128 I ThinkOS : [plugin:gallery] loaded 0.5.1; Lua 111452 bytes
+11-01 01:32:31.046  9109  9128 I ThinkOS : [plugin:home] loaded 0.1.0; Lua 0 bytes
+11-01 01:32:31.199  9109  9128 I ThinkOS : [plugin:settings] loaded 0.1.0; Lua 40877 bytes
+11-01 01:32:31.334  9109  9128 I ThinkOS : [plugin:tiles] loaded 0.2.0; Lua 0 bytes
+11-01 01:32:31.674  9109  9128 I ThinkOS : [plugin:weather] loaded 0.4.0; Lua 111862 bytes
+11-01 01:32:31.861  9109  9128 I ThinkOS : [plugin:tile-motion] loaded 1.0.0; Lua 42783 bytes
+11-01 01:32:32.411  9109  9128 I ThinkOS : [plugin:tile-probe] loaded 1.0.0; Lua 43674 bytes
+11-01 01:32:33.017  9109  9109 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.SchwarzwaldAutumn_ZH-CN6323627599_1920x1080.jpg
+11-01 01:32:33.021  9109  9109 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-376.0,0.0 12000ms
+11-01 01:32:34.487  9109  9128 I ThinkOS : [plugin:weather] weather refresh ok 22.54721 114.13149
+11-01 01:32:35.803  9109  9109 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.SchwarzwaldAutumn_ZH-CN6323627599_1920x1080.jpg
+11-01 01:32:35.804  9109  9109 D ThinkOS : [image:gallery] native-pan -376.0,0.0->0.0,0.0 12000ms
+11-01 01:32:36.504  9109  9149 D ThinkOS : [store:weather] persisted coalesced snapshot
+11-01 01:32:37.245  9109  9109 D ThinkOS : [image:gallery] displayed OHR.SchwarzwaldAutumn
+11-01 01:32:40.699  9109  9109 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.SchwarzwaldAutumn_ZH-CN6323627599_1920x1080.jpg
+11-01 01:32:40.701  9109  9109 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-376.0,0.0 12000ms
+11-01 01:32:45.478  9109  9109 D ThinkOS : [image:gallery] displayed https://www.bing.com/th?id=OHR.SchwarzwaldAutumn_ZH-CN6323627599_1920x1080.jpg
+11-01 01:32:45.480  9109  9109 D ThinkOS : [image:gallery] native-pan 0.0,0.0->-376.0,0.0 12000ms
+11-01 01:32:46.079  9109  9109 I ThinkOS : theme=NIGHT lux=1.800003
+11-01 01:32:46.092  9109  9109 I ThinkOS : attention=ENGAGED
+11-01 01:32:46.741  9158  9158 I ThinkOS : tzdata 2026e (419 zones)

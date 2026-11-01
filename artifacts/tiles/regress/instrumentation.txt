@@ -1,0 +1,2 @@
+INSTRUMENTATION_RESULT: result={"complete":true,"passed":["pure declaration Start page resolves ten tiles from the clock, weather and gallery plugins","cross-plugin long press opens weather settings, not tiles settings","weather removal publishes empty placeholder without crashing","weather catalog reinstall restores tile","API 3 plugin runs Lua and decodes its local image through public vocabulary"],"screens":["builtin-tiles","weather-removed","weather-restored","legacy-api-three"]}
+INSTRUMENTATION_CODE: 0
