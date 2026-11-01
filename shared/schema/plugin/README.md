@@ -1,14 +1,18 @@
-# 插件契约（API 1 / 2 / 3 / 4 / 5）
+# 插件契约（API 1 / 2 / 3 / 4 / 5 / 6 / 7）
 
 `manifest.json` 定义包元信息；`view.json` 引用 `layouts.json` 中已经实现的固定渲染词汇。API 1 接受 `stacks` / `focus` / `form` 页面、`glance` 卡片、`text` / `icon` / `clock` / `form` 组件。API 2 增加 `split` / `stage`、组件组和 `progress` / `chart` / `list` / `daylight` / `moon`。API 3 增加本地/包内/HTTP(S) `image` / `carousel` 与 `tos.library.list`；`tos.state.set` 同时接受对象 JSON 文本以承载大清单。
 
-天气已接入网络与缓存；相册默认直连 Bing，支持本地/混合；通用 OS 图片管线负责下载和有界磁盘缓存，Server 下发/管理暂不实现。`image/carousel` 仅允许 API 3，完整平移或 contain，无 cover 裁切。`controls/video` 继续暂缓，安装器仍拒绝。字段、权限、生命周期和示例见 `docs/06-plugins.md` §4.1.1、§6.6。
+天气已接入网络与缓存；相册默认直连 Bing，支持本地/混合；通用 OS 图片管线负责下载和有界磁盘缓存，Server 下发/管理暂不实现。`image/carousel` 仅允许 API 3，完整平移或 contain，无 cover 裁切。`video` / `controls` / `seekbar` 在 API 7 开放（需 manifest 声明 `media` 权限，安装器与打包器检查），见 `docs/06-plugins.md` §6.10。字段、权限、生命周期和示例见 `docs/06-plugins.md` §4.1.1、§6.6。
 
 `stacks.slots.left` / `right` 为卡片引用数组，例如 `[{"widget":"clock.now"}]`。这些引用解析到对应插件的 widget 和状态。`focus.slots.hero` 为主组件，`under` / `over` 为可选组件。API 2 槽位也可用 `{"children":[组件…]}`，不允许任意嵌套。`split` 使用固定 40/60 的 `lead/main`；`stage` 使用全出血 `stage` 与叠加的 `over/under`。组件不提供像素、颜色或自定义动画；API 3 只开放固定转场名称、时长和完整画面的平移速度；`weight` 是组内剩余高度的相对分配。
 
 版本门槛来自 `layouts.json` 的 `x-thinkos-api`。Python `validate_view(view, api)`、Android `PluginSchema.validateView(view, api)` 和 Go 生成的 `ValidateRenderAPI` 读取相同版本表；打包器/安装器传入 manifest 中的 API。API 1 不能使用新增类型、组、版式或 `tap/weight`。
 
 `progress` 支持条/环，`chart` 支持线/柱/面积并为缺值断段；`list` 的 `items` 绑定数组，`item` 内 `{{.title}}` 引用行元素。`daylight/moon` 的 `path` 只接收派生天文数据，不读取设备位置。组件点击统一发 `tap(name, index?)`，列表索引从 1 开始。完整字段见 schema 与 `docs/06-plugins.md` §4.1。
+
+API 6 还为磁贴增加全幅 `image`、`faces[].content`（ADR-028，版本门槛同样来自 `x-thinkos-api` 的 `tileFields` / `tileFaceFields`），插件可调用 `tos.tile.animate`。tiles 网格为横屏 8×6 / 竖屏 6×8。
+
+API 6（ADR-027）增加 manifest 的 `exports` / `uses` / `calls`、`commands[].public` / `cooldown`、`widgets[].alternates`，以及 `focus` / `split` / `stage` 槽位里的 widget 引用。schema 表达不了的规则（版本门槛、alias 命名、不能引用自己、`cooldown` 只用于公开指令）在 `validate_public_contract` 和 Android `validatePublicContract` 中检查；门槛表来自 `layouts.json` 的 `x-thinkos-api`。见 `docs/06-plugins.md` §6.8。
 
 新增磁贴图标：music/photo/bell/settings/home/folder/list/star/heart/message/play/battery。
 

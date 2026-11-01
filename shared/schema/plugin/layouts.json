@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "layouts.json",
-  "description": "Fixed OS render vocabulary. API 1: stacks/focus/form/glance and text/icon/clock. API 2: progress/chart/list/daylight/moon, groups, split/stage, tap and weight. No plugin styles or executable view expressions. API 3: local/asset/HTTP(S) image and carousel with lossless framing and native panning. API 4: tiles grid and tile template; only tile backgrounds allow plugin colors (ADR-025). API 5: fixed Aero desktop with up to three referenced widget windows; all chrome belongs to OS.",
+  "description": "Fixed OS render vocabulary. API 1: stacks/focus/form/glance and text/icon/clock. API 2: progress/chart/list/daylight/moon, groups, split/stage, tap and weight. No plugin styles or executable view expressions. API 3: local/asset/HTTP(S) image and carousel with lossless framing and native panning. API 4: tiles grid and tile template; only tile backgrounds allow plugin colors (ADR-025). API 5: fixed Aero desktop with up to three referenced widget windows; all chrome belongs to OS. API 6: widget references inside focus/split/stage slots. API 6: full-bleed tile image. API 6: a tile face may bring its own content component.",
   "$defs": {
     "component": {
       "oneOf": [
@@ -34,6 +34,15 @@
         },
         {
           "$ref": "#/$defs/carousel"
+        },
+        {
+          "$ref": "#/$defs/controls"
+        },
+        {
+          "$ref": "#/$defs/video"
+        },
+        {
+          "$ref": "#/$defs/seekbar"
         }
       ]
     },
@@ -683,6 +692,9 @@
         },
         {
           "$ref": "#/$defs/componentGroup"
+        },
+        {
+          "$ref": "#/$defs/widgetReference"
         }
       ]
     },
@@ -837,9 +849,16 @@
           "type": "number",
           "minimum": 0,
           "maximum": 100
+        },
+        "mode": {
+          "enum": [
+            "queue",
+            "seek",
+            "play"
+          ]
         }
       },
-      "description": "Deferred: renderer/host integration is not enabled in the current UI test build."
+      "description": "Transport buttons wired to the OS media session. 'queue' = previous / play-pause / next (default), 'seek' = back 10 s / play-pause / forward 10 s, 'play' = play-pause only. The OS draws them and hides them while nobody is touching the screen on a video page."
     },
     "video": {
       "title": "SchemaVideo",
@@ -869,7 +888,31 @@
           ]
         }
       },
-      "description": "Deferred: renderer/host integration is not enabled in the current UI test build."
+      "description": "The OS video surface with its cinema overlay: subtitles, buffering and error cards, and (when touched) title, seek bar, transport and audio/subtitle track buttons. The plugin only supplies the media."
+    },
+    "seekbar": {
+      "title": "SchemaSeekbar",
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "seekbar"
+        },
+        "tap": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+          "maxLength": 64
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "description": "Draggable position bar with elapsed and remaining time, bound to the OS media session. Live streams show LIVE and a back-to-live action instead of the remaining time."
     },
     "image": {
       "title": "SchemaImage",
@@ -1125,6 +1168,9 @@
         "detail": {
           "type": "string",
           "maxLength": 2048
+        },
+        "content": {
+          "$ref": "#/$defs/tileContent"
         }
       }
     },
@@ -1176,6 +1222,9 @@
         },
         "content": {
           "$ref": "#/$defs/tileContent"
+        },
+        "image": {
+          "$ref": "#/$defs/image"
         }
       }
     },
@@ -1281,7 +1330,7 @@
     }
   },
   "x-thinkos-api": {
-    "current": 5,
+    "current": 7,
     "componentTypes": {
       "text": 1,
       "icon": 1,
@@ -1293,7 +1342,10 @@
       "daylight": 2,
       "moon": 2,
       "image": 3,
-      "carousel": 3
+      "carousel": 3,
+      "controls": 7,
+      "video": 7,
+      "seekbar": 7
     },
     "layouts": {
       "stacks": 1,
@@ -1312,6 +1364,25 @@
     "templates": {
       "glance": 1,
       "tile": 4
+    },
+    "slotWidgets": 6,
+    "manifestFields": {
+      "exports": 6,
+      "uses": 6,
+      "calls": 6
+    },
+    "widgetFields": {
+      "alternates": 6
+    },
+    "commandFields": {
+      "public": 6,
+      "cooldown": 6
+    },
+    "tileFields": {
+      "image": 6
+    },
+    "tileFaceFields": {
+      "content": 6
     }
   }
 }

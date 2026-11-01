@@ -138,6 +138,50 @@
       "unit": "%",
       "group": "@setting.group.display"
     },
+    "units.system": {
+      "type": "choice",
+      "label": "@setting.units.system",
+      "default": "metric",
+      "group": "@setting.group.units",
+      "choices": [
+        {
+          "value": "metric",
+          "label": "@setting.units.system.metric"
+        },
+        {
+          "value": "imperial",
+          "label": "@setting.units.system.imperial"
+        }
+      ]
+    },
+    "units.wind": {
+      "type": "choice",
+      "label": "@setting.units.wind",
+      "default": "auto",
+      "group": "@setting.group.units",
+      "choices": [
+        {
+          "value": "auto",
+          "label": "@setting.units.wind.auto"
+        },
+        {
+          "value": "kmh",
+          "label": "@setting.units.wind.kmh"
+        },
+        {
+          "value": "ms",
+          "label": "@setting.units.wind.ms"
+        },
+        {
+          "value": "mph",
+          "label": "@setting.units.wind.mph"
+        },
+        {
+          "value": "kn",
+          "label": "@setting.units.wind.kn"
+        }
+      ]
+    },
     "attention.awake_to_ambient_s": {
       "type": "number",
       "label": "@setting.attention.awake_to_ambient_s",
@@ -286,12 +330,12 @@
       "group": "@setting.group.time",
       "hidden": true
     },
-    "time.sync_hour": {
+    "time.sync_interval": {
       "type": "number",
-      "label": "@setting.time.sync_hour",
-      "default": 4,
-      "min": 0,
-      "max": 23,
+      "label": "@setting.time.sync_interval",
+      "default": 1,
+      "min": 1,
+      "max": 24,
       "step": 1,
       "unit": "h",
       "group": "@setting.group.time",
@@ -312,6 +356,95 @@
       "step": 1,
       "unit": "s",
       "group": "@setting.group.tiles"
+    },
+    "tiles.background": {
+      "type": "choice",
+      "label": "@setting.tiles.background",
+      "default": "indigo",
+      "group": "@setting.group.tiles",
+      "choices": [
+        {
+          "value": "indigo",
+          "label": "@setting.tiles.background.indigo"
+        },
+        {
+          "value": "teal",
+          "label": "@setting.tiles.background.teal"
+        },
+        {
+          "value": "wine",
+          "label": "@setting.tiles.background.wine"
+        }
+      ]
+    },
+    "media.public_http": {
+      "type": "bool",
+      "label": "@setting.media.public_http",
+      "default": false,
+      "group": "@setting.group.media"
+    },
+    "media.keep_awake_video": {
+      "type": "bool",
+      "label": "@setting.media.keep_awake_video",
+      "default": true,
+      "group": "@setting.group.media"
+    },
+    "media.buffer_s": {
+      "type": "number",
+      "label": "@setting.media.buffer_s",
+      "default": 30,
+      "min": 10,
+      "max": 120,
+      "step": 5,
+      "unit": "s",
+      "group": "@setting.group.media",
+      "hidden": true
+    },
+    "media.buffer_mb": {
+      "type": "number",
+      "label": "@setting.media.buffer_mb",
+      "default": 48,
+      "min": 8,
+      "max": 96,
+      "step": 4,
+      "unit": "MB",
+      "group": "@setting.group.media",
+      "hidden": true
+    },
+    "cast.enabled": {
+      "type": "bool",
+      "label": "@setting.cast.enabled",
+      "default": false,
+      "help": "@setting.cast.enabled.help",
+      "group": "@setting.group.cast"
+    },
+    "cast.airplay": {
+      "type": "bool",
+      "label": "@setting.cast.airplay",
+      "default": false,
+      "help": "@setting.cast.airplay.help",
+      "group": "@setting.group.cast"
+    },
+    "cast.airplay_mirror": {
+      "type": "bool",
+      "label": "@setting.cast.airplay_mirror",
+      "default": true,
+      "help": "@setting.cast.airplay_mirror.help",
+      "group": "@setting.group.cast"
+    },
+    "cast.miracast": {
+      "type": "bool",
+      "label": "@setting.cast.miracast",
+      "default": false,
+      "help": "@setting.cast.miracast.help",
+      "group": "@setting.group.cast"
+    },
+    "cast.name": {
+      "type": "text",
+      "label": "@setting.cast.name",
+      "default": "ThinkOS",
+      "maxLength": 48,
+      "group": "@setting.group.cast"
     }
   },
   "constraints": [

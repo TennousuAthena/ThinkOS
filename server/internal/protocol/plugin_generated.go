@@ -167,6 +167,7 @@ type SchemaControls struct {
 	Type string `json:"type"`
 	Tap *string `json:"tap,omitempty"`
 	Weight *float64 `json:"weight,omitempty"`
+	Mode *string `json:"mode,omitempty"`
 }
 
 type SchemaVideo struct {
@@ -174,6 +175,12 @@ type SchemaVideo struct {
 	Tap *string `json:"tap,omitempty"`
 	Weight *float64 `json:"weight,omitempty"`
 	Fit *string `json:"fit,omitempty"`
+}
+
+type SchemaSeekbar struct {
+	Type string `json:"type"`
+	Tap *string `json:"tap,omitempty"`
+	Weight *float64 `json:"weight,omitempty"`
 }
 
 type SchemaImage struct {
@@ -217,6 +224,7 @@ type SchemaTileFace struct {
 	Value *string `json:"value,omitempty"`
 	Label string `json:"label"`
 	Detail *string `json:"detail,omitempty"`
+	Content any `json:"content,omitempty"`
 }
 
 type SchemaTileView struct {
@@ -225,6 +233,7 @@ type SchemaTileView struct {
 	Faces []SchemaTileFace `json:"faces"`
 	Badge *string `json:"badge,omitempty"`
 	Content any `json:"content,omitempty"`
+	Image SchemaImage `json:"image,omitempty"`
 }
 
 type SchemaTilesView struct {
@@ -259,6 +268,9 @@ type SchemaManifest struct {
 	Pages []SchemaPage `json:"pages,omitempty"`
 	Widgets []SchemaWidget `json:"widgets,omitempty"`
 	Commands []SchemaCommand `json:"commands,omitempty"`
+	Exports map[string]any `json:"exports,omitempty"`
+	Uses map[string]any `json:"uses,omitempty"`
+	Calls []string `json:"calls,omitempty"`
 }
 
 type SchemaPage struct {
@@ -275,6 +287,12 @@ type SchemaWidget struct {
 	Id string `json:"id"`
 	View string `json:"view"`
 	Opens *string `json:"opens,omitempty"`
+	Alternates SchemaWidgetAlternates `json:"alternates,omitempty"`
+}
+
+type SchemaWidgetAlternates struct {
+	Glance *string `json:"glance,omitempty"`
+	Tile *string `json:"tile,omitempty"`
 }
 
 type SchemaSetting struct {
@@ -304,11 +322,24 @@ type SchemaCommand struct {
 	Id string `json:"id"`
 	Phrases []string `json:"phrases,omitempty"`
 	Gesture *string `json:"gesture,omitempty"`
+	Public *bool `json:"public,omitempty"`
+	Cooldown *float64 `json:"cooldown,omitempty"`
 }
 
-const PluginAPI = 5
+type SchemaExport struct {
+	Path string `json:"path"`
+	Shape string `json:"shape"`
+	Requires []string `json:"requires,omitempty"`
+}
 
-var renderComponentTypes = map[string]int{"text": 1, "icon": 1, "clock": 1, "form": 1, "progress": 2, "chart": 2, "list": 2, "daylight": 2, "moon": 2, "image": 3, "carousel": 3}
+type SchemaUse struct {
+	Export string `json:"export"`
+	Shape string `json:"shape"`
+}
+
+const PluginAPI = 7
+
+var renderComponentTypes = map[string]int{"text": 1, "icon": 1, "clock": 1, "form": 1, "progress": 2, "chart": 2, "list": 2, "daylight": 2, "moon": 2, "image": 3, "carousel": 3, "controls": 7, "video": 7, "seekbar": 7}
 
 var renderLayouts = map[string]int{"stacks": 1, "focus": 1, "form": 1, "split": 2, "stage": 2, "tiles": 4, "aero": 5}
 
@@ -331,10 +362,25 @@ func ValidateRenderAPI(value any, api int) error {
                 minimum, known := renderLayouts[name]
                 if !ok || !known || minimum > api { return fmt.Errorf("layout requires a newer plugin API") }
             }
+            if slots, present := node["slots"].(map[string]any); present && api < 6 {
+                for _, slot := range slots {
+                    if reference, isObject := slot.(map[string]any); isObject {
+                        if _, widget := reference["widget"]; widget { return fmt.Errorf("widget references in slots require a newer plugin API") }
+                    }
+                }
+            }
             if raw, present := node["template"]; present {
                 name, ok := raw.(string)
                 minimum, known := renderTemplates[name]
                 if !ok || !known || minimum > api { return fmt.Errorf("template requires a newer plugin API") }
+                if _, photo := node["image"]; photo && name == "tile" && api < 6 { return fmt.Errorf("tile image requires a newer plugin API") }
+                if faces, present := node["faces"].([]any); present && name == "tile" && api < 6 {
+                    for _, face := range faces {
+                        if object, isObject := face.(map[string]any); isObject {
+                            if _, own := object["content"]; own { return fmt.Errorf("tile face content requires a newer plugin API") }
+                        }
+                    }
+                }
             }
             rawKind, component := node["type"]
             if component {

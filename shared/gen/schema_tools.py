@@ -205,6 +205,40 @@ def validate_manifest(manifest):
     for widget in manifest.get('widgets', []):
         if widget.get('opens') is not None and widget['opens'] not in pages:
             raise ValidationError(f'widget {widget["id"]}: opens must refer to a page in this plugin')
+    validate_public_contract(manifest)
+
+def validate_public_contract(manifest):
+    """API 6 public data and commands: rules JSON Schema cannot express here (ADR-027)."""
+    vocabulary = SCHEMAS['layouts.json']['x-thinkos-api']
+    api = manifest['api']
+    def gate(entry, table, what):
+        for key, minimum in table.items():
+            if key in entry and minimum > api:
+                raise ValidationError(f'{what}{key} requires a newer plugin API')
+    gate(manifest, vocabulary['manifestFields'], 'manifest.')
+    for widget in manifest.get('widgets', []):
+        gate(widget, vocabulary['widgetFields'], 'widget.')
+    for command in manifest.get('commands', []):
+        gate(command, vocabulary['commandFields'], 'command.')
+        if 'cooldown' in command and command.get('public') is not True:
+            raise ValidationError(f'command {command["id"]}: cooldown only applies to public commands')
+    for name in manifest.get('exports', {}):
+        if not re.fullmatch(r'[a-z][a-z0-9-]{0,63}', name):
+            raise ValidationError(f'manifest.exports: invalid name {name!r}')
+    # A path inside another export would let its readers bypass the inner one's `requires`.
+    paths = [export['path'] for export in manifest.get('exports', {}).values()]
+    for i, path in enumerate(paths):
+        for other in paths[i + 1:]:
+            if path == other or path.startswith(other + '.') or other.startswith(path + '.'):
+                raise ValidationError(f'manifest.exports: paths overlap: {path}, {other}')
+    for alias, use in manifest.get('uses', {}).items():
+        if not re.fullmatch(r'[a-z][a-z0-9_]{0,63}', alias):
+            raise ValidationError(f'manifest.uses: invalid alias {alias!r}')
+        if use['export'].split('.')[0] == manifest['id']:
+            raise ValidationError(f'manifest.uses.{alias}: a plugin cannot use its own export')
+    for target in manifest.get('calls', []):
+        if target.split('.')[0] == manifest['id']:
+            raise ValidationError(f'manifest.calls: a plugin cannot call its own command: {target}')
 
 def validate_view(view, api=None):
     validate(view, document='view.json')
@@ -221,9 +255,20 @@ def validate_view(view, api=None):
             template = value.get('template')
             if template is not None and vocabulary['templates'].get(template, api + 1) > api:
                 raise ValidationError(f'template {template} requires a newer plugin API')
+            if template == 'tile':
+                for key, minimum in vocabulary['tileFields'].items():
+                    if key in value and minimum > api:
+                        raise ValidationError(f'tile.{key} requires a newer plugin API')
+                for face in value.get('faces', []):
+                    for key, minimum in vocabulary['tileFaceFields'].items():
+                        if isinstance(face, dict) and key in face and minimum > api:
+                            raise ValidationError(f'tile face {key} requires a newer plugin API')
             kind = value.get('type')
             if layout is not None and vocabulary['layouts'].get(layout, api + 1) > api:
                 raise ValidationError(f'layout {layout} requires a newer plugin API')
+            slots = value.get('slots')
+            if isinstance(slots, dict) and vocabulary['slotWidgets'] > api and any(isinstance(slot, dict) and 'widget' in slot for slot in slots.values()):
+                raise ValidationError('widget references in slots require a newer plugin API')
             if kind is not None:
                 if vocabulary['componentTypes'].get(kind, api + 1) > api:
                     raise ValidationError(f'component {kind} requires a newer plugin API')

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "manifest.json",
   "title": "SchemaManifest",
-  "description": "ThinkOS plugin API 1 contract. Settings (ADR-017) replace the M0 'config' field; data-source and media capabilities arrive in later milestones.",
+  "description": "ThinkOS plugin contract. Settings (ADR-017) replace the M0 'config' field. API 6 adds explicitly public data, consumed data and callable commands (ADR-027); everything else stays private to the plugin.",
   "type": "object",
   "required": [
     "id",
@@ -35,7 +35,9 @@
         2,
         3,
         4,
-        5
+        5,
+        6,
+        7
       ]
     },
     "icon": {
@@ -91,6 +93,30 @@
       "maxItems": 32,
       "items": {
         "$ref": "#/$defs/command"
+      }
+    },
+    "exports": {
+      "type": "object",
+      "maxProperties": 16,
+      "additionalProperties": {
+        "$ref": "#/$defs/export"
+      }
+    },
+    "uses": {
+      "type": "object",
+      "maxProperties": 16,
+      "additionalProperties": {
+        "$ref": "#/$defs/use"
+      }
+    },
+    "calls": {
+      "type": "array",
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*\\.[a-z][a-z0-9-]*$",
+        "maxLength": 130
       }
     }
   },
@@ -176,6 +202,23 @@
           "pattern": "^[a-z][a-z0-9-]*$",
           "minLength": 1,
           "maxLength": 64
+        },
+        "alternates": {
+          "title": "SchemaWidgetAlternates",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "glance": {
+              "type": "string",
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*$",
+              "maxLength": 200
+            },
+            "tile": {
+              "type": "string",
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*$",
+              "maxLength": 200
+            }
+          }
         }
       }
     },
@@ -332,6 +375,72 @@
             "right",
             "fist"
           ]
+        },
+        "public": {
+          "type": "boolean"
+        },
+        "cooldown": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 86400
+        }
+      }
+    },
+    "export": {
+      "title": "SchemaExport",
+      "type": "object",
+      "required": [
+        "path",
+        "shape"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^(?!(?:config|uses|variant)(?:\\.|$))[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+          "maxLength": 128
+        },
+        "shape": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*/[1-9][0-9]*$",
+          "maxLength": 64
+        },
+        "requires": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 8,
+          "items": {
+            "enum": [
+              "network",
+              "alert",
+              "media",
+              "library",
+              "presence",
+              "server",
+              "location"
+            ]
+          }
+        }
+      }
+    },
+    "use": {
+      "title": "SchemaUse",
+      "type": "object",
+      "required": [
+        "export",
+        "shape"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "export": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*\\.[a-z][a-z0-9-]*$",
+          "maxLength": 130
+        },
+        "shape": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*/[1-9][0-9]*$",
+          "maxLength": 64
         }
       }
     }
