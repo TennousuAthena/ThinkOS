@@ -8,6 +8,13 @@ object OnboardingPolicy {
     fun prompt(done: Int, attempts: Int, maxPrompts: Int, safeMode: Boolean): Boolean =
         !safeMode && done < VERSION && attempts < maxPrompts
 
+    /** Home from an Android screen that setup itself opened (Wi-Fi, date) means "back to setup"; any other Home leaves it. */
+    fun homeKeepsSetup(openedFromSetup: Boolean, setupOpen: Boolean): Boolean = openedFromSetup && setupOpen
+
+    /** First-run setup keeps the day look: a scheduled redshift or sleep must not dim it. A mode the person chose stays. */
+    fun displayMode(decided: Mode, chosenByPerson: Boolean, onboardingOpen: Boolean): Mode =
+        if (onboardingOpen && !chosenByPerson) Mode.DAY else decided
+
     /** A physical gesture can complete only the visible owner's currently armed lesson. */
     fun practiceMatches(open: Boolean, onboardingRole: Boolean, currentOwner: String?,
                         practiceOwner: String?, practiceName: String?, requested: String): Boolean =

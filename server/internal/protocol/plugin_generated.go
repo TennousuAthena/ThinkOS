@@ -298,6 +298,7 @@ type SchemaToggle struct {
 	Label string `json:"label"`
 	On any `json:"on,omitempty"`
 	Tap string `json:"tap"`
+	Hold *string `json:"hold,omitempty"`
 	Weight *float64 `json:"weight,omitempty"`
 }
 

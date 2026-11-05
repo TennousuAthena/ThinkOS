@@ -13,7 +13,8 @@
           "icon": "{{wifi.icon}}",
           "label": "{{wifi.label}}",
           "on": "{{wifi.on}}",
-          "tap": "wifi"
+          "tap": "wifi",
+          "hold": "wifi.hold"
         },
         {
           "type": "toggle",
@@ -27,14 +28,16 @@
           "icon": "sunset",
           "label": "@redshift",
           "on": "{{redshift.on}}",
-          "tap": "redshift"
+          "tap": "redshift",
+          "hold": "redshift.hold"
         },
         {
           "type": "toggle",
           "icon": "moon",
           "label": "@sleep",
           "on": "{{sleep.on}}",
-          "tap": "sleep"
+          "tap": "sleep",
+          "hold": "sleep.hold"
         },
         {
           "type": "toggle",

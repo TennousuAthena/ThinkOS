@@ -23,6 +23,14 @@ local function explain(err)
   return text == "error." .. code and err.message or text
 end
 
+-- A chosen place carries its time zone. Where this device can set the system zone (the system module is installed) it follows the place;
+-- without the module nothing is attempted here and Android's own date page stays the way.
+local function followPlaceZone(patch, prefix)
+  local zone = patch[prefix .. "timezone"]
+  if patch[prefix .. "mode"] ~= "manual" or type(zone) ~= "string" or zone == "" then return end
+  if tos.device.canSetTimeZone() then tos.device.setTimeZone(zone) end
+end
+
 local function identity(node)
   return node.scope .. "/" .. (node.section or "") .. "/" .. (node.advanced and "advanced" or "normal")
 end
@@ -209,7 +217,13 @@ local function resetField(field)
 end
 
 tos.on("page.enter", function(page, variant, params)
-  if params and params.scope then path = { { scope = params.scope } }; lastSection = nil end
+  if params and params.scope then
+    path = { { scope = params.scope } }; lastSection = nil
+    -- A caller can name one category of the system page (the control sheet's held buttons); render falls back to the root for an unknown one.
+    if params.scope == "system" and type(params.section) == "string" then
+      path = { { scope = "system", section = params.section, returnToRoot = true } }; lastSection = params.section
+    end
+  end
   normalizePath()
   tos.back.intercept(#path > 1)
   clearFailure()
@@ -273,6 +287,7 @@ tos.on("form.change", function(key, value)
     local prefix, patch = key:gsub("name$", ""), {}
     for _, part in ipairs(PLACE_PARTS) do if value[part] ~= nil then patch[prefix .. part] = value[part] end end
     stored, err = tos.settings.setMany(scope, patch)
+    if stored ~= nil and not err then followPlaceZone(patch, prefix) end
   else
     stored, err = tos.settings.set(scope, key, value)
   end

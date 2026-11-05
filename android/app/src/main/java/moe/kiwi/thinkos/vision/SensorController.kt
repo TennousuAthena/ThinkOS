@@ -28,6 +28,7 @@ class SensorController(
     daylight: () -> Boolean? = { null },
     private val modeRuntime: ModeRuntime? = null,
     private val onModeChanged: (Mode) -> Unit = {},
+    private val onboardingOpen: () -> Boolean = { false },
 ) : SensorEventListener {
     private val manager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private val handler = Handler(Looper.getMainLooper())
@@ -159,7 +160,7 @@ class SensorController(
         val level = heldAttention ?: attention.level(now, settingsOpen()).let { if (mediaHold && it < Attention.AWAKE) Attention.AWAKE else it }
         val lux = (injectedLux ?: light)?.takeIf { it.isFinite() && it >= 0 }
         val decision = modeRuntime?.evaluate(now, wall, lux, level == Attention.ENGAGED, touched)
-        val nextMode = decision?.mode ?: Mode.DAY
+        val nextMode = OnboardingPolicy.displayMode(decision?.mode ?: Mode.DAY, decision?.manual != null, onboardingOpen())
         val leavingSleep = decision?.exitSleepViaRedshift == true
         val dayTheme = lux?.let { theme.sample(it, now, level == Attention.ENGAGED) } ?: run {
             // No usable light sensor: a pinned or sun-scheduled mode still applies, otherwise fall back to the clock.

@@ -1541,13 +1541,18 @@
           "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
           "maxLength": 64
         },
+        "hold": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+          "maxLength": 64
+        },
         "weight": {
           "type": "number",
           "minimum": 0,
           "maximum": 100
         }
       },
-      "description": "A labelled round button with an icon, lit while 'on' is true. Tapping it sends the 'tap' event; the plugin decides what that does. Colours, shape and press feedback belong to the OS."
+      "description": "A labelled round button with an icon, lit while 'on' is true. Tapping it sends the 'tap' event; the plugin decides what that does. The optional 'hold' name is sent as a 'tap' event with that name when the button is held for about half a second, instead of the plain tap (never both); the button's own settings are the usual use. Colours, shape and press feedback belong to the OS."
     },
     "gridCell": {
       "title": "SchemaGridCell",

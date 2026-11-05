@@ -68,6 +68,10 @@ internal class RegionPicker(
         val label = resources.getIdentifier("form_region_search", "string", context.packageName)
         hint = context.getString(if (label != 0) label else android.R.string.search_go)
         setPadding((16 * dp).toInt(), 0, (16 * dp).toInt(), 0)
+        imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH
+        setOnEditorActionListener { _, action, _ ->
+            if (action == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH) { onInteraction(); dismissKeyboard(); true } else false
+        }
     }
     private val list = ListView(context).apply {
         divider = null; isVerticalScrollBarEnabled = false; overScrollMode = View.OVER_SCROLL_NEVER

@@ -82,6 +82,9 @@ internal class TimezonePicker(
             if (event.action == KeyEvent.ACTION_DOWN) onInteraction()
             false
         }
+        setOnEditorActionListener { _, action, _ ->
+            if (action == EditorInfo.IME_ACTION_SEARCH) { onInteraction(); dismissKeyboard(); true } else false
+        }
     }
     private val chips = LinearLayout(context).apply { orientation = HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
     private val chipScroll = HorizontalScrollView(context).apply {

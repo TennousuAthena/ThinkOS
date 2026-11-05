@@ -237,11 +237,21 @@ internal class PlacePicker(
 
     fun refresh(field: JSONObject) { current = field.optJSONObject("place") ?: JSONObject() }
 
+    /** What the results on screen are for, so a touch elsewhere only searches what has not been searched yet. */
+    private var searched = ""
+
+    override fun onKeyboardPutAwayByTouch() {
+        val query = search.text.toString().trim()
+        if (query.length >= 2 && query != searched) search()
+    }
+
     private fun search() {
         onInteraction()
+        dismissKeyboard()
         if (job?.isActive == true) return
         val query = search.text.toString().trim()
         if (query.length < 2) { showMessage(null); return }
+        searched = query
         showMessage(R.string.form_place_loading)
         submit.isEnabled = false
         job = scope.launch {

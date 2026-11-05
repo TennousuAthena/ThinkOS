@@ -115,7 +115,8 @@ class RuntimeHost(private val context: Context) : PluginRuntime.Callbacks {
             cast.onModeChanged()
         }
         plugins.event(null, event, args)
-    }, { router.settingsOpen || router.onboardingOpen || panelOpen }, daylight::isDay, modeRuntime = modes)
+    }, { router.settingsOpen || router.onboardingOpen || panelOpen }, daylight::isDay, modeRuntime = modes,
+        onboardingOpen = { router.onboardingOpen })
     /** The control sheet is up: the display stays at full attention while somebody uses it. */
     @Volatile private var panelOpen = false
 
@@ -403,10 +404,10 @@ class RuntimeHost(private val context: Context) : PluginRuntime.Callbacks {
             moe.kiwi.thinkos.media.ForeignMediaPolicy.Action.KEEP -> Unit
         }
     }
-    override fun onOpenSettings(scope: String) {
+    override fun onOpenSettings(scope: String, section: String?) {
         val fromForeignPanel = foreignPanel.showing
         notifyObservers<NavigationObserver> { it.onPanelClose() }
-        if (router.openSettings(scope)) {
+        if (router.openSettings(scope, section)) {
             if (fromForeignPanel) returnFromPanel("panel settings")
         } else notifyObservers<NavigationObserver> { it.onSettingsUnavailable() }
     }

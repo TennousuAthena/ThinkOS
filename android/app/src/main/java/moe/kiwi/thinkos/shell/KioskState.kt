@@ -13,6 +13,11 @@ object KioskState {
     fun ownsForegroundTask(taskId: Int): Boolean = resumed && taskId >= 0 && foregroundTaskId == taskId
     var maintenanceUntil = 0L
     /**
+     * First-run setup opened the Android screen that is in front. The system may build a fresh Activity (even a new task) when
+     * Home brings us back, so this lives with the process, not an Activity: Home from that screen means "back to setup".
+     */
+    @Volatile var foreignFromSetup = false
+    /**
      * While an Android app is in front because the user opened it (ADR-035), the watchdog leaves it alone until this moment
      * (elapsed realtime). 0 means no such app is out; [Long.MAX_VALUE] means it may stay as long as it likes.
      */

@@ -33,6 +33,47 @@ class PlaceSearchTest {
         assertThrows(IllegalStateException::class.java) { PlaceSearch.parse("""{"error":true,"reason":"bad query"}""") }
     }
 
+    private fun place(name: String, latitude: Double = 1.0) = PlaceResult(DeviceLocation(name, latitude, 2.0, 3.0, "Asia/Shanghai", "manual"), "")
+
+    @Test
+    fun aShortChineseNameAlsoTriesTheUsualEndingsButNothingElseDoes() {
+        assertEquals(listOf("阜新", "阜新市", "阜新县", "阜新区"), PlaceSearch.queryVariants("阜新"))
+        assertEquals(listOf("阜新市"), PlaceSearch.queryVariants("阜新市"))
+        assertEquals(listOf("海淀区"), PlaceSearch.queryVariants("海淀区"))
+        assertEquals(listOf("fuxin"), PlaceSearch.queryVariants("fuxin"))
+        assertEquals(listOf("阜新 shi"), PlaceSearch.queryVariants("阜新 shi"))
+        assertEquals(listOf("New York"), PlaceSearch.queryVariants("New York"))
+    }
+
+    @Test
+    fun theTypedNameIsAskedFirstResultsAreMergedWithoutRepeatsAndALaterFailureIsIgnored() {
+        val asked = mutableListOf<String>()
+        val found = PlaceSearch.searchVariants("阜新") { variant ->
+            asked += variant
+            when (variant) {
+                "阜新" -> emptyList()
+                "阜新市" -> listOf(place("阜新市"))
+                "阜新县" -> throw IllegalStateException("network")
+                else -> listOf(place("阜新市"), place("阜新区", 5.0))
+            }
+        }
+        assertEquals(listOf("阜新", "阜新市", "阜新县", "阜新区"), asked)
+        assertEquals(listOf("阜新市", "阜新区"), found.map { it.location.name })
+        // The first request is the caller's to handle: it falls back to the offline list.
+        assertThrows(IllegalStateException::class.java) { PlaceSearch.searchVariants("阜新") { throw IllegalStateException("offline") } }
+    }
+
+    @Test
+    fun enoughResultsStopTheExtraRequests() {
+        val asked = mutableListOf<String>()
+        val found = PlaceSearch.searchVariants("朝阳") { variant ->
+            asked += variant
+            List(20) { index -> place(variant + index, index.toDouble()) }
+        }
+        assertEquals(listOf("朝阳"), asked)
+        assertEquals(20, found.size)
+    }
+
     private val zones = listOf(
         ZoneInfo("Asia/Hong_Kong", "HK", 22.2833, 114.15, ""),
         ZoneInfo("Asia/Kolkata", "IN", 22.5333, 88.3667, "West India"),

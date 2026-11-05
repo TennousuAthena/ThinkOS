@@ -70,13 +70,13 @@ class CastHost(
     /** Read at each start: mirroring is a setting, and it needs the FairPlay library to be there. */
     private fun airplayDevice(): AirPlayDevice {
         val id = AirPlayRecord.deviceId(castIdentity.airplaySeed)
-        return AirPlayDevice(id, { system.castName.ifBlank { DEFAULT_NAME } }, mirror = system.castAirplayMirror && PlayFair.isAvailable,
+        return AirPlayDevice(id, ::deviceName, mirror = system.castAirplayMirror && PlayFair.isAvailable,
             identityKey = { airplayIdentity.publicKey }, identityId = AirPlayRecord.identityId(id))
     }
     private val airplayIdentity by lazy { AirPlayIdentity.load(File(appContext.filesDir, "cast/airplay-identity")) }
     private val miracast = MiracastService(appContext, WfdControl(LocalSocketWfdTransport()), media, main,
         EngineCastPlayer(media, main, MiracastService.OWNER, { kind -> show(kind) }, { release() }),
-        { system.castName.ifBlank { DEFAULT_NAME } }, { Log.i(TAG, it) },
+        ::deviceName, { Log.i(TAG, it) },
         onAvailabilityChanged = {
             // Miracast can be the only enabled receiver, with no LAN poll.
             // Re-read on the existing cast worker; never publish a captured
@@ -84,10 +84,13 @@ class CastHost(
             worker.execute { publishStatusIfChanged() }
         })
 
+    /** The name senders list this device under: the one a person set, else "ThinkOS" and four characters of this device's own seed. */
+    private fun deviceName(): String = system.castName.ifBlank { runCatching { castIdentity.defaultName }.getOrDefault(DEFAULT_NAME) }
+
     /** For `tos.cast.status()`: the name senders see, which receivers are switched on, and the address they would find the device at. */
     fun status(): Map<String, Any?> {
         val result = LinkedHashMap<String, Any?>()
-        result["name"] = system.castName.ifBlank { DEFAULT_NAME }
+        result["name"] = deviceName()
         result["dlna"] = system.castEnabled
         result["airplay"] = system.castAirplay
         result["mirror"] = system.castAirplay && system.castAirplayMirror
@@ -183,7 +186,7 @@ class CastHost(
     }
 
     private fun startDlna(network: Pair<NetworkInterface, Inet4Address>) {
-        val device = UpnpDevice(castIdentity.uuid, { system.castName.ifBlank { DEFAULT_NAME } }, player, ::validate, ::accept, { Log.w(TAG, it) })
+        val device = UpnpDevice(castIdentity.uuid, ::deviceName, player, ::validate, ::accept, { Log.w(TAG, it) })
         val search: SsdpService
         try {
             port = device.start(PREFERRED_PORT, network.second)
@@ -197,7 +200,7 @@ class CastHost(
             return
         }
         upnp = device; ssdp = search
-        Log.i(TAG, "DLNA renderer \"${system.castName}\" at http://${network.second.hostAddress}:$port${DeviceDescription.PATH}")
+        Log.i(TAG, "DLNA renderer \"${deviceName()}\" at http://${network.second.hostAddress}:$port${DeviceDescription.PATH}")
     }
 
     private fun startAirplay(network: Pair<NetworkInterface, Inet4Address>) {

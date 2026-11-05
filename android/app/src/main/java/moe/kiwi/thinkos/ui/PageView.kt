@@ -167,6 +167,10 @@ internal class ComponentGroup(
                 if (renderer?.handlesTap != true && view !is FormView) def.optString("tap").takeIf { it.isNotBlank() }?.let { event ->
                     view.setOnClickListener { events.send(pluginId, "tap", listOf(event)) }
                 }
+                // A held toggle sends its 'hold' name as a tap instead of the plain tap (the press is consumed, so never both).
+                if (view !is FormView) def.optString("hold").takeIf { it.isNotBlank() }?.let { event ->
+                    view.setOnLongClickListener { events.send(pluginId, "tap", listOf(event)); true }
+                }
                 bound += item
                 addView(view)
                 renderer?.active(active)

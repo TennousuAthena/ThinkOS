@@ -31,6 +31,23 @@ class OnboardingPolicyTest {
         assertFalse(OnboardingPolicy.prompt(0, 0, 3, true))
         assertFalse(OnboardingPolicy.prompt(0, 0, 0, false))
     }
+    @Test fun homeFromAnAndroidScreenSetupOpenedReturnsToSetupButEveryOtherHomeLeavesIt() {
+        assertTrue(OnboardingPolicy.homeKeepsSetup(openedFromSetup = true, setupOpen = true))
+        assertFalse(OnboardingPolicy.homeKeepsSetup(openedFromSetup = false, setupOpen = true))
+        assertFalse(OnboardingPolicy.homeKeepsSetup(openedFromSetup = true, setupOpen = false))
+        assertFalse(OnboardingPolicy.homeKeepsSetup(openedFromSetup = false, setupOpen = false))
+    }
+    @Test fun setupStaysInTheDayLookEvenWhenTheScheduleSaysRedshiftOrSleep() {
+        assertEquals(Mode.DAY, OnboardingPolicy.displayMode(Mode.REDSHIFT, chosenByPerson = false, onboardingOpen = true))
+        assertEquals(Mode.DAY, OnboardingPolicy.displayMode(Mode.SLEEP, chosenByPerson = false, onboardingOpen = true))
+        assertEquals(Mode.DAY, OnboardingPolicy.displayMode(Mode.DAY, chosenByPerson = false, onboardingOpen = true))
+    }
+    @Test fun aModeThePersonChoseDuringSetupIsKeptAndNormalOperationIsUntouched() {
+        assertEquals(Mode.REDSHIFT, OnboardingPolicy.displayMode(Mode.REDSHIFT, chosenByPerson = true, onboardingOpen = true))
+        for (mode in Mode.values()) for (chosen in listOf(false, true)) {
+            assertEquals(mode, OnboardingPolicy.displayMode(mode, chosen, onboardingOpen = false))
+        }
+    }
     @Test fun changingOnboardingStepsKeepsOneLayerAndPruningAnInvalidPluginExits() {
         val nav = NavStack()
         val home = NavStack.Frame("home.main", "default")

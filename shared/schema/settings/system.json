@@ -523,7 +523,7 @@
     "cast.name": {
       "type": "text",
       "label": "@setting.cast.name",
-      "default": "ThinkOS",
+      "default": "",
       "maxLength": 48,
       "level": "normal",
       "section": "media"

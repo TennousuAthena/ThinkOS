@@ -72,8 +72,8 @@ class PluginRuntime(
         /** `tos.device.openAndroid(target)`: leave for one of Android's own screens (`wifi` or `settings`). */
         fun onOpenAndroid(target: String) {}
         fun onOpenApp(entry: moe.kiwi.thinkos.apps.AppEntry, result: (Boolean) -> Unit) { result(false) }
-        /** `tos.settings.open(scope)`: show a settings page; [scope] is `system` or a plugin id. */
-        fun onOpenSettings(scope: String) {}
+        /** `tos.settings.open(scope[, section])`: show a settings page; [scope] is `system` or a plugin id, [section] a category of it. */
+        fun onOpenSettings(scope: String, section: String? = null) {}
         /** Native legal notices; restricted to the built-in settings administrator. */
         fun onAbout() {}
         /** Native touch confirmation, never a plugin-supplied approval. */
@@ -245,7 +245,9 @@ class PluginRuntime(
         system = systemStrings::get,
         plugin = { id, key, locale, params -> (active[id] ?: pending[id])?.strings?.format(key, locale, params) },
     )
-    private val describer = SettingsDescriber(settings, labels) { scope, locale ->
+    private val describer = SettingsDescriber(settings, labels, automaticText = { scope, key ->
+        if (scope == SettingsStore.SYSTEM && key == "cast.name") castStatus()["name"] as? String else null
+    }) { scope, locale ->
         if (scope == SettingsStore.SYSTEM) systemStrings.get("setting.system.name") ?: "ThinkOS"
         else (active[scope] ?: pending[scope])?.let { labels.resolve(scope, it.bundle.manifest.optString("name", scope), locale) } ?: scope
     }
@@ -813,7 +815,9 @@ class PluginRuntime(
                     val scope = arg(0) as? String ?: error("settings scope required")
                     require(SystemClock.elapsedRealtime() - (tapped[bundle.id] ?: Long.MIN_VALUE / 2) < TAP_ANSWER_MILLIS) { "settings.open answers a tap" }
                     require(scope == SettingsStore.SYSTEM || settings.scope(scope) != null) { "unknown settings scope" }
-                    main.post { if (!closed) callbacks.onOpenSettings(scope) }
+                    val section = arg(1)?.let { it as? String ?: error("settings section must be text") }
+                    require(section == null || section.matches(SETTINGS_SECTION)) { "unknown settings section" }
+                    main.post { if (!closed) callbacks.onOpenSettings(scope, section) }
                     null
                 }
                 "settings.about" -> {
@@ -1540,6 +1544,8 @@ class PluginRuntime(
         private const val MAX_STATE = 256 * 1024
         private val NEXT_INSTANCE = AtomicLong()
         private const val TAP_ANSWER_MILLIS = 5_000L
+        /** A settings category id as the schema writes it; the settings page ignores one it does not know. */
+        private val SETTINGS_SECTION = Regex("[a-z][a-z0-9_-]{0,31}")
         /** Host calls that only read: making one while handling `back` is no reaction to it. */
         private val QUIET_METHODS = setOf("log", "i18n.t", "state.get", "config", "locale", "module", "units.get", "units.temperature", "units.wind", "update.status", "onboarding.status", "device.mode", "device.canSetLocale", "device.canSetTimeZone", "tz.zones", "plugins.installed", "plugins.catalog")
         private fun arrayValues(array: JSONArray?): List<Any> = if (array == null) emptyList() else (0 until array.length()).map(array::get)

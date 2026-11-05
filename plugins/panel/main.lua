@@ -71,6 +71,10 @@ tos.on("tap", function(name)
     local ok = tos.device.setMode(target)
     modeError = not ok
     if open then render() end
+  elseif name == "wifi.hold" then
+    tos.device.openAndroid("wifi")
+  elseif name == "redshift.hold" or name == "sleep.hold" then
+    tos.settings.open("system", "mode")
   elseif name == "settings" then
     tos.settings.open("system")
   elseif name == "network" then

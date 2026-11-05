@@ -30,6 +30,27 @@ class CastIdentityTest {
         assertArrayEquals(ByteArray(32) { 19 }, pairing.readBytes())
     }
 
+    @Test fun theDefaultNameIsThinkOsPlusFourReadableCharactersThatStayWithTheDevice() {
+        val first = CastIdentity.load(file("first"))
+        assertTrue(first.defaultName, Regex("ThinkOS-[A-HJKMNP-TV-Z2-9]{4}").matches(first.defaultName))
+        assertEquals(first.defaultName, CastIdentity.load(file("first")).defaultName)
+        assertEquals(30, CastIdentity.NAME_ALPHABET.length)
+        assertEquals(30, CastIdentity.NAME_ALPHABET.toSet().size)
+        assertTrue(CastIdentity.NAME_ALPHABET.none { it in "ILOU01" })
+        // The name has to fit the 32-byte Wi-Fi Direct limit with room to spare.
+        assertTrue(first.defaultName.toByteArray().size <= 12)
+    }
+
+    @Test fun differentSeedsGiveDifferentNamesAndTheyAreSpreadAcrossTheWholeSpace() {
+        val names = (0 until 2000).map { index ->
+            CastIdentity.nameSuffix(ByteArray(32).also { java.util.Random(index.toLong()).nextBytes(it) })
+        }
+        // 2000 distinct seeds in 810,000 names: a few chance repeats are fine, a collapse is not.
+        assertTrue("distinct names ${names.toSet().size}", names.toSet().size > 1900)
+        assertEquals(CastIdentity.nameSuffix(ByteArray(32) { 5 }), CastIdentity.nameSuffix(ByteArray(32) { 5 }))
+        assertNotEquals(CastIdentity.nameSuffix(ByteArray(32) { 5 }), CastIdentity.nameSuffix(ByteArray(32) { 6 }))
+    }
+
     @Test fun independentInstallationsHaveDifferentDlnaAndAirplayIds() {
         val first = CastIdentity.load(file("first"))
         val second = CastIdentity.load(file("second"))

@@ -17,6 +17,8 @@ import java.util.Locale
 class SettingsDescriber(
     private val settings: SettingsStore,
     private val labels: Labels,
+    /** What the device works out for itself when a text setting is left empty (the cast name), shown in place of nothing. */
+    private val automaticText: (scope: String, key: String) -> String? = { _, _ -> null },
     private val scopeName: (scope: String, locale: Locale) -> String,
 ) {
     fun list(locale: Locale): List<Map<String, Any?>> =
@@ -72,6 +74,9 @@ class SettingsDescriber(
                 entry["overridden"] = PLACE_PARTS.any { part -> scope.fields.containsKey(prefix + part) && settings.resolved(scopeId, prefix + part).overridden }
                 entry["display"] = location.name
                 entry["searchUrl"] = settings.get(SettingsStore.SYSTEM, "location.search_url")
+            }
+            if (field.type == FieldType.TEXT && !field.secret && (resolved.value as? String).isNullOrBlank()) {
+                automaticText(scopeId, field.key)?.let { entry["display"] = it }
             }
             if (field.allowEmpty) entry["allowEmpty"] = true
             field.min?.let { entry["min"] = SettingField.canonical(it) }

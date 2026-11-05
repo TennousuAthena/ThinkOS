@@ -186,7 +186,6 @@ render = function()
   elseif step == "wifi" then
     state.subtitle=failure or t(online() and "wifi.connected" or "wifi.disconnected")
     state.primary=t(online() and "continue" or "connect")
-    state.secondary=t("skip")
   elseif step == "privacy" then
     state.subtitle=failure or t("privacy.body"); state.secondary=t("licenses")
   elseif step == "updates" then
@@ -276,6 +275,8 @@ local function primary()
   else advance(false) end
 end
 local function secondary()
+  -- The clock has no battery-backed time: without a network it cannot be set, so this screen has no way past it.
+  if progress.step == "wifi" then return end
   if progress.step == "privacy" then tos.settings.about()
   elseif progress.step == "updates" then if write("update.auto_install", false) then advance(false) end
   else advance(true) end
@@ -328,8 +329,11 @@ tos.on("form.change", function(key, value)
     for _, part in ipairs {"mode", "name", "latitude", "longitude", "elevation", "timezone"} do
       if value[part] ~= nil then patch["location."..part]=value[part] end
     end
-    local _, err=tos.settings.setMany("system", patch)
+    local stored, err=tos.settings.setMany("system", patch)
     failure=err and t("error") or nil
+    -- The place carries its zone; follow it when this device can set the system zone, otherwise "change time zone" stays the way.
+    if stored ~= nil and not err and patch["location.mode"] == "manual" and type(patch["location.timezone"]) == "string"
+        and patch["location.timezone"] ~= "" and tos.device.canSetTimeZone() then tos.device.setTimeZone(patch["location.timezone"]) end
   elseif progress.step == "appearance" then write(key, value) end
   render()
 end)

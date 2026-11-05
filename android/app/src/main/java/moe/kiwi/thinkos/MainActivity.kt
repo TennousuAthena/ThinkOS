@@ -13,6 +13,7 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import moe.kiwi.thinkos.core.OnboardingPolicy
 import moe.kiwi.thinkos.core.Theme
 import moe.kiwi.thinkos.plugin.PluginPage
 import moe.kiwi.thinkos.plugin.PluginWidget
@@ -45,6 +46,7 @@ class MainActivity : Activity(), RuntimeHost.Observer {
     private var lastLocale: java.util.Locale = java.util.Locale.getDefault()
     private var storageRequest: Long? = null
     private var foreignLaunchPending = false
+    private val hideBarsAgain = Runnable { if (!isFinishing && !isDestroyed && KioskState.ownsForegroundTask(taskId)) immersive() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         if (BuildConfig.DEBUG) {
@@ -55,6 +57,15 @@ class MainActivity : Activity(), RuntimeHost.Observer {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         immersive()
+        // A keyboard brings Android's navigation bar (with a Back arrow) up and leaves it there when the keyboard goes away, because
+        // the window keeps focus and so never asks for the bars to be hidden again. Ask again once it is gone.
+        @Suppress("DEPRECATION")
+        window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
+            if (visibility and View.SYSTEM_UI_FLAG_HIDE_NAVIGATION == 0) {
+                window.decorView.removeCallbacks(hideBarsAgain)
+                window.decorView.postDelayed(hideBarsAgain, 400)
+            }
+        }
         if (!(application as ThinkApplication).updateGuard.allowsRuntime) {
             setContentView(View(this).apply { setBackgroundColor(android.graphics.Color.BLACK) })
             return
@@ -81,7 +92,7 @@ class MainActivity : Activity(), RuntimeHost.Observer {
         })
         host.observe(this)
         host.start()
-        if (intent.hasCategory(Intent.CATEGORY_HOME)) host.router.homeKey()
+        if (intent.hasCategory(Intent.CATEGORY_HOME) && !homeKeepsSetup()) host.router.homeKey()
         startForegroundService(Intent(this, KioskService::class.java))
         Log.i("ThinkOS", "Activity created; orientation=${resources.configuration.orientation}")
     }
@@ -95,6 +106,7 @@ class MainActivity : Activity(), RuntimeHost.Observer {
         if (storageRequest == null) KioskState.maintenanceUntil = 0 else KioskState.allowSystemSettings()
         immersive()
         KioskState.leaveForeign()
+        KioskState.foreignFromSetup = false
         kiosk.apply(this, host.system.kioskLock, host.system.panelEnabled)   // coming back from Android's settings locks again
         stage.start()
         host.replayPractice()
@@ -137,7 +149,10 @@ class MainActivity : Activity(), RuntimeHost.Observer {
         super.onNewIntent(intent)
         if (!::host.isInitialized) return
         // The Home key always means "take me home": it also leaves the settings page, an app's page and the control sheet.
-        if (intent.hasCategory(Intent.CATEGORY_HOME)) { onSystemHome(); host.router.homeKey() }
+        if (intent.hasCategory(Intent.CATEGORY_HOME)) {
+            onSystemHome()
+            if (!homeKeepsSetup()) host.router.homeKey()
+        }
         if (BuildConfig.DEBUG && intent.hasExtra("debug.orientation")) {
             requestedOrientation = moe.kiwi.thinkos.core.DeviceOrientation.forced(intent.getIntExtra("debug.orientation", android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR))
         }
@@ -183,6 +198,7 @@ class MainActivity : Activity(), RuntimeHost.Observer {
             stage.setPractice(name, text)
         }
     }
+    private fun homeKeepsSetup() = OnboardingPolicy.homeKeepsSetup(KioskState.foreignFromSetup, host.router.onboardingOpen)
     override fun onSystemHome() {
         maintenance?.dismiss(); diagnosticDialog?.dismiss(); legal?.dismiss(); updates?.dismiss(); miracastModule?.dismiss(); pluginConsent?.dismiss()
         stage.prepareSystemHome()
@@ -213,9 +229,10 @@ class MainActivity : Activity(), RuntimeHost.Observer {
     private fun launchOutside(intent: Intent, result: (Boolean) -> Unit = {}): Boolean {
         if (!KioskState.ownsForegroundTask(taskId) || foreignLaunchPending) return false
         foreignLaunchPending = true
+        KioskState.foreignFromSetup = host.router.onboardingOpen
         try { host.beforeForeignLaunch() }
         catch (error: RuntimeException) {
-            foreignLaunchPending = false
+            foreignLaunchPending = false; KioskState.foreignFromSetup = false
             Log.w("ThinkOS", "Unable to prepare the media session for an external app", error)
             showOpenFailure(intent.component?.packageName ?: "Android")
             result(false); return true
@@ -225,12 +242,13 @@ class MainActivity : Activity(), RuntimeHost.Observer {
         window.decorView.postDelayed({
             if (isFinishing || isDestroyed || !KioskState.ownsForegroundTask(taskId)) {
                 if (KioskState.foregroundTaskId == taskId) KioskState.leaveForeign()
-                foreignLaunchPending = false; result(false); return@postDelayed
+                foreignLaunchPending = false; KioskState.foreignFromSetup = false; result(false); return@postDelayed
             }
             var opened = false
             try { startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); opened = true }
             catch (error: Exception) {
                 Log.w("ThinkOS", "Unable to open $intent", error)
+                KioskState.foreignFromSetup = false
                 KioskState.leaveForeign()
                 kiosk.apply(this, host.system.kioskLock, host.system.panelEnabled)
                 showOpenFailure(intent.component?.packageName ?: "Android")

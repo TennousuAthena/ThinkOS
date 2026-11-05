@@ -80,10 +80,11 @@ class DeckRouter(
     val settingsOpen: Boolean get() = nav.has(NavStack.Kind.SETTINGS)
 
     /** Opens the settings page for [scope] (`system` or a plugin id). False if no settings plugin is running. */
-    fun openSettings(scope: String): Boolean {
+    fun openSettings(scope: String, section: String? = null): Boolean {
         if (onboardingOpen) return false
         val page = pages.firstOrNull { "settings" in it.roles } ?: return false
         val params = JSONObject().put("scope", scope)
+        if (section != null) params.put("section", section)
         if (settingsOpen) select(page, 1, false, params = params)           // already there: another scope
         else if (!push(NavStack.Kind.SETTINGS, page, 1, params = params)) return false
         noteInteraction()

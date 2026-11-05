@@ -2,8 +2,11 @@ package moe.kiwi.thinkos.ui.form
 
 import android.content.Context
 import android.graphics.Rect
+import android.view.MotionEvent
 import android.view.ViewTreeObserver
 import android.view.WindowInsets
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.LinearLayout
 
 /** Keeps only full-screen form pickers clear of visible system bars and the keyboard. */
@@ -13,6 +16,32 @@ internal open class PickerLayout(context: Context) : LinearLayout(context),
     private val location = IntArray(2)
     private var observedTree: ViewTreeObserver? = null
     private val update = Runnable { refreshVisibleFrame() }
+    private val fieldBounds = Rect()
+
+    init {
+        // Somewhere for the focus to go when the search box lets it go, so the keyboard does not come back by itself.
+        isFocusable = true; isFocusableInTouchMode = true; defaultFocusHighlightEnabled = false
+    }
+
+    /** Puts the keyboard away and the focus on the picker, so the list can be used. Nobody has to reach for Back. */
+    fun dismissKeyboard() {
+        (context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.hideSoftInputFromWindow(windowToken, 0)
+        if (findFocus() is EditText) requestFocus()
+    }
+
+    /** A touch anywhere but the search box puts the keyboard away; the touch itself still goes where it was aimed. */
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (event.actionMasked == MotionEvent.ACTION_DOWN) (findFocus() as? EditText)?.let { field ->
+            if (!field.getGlobalVisibleRect(fieldBounds) || !fieldBounds.contains(event.rawX.toInt(), event.rawY.toInt())) {
+                dismissKeyboard()
+                onKeyboardPutAwayByTouch()
+            }
+        }
+        return super.dispatchTouchEvent(event)
+    }
+
+    /** The keyboard was put away by a touch elsewhere (not by its own search key); a picker with a search box can search now. */
+    protected open fun onKeyboardPutAwayByTouch() = Unit
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()

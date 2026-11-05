@@ -63,7 +63,7 @@ tos.settings={
   set=function(scope,key,value) local r=host("settings.set",scope,key,value); if r.error then return nil,r.error end; return r.value end,
   setMany=function(scope,values) local r=host("settings.setMany",scope,values); if r.error then return nil,r.error end; return r.value end,
   reset=function(scope,key) local r=host("settings.reset",scope,key); if r and r.error then return nil,r.error end end,
-  open=function(scope) assert(type(scope)=="string"); host("settings.open",scope) end,
+  open=function(scope,section) assert(type(scope)=="string"); assert(section==nil or type(section)=="string"); host("settings.open",scope,section) end,
   about=function() return host("settings.about") end,
 }
 tos.device={

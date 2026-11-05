@@ -3,6 +3,7 @@ package moe.kiwi.thinkos.cast
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.security.MessageDigest
 import java.security.SecureRandom
 import java.util.Locale
 import java.util.UUID
@@ -13,9 +14,21 @@ internal class CastIdentity private constructor(seed: ByteArray) {
     val uuid: String = UUID.nameUUIDFromBytes("thinkos-cast:".toByteArray(Charsets.US_ASCII) + seed).toString()
     /** Internal seed for AirPlayRecord's locally administered device ID. Never published. */
     val airplaySeed: String = seed.joinToString("") { "%02x".format(Locale.ROOT, it.toInt() and 0xff) }
+    /** What controllers list this device under until someone names it: "ThinkOS" and four characters from this device's own seed, so
+     * several on one network stay apart without asking anyone. */
+    val defaultName: String = "ThinkOS-" + nameSuffix(seed)
 
     companion object {
         private const val SEED_BYTES = 32
+        /** Upper-case letters and digits without the pairs that read alike (I L O U, 0 1): 30 symbols, 810,000 names. */
+        internal const val NAME_ALPHABET = "ABCDEFGHJKMNPQRSTVWXYZ23456789"
+
+        internal fun nameSuffix(seed: ByteArray): String {
+            val digest = MessageDigest.getInstance("SHA-256").digest("thinkos-name:".toByteArray(Charsets.US_ASCII) + seed)
+            var value = ((digest[0].toLong() and 0xff) shl 24 or ((digest[1].toLong() and 0xff) shl 16) or
+                ((digest[2].toLong() and 0xff) shl 8) or (digest[3].toLong() and 0xff)) % 810_000L
+            return buildString { repeat(4) { append(NAME_ALPHABET[(value % 30).toInt()]); value /= 30 } }
+        }
 
         /** Reads exactly one seed; a missing/truncated/oversized file gets a new
          * owner-only seed. I/O failures propagate rather than sharing a fallback ID. */

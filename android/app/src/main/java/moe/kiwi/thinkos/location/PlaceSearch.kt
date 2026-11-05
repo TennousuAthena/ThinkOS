@@ -23,16 +23,44 @@ object PlaceSearch {
     fun search(endpoint: String, query: String, locale: Locale): List<PlaceResult> {
         val text = query.trim().take(160)
         if (text.length < 2) return emptyList()
-        val uri = URI(endpoint)
-        require(uri.rawFragment == null) { "search address cannot contain a fragment" }
+        require(URI(endpoint).rawFragment == null) { "search address cannot contain a fragment" }
         val language = locale.language.ifBlank { "en" }.lowercase(Locale.ROOT)
-        val separator = if (uri.rawQuery == null) "?" else "&"
-        val url = endpoint + separator + "name=" + URLEncoder.encode(text, "UTF-8") +
-            "&count=20&language=" + URLEncoder.encode(language, "UTF-8") + "&format=json"
-        val response = PluginHttp.request("GET", url, null, null)
-        check((response["status"] as Number).toInt() == 200) { "place search returned HTTP ${response["status"]}" }
-        return parse(response["body"] as String)
+        return searchVariants(text) { variant ->
+            val response = PluginHttp.request("GET", urlFor(endpoint, variant, language), null, null)
+            check((response["status"] as Number).toInt() == 200) { "place search returned HTTP ${response["status"]}" }
+            parse(response["body"] as String)
+        }
     }
+
+    private fun urlFor(endpoint: String, text: String, language: String): String {
+        val separator = if (URI(endpoint).rawQuery == null) "?" else "&"
+        return endpoint + separator + "name=" + URLEncoder.encode(text, "UTF-8") +
+            "&count=20&language=" + URLEncoder.encode(language, "UTF-8") + "&format=json"
+    }
+
+    /**
+     * The service matches Chinese names whole: "阜新" finds nothing, "阜新市" finds the city. What was typed goes first, and a short
+     * Chinese name then also tries the usual endings, so nobody has to know that. A failure of the first request is the caller's
+     * (it falls back to the offline list); a failure of a later one only leaves its results out.
+     */
+    internal fun searchVariants(text: String, fetch: (String) -> List<PlaceResult>): List<PlaceResult> {
+        val found = LinkedHashMap<String, PlaceResult>()
+        for ((index, variant) in queryVariants(text).withIndex()) {
+            val rows = if (index == 0) fetch(variant) else runCatching { fetch(variant) }.getOrDefault(emptyList())
+            for (row in rows) found.putIfAbsent("${row.location.name}|${row.location.latitude}|${row.location.longitude}", row)
+            if (found.size >= 20) break
+        }
+        return found.values.take(20)
+    }
+
+    /** Only a name written wholly in Chinese characters that does not already end like a place gets the endings tried; anything else goes as typed. */
+    internal fun queryVariants(text: String): List<String> {
+        val ideograph = { c: Char -> c.code in 0x4E00..0x9FFF }
+        if (text.isEmpty() || !text.all(ideograph) || text.last() in ENDINGS) return listOf(text)
+        return listOf(text) + listOf("市", "县", "区").map { text + it }
+    }
+
+    private const val ENDINGS = "市县区旗州盟乡镇省"
 
     /**
      * The offline fallback: the time zone cities bundled with the device, matched on their localised city
