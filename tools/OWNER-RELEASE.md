@@ -136,3 +136,21 @@ python3 tools/publish.py …/release-0.1.31 --site cnb --site github --github-re
 ### 5. 设备
 
 首发版是装上去的，不是推上去的：现有机器是 debug 签名，需要先卸载 debug 包、装正式包、重设 Device Owner（金镜像或 `tools/provision.py`）。装好后设备会自己去 CNB、再去 GitHub 取目录。OTA 的第一次真实推送要等第二个版本，用 `--previous-catalog` 和更大的 `--seq` 准备并发布。
+
+## 带模块的版本（备用机演练通过之后）
+
+系统模块和启动守卫也走 OTA，用的是系统钥匙（不是通道钥匙）签名的清单。首发和之后的普通版本都不带模块，等备用机演练过（见 `artifacts/update/MOD-2/human-steps.md`，坏模块有变砖风险，只在备用机上做，HUA0BWUT 不做）再加。
+
+1. 备用机上先用 `system/install-updater.sh --keys-header … --serial 备用机串号` 装好更新器。模块安装器会把外置守卫、它的策略和两个启动脚本一起放好，不用再手工放文件；重启由所有者做。
+2. 写 `modules.json`，最多 5 项，只能是白名单里的 id（`thinkos-updater`、`thinkos-cast`、`thinkos-immersive`、`thinkos-shell`、`thinkos-certs`、`thinkos-power`、`timesync`）：
+
+```json
+[{"id": "thinkos-power", "policy": "installed"}, {"id": "thinkos-updater", "policy": "always"}]
+```
+
+   `policy` 三选一：`always` 总是装、`installed` 只更新已经装了的、`feature` 用户打开对应功能（如 Miracast）才装。`thinkos-certs` 另需 `"mode": "add"` 或 `"replace"`。
+3. 模块内容变了，`module.prop` 的 `versionCode` 必须比上一版大，否则 `release.py` 拒绝出包。这次新增的两个：`thinkos-power` v0.2（带关机命令）、`thinkos-updater` v1.1（守卫轮换和启动脚本）。
+4. `tools/release.sh prepare … --previous-catalog /绝对路径/stable.json --modules /绝对路径/modules.json`。模块的清单和包用系统钥匙签名，其余和普通版本一样。
+5. 更新 `thinkos-updater` 自己的版本，通过健康期以后，守卫会自动轮换成新的 `current`，旧的留作 `previous`（见 `system/thinkos-updater/guard/README.md`）。要观察：备用机上 `/data/adb/thinkos/guard/{current,previous}`。
+6. 新模块 `thinkos-btsink`（蓝牙音箱，`docs/46`）**还不在白名单**：加进去要改更新器的状态记录布局、应用和契约里的 id 列表，应在第一次在备用机上部署更新器之前一起做，否则以后要迁移状态文件。要加时一并改 `updaterd.c` 的 `MODULES`、`shared/schema/update/*.json`、`tools/release.py`、`UpdateCatalog` 和相关测试。
+

@@ -141,15 +141,23 @@ int main(int argc,char **argv) {
             'import json,os,pathlib,re,time\n' +
             'root=pathlib.Path(' + repr(str(self.root)) + ')\n' +
             'updates=pathlib.Path(' + repr(str(self.updates)) + ')\n' + r'''
+import traceback
+def crash_hook(kind,value,trace):  # stderr goes to /dev/null in the daemon: keep a failed fake's reason where tearDown can see it
+ with (root/"fake-crash.log").open("a") as out:out.write("".join(traceback.format_exception(kind,value,trace)))
+sys.excepthook=crash_hook
 action=sys.argv[1]
+if action=="warmup":sys.exit(0)
 program=sys.argv[2]
 original_argv=sys.argv[3:]
 pm_actions={"package-info","package-path","install-apk","rollback-apk","grant-language"}
 is_pm=action in pm_actions
 with (root/"program-invocations.jsonl").open("a") as out:
  out.write(json.dumps({"action":action,"program":program,"argv":original_argv})+"\n")
+def refuse(code,why):
+ with (root/"fake-refusals.log").open("a") as out:out.write(json.dumps({"code":code,"why":why,"action":action,"program":program,"argv":original_argv})+"\n")
+ sys.exit(code)
 if is_pm:
- if program!="/system/bin/app_process" or original_argv[:3]!=["/system/bin/app_process","/system/bin","com.android.commands.pm.Pm"]:sys.exit(96)
+ if program!="/system/bin/app_process" or original_argv[:3]!=["/system/bin/app_process","/system/bin","com.android.commands.pm.Pm"]:refuse(96,"pm program/argv")
  semantic=original_argv[3:]
 else:
  known={"set-timezone":"/system/bin/service","install-module":"/sbin/magisk",
@@ -157,7 +165,7 @@ else:
         "vector-state":"/system/bin/sqlite3","vector-backup":"/system/bin/sqlite3",
         "vector-sync":"/system/bin/sqlite3","vector-restore":"/system/bin/sqlite3",
         "guard-vector-disable":"/system/bin/sqlite3"}
- if program!=known.get(action) or not original_argv or original_argv[0]!=program:sys.exit(96)
+ if program!=known.get(action) or not original_argv or original_argv[0]!=program:refuse(96,"program/argv0")
  semantic=original_argv[1:]
 expected_env={"PATH":"/system/bin:/system/xbin:/data/adb/magisk","LANG":"C","ANDROID_ROOT":"/system","ANDROID_DATA":"/data"}
 if is_pm:expected_env["CLASSPATH"]="/system/framework/pm.jar"
@@ -170,7 +178,7 @@ if sys.platform=="darwin":runtime_env.add("__CF_USER_TEXT_ENCODING")
 unexpected_env=sorted(set(os.environ)-set(expected_env)-runtime_env)
 with (root/"child-environments.jsonl").open("a") as out:
  out.write(json.dumps({"action":action,"fixed":fixed_env,"unexpected":unexpected_env,"no_site":bool(sys.flags.no_site)})+"\n")
-if fixed_env!=expected_env or unexpected_env:sys.exit(97)
+if fixed_env!=expected_env or unexpected_env:refuse(97,{"fixed":fixed_env,"unexpected":unexpected_env})
 # Preserve every existing assertion on the actual PM subcommand/flags/package
 # after checking the real executable, Java prefix and dedicated classpath.
 sys.argv=[sys.argv[0],action]+semantic
@@ -227,12 +235,19 @@ if action=="set-timezone":
  (root/"host-timezone").write_text(value)
 ''')
         self.executor.chmod(0o700)
+        # A freshly written executable can cost macOS a security scan on its first run, which on a busy machine is longer than the
+        # daemon's 1.8 s probe budget. Pay for it here, once, outside every timed exchange.
+        subprocess.run([str(self.executor), 'warmup', '-'], check=True, capture_output=True, stdin=subprocess.DEVNULL, timeout=60)
         self.address = str(self.home / 'socket')
         self.process = None
         self.start()
 
     def tearDown(self):
         self.stop()
+        for name in ('fake-refusals.log', 'fake-crash.log'):
+            report = self.root / name  # the fixture refused or crashed on a call: say why instead of failing blind
+            if report.exists():
+                print('FIXTURE', name, self.id(), report.read_text(), file=sys.stderr)
         self.temp.cleanup()
 
     def start(self, binary=None, override=True, sdk='27', boot=None, now=None, peer='10074', environment=None):
@@ -824,7 +839,7 @@ if action=="set-timezone":
     def test_status_sqlite_shares_the_total_real_probe_budget(self):
         self.stop()
         self.start(now=1000)
-        (self.root / 'probe-delays.json').write_text(json.dumps({'package-info': 1.05, 'vector-state': 1.05}))
+        (self.root / 'probe-delays.json').write_text(json.dumps({'package-info': 0.9, 'vector-state': 1.2}))
         began = time.monotonic()
         status = self.module_status('thinkos-immersive')
         self.assertLess(time.monotonic() - began, 2.5)
@@ -927,6 +942,84 @@ if action=="set-timezone":
         self.assertEqual(self.request('SET_TIMEZONE Etc/UTC'), 'ERR denied')
         self.assertEqual(self.request('GRANT_LANGUAGE'), 'ERR denied')
         self.assertEqual(self.executions(), [])
+
+    def update_the_updater(self, binary=b'guard-binary-v2', link=False):
+        """A transaction that replaces thinkos-updater itself, up to the moment HEALTHY is answered."""
+        files = self.signed(module='thinkos-updater', code=2)
+        self.assertEqual(self.request('BEGIN'), 'OK')
+        self.assertEqual(self.request('STAGE', files), 'OK')
+        self.activate_boot(module='thinkos-updater', code=2, boot='updater-boot')
+        bin_dir = self.modules / 'thinkos-updater/bin'
+        bin_dir.mkdir(exist_ok=True)
+        target = bin_dir / 'updaterd'
+        if link:
+            (self.home / 'elsewhere').write_bytes(binary)
+            target.symlink_to(self.home / 'elsewhere')
+        else:
+            target.write_bytes(binary)
+        return self.request('HEALTHY')
+
+    def settled(self, check, seconds=3):
+        """The guard files are written after the HEALTHY answer has gone out, so give them a moment."""
+        end = time.monotonic() + seconds
+        while time.monotonic() < end:
+            if check():
+                return True
+            time.sleep(0.02)
+        return check()
+
+    def seed_guard(self, **slots):
+        (self.root / 'guard').mkdir(mode=0o700, exist_ok=True)
+        for slot, content in slots.items():
+            (self.root / 'guard' / slot).mkdir(mode=0o700)
+            (self.root / 'guard' / slot / 'updater-guard').write_bytes(content)
+
+    def test_a_healthy_self_update_promotes_the_running_updater_to_the_external_guard(self):
+        self.assertEqual(self.update_the_updater(b'guard-binary-v2'), 'OK')
+        current = self.root / 'guard/current/updater-guard'
+        self.assertTrue(self.settled(current.exists))
+        self.assertEqual(current.read_bytes(), b'guard-binary-v2')
+        self.assertEqual(current.stat().st_mode & 0o777, 0o755)
+        self.assertFalse((self.root / 'guard/previous').exists())
+        self.assertFalse((self.root / 'guard/next').exists())
+
+    def test_the_old_current_guard_becomes_previous_and_an_older_one_is_dropped(self):
+        self.seed_guard(current=b'guard-binary-v1', previous=b'guard-binary-v0')
+        self.assertEqual(self.update_the_updater(b'guard-binary-v2'), 'OK')
+        self.assertTrue(self.settled(lambda: (self.root / 'guard/current/updater-guard').read_bytes() == b'guard-binary-v2'))
+        self.assertEqual((self.root / 'guard/previous/updater-guard').read_bytes(), b'guard-binary-v1')
+        self.assertFalse((self.root / 'guard/next').exists())
+
+    def test_another_modules_update_leaves_the_external_guard_alone(self):
+        self.guard_policy()
+        legacy = self.root / 'guard/updater-guard'
+        legacy.write_bytes(b'owner-installed')
+        self.seed_guard(current=b'guard-binary-v1')
+        self.assertEqual(self.request('BEGIN'), 'OK')
+        self.assertEqual(self.request('STAGE', self.signed()), 'OK')
+        self.activate_boot()
+        self.assertEqual(self.request('HEALTHY'), 'OK')
+        time.sleep(0.3)
+        self.assertEqual((self.root / 'guard/current/updater-guard').read_bytes(), b'guard-binary-v1')
+        self.assertFalse((self.root / 'guard/previous').exists())
+        self.assertEqual(legacy.read_bytes(), b'owner-installed')
+        self.assertEqual((self.root / 'guard/policy').read_text().splitlines()[0], 'thinkos-guard-policy 1')
+
+    def test_a_failed_promotion_never_fails_the_update_or_disturbs_the_working_guard(self):
+        self.seed_guard(current=b'guard-binary-v1')
+        self.assertEqual(self.update_the_updater(b'must-not-be-copied', link=True), 'OK')
+        self.assertEqual(self.module_status('thinkos-updater')['floor'], 2)
+        time.sleep(0.3)
+        self.assertEqual((self.root / 'guard/current/updater-guard').read_bytes(), b'guard-binary-v1')
+        self.assertFalse((self.root / 'guard/previous').exists())
+        self.assertFalse((self.root / 'guard/next').exists())
+
+    def test_an_oversized_updater_file_is_not_promoted(self):
+        self.seed_guard(current=b'guard-binary-v1')
+        self.assertEqual(self.update_the_updater(b'x' * (4 * 1024 * 1024 + 1)), 'OK')
+        time.sleep(0.5)
+        self.assertEqual((self.root / 'guard/current/updater-guard').read_bytes(), b'guard-binary-v1')
+        self.assertFalse((self.root / 'guard/next').exists())
 
     def test_guard_requires_private_policy_and_root_peer(self):
         self.assertEqual(self.request('BEGIN'), 'OK')

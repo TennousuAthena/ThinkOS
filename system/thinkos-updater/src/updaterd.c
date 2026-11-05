@@ -46,6 +46,7 @@ static const unsigned char up_system_keys[1][64] = {{0}};
 #define FILES_MAX 12000
 #define COPY_MAX (128ULL * 1024 * 1024)
 #define APK_MAX (64ULL * 1024 * 1024)
+#define GUARD_MAX (4ULL * 1024 * 1024)
 #define PACKAGE_MAX (16ULL * 1024 * 1024)
 #define META_MAX (64ULL * 1024)
 #define SIG_MAX 1024
@@ -1098,6 +1099,38 @@ static const char *healthy_request(void) {
     if (save_state()) return "ERR io";
     return "OK";
 }
+/* The external recovery guard follows module OTA without ever being a file a bad module can break. When a transaction that replaced this
+ * updater has just proven healthy (new boot, active module, durable success already answered), the running updater's own file from the
+ * module directory becomes the guard's current copy and the old current copy becomes previous. The boot launchers try current, then
+ * previous (system/thinkos-updater/guard). Best effort: the update has already succeeded, so a failure only leaves the old guard
+ * in place, and a half-finished swap leaves a usable copy because current and previous are always whole directories. */
+static int guard_promote(void) {
+    if (!(journal.changed & 1u)) return 0;          /* index 0 is thinkos-updater */
+    int guard = make_dir_at(root_fd, "guard");
+    if (guard < 0) return -1;
+    int rc = -1, bin = -1, source = -1, next = -1;
+    char path[PATH_MAX];
+    if (snprintf(path, sizeof(path), "%s/thinkos-updater/bin", modules_path) >= (int)sizeof(path)) goto out;
+    bin = open_owned_dir(path);
+    if (bin < 0) goto out;
+    source = openat(bin, "updaterd", O_RDONLY | O_CLOEXEC | O_NOFOLLOW);
+    if (source < 0) goto out;
+    (void)remove_tree(guard, "next", 0);
+    next = make_dir_at(guard, "next");
+    if (next < 0 || copy_fd(source, next, "updater-guard", GUARD_MAX) || fchmodat(next, "updater-guard", 0755, 0) || fsync(next)) goto out;
+    (void)remove_tree(guard, "previous", 0);
+    struct stat existing;
+    if (!fstatat(guard, "current", &existing, AT_SYMLINK_NOFOLLOW) && renameat(guard, "current", guard, "previous")) goto out;
+    if (renameat(guard, "next", guard, "current") || fsync(guard)) goto out;
+    rc = 0;
+out:
+    if (next >= 0) close(next);
+    if (source >= 0) close(source);
+    if (bin >= 0) close(bin);
+    if (rc) (void)remove_tree(guard, "next", 0);
+    close(guard);
+    return rc;
+}
 static void status(int fd) {
     char out[3072]; int used = snprintf(out, sizeof(out), "OK {\"protocol\":1,\"keys\":%u,\"transaction\":%s,\"id\":\"%s\",\"phase\":%u,\"result\":%u,\"rollback_attempted\":%s,\"modules\":[", (unsigned)UP_SYSTEM_KEY_COUNT, journal.active ? "true" : "false", journal.transaction, journal.phase, journal.result, journal.rollback_attempted ? "true" : "false");
     uint64_t deadline = probe_deadline();
@@ -1133,7 +1166,7 @@ static void serve(int fd) {
         const char *result = healthy_request(); answer(fd, result);
         /* Reply within the shared probe budget; large private backup cleanup is
          * allowed only after the durable success has already reached the client. */
-        if (!strcmp(result, "OK")) { (void)remove_tree(root_fd, "transaction", 0); (void)fsync(root_fd); }
+        if (!strcmp(result, "OK")) { (void)remove_tree(root_fd, "transaction", 0); (void)fsync(root_fd); (void)guard_promote(); }
     }
     close_request(&r);
     close(lock);

@@ -7,12 +7,15 @@ OUT=build
 HOST=false
 DEVICE_TEST=false
 KEYS_HEADER=
+POLICY_ARGS=()
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --host) HOST=true ;;
     --device-test) DEVICE_TEST=true ;;
     --keys-header) shift; KEYS_HEADER=${1:?Missing public keys header} ;;
-    *) echo "usage: $0 [--host|--device-test] [--keys-header /owner/public/updater_keys.h]" >&2; exit 2 ;;
+    --guard-health-s) shift; POLICY_ARGS+=(--health-s "${1:?Missing seconds}") ;;
+    --guard-poll-s) shift; POLICY_ARGS+=(--poll-s "${1:?Missing seconds}") ;;
+    *) echo "usage: $0 [--host|--device-test] [--keys-header /owner/public/updater_keys.h] [--guard-health-s N] [--guard-poll-s N]" >&2; exit 2 ;;
   esac
   shift
 done
@@ -46,7 +49,10 @@ fi
 STAGE=$(mktemp -d "${TMPDIR:-/tmp}/thinkos-updater.XXXXXX")
 trap 'rm -rf "$STAGE"' EXIT
 cp -R "$MODULE/META-INF" "$MODULE/module.prop" "$MODULE/customize.sh" "$MODULE/service.sh" "$MODULE/sepolicy.rule" "$STAGE/"
-mkdir -p "$STAGE/bin" "$STAGE/licenses"
+mkdir -p "$STAGE/bin" "$STAGE/licenses" "$STAGE/guard"
+cp "$MODULE/guard/post-fs-data.sh" "$MODULE/guard/service.sh" "$STAGE/guard/"
+# The guard's policy comes from the same settings schema as the app's (defaults unless overridden above); the installer places it once.
+python3 -I gen_guard_policy.py --output "$STAGE/guard/policy" "${POLICY_ARGS[@]+"${POLICY_ARGS[@]}"}" >/dev/null
 "$CC_ANDROID" "${ARGS[@]}" -o "$STAGE/bin/updaterd" "${SOURCES[@]}"
 "$BIN/llvm-strip" "$STAGE/bin/updaterd"
 cp "$MODULE/vendor/micro-ecc/LICENSE.txt" "$STAGE/licenses/micro-ecc.txt"
@@ -54,7 +60,7 @@ cp "$MODULE/vendor/sha-2/LICENSE.md" "$STAGE/licenses/sha-2.md"
 for DOCUMENT in "$MODULE/vendor/ORIGIN.md" "$MODULE/vendor/sources.lock.json"; do
   if [ -f "$DOCUMENT" ]; then cp "$DOCUMENT" "$STAGE/licenses/"; fi
 done
-chmod 755 "$STAGE/bin/updaterd" "$STAGE/service.sh" "$STAGE/customize.sh" "$STAGE/META-INF/com/google/android/update-binary"
+chmod 755 "$STAGE/bin/updaterd" "$STAGE/service.sh" "$STAGE/customize.sh" "$STAGE/guard/post-fs-data.sh" "$STAGE/guard/service.sh" "$STAGE/META-INF/com/google/android/update-binary"
 VERSION=$(sed -n 's/^version=//p' "$MODULE/module.prop")
 [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+$ ]] || { echo "Invalid module version" >&2; exit 1; }
 ZIP="$PWD/$OUT/$MODULE-$VERSION.zip"
