@@ -10,10 +10,17 @@ internal sealed class ImageSource {
     data class Asset(val path: String) : ImageSource()
     data class Local(val path: String) : ImageSource()
     data class Remote(val url: String) : ImageSource()
+    data class AppIcon(val packageName: String) : ImageSource()
 
     companion object {
         fun parse(src: String, permissions: Set<String>): ImageSource {
             require(src.isNotBlank() && src.length <= 2048 && src.none { it.code < 32 || it.code == 127 }) { "Invalid image source" }
+            if (src.startsWith("app:")) {
+                require("system.apps" in permissions) { "system.apps permission required for app icons" }
+                val name = src.removePrefix("app:")
+                require(moe.kiwi.thinkos.apps.AppCatalog.packageName(name)) { "Invalid app package" }
+                return AppIcon(name)
+            }
             if (src.startsWith("asset:")) {
                 val path = src.removePrefix("asset:")
                 require(path.startsWith("assets/") && '\\' !in path && path.split('/').none { it.isEmpty() || it == "." || it == ".." }) { "Image asset must be inside this plugin's assets/" }

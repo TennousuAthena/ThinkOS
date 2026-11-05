@@ -35,7 +35,7 @@ tos.on=function(name,fn) assert(type(name)=="string" and type(fn)=="function"); 
 tos.state={set=function(t) assert(type(t)=="table" or type(t)=="string"); host("state.set",t) end,get=function(path) return host("state.get",path or "") end}
 tos.store={get=function(k) return host("store.get",k) end,set=function(k,v) return host("store.set",k,v) end}
 tos.time={now=function() return host("time.now") end,format=function(ms,fmt,tz) if ms==nil then return "—" end; return host("time.format",ms,fmt or "@time",tz) end}
-tos.tz={home=function() return host("tz.home") end,info=function(id) return host("tz.info",id) end}
+tos.tz={home=function() return host("tz.home") end,info=function(id) return host("tz.info",id) end,zones=function(region) return host("tz.zones",region) end}
 tos.location={get=function() return host("location.get") end}
 local function astro(method,ms,place) local value,err=await(method,ms,place); if err then error(err) end; return value end
 tos.astro={sun=function(ms,place) return astro("astro.sun",ms,place) end,moon=function(ms,place) return astro("astro.moon",ms,place) end,seasons=function(year) return host("astro.seasons",year) end}
@@ -49,7 +49,8 @@ local function timer(seconds,fn,repeating,opts)
 end
 tos.timer={after=function(s,fn) return timer(s,fn,false) end,every=function(s,fn,opts) return timer(s,fn,true,opts) end,cancel=function(id) timers[id]=nil; host("timer.cancel",id) end,sleep=function(s) return await("sleep",s) end}
 tos.http={get=function(url,opts) return await("http.get",url,opts) end,post=function(url,body,opts) return await("http.post",url,body,opts) end}
-tos.media={load=function(queue,opts) return await("media.load",queue,opts) end}
+tos.net={resolve=function(hostname) return await("net.resolve",hostname) end}
+tos.media={load=function(queue,opts) return await("media.load",queue,opts) end,probe=function(url,opts) return await("media.probe",url,opts) end}
 for _,method in ipairs({'play','pause','toggle','next','prev','seek','volume','stop','shuffle','repeat','jump','live','audioTrack','textTrack'}) do
   tos.media[method]=function(...) return await("media."..method,...) end
 end
@@ -61,7 +62,50 @@ tos.settings={
   get=function(scope) return host("settings.get",scope) end,
   set=function(scope,key,value) local r=host("settings.set",scope,key,value); if r.error then return nil,r.error end; return r.value end,
   setMany=function(scope,values) local r=host("settings.setMany",scope,values); if r.error then return nil,r.error end; return r.value end,
-  reset=function(scope,key) return host("settings.reset",scope,key) end,
+  reset=function(scope,key) local r=host("settings.reset",scope,key); if r and r.error then return nil,r.error end end,
+  open=function(scope) assert(type(scope)=="string"); host("settings.open",scope) end,
+  about=function() return host("settings.about") end,
+}
+tos.device={
+  get=function() return host("device.get") end,
+  mode=function() return host("device.mode") end,
+  setMode=function(value) assert(type(value)=="string"); return await("device.setMode",value) end,
+  wifi=function(on) host("device.wifi",on==true) end,
+  mute=function(on) host("device.mute",on==true) end,
+  openAndroid=function(target) assert(type(target)=="string"); host("device.openAndroid",target) end,
+  canSetLocale=function() return await("device.canSetLocale") end,
+  setLocale=function(tag) assert(type(tag)=="string"); return await("device.setLocale",tag) end,
+  canSetTimeZone=function() return await("device.canSetTimeZone") end,
+  setTimeZone=function(id) assert(type(id)=="string"); return await("device.setTimeZone",id) end,
+}
+tos.onboarding={
+  status=function() return host("onboarding.status") end,
+  open=function(mode) return host("onboarding.open",mode or "restart") end,
+  practice=function(name,text) return host("onboarding.practice",name,text) end,
+  stop=function() return host("onboarding.stop") end,
+}
+tos.panel={close=function() host("panel.close") end}
+tos.back={intercept=function(on) host("back.intercept",on==true) end}
+tos.cast={status=function() return host("cast.status") end}
+tos.update={
+  status=function() return host("update.status") end,
+  open=function() return await("update.open") end,
+  check=function() return await("update.check") end,
+  download=function() return await("update.download") end,
+  install=function() return await("update.install") end,
+}
+tos.plugins={
+  catalog=function(opts) return await("plugins.catalog",opts or {}) end,
+  installed=function() return host("plugins.installed") end,
+  open=function(id) return await("plugins.open",id) end,
+  install=function(id) return await("plugins.install",id) end,
+  update=function(id) return await("plugins.update",id) end,
+  uninstall=function(id) return await("plugins.uninstall",id) end,
+  setAuto=function(id,on) local r=host("plugins.setAuto",id,on==true); if r.error then return nil,r.error end; return r.value end,
+}
+tos.apps={
+  list=function() local text,err=await("apps.list"); if err then return nil,err end; return json.decode(text) end,
+  open=function(id) assert(type(id)=="string"); return await("apps.open",id) end,
 }
 tos.data={get=function(alias) assert(type(alias)=="string"); local r=host("data.get",alias); if r.error then return nil,r.error end; local ok,value=protected(json.decode,r.text); if not ok then return nil,"invalid" end; return value end}
 tos.command={call=function(name,args) assert(type(name)=="string"); local r=host("command.call",name,args); if r.error then return nil,r.error end; return true end}

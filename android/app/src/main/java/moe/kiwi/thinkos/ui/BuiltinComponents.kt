@@ -5,6 +5,8 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.text.TextUtils
 import android.view.Gravity
 import android.view.View
@@ -23,10 +25,14 @@ import kotlin.math.sqrt
 
 /** Fixed native components; none reads coordinates, network, files or a plugin's private channel. */
 internal object BuiltinComponents {
-    fun create(context: Context, definition: JSONObject, compact: Boolean, tap: (String, Int?) -> Unit): RenderComponent? = when (definition.optString("type")) {
+    fun create(context: Context, definition: JSONObject, compact: Boolean,
+               images: ((JSONObject) -> RenderComponent?)? = null, tap: (String, Int?) -> Unit): RenderComponent? = when (definition.optString("type")) {
         "progress" -> ProgressComponent(context, definition)
         "chart" -> ChartComponent(context, definition)
         "list" -> ListComponent(context, definition, compact, tap)
+        "grid" -> GridComponent(context, definition, images, tap)
+        "tabs" -> TabsComponent(context, definition, tap)
+        "toggle" -> DeviceComponents.createToggle(context, definition)
         "daylight" -> DaylightComponent(context, definition)
         "moon" -> MoonComponent(context, definition)
         else -> null
@@ -81,7 +87,7 @@ private class ProgressComponent(context: Context, definition: JSONObject) : Draw
     }
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        line.strokeWidth = min(6 * dp, min(width, height) / 3f)
+        line.strokeWidth = min(Stroke.TRACK * dp, min(width, height) / 3f)
         line.color = palette.divider
         if (ring) {
             val radius = ((min(width, height) - line.strokeWidth) / 2f - 4 * dp).coerceAtLeast(0f)
@@ -91,7 +97,7 @@ private class ProgressComponent(context: Context, definition: JSONObject) : Draw
                 line.color = palette.accent
                 canvas.drawArc(cx - radius, cy - radius, cx + radius, cy + radius, -90f, (it * 360).toFloat(), false, line)
             }
-            label.color = palette.primary; label.textSize = min(24 * dp, radius * .55f)
+            label.color = palette.primary; label.textSize = TextScale.BODY * resources.displayMetrics.scaledDensity
             canvas.drawText(percent, cx, cy - (label.ascent() + label.descent()) / 2, label)
         } else {
             val start = line.strokeWidth / 2; val end = (width - start).coerceAtLeast(start)
@@ -135,9 +141,7 @@ private class ChartComponent(context: Context, private val definition: JSONObjec
         super.onDraw(canvas)
         canvas.save(); canvas.translate(12 * dp, 12 * dp)
         val plotWidth = (width - 24 * dp).coerceAtLeast(0f)
-        stroke.color = palette.divider; stroke.strokeWidth = dp
-        canvas.drawLine(0f, projection.baselineY.toFloat(), plotWidth, projection.baselineY.toFloat(), stroke)
-        stroke.color = palette.accent; stroke.strokeWidth = 3 * dp
+        stroke.color = palette.accent; stroke.strokeWidth = Stroke.ICON * dp
         fill.color = palette.accent
         if (style == "bar") {
             val slot = if (values.isEmpty()) 0f else plotWidth / values.size
@@ -239,7 +243,7 @@ private class MoonComponent(context: Context, definition: JSONObject) : DrawingC
             }
             lit.close(); fill.color = palette.primary; canvas.drawPath(lit, fill)
         }
-        label.color = palette.secondary; label.textSize = min(22 * dp, height * .12f)
+        label.color = palette.secondary; label.textSize = TextScale.CAPTION * resources.displayMetrics.scaledDensity
         canvas.drawText(percent, cx, height * .93f - label.descent(), label)
     }
 }
@@ -263,13 +267,17 @@ private class ListComponent(context: Context, private val definition: JSONObject
     private val iconTemplate = template("icon")
     private val progress = ScalarBinding(rowDefinition.opt("progress"))
     private val maximum = ScalarBinding(rowDefinition.opt("max"), 1.0)
+    /** The 1-based row marked as the one in use (the track playing); 0 marks none. */
+    private val current = ScalarBinding(definition.opt("current"))
+    private var currentRow = 0
     private val rows = object : BaseAdapter() {
         override fun getCount() = items.length()
         override fun getItem(position: Int): Any = items.opt(position) ?: JSONObject.NULL
         override fun getItemId(position: Int) = position.toLong()
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             val row = (convertView as? Row) ?: Row()
-            row.bind((items.opt(position) as? JSONObject) ?: JSONObject().put("value", items.opt(position)))
+            row.bind((items.opt(position) as? JSONObject) ?: JSONObject().put("value", items.opt(position)),
+                position + 1 == currentRow)
             return row
         }
     }
@@ -281,17 +289,22 @@ private class ListComponent(context: Context, private val definition: JSONObject
     override fun bind(snapshot: JSONObject, variant: String, strings: (String) -> String?) {
         this.snapshot = snapshot; this.variant = variant; this.strings = strings
         items = ComponentData.array(definition.getString("items"), snapshot) ?: JSONArray()
+        val marked = current.number(snapshot, variant, strings)?.toInt() ?: 0
+        val moved = marked != currentRow
+        currentRow = marked
         rows.notifyDataSetChanged()
+        // The track in use scrolls into view when it changes, unless a finger is on the list.
+        if (moved && marked in 1..items.length()) post { if (!isPressed) smoothScrollToPositionFromTop(marked - 1, height / 3, 250) }
     }
     override fun colors(value: Palette) { palette = value; rows.notifyDataSetChanged() }
     private inner class Row : LinearLayout(context) {
         private val icon = IconView(context)
-        private val title = TextView(context).apply { textSize = if (compact) 17f else 20f; maxLines = 1; ellipsize = TextUtils.TruncateAt.END; includeFontPadding = false }
-        private val subtitle = TextView(context).apply { textSize = if (compact) 13f else 15f; maxLines = 1; ellipsize = TextUtils.TruncateAt.END; includeFontPadding = false }
-        private val trailing = TextView(context).apply { textSize = if (compact) 15f else 18f; maxLines = 1; includeFontPadding = false; gravity = Gravity.END }
+        private val title = TextView(context).apply { textSize = TextScale.BODY; maxLines = 1; ellipsize = TextUtils.TruncateAt.END; includeFontPadding = false }
+        private val subtitle = TextView(context).apply { textSize = TextScale.CAPTION; maxLines = 1; ellipsize = TextUtils.TruncateAt.END; includeFontPadding = false }
+        private val trailing = TextView(context).apply { textSize = TextScale.CAPTION; maxLines = 1; includeFontPadding = false; gravity = Gravity.END }
         private val mini = object : View(context) {
             var fraction: Double? = null
-            val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { strokeCap = Paint.Cap.ROUND; strokeWidth = 3 * dp }
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { strokeCap = Paint.Cap.ROUND; strokeWidth = Stroke.TRACK * dp }
             override fun onDraw(canvas: Canvas) {
                 paint.color = palette.divider; canvas.drawLine(0f, height / 2f, width.toFloat(), height / 2f, paint)
                 fraction?.let { paint.color = palette.accent; canvas.drawLine(0f, height / 2f, (width * it).toFloat(), height / 2f, paint) }
@@ -307,7 +320,10 @@ private class ListComponent(context: Context, private val definition: JSONObject
             }, LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
             addView(trailing, LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginStart = (12 * dp).toInt() })
         }
-        fun bind(item: JSONObject) {
+        private val highlight = GradientDrawable().apply { cornerRadius = (if (compact) 8 else 14) * dp }
+        private val regular = Typeface.create("sans-serif", Typeface.NORMAL)
+        private val medium = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+        fun bind(item: JSONObject, marked: Boolean) {
             title.text = titleTemplate.render(snapshot, variant, strings, item)
             subtitle.text = subtitleTemplate.render(snapshot, variant, strings, item)
             subtitle.visibility = if (subtitle.text.isEmpty()) GONE else VISIBLE
@@ -319,7 +335,11 @@ private class ListComponent(context: Context, private val definition: JSONObject
             mini.fraction = RenderGeometry.progress(progress.number(snapshot, variant, strings, item), maximum.number(snapshot, variant, strings, item))
             mini.visibility = if (rowDefinition.has("progress")) VISIBLE else GONE
             mini.invalidate()
-            title.setTextColor(palette.primary); subtitle.setTextColor(palette.secondary); trailing.setTextColor(palette.secondary)
+            title.setTextColor(if (marked) palette.accentText else palette.primary)
+            title.typeface = if (marked) medium else regular
+            subtitle.setTextColor(palette.secondary); trailing.setTextColor(palette.secondary)
+            highlight.setColor(palette.surface)
+            background = if (marked) highlight else null
         }
     }
 }

@@ -60,16 +60,24 @@ internal class EngineCastPlayer(
         }
     }
 
-    override fun load(entry: MediaEntry, autoplay: Boolean) = onMain {
-        media.load(owner, listOf(entry), MediaOptions(autoplay = autoplay))
-        shown(entry.kind)
+    override fun load(entry: MediaEntry, autoplay: Boolean) {
+        val ticket = media.playbackGeneration()
+        onMain {
+            media.requireAwake(ticket)
+            media.load(owner, listOf(entry), MediaOptions(autoplay = autoplay))
+            shown(entry.kind)
+        }
     }
 
     /** A shared screen (Miracast): the OS's own live stream, played in the engine's low-latency profile. */
-    fun loadMirror(source: MirrorSource, title: String) = onMain {
-        val entry = MediaEntry("${MirrorSource.SCHEME}://${owner.substringAfter(':')}", title = title, kind = "video", type = MediaSourceType.PROGRESSIVE, mirror = source)
-        media.load(owner, listOf(entry), MediaOptions(autoplay = true))
-        shown("video")
+    fun loadMirror(source: MirrorSource, title: String) {
+        val ticket = media.playbackGeneration()
+        onMain {
+            media.requireAwake(ticket)
+            val entry = MediaEntry("${MirrorSource.SCHEME}://${owner.substringAfter(':')}", title = title, kind = "video", type = MediaSourceType.PROGRESSIVE, mirror = source)
+            media.load(owner, listOf(entry), MediaOptions(autoplay = true))
+            shown("video")
+        }
     }
 
     private fun mine() = media.snapshot()["owner"] == owner

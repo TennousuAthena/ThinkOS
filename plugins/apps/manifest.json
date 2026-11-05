@@ -1,0 +1,36 @@
+{
+  "id": "apps",
+  "name": "@name",
+  "version": "0.1.0",
+  "api": 9,
+  "main": "main.lua",
+  "permissions": [
+    "system.apps"
+  ],
+  "pages": [
+    {
+      "id": "main",
+      "title": "@name",
+      "view": "views/main.json"
+    }
+  ],
+  "apps": [
+    {
+      "id": "apps",
+      "page": "main",
+      "title": "@name",
+      "icon": "apps",
+      "listed": false
+    }
+  ],
+  "widgets": [
+    {
+      "id": "tile",
+      "view": "views/tile.json",
+      "opens": "main"
+    }
+  ],
+  "related": [
+    "apps.android"
+  ]
+}

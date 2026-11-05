@@ -1,5 +1,6 @@
 package moe.kiwi.thinkos.ui.form
 
+import moe.kiwi.thinkos.ui.TextScale
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -19,6 +20,7 @@ import android.widget.BaseAdapter
 import android.widget.EditText
 import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
+import android.widget.LinearLayout.LayoutParams
 import android.widget.ListView
 import android.widget.TextView
 import moe.kiwi.thinkos.R
@@ -42,7 +44,7 @@ internal class TimezonePicker(
     private val onPick: (String) -> Unit,
     private val onCancel: () -> Unit,
     private val onInteraction: () -> Unit,
-) : LinearLayout(context) {
+) : PickerLayout(context) {
     private class Entry(val id: String, val city: String, val country: String, val area: String) {
         val haystack = (city + " " + country + " " + id.replace('_', ' ')).lowercase()
     }
@@ -63,15 +65,15 @@ internal class TimezonePicker(
             .sortedWith { a, b -> collator.compare(a.city, b.city) }
     }
 
-    private val back = TextView(context).apply { textSize = 28f; gravity = Gravity.CENTER; includeFontPadding = false; contentDescription = titleText }
-    private val title = TextView(context).apply { textSize = 22f; maxLines = 1; ellipsize = TextUtils.TruncateAt.END; includeFontPadding = false }
+    private val back = TextView(context).apply { textSize = TextScale.TITLE; gravity = Gravity.CENTER; includeFontPadding = false; contentDescription = titleText }
+    private val title = TextView(context).apply { textSize = TextScale.TITLE; maxLines = 1; ellipsize = TextUtils.TruncateAt.END; includeFontPadding = false }
     private val bar = LinearLayout(context).apply {
         orientation = HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
         addView(back, LayoutParams((56 * dp).toInt(), (56 * dp).toInt()))
         addView(title, LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
     }
     private val search = EditText(context).apply {
-        setSingleLine(true); textSize = 18f
+        setSingleLine(true); textSize = TextScale.BODY
         hint = context.getString(R.string.form_tz_search)
         imeOptions = EditorInfo.IME_ACTION_SEARCH
         inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
@@ -131,7 +133,7 @@ internal class TimezonePicker(
     }
 
     private fun chip(id: String) = TextView(context).apply {
-        tag = id; text = areaLabel(id); textSize = 14f; gravity = Gravity.CENTER; includeFontPadding = false
+        tag = id; text = areaLabel(id); textSize = TextScale.CAPTION; gravity = Gravity.CENTER; includeFontPadding = false
         minWidth = (48 * dp).toInt()
         setPadding((14 * dp).toInt(), 0, (14 * dp).toInt(), 0)
         setOnClickListener { area = id; search.setText(""); applyFilter(true) }
@@ -165,7 +167,6 @@ internal class TimezonePicker(
             chip.background = GradientDrawable().apply {
                 cornerRadius = 24 * dp
                 setColor(palette.surface)
-                if (active) setStroke((2 * dp).toInt(), palette.accent)
             }
             chip.setTextColor(if (active) palette.accentText else palette.secondary)
         }
@@ -185,10 +186,10 @@ internal class TimezonePicker(
     }
 
     private inner class Row : LinearLayout(context) {
-        private val city = TextView(context).apply { textSize = 18f; maxLines = 1; ellipsize = TextUtils.TruncateAt.END; includeFontPadding = false }
-        private val detail = TextView(context).apply { textSize = 14f; maxLines = 1; ellipsize = TextUtils.TruncateAt.END; includeFontPadding = false }
-        private val offset = TextView(context).apply { textSize = 14f; includeFontPadding = false; gravity = Gravity.END }
-        private val check = TextView(context).apply { textSize = 18f; includeFontPadding = false; text = "✓" }
+        private val city = TextView(context).apply { textSize = TextScale.BODY; maxLines = 1; ellipsize = TextUtils.TruncateAt.END; includeFontPadding = false }
+        private val detail = TextView(context).apply { textSize = TextScale.CAPTION; maxLines = 1; ellipsize = TextUtils.TruncateAt.END; includeFontPadding = false }
+        private val offset = TextView(context).apply { textSize = TextScale.CAPTION; includeFontPadding = false; gravity = Gravity.END }
+        private val check = TextView(context).apply { textSize = TextScale.BODY; includeFontPadding = false; text = "✓" }
         private val names = LinearLayout(context).apply {
             orientation = VERTICAL
             addView(city); addView(detail, LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = (2 * dp).toInt() })
@@ -216,7 +217,7 @@ internal class TimezonePicker(
             val type = Zones.clock(entry.id).typeAt(System.currentTimeMillis())
             city.text = entry.city
             detail.visibility = VISIBLE
-            detail.text = listOf(entry.country, if (entry.id.startsWith("Etc/")) "" else entry.id.replace('_', ' ')).filter { it.isNotEmpty() }.joinToString(" · ")
+            detail.text = listOf(entry.country, if (entry.id.startsWith("Etc/")) "" else entry.id.replace('_', ' ')).filter { it.isNotEmpty() }.joinToString("  ")
             offset.text = ZoneFormat.offsetLabel(type.offset) + if (type.dst) "  " + context.getString(R.string.form_tz_dst) else ""
             val isSelected = entry.id == selected
             check.visibility = if (isSelected) VISIBLE else INVISIBLE

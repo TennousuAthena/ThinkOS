@@ -5,6 +5,12 @@ import kotlin.math.floor
 
 /** Integer geometry shared by native renderers; independent of Android so edge cases run on JVM. */
 object RenderGeometry {
+    /** Native app grid: 96dp target cells, at least three columns even in compact slots. */
+    fun gridColumns(width: Int, density: Float): Int {
+        require(density.isFinite() && density > 0f) { "density must be positive and finite" }
+        return maxOf(3, floor(width.coerceAtLeast(0) / density / 96.0).toInt())
+    }
+
     /**
      * The fixed tile grid: 8x6 landscape, 6x8 portrait. The cell size is limited by the short axis, and the
      * grid is anchored to the far end of the long axis so the remainder becomes a title rail (left in LTR

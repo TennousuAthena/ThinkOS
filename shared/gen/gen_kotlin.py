@@ -2,7 +2,7 @@
 """Generate Android plugin contracts and schema validator; no third-party packages."""
 import json
 from pathlib import Path
-from schema_tools import SCHEMAS, resolve
+from schema_tools import SCHEMAS, SYSTEM_SETTINGS, resolve, validate_system_settings
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'android/app/src/main/java/moe/kiwi/thinkos/plugin/PluginSchema.kt'
 
@@ -60,8 +60,14 @@ def main():
     template=(Path(__file__).parent/'kotlin_validator.kt.template').read_text()
     api_vocabulary = SCHEMAS['layouts.json']['x-thinkos-api']
     api_json = json.dumps(json.dumps(api_vocabulary, ensure_ascii=False, separators=(',', ':')), ensure_ascii=False)
-    parts.append(template.replace('@@SCHEMAS@@', ',\n'.join(entries)).replace('@@API@@', str(api_vocabulary['current'])).replace('@@RENDER_APIS@@', api_json))
+    validate_system_settings(SYSTEM_SETTINGS)
+    related_keys = ', '.join(json.dumps(key) for key, field in SYSTEM_SETTINGS['fields'].items()
+                             if not field.get('hidden', False) and field.get('level') != 'hidden' and not field.get('secret', False))
+    parts.append(template.replace('@@SCHEMAS@@', ',\n'.join(entries)).replace('@@API@@', str(api_vocabulary['current'])).replace('@@RENDER_APIS@@', api_json).replace('@@RELATED_KEYS@@', related_keys))
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text('\n'.join(parts))
     print(OUT.relative_to(ROOT))
+    from update_contracts import generate_kotlin
+    generate_kotlin()
+    generate_kotlin(ROOT / 'shared/schema/registry', 'RegistryModels', 'RegistryModels.kt')
 if __name__ == '__main__': main()

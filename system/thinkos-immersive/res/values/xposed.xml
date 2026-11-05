@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The only scope this module needs: the system framework, which is the package `android`. -->
+    <string-array name="xposedscope">
+        <item>android</item>
+    </string-array>
+</resources>

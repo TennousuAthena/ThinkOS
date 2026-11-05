@@ -16,9 +16,89 @@ sys.path.insert(0, str(ROOT / 'shared' / 'gen'))
 import schema_tools as tools
 
 class PluginPackageTests(unittest.TestCase):
+    def test_time_setting_values_and_api_are_fixed(self):
+        field = {'type': 'time', 'label': '时刻', 'default': '23:55'}
+        manifest = {'id': 'clock-test', 'name': 'Clock', 'version': '0.1.0', 'api': 10, 'settings': {'at': field}}
+        tools.validate_manifest(manifest)
+        for api in range(1, 10):
+            with self.assertRaises(tools.ValidationError):
+                tools.validate_manifest({**manifest, 'api': api})
+        for bad in ('7:00', '24:00', '12:60', '12:03', '12:00:00', '１２:００', '12:00\n', True, 720):
+            with self.assertRaises(tools.ValidationError):
+                tools.validate_setting('at', {**field, 'default': bad})
+        for key in ('step', 'style', 'maxLength'):
+            with self.assertRaises(tools.ValidationError):
+                tools.validate_setting('at', {**field, key: 5})
+        api = tools.SCHEMAS['layouts.json']['x-thinkos-api']
+        self.assertEqual(10, api['settingTypes']['time'])
+        self.assertEqual(10, api['formFields']['time'])
+        self.assertEqual(10, api['runtimeMethods']['device.mode'])
+        self.assertEqual(10, api['runtimeMethods']['device.setMode'])
+        self.assertEqual(10, api['runtimeEvents']['mode'])
+
+    def test_mode_window_contract_allows_midnight_and_forbids_equal_defaults(self):
+        doc = copy.deepcopy(tools.SYSTEM_SETTINGS)
+        tools.validate_system_settings(doc)
+        doc['fields']['sleep.start']['default'] = '08:00'
+        doc['fields']['sleep.end']['default'] = '17:00'
+        tools.validate_system_settings(doc)
+        doc['fields']['sleep.end']['default'] = '08:00'
+        with self.assertRaises(tools.ValidationError):
+            tools.validate_system_settings(doc)
+    def test_form_descriptor_icons_are_fixed_vector_names_without_styles(self):
+        definitions = tools.SCHEMAS['layouts.json']['$defs']
+        link = {'key': 'section:display', 'type': 'link', 'label': '显示', 'icon': 'monitor'}
+        nav = {'items': [{'id': 'display', 'label': '显示', 'icon': 'monitor'}], 'current': 'display'}
+        tools.validate(link, definitions['formLink'], 'layouts.json')
+        tools.validate(nav, definitions['formNav'], 'layouts.json')
+        for value in ('', '../monitor', 'MONITOR', 'missing-vector', 7, None):
+            with self.subTest(value=value), self.assertRaises(tools.ValidationError):
+                tools.validate(dict(link, icon=value), definitions['formLink'], 'layouts.json')
+            with self.subTest(nav=value), self.assertRaises(tools.ValidationError):
+                tools.validate({'items': [dict(nav['items'][0], icon=value)]}, definitions['formNav'], 'layouts.json')
+        with self.assertRaises(tools.ValidationError):
+            tools.validate(dict(link, size=48), definitions['formLink'], 'layouts.json')
+        self.assertEqual(10, tools.SCHEMAS['layouts.json']['x-thinkos-api']['formFields']['link.icon'])
+        self.assertEqual(10, tools.SCHEMAS['layouts.json']['x-thinkos-api']['formFields']['nav.items.icon'])
+
+    def test_system_update_permission_requires_api_ten(self):
+        value={'id':'update-probe','name':'Updates','version':'0.1.0','api':10,'permissions':['system.update']}
+        tools.validate_manifest(value)
+        for api in range(1,10):
+            with self.subTest(api=api), self.assertRaises(tools.ValidationError):
+                tools.validate_manifest(dict(value,api=api))
+        self.assertEqual(10,tools.SCHEMAS['layouts.json']['x-thinkos-api']['runtimeMethods']['update.status'])
+        self.assertEqual(10,tools.SCHEMAS['layouts.json']['x-thinkos-api']['runtimeEvents']['update'])
+
+    def test_launcher_role_requires_api_nine_and_system_apps(self):
+        value = {'id': 'launcher-test', 'name': 'Launcher', 'version': '1.0.0', 'api': 9,
+                 'permissions': ['system.apps'], 'pages': [{'id': 'main', 'title': 'Apps', 'view': 'views/main.json', 'roles': ['launcher']}]}
+        tools.validate_manifest(value)
+        with self.assertRaises(tools.ValidationError): tools.validate_manifest(dict(value, api=8))
+        with self.assertRaises(tools.ValidationError): tools.validate_manifest(dict(value, permissions=[]))
+    def test_setting_prompts_are_api_nine_and_legacy_help_stays_compatible(self):
+        field = {'type': 'bool', 'label': 'Cast', 'default': False, 'warn': 'Anyone nearby can cast'}
+        manifest = {'id': 'prompt-probe', 'name': 'Prompts', 'version': '0.1.0', 'api': 9, 'settings': {'cast': field}}
+        tools.validate_manifest(manifest)
+        manifest['api'] = 8
+        with self.assertRaises(packages.ValidationError): tools.validate_manifest(manifest)
+        manifest.update(api=1, settings={'cast': {'type': 'bool', 'label': 'Cast', 'default': False, 'help': 'Legacy help'}})
+        tools.validate_manifest(manifest)
+
+    def test_builtin_settings_groups_are_contiguous(self):
+        for path in (ROOT / 'plugins').glob('*/manifest.json'):
+            fields = json.loads(path.read_text()).get('settings', {})
+            previous, finished = None, set()
+            for key, field in fields.items():
+                group = field.get('group')
+                if group != previous:
+                    if previous is not None: finished.add(previous)
+                    self.assertNotIn(group, finished, str(path) + ':' + key)
+                    previous = group
+
     def test_api_three_gallery_exposes_bing_and_local_through_shared_interfaces(self):
         manifest, _ = packages.validate_plugin(ROOT / 'plugins/gallery')
-        self.assertEqual(6, manifest['api'])
+        self.assertEqual(9, manifest['api'])
         self.assertEqual(['library', 'network'], manifest['permissions'])
         self.assertEqual('bing', manifest['settings']['source']['default'])
         self.assertEqual({'bing', 'local', 'all'}, {x['value'] for x in manifest['settings']['source']['choices']})
@@ -72,6 +152,30 @@ class PluginPackageTests(unittest.TestCase):
         ]:
             with self.assertRaises(tools.ValidationError):
                 tools.validate_view({'layout': 'focus', 'slots': {'hero': component}}, 2)
+
+    def test_form_navigation_is_optional_and_api_nine_only(self):
+        view = {'layout': 'form', 'slots': {'body': {'type': 'form', 'path': 'fields'}}}
+        tools.validate_view(view, 1)
+        view['slots']['body']['nav'] = 'settingsNav'
+        tools.validate_view(view, 9)
+        for api in range(1, 9):
+            with self.assertRaises(tools.ValidationError): tools.validate_view(view, api)
+        for bad in ({}, 'bad path', 3):
+            view['slots']['body']['nav'] = bad
+            with self.assertRaises(tools.ValidationError): tools.validate_view(view, 9)
+
+    def test_withdrawn_list_fields_are_rejected_and_grid_keeps_api_eight(self):
+        for field in ('image', 'group'):
+            view = {'layout':'focus', 'slots':{'hero':{'type':'list', 'items':'items', 'item':{'title':'{{.title}}', field:'{{.'+field+'}}'}}}}
+            for api in range(2, 10):
+                with self.assertRaises(tools.ValidationError): tools.validate_view(view, api)
+        grid = {'layout':'focus','slots':{'hero':{'type':'grid','items':'items','item':{'title':'{{.title}}','image':'{{.image}}','icon':'apps'}}}}
+        tools.validate_view(grid, 8)
+        tools.validate_view(grid, 9)
+        with self.assertRaises(tools.ValidationError): tools.validate_view(grid, 7)
+        manifest, _ = packages.validate_plugin(ROOT/'plugins/apps')
+        self.assertEqual(['system.apps'], manifest['permissions'])
+        self.assertFalse(manifest['apps'][0]['listed'])
     def test_tile_packer_uses_first_fit_in_both_orientations(self):
         # 8x6 landscape holds two large tiles side by side; 6x8 portrait stacks them and has no room for a wide one.
         mixed = ["large", "large", "wide", "wide"]
@@ -111,6 +215,16 @@ class PluginPackageTests(unittest.TestCase):
         self.root = Path(self.temp.name)
         self.plugin = self.root / 'plugin'
         shutil.copytree(ROOT / 'plugins/clock', self.plugin)
+        # Keep API-gating fixtures at their original API 6 baseline, independent of
+        # new metadata added to the factory clock. Factory packages are tested separately.
+        path = self.plugin / 'manifest.json'
+        manifest = json.loads(path.read_text())
+        manifest['api'] = 6
+        manifest.pop('related', None)
+        for field in manifest.get('settings', {}).values():
+            level = field.pop('level', 'normal')
+            if level == 'hidden': field['hidden'] = True
+        path.write_text(json.dumps(manifest, indent=2))
 
     def manifest(self, edit):
         path = self.plugin / 'manifest.json'
@@ -272,13 +386,54 @@ class PluginPackageTests(unittest.TestCase):
         path.write_text(json.dumps(view))
         with self.assertRaises(packages.ValidationError): packages.validate_plugin(self.plugin)
 
-    def test_player_plugin_is_a_valid_api_seven_package(self):
+    def test_music_player_view_needs_api_eight_and_the_media_permission(self):
+        path = self.plugin / 'views/face.json'
+        original = json.loads(path.read_text())
+        for component in ({'type': 'nowplaying', 'style': 'full'}, {'type': 'nowplaying', 'style': 'bar', 'idle': '{{footer}}'}):
+            view = copy.deepcopy(original)
+            view['slots']['hero'] = component
+            path.write_text(json.dumps(view))
+            self.manifest(lambda data: data.update(api=7, permissions=['media']))
+            with self.assertRaises(packages.ValidationError): packages.validate_plugin(self.plugin)    # API 8 vocabulary
+            self.manifest(lambda data: data.update(api=8, permissions=[]))
+            with self.assertRaises(packages.ValidationError): packages.validate_plugin(self.plugin)    # no media grant
+            self.manifest(lambda data: data.update(api=8, permissions=['media']))
+            packages.validate_plugin(self.plugin)
+        view = copy.deepcopy(original)
+        view['slots']['hero'] = {'type': 'nowplaying', 'style': 'huge'}
+        path.write_text(json.dumps(view))
+        with self.assertRaises(packages.ValidationError): packages.validate_plugin(self.plugin)
+
+    def test_television_view_needs_api_eight_and_the_media_permission(self):
+        path = self.plugin / 'views/face.json'
+        original = json.loads(path.read_text())
+        view = copy.deepcopy(original)
+        view['slots']['hero'] = {'type': 'tv', 'channel': '{{tv}}', 'tap': 'tv', 'fit': 'cover'}
+        path.write_text(json.dumps(view))
+        self.manifest(lambda data: data.update(api=7, permissions=['media']))
+        with self.assertRaises(packages.ValidationError): packages.validate_plugin(self.plugin)    # API 8 vocabulary
+        self.manifest(lambda data: data.update(api=8, permissions=[]))
+        with self.assertRaises(packages.ValidationError): packages.validate_plugin(self.plugin)    # no media grant
+        self.manifest(lambda data: data.update(api=8, permissions=['media']))
+        packages.validate_plugin(self.plugin)
+        for bad in ({'type': 'tv', 'fit': 'stretch'}, {'type': 'tv', 'style': 'full'}, {'type': 'tv', 'channel': 3}):
+            view['slots']['hero'] = bad
+            path.write_text(json.dumps(view))
+            with self.assertRaises(packages.ValidationError): packages.validate_plugin(self.plugin)
+
+    def test_iptv_plugin_is_a_valid_api_nine_package(self):
+        manifest, _ = packages.validate_plugin(ROOT / 'plugins/iptv')
+        self.assertEqual(9, manifest['api'])
+        self.assertEqual({'media', 'network'}, set(manifest['permissions']))
+        self.assertTrue(any(page.get('live') for page in manifest['pages']))
+
+    def test_player_plugin_is_a_valid_api_nine_package(self):
         manifest, _ = packages.validate_plugin(ROOT / 'plugins/player')
-        self.assertEqual(7, manifest['api'])
+        self.assertEqual(9, manifest['api'])
         self.assertIn('media', manifest['permissions'])
 
     def test_new_api_is_rejected(self):
-        self.manifest(lambda data: data.update(api=8))
+        self.manifest(lambda data: data.update(api=tools.SCHEMAS['layouts.json']['x-thinkos-api']['current'] + 1))
         with self.assertRaises(packages.ValidationError): packages.validate_plugin(self.plugin)
 
     def test_traversal_reference_is_rejected(self):
@@ -307,8 +462,9 @@ class PluginPackageTests(unittest.TestCase):
 
     def test_duplicate_json_keys_are_rejected(self):
         path = self.plugin / 'manifest.json'
-        path.write_text(path.read_text().replace('"api": 6,', '"api": 6, "api": 2,'))
-        with self.assertRaises(packages.ValidationError): packages.validate_plugin(self.plugin)
+        path.write_text(path.read_text().replace('{', '{"api": 2,', 1))
+        with self.assertRaisesRegex(packages.ValidationError, 'duplicate JSON key: api'):
+            packages.validate_plugin(self.plugin)
 
     def test_setting_default_must_satisfy_its_declaration(self):
         self.manifest(lambda data: data.update(settings={'rate': {'type': 'number', 'label': 'Rate', 'default': 'fast', 'min': 1, 'max': 9}}))
@@ -337,6 +493,19 @@ class PluginPackageTests(unittest.TestCase):
             with self.subTest(invalid=item['why']):
                 with self.assertRaises(tools.ValidationError):
                     tools.validate_setting(item['key'], item['field'], item.get('system', False))
+
+    def test_setting_dependencies_related_keys_and_sections_agree_with_runtime_vectors(self):
+        vectors = json.loads((ROOT / 'shared/schema/settings/vectors.json').read_text())
+        for item in vectors['validManifests']:
+            tools.validate_manifest(item)
+        for item in vectors['invalidManifests']:
+            with self.subTest(manifest=item['why']), self.assertRaises(tools.ValidationError):
+                tools.validate_manifest(item['manifest'])
+        for item in vectors['validSystems']:
+            tools.validate_system_settings(item)
+        for item in vectors['invalidSystems']:
+            with self.subTest(system=item['why']), self.assertRaises(tools.ValidationError):
+                tools.validate_system_settings(item['document'])
 
     def test_widget_open_must_point_to_declared_page(self):
         self.manifest(lambda data: data['widgets'][0].update(opens='absent'))

@@ -1,10 +1,18 @@
 {
   "id": "home",
-  "name": "首页",
+  "name": "@name",
   "version": "0.1.0",
   "api": 1,
   "permissions": [],
   "pages": [
-    { "id": "main", "view": "views/main.json", "title": "此刻", "roles": ["home", "ambient"] }
+    {
+      "id": "main",
+      "view": "views/main.json",
+      "title": "@title",
+      "roles": [
+        "home",
+        "ambient"
+      ]
+    }
   ]
 }

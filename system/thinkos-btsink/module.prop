@@ -1,0 +1,6 @@
+id=thinkos-btsink
+name=ThinkOS Bluetooth Sink Experiment
+version=v1.0
+versionCode=1
+author=ThinkOS
+description=API27 ARM-only static Bluetooth A2DP Sink and AVRCP Controller resource overlay. Human install and reboot only; does not enable Bluetooth or pair devices.

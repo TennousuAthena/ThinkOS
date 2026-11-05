@@ -7,13 +7,17 @@ import moe.kiwi.thinkos.media.MediaEngine
 import moe.kiwi.thinkos.media.MediaEntry
 import moe.kiwi.thinkos.media.MediaLibrary
 import moe.kiwi.thinkos.media.MediaOptions
+import moe.kiwi.thinkos.media.MediaProbe
 import moe.kiwi.thinkos.media.MediaQueue
 import moe.kiwi.thinkos.media.MediaRepeat
 import moe.kiwi.thinkos.media.MediaSubtitle
 import moe.kiwi.thinkos.media.StoragePermission
+import moe.kiwi.thinkos.net.PublicNetworkPolicy
 import java.net.URI
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.FutureTask
+import java.util.concurrent.Semaphore
+import java.util.concurrent.TimeUnit
 
 /** Typed capability adapter. All filesystem checks run on IO, all player/permission work on main. */
 internal class MediaCapability(
@@ -25,8 +29,12 @@ internal class MediaCapability(
 ) {
     private val app = context.applicationContext
     private val library = MediaLibrary(app)
+    private val probe by lazy { MediaProbe.create(engine::allowsPublicCleartext) }
+    /** A burst of probes from several plugins must not take every IO worker; one waits a moment for a slot, then gives up. */
+    private val probeSlots = Semaphore(2)
 
-    fun call(owner: String, permissions: Set<String>, method: String, args: Array<Any?>, job: CapabilityAwait) {
+    fun call(owner: String, permissions: Set<String>, method: String, args: Array<Any?>, job: CapabilityAwait,
+             api: Int = PluginSchema.API) {
         try {
             if (method == "library.list") {
                 require("library" in permissions) { "library permission required" }
@@ -45,9 +53,19 @@ internal class MediaCapability(
                 return
             }
             require("media" in permissions) { "media permission required" }
+            val playbackTicket = engine.playbackGeneration()
+            if (method == "media.probe") {
+                require("network" in permissions) { "network permission required to probe a stream" }
+                val entry = probeEntry(args.getOrNull(0), args.getOrNull(1), api)
+                onIO(job) {
+                    if (!probeSlots.tryAcquire(2, TimeUnit.SECONDS)) job.finish(null, "Too many probes at once")
+                    else try { job.finish(probe.run(entry)) } finally { probeSlots.release() }
+                }
+                return
+            }
             if (method == "media.load") {
                 val items = (args.getOrNull(0) as? List<*>)?.map { value ->
-                    MediaEntry.fromMap(value as? Map<*, *> ?: error("Each media queue item must be a table"))
+                    loadEntry(value as? Map<*, *> ?: error("Each media queue item must be a table"), api)
                 } ?: error("Media queue must be an array")
                 val options = options(args.getOrNull(1))
                 MediaQueue.validate(items, options)
@@ -58,11 +76,11 @@ internal class MediaCapability(
                 }
                 val local = urls.filter { URI(it).scheme in setOf("file", "content") }
                 if (local.isNotEmpty()) require("library" in permissions) { "library permission required for local media" }
-                if (local.isEmpty()) onMain(job) { engine.load(owner, items, options); job.finish(publicState(engine.snapshot())) }
+                if (local.isEmpty()) onMain(job) { engine.requireAwake(playbackTicket); engine.load(owner, items, options); job.finish(publicState(engine.snapshot())) }
                 else onIO(job) {
                     val requiresRead = LibraryAccess(app).requiresStoragePermissionForUrls(local)
                     withReadPermission(owner, requiresRead, job) {
-                        onMain(job) { engine.load(owner, items, options); job.finish(publicState(engine.snapshot())) }
+                        onMain(job) { engine.requireAwake(playbackTicket); engine.load(owner, items, options); job.finish(publicState(engine.snapshot())) }
                     }
                 }
                 return
@@ -82,6 +100,7 @@ internal class MediaCapability(
             }.toInt() else null
             require(method in METHODS) { "Unavailable media API" }
             onMain(job) {
+                if (method in PLAYBACK_METHODS) engine.requireAwake(playbackTicket)
                 when (method) {
                     "media.play" -> engine.play()
                     "media.pause" -> engine.pause()
@@ -100,6 +119,8 @@ internal class MediaCapability(
                 }
                 job.finish(publicState(engine.snapshot()))
             }
+        } catch (error: PublicNetworkPolicy.Blocked) {
+            if (method == "media.probe") job.finish(MediaProbe.policyResult()) else job.finish(null, "policy")
         } catch (error: Exception) { job.finish(null, MediaEntry.redact(error.message ?: "Media capability failed")) }
     }
 
@@ -132,9 +153,31 @@ internal class MediaCapability(
     }
 
     companion object {
+        private val PLAYBACK_METHODS = setOf("media.play", "media.toggle", "media.next", "media.prev", "media.jump", "media.live")
         val METHODS = setOf("media.play", "media.pause", "media.toggle", "media.next", "media.prev", "media.seek",
             "media.volume", "media.stop", "media.shuffle", "media.repeat", "media.jump", "media.live", "media.audioTrack",
             "media.textTrack")
+
+        internal fun loadEntry(value: Map<*, *>, api: Int = PluginSchema.API): MediaEntry {
+            if (value.containsKey("public_only")) require(api >= PluginSchema.mediaPublicOnlyApi(false)) { "media.public_only requires a newer plugin API" }
+            return MediaEntry.fromMap(value)
+        }
+
+        /** Probe options share the queue item's strict headers/bool and public-network checks. */
+        internal fun probeEntry(url: Any?, options: Any?, api: Int = PluginSchema.API): MediaEntry {
+            require(url is String) { "Probe address must be text" }
+            require(options == null || options is Map<*, *>) { "Probe options must be a table" }
+            val fields = options as? Map<*, *> ?: emptyMap<Any, Any>()
+            require(fields.keys.all { it == "headers" || it == "public_only" }) { "Unknown probe option" }
+            if (fields.containsKey("public_only")) {
+                require(api >= PluginSchema.mediaPublicOnlyApi(true)) { "media.probe.public_only requires a newer plugin API" }
+                require(fields["public_only"] is Boolean) { "media.public_only must be a boolean" }
+            }
+            val entry = MediaEntry.fromMap(mapOf("url" to url, "headers" to fields["headers"],
+                "public_only" to (fields["public_only"] ?: false)).filterValues { it != null })
+            require(entry.scheme in setOf("http", "https", "rtsp")) { "Only http, https and rtsp addresses can be probed" }
+            return entry
+        }
 
         fun publicState(state: Map<String, Any?>): Map<String, Any?> =
             state + ("owner" to (state["owner"] as? String).orEmpty().substringBefore(':'))

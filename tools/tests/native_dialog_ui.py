@@ -236,10 +236,10 @@ def main():
             before_place = {k: v for k, v in saved().get("system", {}).items() if k.startswith("location.")}
             open_system()
             tap(find(text=labels["setting_location_name"], scroll_to=True))
-            tap(find(text=labels["form_place_manual"]))
+            tap(find(text=labels["setting_location_mode_manual"]))
             debug("orientation", orientation, "--ei"); time.sleep(.5)
             capture("place-" + mode.lower(), 2)
-            tap(find(resource="android:id/button2")); find(text=labels["form_place_manual"])
+            tap(find(resource="android:id/button2")); find(text=labels["setting_location_mode_manual"])
             check(before_place == {k: v for k, v in saved().get("system", {}).items() if k.startswith("location.")},
                   mode + ": cancelling coordinate entry preserves the configured location")
             if not args.editors_only:

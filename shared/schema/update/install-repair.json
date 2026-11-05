@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "install-repair.json",
+  "title": "UpdateRepairRecord",
+  "description": "Private APK-only corrupt transaction isolation. Raw pending and previous are preserved under fixed quarantine/id filenames. This document never authorizes install or rollback. New authenticated prepare binds an independent transaction; only its real health acknowledgement retires the recovery fence.",
+  "type": "object",
+  "required": [
+    "schema",
+    "id",
+    "state",
+    "current",
+    "pending",
+    "root_state",
+    "recorded"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "type": "integer",
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[a-f0-9]{32}$"
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "PREPARED",
+        "ISOLATED"
+      ]
+    },
+    "current": {
+      "$ref": "pending.json#/$defs/apk"
+    },
+    "pending": {
+      "$ref": "#/$defs/file"
+    },
+    "previous": {
+      "$ref": "#/$defs/file"
+    },
+    "history": {
+      "$ref": "#/$defs/file"
+    },
+    "root_state": {
+      "type": "string",
+      "enum": [
+        "absent",
+        "idle"
+      ]
+    },
+    "recorded": {
+      "$ref": "pending.json#/$defs/time"
+    },
+    "bound_transaction": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[a-f0-9]{32}$"
+    },
+    "prior_marker": {
+      "$ref": "#/$defs/file"
+    }
+  },
+  "$defs": {
+    "file": {
+      "title": "UpdateRepairFile",
+      "type": "object",
+      "required": [
+        "size",
+        "sha256",
+        "key",
+        "modified"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "size": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 67108864,
+          "format": "int64"
+        },
+        "sha256": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "modified": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    }
+  }
+}

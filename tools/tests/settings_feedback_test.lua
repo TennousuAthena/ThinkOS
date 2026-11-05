@@ -1,9 +1,14 @@
 -- Exercise the production settings plugin with a deterministic public-API fixture.
 assert(_VERSION == "Lua 5.4", "Use Lua 5.4")
-local handlers, timers, values = {}, {}, { system = 2, other = 1 }
+local handlers, timers, values = {}, {}, { probe = 2, other = 1 }
 local now, timerId, published = 0, 0, 0
 local state
+local intercepted = false
 tos = {
+  data = { get = function() return {pending=false,skipped={}} end },
+  onboarding = { open = function() end },
+  apps = { open = function() return true end },
+  back = { intercept = function(on) intercepted = on end },
   on = function(name, fn) handlers[name] = fn end,
   state = { set = function(value) state = value; published = published + 1 end },
   i18n = { t = function(key, args)
@@ -13,10 +18,11 @@ tos = {
   settings = {
     get = function(scope)
       return { name = scope, fields = {
-        { key = "level", type = "number", label = "Level", help = "A readable explanation", value = values[scope], default = 2 }
+        { key = "level", type = "number", label = "Level", help = "A readable explanation", value = values[scope], default = 2,
+          overridden = values[scope] ~= 2 }
       } }
     end,
-    list = function() return {{ scope = "system", name = "System" }, { scope = "other", name = "Other" }} end,
+    list = function() return {{ scope = "probe", name = "System" }, { scope = "other", name = "Other" }} end,
     set = function(scope, key, value)
       assert(key == "level")
       if value > 4 then return nil, { code = "max", args = { max = 4 } } end
@@ -49,8 +55,8 @@ end
 local function pass(message) print("PASS " .. message) end
 
 assert(loadfile(assert(arg[1], "pass plugins/settings/main.lua")))()
-emit("page.enter", "form", "digital", { scope = "system" })
-assert(state.title == "system" and state.fields[1].help == "A readable explanation")
+emit("page.enter", "form", "digital", { scope = "probe" })
+assert(state.title == "probe" and state.fields[1].help == "A readable explanation")
 pass("generated descriptors retain their help")
 
 emit("form.change", "level", 9)
@@ -85,8 +91,31 @@ pass("reset and locale changes cancel feedback")
 emit("form.change", "level", 9); emit("page.leave", "form")
 assert(next(timers) == nil)
 before = published; advance(4); assert(published == before)
-emit("page.enter", "form", "digital", { scope = "system" }); assert(not errorText())
+emit("page.enter", "form", "digital", { scope = "probe" }); assert(not errorText())
 pass("leaving and reopening starts with clean feedback")
 
 emit("form.change", "level", 9); emit("stop"); assert(next(timers) == nil)
 pass("stopping the plugin cancels pending feedback")
+
+emit("page.enter", "form", "digital", {scope = "probe"})
+assert(not intercepted)
+emit("form.change", "scope:other", true)
+assert(intercepted and state.title == "other")
+emit("page.leave", "form")
+intercepted = false -- page.leave makes an OS interception expire
+emit("page.enter", "form", "digital")
+assert(intercepted and state.title == "other")
+emit("back", "form")
+assert(not intercepted and state.title == "probe")
+pass("settings Back returns one scope and restores interception after a page leave")
+
+emit("page.enter", "form", "digital", {scope = "other"})
+assert(not intercepted and state.title == "other")
+emit("form.change", "level", 3)
+local function resetLink()
+  for _, field in ipairs(state.fields) do if field.key == "reset:page" then return field end end
+end
+assert(resetLink() and resetLink().confirm == "reset.confirm")
+emit("form.change", "reset:page", true)
+assert(values.other == 2 and not resetLink())
+pass("direct entry is the bottom scope; the confirmed page reset disappears when defaults are restored")

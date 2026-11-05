@@ -1,14 +1,29 @@
 {
   "id": "tiles",
   "name": "@name",
-  "version": "0.2.0",
-  "api": 6,
-  "permissions": [],
+  "version": "0.3.0",
+  "api": 9,
+  "permissions": [
+    "system.apps"
+  ],
   "pages": [
     {
       "id": "main",
       "title": "@start",
       "view": "views/main.json"
+    },
+    {
+      "id": "apps",
+      "title": "@apps",
+      "view": "views/apps.json",
+      "roles": [
+        "launcher"
+      ]
     }
+  ],
+  "related": [
+    "tiles.live",
+    "tiles.interval",
+    "tiles.background"
   ]
 }

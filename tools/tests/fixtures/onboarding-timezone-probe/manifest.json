@@ -1,0 +1,8 @@
+{
+  "id": "onboarding-timezone-probe",
+  "name": "Onboarding timezone probe",
+  "version": "1.0.0",
+  "api": 9,
+  "main": "main.lua",
+  "permissions": ["location"]
+}

@@ -1,0 +1,11 @@
+{
+  "template": "tile",
+  "color": "#B4440E",
+  "faces": [
+    {
+      "icon": "music",
+      "value": "{{nowTitle}}",
+      "label": "@page.library"
+    }
+  ]
+}

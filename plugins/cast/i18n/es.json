@@ -1,5 +1,15 @@
 {
   "name": "Transmisión",
   "page.video": "Vídeo transmitido",
-  "page.audio": "Transmisión"
+  "page.audio": "Transmisión",
+  "app.cast": "Transmitir",
+  "page.home": "Transmitir",
+  "home.headline": "Transmitir a {name}",
+  "hint.dlna": "Apps de vídeo, Windows",
+  "hint.airplay": "iPhone, iPad y Mac",
+  "hint.miracast": "Teléfonos Android, Windows",
+  "state.on": "Activado",
+  "state.off": "Desactivado",
+  "footer.offline": "Wi-Fi desconectado",
+  "state.module": "Falta el módulo"
 }

@@ -1,0 +1,2 @@
+# The daemon still authenticates every socket peer with SO_PEERCRED/packages.list.
+allow untrusted_app magisk unix_stream_socket connectto

@@ -1,0 +1,1 @@
+{"name":{"zh-Hans":"媒体","en":"Media"},"summary":{"zh-Hans":"播放本地音乐与视频","en":"Play local music and videos"},"author":"TennousuAthena","license":"MIT","tags":["media"],"why":{"media":{"zh-Hans":"播放音乐与视频","en":"Play music and video"},"library":{"zh-Hans":"读取媒体库文件","en":"Read files in the media library"},"network":{"zh-Hans":"读取媒体来源","en":"Read configured media sources"}}}

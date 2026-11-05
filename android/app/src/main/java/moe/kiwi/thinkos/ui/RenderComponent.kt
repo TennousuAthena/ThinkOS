@@ -13,6 +13,11 @@ interface RenderComponent {
     val defaultWeight: Double get() = 1.0
     /** Keeps vertical scrolling and native controls inside this component. */
     val interactive: Boolean get() = false
+    /**
+     * [interactive] for one point ([x], [y] in this component's own coordinates): a component that is only partly made of
+     * controls (the music player: buttons and bars, but also a cover the stage should be able to swipe) answers per point.
+     */
+    fun interactiveAt(x: Float, y: Float): Boolean = interactive
     /** A component such as a list dispatches its own row taps. */
     val handlesTap: Boolean get() = false
     /** True only while this renderer needs display-rate ticks (for example an image transition). */
@@ -46,4 +51,8 @@ interface RenderComponent {
     fun releaseVertical(offset: Float, velocity: Float) {}
     fun tick(monotonic: Long, attention: Attention) {}
     fun localeChanged() {}
+    /** Back was pressed while this component shows something of its own on top (a menu): true if it closed it (ADR-040). */
+    fun back(): Boolean = false
+    /** Read-only counterpart used before a drag; querying it never closes anything. */
+    val hasBack: Boolean get() = false
 }

@@ -1,0 +1,6 @@
+{
+  "name": "安卓应用",
+  "list.failed": "无法读取应用",
+  "open.failed": "无法打开应用",
+  "list.empty": "没有安卓应用"
+}

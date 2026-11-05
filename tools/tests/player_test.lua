@@ -161,13 +161,11 @@ local function new(options)
   return env
 end
 
--- The library lists are chosen by tapping the title; walk to the one asked for.
+-- The library lists are chosen with the tabs (the title also still cycles through them); open the one asked for.
+local TABS = {music = 1, video = 2, recent = 3, streams = 4}
 local function show(env, name)
-  for _ = 1, 4 do
-    if env.state.heading == strings["variant." .. name] then return end
-    env.event("tap", "cycle")
-  end
-  error("no list called " .. name)
+  env.event("tap", "tab", TABS[name])
+  assert(env.state.heading == strings["variant." .. name], name)
 end
 
 local function music(n)
@@ -180,17 +178,47 @@ end
 test("start shows the stored history at once and scans after a moment", function()
   local env = new({lists = {audio = {items = music(3)}, video = {items = {{url = "file:///sdcard/Movies/a.mp4", kind = "video", title = "Film", duration = 7200000}}}}})
   assert(#env.calls == 0 and env.state.heading == strings["variant.music"] and #env.state.items == 0)
-  assert(env.state.footer == "No music found in /sdcard/Music", env.state.footer)
+  assert(env.state.footer == "No music in /sdcard/Music", env.state.footer)
   env.fire()
   assert(#env.calls == 2 and env.calls[1].kind == "audio" and env.calls[1].dir == "/sdcard/Music" and env.calls[1].recursive == true
     and env.calls[2].kind == "video" and env.calls[2].dir == "/sdcard/Movies")
-  assert(#env.state.items == 3 and env.state.items[1].title == "Song 1" and env.state.items[1].subtitle == "Artist 1" and env.state.items[1].icon == "music"
+  assert(#env.state.items == 3 and env.state.items[1].title == "Song 1" and env.state.items[1].subtitle == "Artist 1" and env.state.items[1].icon == nil
     and env.state.items[1].trailing == "3:00"
-    and env.state.footer == "Tap the title to switch to Videos", env.state.footer)
+    and env.state.footer == "", env.state.footer)
   show(env, "video")
-  assert(#env.state.items == 1 and env.state.items[1].icon == "play" and env.state.items[1].trailing == "2:00:00" and env.state.heading == strings["variant.video"])
+  assert(#env.state.items == 1 and env.state.items[1].icon == nil and env.state.items[1].trailing == "2:00:00" and env.state.heading == strings["variant.video"])
   env.event("tap", "cycle")
   assert(env.state.heading == strings["variant.recent"])
+end)
+
+test("the tabs name the four lists and tapping one shows it", function()
+  local env = new({lists = {audio = {items = music(3)}, video = {items = {}}}})
+  env.fire()
+  assert(#env.state.tabs == 4 and env.state.tabs[1] == strings["variant.music"] and env.state.tabs[2] == strings["variant.video"]
+    and env.state.tabs[3] == strings["variant.recent"] and env.state.tabs[4] == strings["variant.streams"])
+  assert(env.state.tab == 1)
+  env.event("tap", "tab", 2)
+  assert(env.state.tab == 2 and env.state.heading == strings["variant.video"] and env.store.variant == "video")
+  env.event("tap", "tab", 9); env.event("tap", "tab", 0); env.event("tap", "tab"); env.event("tap", "tab", "x")
+  assert(env.state.tab == 2 and env.state.heading == strings["variant.video"])      -- not tabs: nothing changes
+  env.event("tap", "tab", 1)
+  assert(env.state.tab == 1 and env.store.variant == "music" and #env.state.items == 3)
+end)
+
+test("the row of the track in use is marked and follows the track", function()
+  local env = new({lists = {audio = {items = music(3)}, video = {items = {}}}})
+  env.fire()
+  assert(env.state.current == 0)                              -- nothing plays yet
+  env.event("tap", "play", 2)
+  assert(env.state.current == 2, env.state.current)
+  env.media.index = 3; env.fire()                             -- playback moved on without this plugin's help
+  assert(env.state.current == 3, env.state.current)
+  show(env, "video")                                          -- the playing track is not in this list
+  assert(env.state.current == 0)
+  show(env, "music")
+  assert(env.state.current == 3)
+  env.media.status = "stopped"; env.fire()
+  assert(env.state.current == 0)
 end)
 
 test("an unreadable folder says so instead of looking empty", function()
@@ -301,12 +329,13 @@ test("a stream address in the settings plays at once, is saved once, and is not 
   assert(#again.loads == 0)
 end)
 
-test("a refused load shows why and does not steal the screen", function()
+test("a refused load reports failure without a reason chain or stealing the screen", function()
   local env = new()
   env.refuse = "READ_EXTERNAL_STORAGE permission was denied"
   env.config.stream_url = "http://radio.test/live.mp3"
   env.event("config", env.config)
-  assert(#env.focus == 0 and env.state.footer:find("denied", 1, true))
+  assert(#env.focus == 0 and env.state.footer == strings["notice.play_failed"])
+  assert(not env.state.footer:find("READ_EXTERNAL_STORAGE", 1, true))
 end)
 
 test("a playlist address fills the Streams page, and cached channels survive a restart", function()
@@ -379,7 +408,7 @@ test("errors are named for the audio page; the next track clears them; the page 
   env.fire()
   assert(env.released == 2)
   env.event("media.track", {index = 1})
-  assert(env.state.footer == "No music found in /sdcard/Music")
+  assert(env.state.footer == "No music in /sdcard/Music")
 end)
 
 test("leaving the video page pauses the film; the end of a queue forgets the position", function()
@@ -469,7 +498,7 @@ test("a queue with one bad entry still plays the chosen one; a refused load keep
   assert(env.focus[1].page == "player.audio" and env.state.playNotice == "")
   tos.media.load = function() return nil, "denied" end
   env.event("tap", "play", 1)
-  assert(env.state.playNotice == "Cannot start playback: denied" and env.state.footer == "Cannot start playback: denied", env.state.playNotice)
+  assert(env.state.playNotice == "Playback failed" and env.state.footer == "Playback failed", env.state.playNotice)
   env.event("media.track", {index = 1})
   assert(env.state.playNotice == "")
 end)

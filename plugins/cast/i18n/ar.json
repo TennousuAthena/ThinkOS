@@ -1,5 +1,15 @@
 {
   "name": "البث",
   "page.video": "فيديو البث",
-  "page.audio": "البث"
+  "page.audio": "البث",
+  "app.cast": "البث",
+  "page.home": "البث",
+  "home.headline": "البث إلى {name}",
+  "hint.dlna": "تطبيقات الفيديو، Windows",
+  "hint.airplay": "iPhone وiPad وMac",
+  "hint.miracast": "هواتف Android، Windows",
+  "state.on": "قيد التشغيل",
+  "state.off": "متوقف",
+  "footer.offline": "Wi-Fi غير متصل",
+  "state.module": "يلزم وحدة النظام"
 }

@@ -6,6 +6,23 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class RenderGeometryTest {
+    @Test fun gridColumnsFollowThePhysicalWidthAndKeepCompactSlotsUsable() {
+        assertEquals(4, RenderGeometry.gridColumns(736, 1.625f))
+        assertEquals(7, RenderGeometry.gridColumns(1216, 1.625f))
+        assertEquals(3, RenderGeometry.gridColumns(623, 1.625f))
+        assertEquals(4, RenderGeometry.gridColumns(624, 1.625f))
+        for (width in listOf(0, 1, 200)) assertEquals(3, RenderGeometry.gridColumns(width, 1.625f))
+    }
+
+    @Test fun gridColumnsRejectInvalidDensity() {
+        for (density in listOf(0f, -1f, Float.NaN, Float.POSITIVE_INFINITY)) {
+            try {
+                RenderGeometry.gridColumns(800, density)
+                org.junit.Assert.fail("Invalid density was accepted")
+            } catch (_: IllegalArgumentException) { }
+        }
+    }
+
     @Test fun photoClockUsesFixedCornersAndStaysInsideTinyViewports() {
         assertEquals(RenderGeometry.Box(1036, 24, 1256, 80), RenderGeometry.photoClock(1280, 800, 1f))
         assertEquals(RenderGeometry.Box(556, 24, 776, 80), RenderGeometry.photoClock(800, 1280, 1f))

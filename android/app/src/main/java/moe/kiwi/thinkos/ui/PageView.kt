@@ -2,8 +2,13 @@ package moe.kiwi.thinkos.ui
 
 import android.animation.ValueAnimator
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.PointF
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
@@ -23,6 +28,10 @@ import moe.kiwi.thinkos.ui.form.FormView
 import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.math.abs
+import kotlin.math.ceil
+
+/** The corner radius of a card in a stack (`docs/04-ui-spec.md` §3), also the radius of the window the stack slides its cards in. */
+private const val CARD_RADIUS_DP = 32f
 
 /** One compiled component tree. Only bindings that depend on changed paths are evaluated. */
 internal class ComponentGroup(
@@ -35,6 +44,8 @@ internal class ComponentGroup(
     private val compact: Boolean,
     private val events: PageEvents,
     private val desktop: Boolean = false,
+    /** The children stand side by side in equal cells (the sheet's row of toggles) instead of one above the other. */
+    private val row: Boolean = false,
 ) : ViewGroup(context) {
     private class Bound(val view: View, val definition: JSONObject, val template: Binding.Template,
         val renderer: RenderComponent?, val dependencies: List<Binding.Template>) {
@@ -44,7 +55,7 @@ internal class ComponentGroup(
     }
     private val strings: (String) -> String? = { key -> events.text(pluginId, key) }
     private val bound = mutableListOf<Bound>()
-    private val shape = GradientDrawable().apply { cornerRadius = 32f * resources.displayMetrics.density }
+    private val shape = GradientDrawable().apply { cornerRadius = CARD_RADIUS_DP * resources.displayMetrics.density }
     private var palette = Palette.DARK
     private var embeddedTile: TileView? = null
     private var photoNotice = false
@@ -53,11 +64,12 @@ internal class ComponentGroup(
         override fun emit(name: String, args: List<Any?>) = events.send(pluginId, name, args)
         override fun done() = events.closeSettings()
         override fun interacted() = events.settingsInteraction()
+        override fun preview(scope: String, key: String, kind: String, value: Double?) = events.previewSetting(pluginId, scope, key, kind, value)
     }
     val owner: String get() = pluginId
     val floatingClock: Boolean get() = bound.singleOrNull()?.view.let { it is ClockView && it.clockStyle == "float" }
     val photo: Boolean get() = bound.singleOrNull()?.definition?.optString("type").let { it == "image" || it == "carousel" }
-    val video: Boolean get() = bound.singleOrNull()?.definition?.optString("type") == "video"
+    val video: Boolean get() = bound.singleOrNull()?.definition?.optString("type").let { it == "video" || it == "tv" }
     var opens: String? = null
     val activeAnimations: Boolean get() = embeddedTile?.activeAnimations == true || bound.any { it.renderer?.animating == true }
     val bottomOverlayInset: Int get() = bound.maxOfOrNull { it.renderer?.bottomOverlayInset ?: 0 } ?: 0
@@ -81,13 +93,13 @@ internal class ComponentGroup(
             when (value) {
                 is JSONObject -> value.keys().forEach { visit(value.opt(it), it) }
                 is JSONArray -> for (i in 0 until value.length()) visit(value.opt(i))
-                is String -> result += Binding.compile(if (key in setOf("path", "sun", "items", "values") && "{{" !in value) "{{$value}}" else value)
+                is String -> result += Binding.compile(if (key in setOf("path", "sun", "items", "values", "nav") && "{{" !in value) "{{$value}}" else value)
             }
         }
         visit(definition)
         // Functional media controls consume the OS-owned state without asking plugins to
         // invent redundant bindings just to refresh a play/pause icon or video visibility.
-        if (definition.optString("type") in setOf("controls", "video", "seekbar")) result += Binding.compile("{{media}}")
+        if (definition.optString("type") in setOf("controls", "video", "seekbar", "nowplaying", "tv")) result += Binding.compile("{{media}}")
         return result
     }
 
@@ -109,7 +121,8 @@ internal class ComponentGroup(
             removeAllViews()
             bound.clear()
             definitions.forEach { def ->
-                val renderer = if(desktop && def.optString("type")=="clock" && def.optString("style")=="analog") AeroClockView(context) else BuiltinComponents.create(context, def, compact) { event, index ->
+                val renderer = if(desktop && def.optString("type")=="clock" && def.optString("style")=="analog") AeroClockView(context) else BuiltinComponents.create(context, def, compact,
+                    images = { image -> events.component(context, pluginId, image) }) { event, index ->
                     events.send(pluginId, "tap", if (index == null) listOf(event) else listOf(event, index))
                 } ?: if (def.optString("type") !in setOf("clock", "form", "icon", "text")) events.component(context, pluginId, def) else null
                 val view = renderer?.view ?: when (def.optString("type")) {
@@ -117,16 +130,24 @@ internal class ComponentGroup(
                     "form" -> FormView(context, formHost)
                     "icon" -> IconView(context)
                     // A media view whose plugin has lost (or never had) the media permission shows nothing rather than crashing the page.
-                    "controls", "video", "seekbar" -> View(context)
+                    "controls", "video", "seekbar", "nowplaying", "tv", "slider" -> View(context)
                     "text" -> (if(desktop) TileTextView(context) else TextView(context)).apply {
                         gravity = Gravity.CENTER; includeFontPadding = false; maxLines = if(desktop && def.optString("style")=="caption") 4 else 2
                         ellipsize = TextUtils.TruncateAt.END
                         val style = def.optString("style", "body")
-                        textSize = when (style) { "display" -> 72f; "title" -> 32f; "caption" -> 14f; else -> 22f }
+                        textSize = when (style) { "display" -> TextScale.DISPLAY; "title" -> TextScale.TITLE; "caption" -> TextScale.CAPTION; else -> TextScale.BODY }
                         typeface = Typeface.create(when (style) { "display" -> "sans-serif-light"; "title" -> "sans-serif-medium"; else -> "sans-serif" }, Typeface.NORMAL)
                         fontFeatureSettings = "tnum"
                     }
                     else -> error("OS renderer unavailable: ${def.optString("type")}")
+                }
+                if (card && def.optString("type") in setOf("image", "carousel")) {
+                    view.outlineProvider = object : android.view.ViewOutlineProvider() {
+                        override fun getOutline(view: View, outline: android.graphics.Outline) {
+                            outline.setRoundRect(0, 0, view.width, view.height, (CARD_RADIUS_DP - 24f) * resources.displayMetrics.density)
+                        }
+                    }
+                    view.clipToOutline = true
                 }
                 val primary = when (view) {
                     is IconView -> def.optString("name")
@@ -143,7 +164,7 @@ internal class ComponentGroup(
                         Binding.compile(zone.optString("timezone")) to zone.optString("label").takeIf { it.isNotEmpty() }?.let(Binding::compile)
                     }
                 }
-                if (renderer?.handlesTap != true) def.optString("tap").takeIf { it.isNotBlank() }?.let { event ->
+                if (renderer?.handlesTap != true && view !is FormView) def.optString("tap").takeIf { it.isNotBlank() }?.let { event ->
                     view.setOnClickListener { events.send(pluginId, "tap", listOf(event)) }
                 }
                 bound += item
@@ -166,11 +187,14 @@ internal class ComponentGroup(
             val renderer = item.renderer
             if (renderer != null) { renderer.bind(snapshot, variant(), strings); continue }
             when (val view = item.view) {
-                is TextView -> if (view.text.toString() != next) {
-                    view.text = next
-                    if (view.isLaidOut) {
-                        view.translationY = 4f * resources.displayMetrics.density
-                        view.animate().translationY(0f).setDuration(Motion.NUMBER).setInterpolator(Motion.EASE).start()
+                is TextView -> {
+                    view.visibility = if (next.isEmpty()) GONE else VISIBLE
+                    if (view.text.toString() != next) {
+                        view.text = next
+                        if (view.isLaidOut && view.visibility == VISIBLE) {
+                            view.translationY = 4f * resources.displayMetrics.density
+                            view.animate().translationY(0f).setDuration(Motion.NUMBER).setInterpolator(Motion.EASE).start()
+                        }
                     }
                 }
                 is IconView -> view.name = next
@@ -184,7 +208,10 @@ internal class ComponentGroup(
                     })
                 }
                 is FormView -> {
+                    fun label(key: String) = Binding.compile(item.definition.optString(key)).render(snapshot, variant(), strings)
+                    view.setSetup(item.definition.has("primary"), item.definition.optString("tap"), label("subtitle"), label("primary"), label("secondary"), label("back"))
                     view.setHeader(Binding.compile(item.definition.optString("title")).render(snapshot, variant(), strings), Binding.compile(item.definition.optString("done")).render(snapshot, variant(), strings))
+                    view.setNavigation(Binding.lookup(snapshot, item.definition.optString("nav")) as? JSONObject)
                     view.setFields(Binding.lookup(snapshot, item.definition.optString("path")) as? JSONArray ?: JSONArray())
                 }
             }
@@ -241,7 +268,7 @@ internal class ComponentGroup(
             (item.view as? IconView)?.tick(now, attention)
         }
     }
-    fun active(value: Boolean) { active = value; embeddedTile?.active(value); bound.forEach { it.renderer?.active(value) } }
+    fun active(value: Boolean) { active = value; embeddedTile?.active(value); bound.forEach { it.renderer?.active(value); (it.view as? FormView)?.active(value) } }
     fun tapAt(x: Float, y: Float): Boolean = bound.asReversed().any { item ->
         val v = item.view
         val hit = v.visibility == VISIBLE && x >= v.left && x < v.right && y >= v.top && y < v.bottom
@@ -262,6 +289,9 @@ internal class ComponentGroup(
         }
         return null
     }
+    /** A component of this group closed something of its own on top (ADR-040). */
+    val hasBack: Boolean get() = bound.any { it.renderer?.hasBack == true || (it.view as? FormView)?.hasBack == true }
+    fun back(): Boolean = bound.any { it.renderer?.back() == true || (it.view as? FormView)?.back() == true }
     fun localeChanged() {
         embeddedTile?.localeChanged()
         bound.forEach { item -> item.renderer?.localeChanged(); (item.view as? ClockView)?.refreshLocale() }
@@ -269,9 +299,10 @@ internal class ComponentGroup(
     }
     fun interactiveAt(x: Float, y: Float): Boolean = bound.asReversed().any { item ->
         val view = item.view
-        val interactive = item.renderer?.interactive == true || item.definition.optString("tap").isNotBlank() || view is FormView
-        interactive && view.visibility == VISIBLE && x >= view.left + view.translationX && x < view.right + view.translationX &&
+        val inside = view.visibility == VISIBLE && x >= view.left + view.translationX && x < view.right + view.translationX &&
             y >= view.top + view.translationY && y < view.bottom + view.translationY
+        inside && (item.renderer?.interactiveAt(x - view.left - view.translationX, y - view.top - view.translationY) == true ||
+            item.definition.optString("tap").isNotBlank() || view is FormView)
     }
     fun capturesHorizontalAt(x: Float, y: Float): Boolean = bound.asReversed().any { item ->
         val view = item.view
@@ -279,37 +310,76 @@ internal class ComponentGroup(
             y >= view.top + view.translationY && y < view.bottom + view.translationY &&
             item.renderer?.capturesHorizontalAt(x - view.left - view.translationX, y - view.top - view.translationY) == true
     }
+    val components: Int get() = bound.size
+    /** Native panel geometry may reserve a single caption's natural width. */
+    fun singleTextWidth(): Int? = (bound.singleOrNull()?.view as? TextView)?.let {
+        ceil(android.text.Layout.getDesiredWidth(it.text, it.paint).toDouble()).toInt() + it.paddingLeft + it.paddingRight
+    }
+    fun singleTextMetrics(): JSONObject? = (bound.singleOrNull()?.view as? TextView)?.let { view ->
+        val layout = view.layout ?: return@let null
+        JSONObject().put("text", view.text.toString()).put("lines", layout.lineCount).put("layoutHeight", layout.height)
+            .put("availableHeight", view.height - view.compoundPaddingTop - view.compoundPaddingBottom)
+            .put("ellipsis", (0 until layout.lineCount).sumOf { layout.getEllipsisCount(it) })
+    }
+    fun singleTextLine() { (bound.singleOrNull()?.view as? TextView)?.let { if (it.maxLines != 1) it.maxLines = 1 } }
+    fun noticeLines() { (bound.singleOrNull()?.view as? TextView)?.let { it.maxLines = 2; it.ellipsize = android.text.TextUtils.TruncateAt.END } }
+    val hasContent: Boolean get() = embeddedTile != null || bound.any { it.view.visibility != GONE }
+    /** Width of one cell in a row of [count] children inside [inner] pixels: equal cells, never wider than a toggle needs. */
+    private fun cellWidth(inner: Int, count: Int) = minOf(inner / count.coerceAtLeast(1), (104 * resources.displayMetrics.density).toInt())
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val w = MeasureSpec.getSize(widthMeasureSpec); val h = MeasureSpec.getSize(heightMeasureSpec)
         embeddedTile?.let { it.measure(widthMeasureSpec, heightMeasureSpec); setMeasuredDimension(w, h); return }
+        if (row) {
+            val cell = cellWidth(w, PanelGeometry.quickColumns(bound.size))
+            val cellHeight = h / PanelGeometry.quickRows(bound.size)
+            bound.forEach { it.view.measure(MeasureSpec.makeMeasureSpec(cell, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(cellHeight, MeasureSpec.EXACTLY)) }
+            setMeasuredDimension(w, h)
+            return
+        }
         val padding = if (card) (24 * resources.displayMetrics.density).toInt() else 0
         val innerW = (w - 2 * padding).coerceAtLeast(0); val innerH = (h - 2 * padding).coerceAtLeast(0)
-        val dense = innerH / resources.displayMetrics.density < 340 && bound.size >= 4
-        val weights = bound.map { item -> (item.definition.opt("weight") as? Number)?.toDouble() ?: item.renderer?.defaultWeight
+        val visible = bound.filter { it.view.visibility != GONE }
+        val dense = innerH / resources.displayMetrics.density < 340 && visible.size >= 4
+        val weights = visible.map { item -> (item.definition.opt("weight") as? Number)?.toDouble() ?: item.renderer?.defaultWeight
             ?: if (item.view is ClockView || item.view is FormView) 1.0 else 0.0 }
-        bound.forEach { item ->
+        visible.forEach { item ->
             (item.view as? TextView)?.let { text ->
                 text.textSize = when (item.definition.optString("style", "body")) {
-                    "display" -> if (dense) 56f else 72f
-                    "title" -> if (dense) 24f else 32f
-                    "caption" -> 14f
-                    else -> if (dense) 18f else 22f
+                    "display" -> if (dense) TextScale.TITLE else TextScale.DISPLAY
+                    "title" -> if (dense) TextScale.BODY else TextScale.TITLE
+                    "caption" -> TextScale.CAPTION
+                    else -> TextScale.BODY
                 }
             }
             val maxH = if (item.view is IconView) minOf(innerH, (52 * resources.displayMetrics.density).toInt()) else innerH
             item.view.measure(MeasureSpec.makeMeasureSpec(innerW, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(maxH,
                 if (item.view is IconView) MeasureSpec.EXACTLY else MeasureSpec.AT_MOST))
         }
-        allocation = RenderGeometry.verticalHeights(innerH, bound.map { it.view.measuredHeight }, weights, ((if (dense) 6 else 12) * resources.displayMetrics.density).toInt())
-        bound.forEachIndexed { index, item -> item.view.measure(MeasureSpec.makeMeasureSpec(innerW, MeasureSpec.EXACTLY),
+        allocation = RenderGeometry.verticalHeights(innerH, visible.map { it.view.measuredHeight }, weights, ((if (dense) 6 else 12) * resources.displayMetrics.density).toInt())
+        visible.forEachIndexed { index, item -> item.view.measure(MeasureSpec.makeMeasureSpec(innerW, MeasureSpec.EXACTLY),
             MeasureSpec.makeMeasureSpec(allocation.heights[index], MeasureSpec.EXACTLY)) }
         setMeasuredDimension(w, h)
     }
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         embeddedTile?.let { it.layout(0, 0, width, height); return }
+        if (row) {
+            val columns = PanelGeometry.quickColumns(bound.size)
+            val cell = cellWidth(width, columns)
+            val cellHeight = height / PanelGeometry.quickRows(bound.size)
+            val start = (width - cell * columns) / 2
+            val mirrored = layoutDirection == LAYOUT_DIRECTION_RTL
+            bound.forEachIndexed { index, item ->
+                val column = index % columns
+                val x = start + (if (mirrored) columns - 1 - column else column) * cell
+                val y = index / columns * cellHeight
+                item.view.layout(x, y, x + cell, y + cellHeight)
+            }
+            return
+        }
         val padding = if (card) (24 * resources.displayMetrics.density).toInt() else 0
         var y = padding + allocation.offset
-        bound.forEach { item ->
+        bound.filter { it.view.visibility != GONE }.forEach { item ->
             val view = item.view
             view.layout(padding, y, (width - padding).coerceAtLeast(padding), y + view.measuredHeight)
             y += view.measuredHeight + allocation.gap
@@ -321,6 +391,8 @@ internal class ComponentGroup(
 private class StackSlot(context: Context, private val group: (Int) -> ComponentGroup) : FrameLayout(context) {
     private var active = false
     fun active(value: Boolean) { active = value; current?.active(value); preview?.active(false) }
+    fun back(): Boolean = current?.back() == true
+    val hasBack: Boolean get() = current?.hasBack == true
     var index = 0
     var count = 0
     var current: ComponentGroup? = null
@@ -330,7 +402,45 @@ private class StackSlot(context: Context, private val group: (Int) -> ComponentG
     val activeAnimations: Boolean get() = current?.activeAnimations == true || preview?.activeAnimations == true
     val ambientAnimations: Boolean get() = current?.ambientAnimations == true || preview?.ambientAnimations == true
 
-    init { clipChildren = true; clipToPadding = true }
+    /**
+     * True from the moment a card is pulled until the last one has settled. At rest every card sits exactly in its stack with its own
+     * rounded corners and nothing needs masking. A card that is moving leaves the stack, and clipChildren (a child only stays inside
+     * its own bounds) and clipToPadding (needs padding) never held it back: it was drawn over the other stack. Clipping to an outline
+     * does not do it either: on this Android only the outline's bounding rectangle cuts the children, never its rounded corners.
+     * So while it moves, the stack is drawn into its own layer and cut to a rounded window the size of a card.
+     * A flag rather than a look at the cards' positions: the renderer moves them without the stack drawing again.
+     */
+    private var masking = false
+    private var windowMask: Bitmap? = null
+    private val windowPaint = Paint().apply { xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN) }
+
+    private fun masked(on: Boolean) {
+        if (masking == on) return
+        masking = on
+        invalidate()
+    }
+
+    /** Opaque inside a rounded rectangle the size of the stack, with smooth edges, clear in the four corners. */
+    private fun window(): Bitmap = windowMask?.takeIf { it.width == width && it.height == height }
+        ?: Bitmap.createBitmap(width, height, Bitmap.Config.ALPHA_8).also {
+            val radius = CARD_RADIUS_DP * resources.displayMetrics.density
+            it.density = Bitmap.DENSITY_NONE
+            Canvas(it).drawRoundRect(0f, 0f, width.toFloat(), height.toFloat(), radius, radius, Paint(Paint.ANTI_ALIAS_FLAG))
+            windowMask = it
+        }
+
+    override fun dispatchDraw(canvas: Canvas) {
+        if (!masking || width == 0 || height == 0) { super.dispatchDraw(canvas); return }
+        val layer = canvas.saveLayer(0f, 0f, width.toFloat(), height.toFloat(), null)
+        super.dispatchDraw(canvas)
+        canvas.drawBitmap(window(), 0f, 0f, windowPaint)
+        canvas.restoreToCount(layer)
+    }
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) { super.onSizeChanged(w, h, oldw, oldh); windowMask = null }
+
+    /** A spring finished: the stack is at rest once none is left. */
+    private fun settled() { if (springs.none { it.isRunning }) masked(false) }
     fun refresh() {
         cancel()
         val replacement = group(index.coerceAtMost((count - 1).coerceAtLeast(0)))
@@ -348,6 +458,7 @@ private class StackSlot(context: Context, private val group: (Int) -> ComponentG
             direction = nextDirection
             preview = group(Math.floorMod(index + direction, count)).also { addView(it, LayoutParams(-1, -1)) }
         }
+        masked(true)
         current?.translationY = offset
         preview?.translationY = offset + direction * height
         return true
@@ -362,12 +473,12 @@ private class StackSlot(context: Context, private val group: (Int) -> ComponentG
             old.active(false)
             incoming.active(active)
             preview = null
-            springs += Motion.spring(old.translationY, -direction * height.toFloat(), velocity, { old.translationY = it }) { removeView(old) }
-            springs += Motion.spring(incoming.translationY, 0f, velocity, { incoming.translationY = it })
+            springs += Motion.spring(old.translationY, -direction * height.toFloat(), velocity, { old.translationY = it }) { removeView(old); settled() }
+            springs += Motion.spring(incoming.translationY, 0f, velocity, { incoming.translationY = it }) { settled() }
         } else {
             preview = null
-            springs += Motion.spring(old.translationY, 0f, velocity, { old.translationY = it })
-            springs += Motion.spring(incoming.translationY, direction * height.toFloat(), velocity, { incoming.translationY = it }) { removeView(incoming) }
+            springs += Motion.spring(old.translationY, 0f, velocity, { old.translationY = it }) { settled() }
+            springs += Motion.spring(incoming.translationY, direction * height.toFloat(), velocity, { incoming.translationY = it }) { removeView(incoming); settled() }
         }
     }
     fun cancel() {
@@ -378,6 +489,7 @@ private class StackSlot(context: Context, private val group: (Int) -> ComponentG
         current?.translationY = 0f
         // A new drag/update can interrupt a spring; never retain a third hidden card.
         (0 until childCount).map(::getChildAt).filter { it !== current }.forEach(::removeView)
+        masked(false)
     }
     fun night(amount: Float) { current?.night(amount); preview?.night(amount) }
     fun tileViews(): List<TileView> = current?.tileViews().orEmpty()
@@ -420,6 +532,9 @@ internal class PageView(
     fun active(value: Boolean) { if (!value) cadence.reset(); active = value; aero?.active(value); groups.values.forEach { it.active(value) }; stacks.values.forEach { it.active(value) }; tiles.values.forEach { it.active(value && it.visibility == VISIBLE) } }
     private val layout get() = page.view.optString("layout")
     val opaque: Boolean get() = layout in setOf("tiles", "aero") || photoStage || videoStage
+    /** Content lists and forms need a quiet backdrop; this is computed only when the declaration changes. */
+    private var quietBackdrop = false
+    val coversAmbient: Boolean get() = opaque || quietBackdrop
     private val slotNames get() = LayoutVocabulary.slots[layout].orEmpty()
     private val roles get() = LayoutVocabulary.roles[layout].orEmpty()
     val photoStage: Boolean get() = layout == "stage" && groups.any { (name, group) -> roles[name] == "stage" && group.photo }
@@ -435,6 +550,7 @@ internal class PageView(
     fun update(next: PluginPage, nextWidgets: List<PluginWidget>) {
         page = next
         widgets = nextWidgets
+        quietBackdrop = PageBackdrop.quiet(next.view)
         if (previousLayout.isNotEmpty() && previousLayout != layout) {
             groups.values.forEach { it.active(false) }; stacks.values.forEach { it.active(false) }; tiles.values.forEach { it.active(false) }
             removeAllViews()
@@ -447,7 +563,7 @@ internal class PageView(
             contentDriftX = 0; contentDriftY = 0
         }
         previousLayout = layout
-        contentDescription = page.title
+        contentDescription = localizedTitle()
         val slots = page.view.optJSONObject("slots") ?: JSONObject()
         if (layout == "aero") {
             val desktop = aero ?: AeroHomeView(context, events, state) { variant }.also { aero = it; addView(it) }
@@ -490,7 +606,7 @@ internal class PageView(
                 val signature = "$owner:$definition:$opens"
                 if (definitions[name] != signature) {
                     val group = groups.getOrPut(name) {
-                        ComponentGroup(context, owner, definition, state, { variant }, false, false, events).also { addView(it) }
+                        ComponentGroup(context, owner, definition, state, { variant }, false, false, events, row = roles[name] == "row").also { addView(it) }
                     }
                     group.opens = opens
                     group.update(owner, definition)
@@ -509,6 +625,10 @@ internal class PageView(
         groups.values.forEach { it.bind(pluginId, paths) }
         stacks.values.forEach { it.bind(pluginId, paths) }
         tiles.values.forEach { it.bind(pluginId, paths) }
+        if (layout == "panel" && pluginId == page.pluginId && hasMedia() != mediaLoaded) {
+            mediaLoaded = !mediaLoaded
+            requestLayout()
+        }
     }
     // The tile page is always the dark Start screen, whatever the theme (ADR-028).
     fun colors(value: Palette) { palette = value; applyBackdrop(); aero?.colors(value); groups.values.forEach { it.colors(value) }; stacks.values.forEach { it.colors(value) }; tiles.values.forEach { it.colors(Palette.DARK) } }
@@ -526,13 +646,15 @@ internal class PageView(
             includeFontPadding = false
             maxLines = 1
             gravity = Gravity.START or Gravity.TOP
-            setAutoSizeTextTypeUniformWithConfiguration(20, 40, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
+            textSize = TextScale.TITLE
+            ellipsize = TextUtils.TruncateAt.END
             importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO
         }.also { title = it; addView(it) }
-        val text = page.titleKey?.let { events.text(page.pluginId, it) } ?: page.title
+        val text = localizedTitle()
         if (view.text.toString() != text) view.text = text
     }
-    fun localeChanged() { title?.let { ensureTitle() }; aero?.localeChanged(); groups.values.forEach { it.localeChanged() }; stacks.values.forEach { it.localeChanged() }; tiles.values.forEach { it.localeChanged() } }
+    private fun localizedTitle(): String = page.titleKey?.let { events.text(page.pluginId, it) } ?: page.title
+    fun localeChanged() { contentDescription = localizedTitle(); title?.let { ensureTitle() }; aero?.localeChanged(); groups.values.forEach { it.localeChanged() }; stacks.values.forEach { it.localeChanged() }; tiles.values.forEach { it.localeChanged() } }
     /** The stage pins opaque backdrops; their foreground (and adjacent page previews) still drifts. */
     fun burnInOffset(x: Int, y: Int) {
         if (x == contentDriftX && y == contentDriftY) return
@@ -563,6 +685,22 @@ internal class PageView(
         tile.press(x - tile.left, y - tile.top)
     }
     fun releasePress() { pressed?.release(); pressed = null }
+    /** Back closed something on this page instead of leaving it: the Aero start menu, a component's own menu (ADR-040). */
+    val hasBack: Boolean get() = aero?.hasBack == true || groups.values.any { it.hasBack } || stacks.values.any { it.hasBack }
+    fun back(): Boolean = aero?.back() == true || groups.values.any { it.back() } || stacks.values.any { it.back() }
+    /**
+     * What turns when an app is opened or closed (ADR-040), in the order it turns: on the Start page the title and the tiles,
+     * the one that was touched at [origin] last; on any other page the page as a whole.
+     */
+    fun flipTargets(origin: PointF?): List<View> {
+        if (layout != "tiles") return listOf(this)
+        val shown = tiles.entries.sortedBy { it.key }.map { it.value }.filter { it.visibility == VISIBLE && it.width > 0 }
+        val hit = origin?.let { o -> shown.firstOrNull { o.x >= it.left && o.x < it.right && o.y >= it.top && o.y < it.bottom } }
+        val rest = shown.filter { it !== hit }.let { list ->
+            if (origin == null) list else list.sortedBy { Math.hypot((it.left + it.right) / 2.0 - origin.x, (it.top + it.bottom) / 2.0 - origin.y) }
+        }
+        return listOfNotNull(title?.takeIf { it.visibility == VISIBLE }) + rest + listOfNotNull(hit)
+    }
     /** The page was opened rather than dragged in: its tiles rise in, one after another. */
     fun enterAnimation() {
         if (layout != "tiles") return
@@ -635,8 +773,20 @@ internal class PageView(
         slotAt(x, y)?.owner ?: page.pluginId
     fun openAt(x: Float, y: Float): String? = tileAt(x, y)?.opens ?: stacks.values.firstOrNull { x >= it.left && x <= it.right && y >= it.top && y <= it.bottom }?.current?.opens ?:
         slotAt(x, y)?.opens
-    fun tapAt(x: Float, y: Float): Boolean = aero?.tapAt(x,y) == true || groups.values.toList().asReversed().any {
-        it.tapAt(x - it.left - it.translationX, y - it.top - it.translationY)
+    fun tapAt(x: Float, y: Float): Boolean {
+        if (aero?.tapAt(x,y) == true || groups.values.toList().asReversed().any {
+            it.tapAt(x - it.left - it.translationX, y - it.top - it.translationY)
+        }) return true
+        // A setup greeting is a whole-screen action. Explicit header/footer
+        // controls above retain priority over the focus page's main action.
+        if (layout == "focus" && "onboarding" in page.roles) {
+            val action = page.view.optJSONObject("slots")?.optJSONObject("hero")?.optString("tap").orEmpty()
+            if (action.isNotBlank()) {
+                events.send(page.pluginId, "tap", listOf(action))
+                return true
+            }
+        }
+        return false
     }
     // Tile content is presentation only: stage-owned taps and long press reach opens/ownerAt.
     /** Native controls and lists own taps/vertical scrolling; the stage can still claim a horizontal page swipe. */
@@ -660,6 +810,12 @@ internal class PageView(
     }
     private fun rectangle(name: String, spec: LayoutSpec): Rect {
         val role = roles[name]
+        if (layout == "form" && groups["hero"]?.hasContent == true) {
+            val edge = minOf(spec.dp(20f), spec.width / 2, spec.height / 2)
+            val heroHeight = minOf(spec.dp(104f), ((spec.height - edge * 2) / 3).coerceAtLeast(0))
+            return if (name == "hero") Rect(edge, edge, spec.width - edge, edge + heroHeight)
+            else Rect(edge, edge + heroHeight, spec.width - edge, spec.height - edge)
+        }
         if (role == "stack") return spec.stack(slotNames.indexOf(name))
         if (layout == "stage" && role in setOf("header", "over") && groups[name]?.floatingClock == true) {
             val box = RenderGeometry.photoClock(spec.width, spec.height, spec.density)
@@ -675,13 +831,57 @@ internal class PageView(
                 return Rect(edge, top, spec.width - edge, bottom)
             }
         }
-        val header = groups.keys.any { roles[it] == "header" }
-        val footer = groups.keys.any { roles[it] == "footer" }
+        val header = groups.any { (name, group) -> roles[name] == "header" && group.hasContent }
+        val footer = groups.any { (name, group) -> roles[name] == "footer" && group.hasContent }
         val box = RenderGeometry.slot(layout, role ?: "content", spec.width, spec.height, spec.density, header, footer)
         return Rect(box.left, box.top, box.right, box.bottom)
     }
     private fun slots(): Map<String, View> = groups + stacks
+
+    /** The screen the control sheet (layout `panel`) is drawn on; its own size follows from this and what the plugin declared. */
+    private var screenWidth = 0
+    private var screenHeight = 0
+    private var mediaLoaded = false
+    fun panelScreen(width: Int, height: Int) {
+        if (width == screenWidth && height == screenHeight) return
+        screenWidth = width; screenHeight = height
+        requestLayout()
+    }
+    /** The OS collapses the media slot while no session holds anything (ADR-035). */
+    private fun hasMedia(): Boolean = groups.containsKey("media") && (state(page.pluginId).optJSONObject("media")?.optInt("count", 0) ?: 0) > 0
+    private fun panelPlan(): PanelGeometry.Plan = PanelGeometry.plan(screenWidth, screenHeight, resources.displayMetrics.density,
+        groups.containsKey("header"), groups.containsKey("quick"), groups["levels"]?.components ?: 0, hasMedia(), groups.containsKey("footer"),
+        groups["footer"]?.singleTextWidth()?.plus((16 * resources.displayMetrics.density).toInt()),
+        update = groups["update"]?.hasContent == true, quickCount = groups["quick"]?.components ?: 0)
+    fun panelTextMetrics(): JSONObject = JSONObject().apply {
+        for (name in listOf("header", "footer", "update")) groups[name]?.singleTextMetrics()?.let { put(name, it) }
+    }
+    private fun panelBox(name: String, plan: PanelGeometry.Plan): PanelGeometry.Box? = when (name) {
+        "header" -> plan.header; "quick" -> plan.quick; "levels" -> plan.levels; "media" -> plan.media; "footer" -> plan.footer
+        "update" -> plan.update
+        else -> null
+    }
+    /** Size the sheet needs for what is declared and shown now; the stage asks before it places the page. */
+    fun panelSize(): Pair<Int, Int> = panelPlan().let { it.width to it.height }
+
+    private fun measurePanel(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        groups["header"]?.singleTextLine()
+        groups["update"]?.noticeLines()
+        val plan = panelPlan()
+        groups.forEach { (name, group) ->
+            val box = panelBox(name, plan)
+            group.visibility = if (box == null) GONE else VISIBLE
+            if (box != null) group.measure(MeasureSpec.makeMeasureSpec(box.width, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(box.height, MeasureSpec.EXACTLY))
+        }
+        setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.getSize(heightMeasureSpec))
+    }
+    private fun layoutPanel() {
+        val plan = panelPlan()
+        groups.forEach { (name, group) -> panelBox(name, plan)?.let { group.layout(it.left, it.top, it.right, it.bottom) } }
+    }
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        if (layout == "panel") { measurePanel(widthMeasureSpec, heightMeasureSpec); return }
         val w = MeasureSpec.getSize(widthMeasureSpec)
         val h = MeasureSpec.getSize(heightMeasureSpec)
         val spec = LayoutSpec(w, h, resources.displayMetrics.density)
@@ -709,6 +909,7 @@ internal class PageView(
         setMeasuredDimension(w, h)
     }
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+        if (layout == "panel") { layoutPanel(); return }
         aero?.layout(0,0,width,height)
         aero?.burnInOffset(contentDriftX, contentDriftY)
         val spec = LayoutSpec(width, height, resources.displayMetrics.density)

@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "plugins": [
+    {
+      "id": "player",
+      "repo": "TennousuAthena/ThinkOS",
+      "path": "plugins/player",
+      "owners": [
+        "TennousuAthena"
+      ],
+      "tag_prefix": "player/"
+    },
+    {
+      "id": "radio",
+      "repo": "TennousuAthena/ThinkOS",
+      "path": "plugins/radio",
+      "owners": [
+        "TennousuAthena"
+      ],
+      "tag_prefix": "radio/"
+    },
+    {
+      "id": "iptv",
+      "repo": "TennousuAthena/ThinkOS",
+      "path": "plugins/iptv",
+      "owners": [
+        "TennousuAthena"
+      ],
+      "tag_prefix": "iptv/"
+    }
+  ]
+}

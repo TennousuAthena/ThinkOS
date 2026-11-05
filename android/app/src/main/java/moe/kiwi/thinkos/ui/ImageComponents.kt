@@ -105,11 +105,11 @@ internal class ImageComponents(private val loader: ImageLoader, private val auth
             visibility = View.GONE
             if (!accessible) importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
         }
-        private val captionView = label(18f, false).apply {
+        private val captionView = label(TextScale.BODY, false).apply {
             typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
             maxLines = 2; ellipsize = TextUtils.TruncateAt.END
         }
-        private val creditView = label(12f)
+        private val creditView = label(TextScale.CAPTION)
         private val captionBlock = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             clipChildren = false; clipToPadding = false
@@ -184,11 +184,13 @@ internal class ImageComponents(private val loader: ImageLoader, private val auth
             grant = nextGrant
             if (changed) failed.clear()
             sequence.update(source, shuffle)
+            root.setBackgroundColor(backdrop(sequence.selected()))
             if (revoked || changed && (browse != null || shown != sequence.selected() || pending != null) || oldSettings != settings()) stop()
             reconcile()
         }
         private fun settings() = listOf(interval, duration, fit, pan, speed, panDuration, panDirection, transition, caption, captionHold, shuffle)
-        override fun colors(value: Palette) { root.setBackgroundColor(Color.BLACK) }
+        private fun backdrop(photo: Photo?) = if (photo?.src?.startsWith("app:") == true) Color.TRANSPARENT else Color.BLACK
+        override fun colors(value: Palette) { root.setBackgroundColor(backdrop(sequence.selected())) }
         override fun active(value: Boolean) {
             if (foreground == value) return
             val retained = current != null
@@ -274,7 +276,7 @@ internal class ImageComponents(private val loader: ImageLoader, private val auth
         private fun load(photo: Photo) {
             fun display(decoded: LoadedImage, cached: Boolean = false) {
                 handler.removeCallbacks(finish); finish.run(); cleanRetired()
-                val layer = createLayer(decoded)
+                val layer = createLayer(decoded, photo)
                 select(photo, layer)
                 if (current == null) {
                     current = layer
@@ -301,7 +303,7 @@ internal class ImageComponents(private val loader: ImageLoader, private val auth
             else request(photo, { display(it) }, { sequence.next(failed)?.let(::load) })
         }
         private fun rtl() = android.text.TextUtils.getLayoutDirectionFromLocale(java.util.Locale.getDefault()) == View.LAYOUT_DIRECTION_RTL
-        private fun createLayer(asset: LoadedImage): Layer {
+        private fun createLayer(asset: LoadedImage, photo: Photo): Layer {
             val decoded = asset.bitmap
             var frame = ImageGeometry.frame(decoded.width, decoded.height, root.width, root.height,
                 fit == "pan" && pan && !reduced, rtl(), interval, speed * root.resources.displayMetrics.density, panDuration)
@@ -314,7 +316,7 @@ internal class ImageComponents(private val loader: ImageLoader, private val auth
                     frame.width.toLong() * frame.height <= 4_000_000) setLayerType(View.LAYER_TYPE_HARDWARE, null)
             }
             val view = FrameLayout(root.context).apply {
-                clipChildren = true; setBackgroundColor(Color.BLACK); layoutDirection = View.LAYOUT_DIRECTION_LTR
+                clipChildren = true; setBackgroundColor(backdrop(photo)); layoutDirection = View.LAYOUT_DIRECTION_LTR
                 addView(image, FrameLayout.LayoutParams(frame.width, frame.height))
             }
             return Layer(view, image, frame, asset).also { layers += it; addLayer(view) }
@@ -353,6 +355,7 @@ internal class ImageComponents(private val loader: ImageLoader, private val auth
                 handler.postDelayed(advance, maxOf(interval, scaled(layer.frame.dwellMillis)) + if (incoming != null) scaled(duration) else 0L)
         }
         private fun select(photo: Photo, layer: Layer) {
+            root.setBackgroundColor(backdrop(photo))
             sequence.current = photo.id; positions[key] = photo.id; shown = photo
             grant?.let { remember(key, it, photo, root.width, root.height, layer.asset.bitmap) }
             root.contentDescription = photo.title.takeIf(String::isNotBlank)
@@ -428,7 +431,7 @@ internal class ImageComponents(private val loader: ImageLoader, private val auth
         private fun loadPreview(session: Browse) {
             val target = session.target ?: return
             session.placeholder = FrameLayout(root.context).apply {
-                setBackgroundColor(Color.BLACK)
+                setBackgroundColor(backdrop(target))
                 addView(ProgressBar(context), FrameLayout.LayoutParams((36 * resources.displayMetrics.density).toInt(),
                     (36 * resources.displayMetrics.density).toInt(), Gravity.CENTER))
                 translationY = session.offset + session.direction * root.height
@@ -436,7 +439,7 @@ internal class ImageComponents(private val loader: ImageLoader, private val auth
             request(target, { asset ->
                 if (browse !== session) { asset.close(); return@request }
                 session.placeholder?.let(::removePlaceholder); session.placeholder = null
-                session.layer = createLayer(asset)
+                session.layer = createLayer(asset, target)
                 positionBrowse(session)
                 if (session.released && session.commit) settleBrowse(session, true, 0f)
             }, {

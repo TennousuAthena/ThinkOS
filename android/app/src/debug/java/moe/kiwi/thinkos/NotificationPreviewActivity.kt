@@ -79,8 +79,8 @@ class NotificationPreviewActivity : Activity() {
             .setDuration(300).setInterpolator(Motion.EASE).start()
     }
 
-    override fun onResume() { super.onResume(); KioskState.resumed = true }
-    override fun onPause() { KioskState.resumed = false; super.onPause() }
+    override fun onResume() { super.onResume(); KioskState.noteResumed(taskId) }
+    override fun onPause() { KioskState.notePaused(taskId); super.onPause() }
     override fun onDestroy() { preview?.animate()?.cancel(); super.onDestroy() }
 
     private fun title(palette: Palette, size: Float) = TextView(ui).apply {

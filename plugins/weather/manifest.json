@@ -2,7 +2,7 @@
   "id": "weather",
   "name": "@name",
   "version": "0.4.0",
-  "api": 6,
+  "api": 9,
   "main": "main.lua",
   "permissions": [
     "network",
@@ -37,7 +37,8 @@
           "label": "@interval.60"
         }
       ],
-      "group": "@group.data"
+      "group": "@group.data",
+      "level": "normal"
     },
     "stale_after": {
       "type": "number",
@@ -47,7 +48,8 @@
       "max": 1440,
       "step": 1,
       "unit": "min",
-      "group": "@group.data"
+      "group": "@group.data",
+      "level": "advanced"
     },
     "endpoint": {
       "type": "text",
@@ -55,7 +57,8 @@
       "default": "https://api.open-meteo.com/v1/forecast",
       "maxLength": 512,
       "group": "@group.data",
-      "help": "@help.endpoint"
+      "placeholder": "@placeholder.endpoint",
+      "level": "advanced"
     },
     "retry_initial": {
       "type": "number",
@@ -65,7 +68,8 @@
       "max": 300,
       "step": 1,
       "unit": "s",
-      "group": "@group.recovery"
+      "group": "@group.recovery",
+      "level": "hidden"
     },
     "retry_max": {
       "type": "number",
@@ -75,7 +79,8 @@
       "max": 3600,
       "step": 1,
       "unit": "s",
-      "group": "@group.recovery"
+      "group": "@group.recovery",
+      "level": "hidden"
     },
     "clock_retry": {
       "type": "number",
@@ -85,7 +90,8 @@
       "max": 60,
       "step": 1,
       "unit": "s",
-      "group": "@group.recovery"
+      "group": "@group.recovery",
+      "level": "hidden"
     },
     "high_wind": {
       "type": "number",
@@ -95,7 +101,8 @@
       "max": 200,
       "step": 1,
       "unit": "km/h",
-      "group": "@group.relevance"
+      "group": "@group.relevance",
+      "level": "advanced"
     },
     "heat": {
       "type": "number",
@@ -105,7 +112,8 @@
       "max": 60,
       "step": 1,
       "unit": "°C",
-      "group": "@group.relevance"
+      "group": "@group.relevance",
+      "level": "advanced"
     },
     "cold": {
       "type": "number",
@@ -115,7 +123,8 @@
       "max": 15,
       "step": 1,
       "unit": "°C",
-      "group": "@group.relevance"
+      "group": "@group.relevance",
+      "level": "advanced"
     }
   },
   "pages": [
@@ -166,5 +175,10 @@
       "public": true,
       "cooldown": 300
     }
+  ],
+  "related": [
+    "location.name",
+    "units.system",
+    "units.wind"
   ]
 }

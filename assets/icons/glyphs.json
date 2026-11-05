@@ -1,0 +1,168 @@
+{
+  "description": "Icons drawn from Iconfont. tools/gen_glyphs.py turns each SVG into android/app/src/main/res/drawable/glyph_<name>.xml.",
+  "source": {
+    "site": "https://www.iconfont.cn",
+    "collection": 54062,
+    "collection_name": "Lucide",
+    "uploader": "逆态度",
+    "upstream": "Lucide (https://lucide.dev)",
+    "license": "ISC"
+  },
+  "glyphs": {
+    "wifi": {
+      "file": "lucide/wifi.svg",
+      "lucide": "wifi",
+      "iconfont_id": 47659338
+    },
+    "wifi-off": {
+      "file": "lucide/wifi-off.svg",
+      "lucide": "wifi-off",
+      "iconfont_id": 47659350
+    },
+    "volume": {
+      "file": "lucide/volume-2.svg",
+      "lucide": "volume-2",
+      "iconfont_id": 47659376
+    },
+    "volume-off": {
+      "file": "lucide/volume-x.svg",
+      "lucide": "volume-x",
+      "iconfont_id": 47659303
+    },
+    "brightness": {
+      "file": "lucide/sun.svg",
+      "lucide": "sun",
+      "iconfont_id": 47659116
+    },
+    "tv": {
+      "file": "lucide/tv.svg",
+      "lucide": "tv",
+      "iconfont_id": 47659323
+    },
+    "radio": {
+      "file": "lucide/radio.svg",
+      "lucide": "radio",
+      "iconfont_id": 47658817
+    },
+    "cast": {
+      "file": "lucide/cast.svg",
+      "lucide": "cast",
+      "iconfont_id": 47657960
+    },
+    "apps": {
+      "file": "lucide/layout-grid.svg",
+      "lucide": "layout-grid",
+      "iconfont_id": 47658502
+    },
+    "settings": {
+      "file": "lucide/settings.svg",
+      "lucide": "settings",
+      "iconfont_id": 47658929
+    },
+    "clear-day": {
+      "file": "lucide/sun.svg",
+      "lucide": "sun",
+      "iconfont_id": 47659116
+    },
+    "clear-night": {
+      "file": "lucide/moon.svg",
+      "lucide": "moon",
+      "iconfont_id": 47658937
+    },
+    "partly-day": {
+      "file": "lucide/cloud-sun.svg",
+      "lucide": "cloud-sun",
+      "iconfont_id": 47658106
+    },
+    "partly-night": {
+      "file": "lucide/cloud-moon.svg",
+      "lucide": "cloud-moon",
+      "iconfont_id": 47658085
+    },
+    "cloud": {
+      "file": "lucide/cloudy.svg",
+      "lucide": "cloudy",
+      "iconfont_id": 47658360
+    },
+    "fog": {
+      "file": "lucide/cloud-fog.svg",
+      "lucide": "cloud-fog",
+      "iconfont_id": 47658081
+    },
+    "rain": {
+      "file": "lucide/cloud-rain.svg",
+      "lucide": "cloud-rain",
+      "iconfont_id": 47658083
+    },
+    "shower": {
+      "file": "lucide/cloud-rain-wind.svg",
+      "lucide": "cloud-rain-wind",
+      "iconfont_id": 47658086
+    },
+    "snow": {
+      "file": "lucide/cloud-snow.svg",
+      "lucide": "cloud-snow",
+      "iconfont_id": 47658082
+    },
+    "thunder": {
+      "file": "lucide/cloud-lightning.svg",
+      "lucide": "cloud-lightning",
+      "iconfont_id": 47658102
+    },
+    "sun": {
+      "file": "lucide/sun.svg",
+      "lucide": "sun",
+      "iconfont_id": 47659116
+    },
+    "moon": {
+      "file": "lucide/moon.svg",
+      "lucide": "moon",
+      "iconfont_id": 47658937
+    },
+    "bluetooth": {
+      "file": "lucide/bluetooth.svg",
+      "lucide": "bluetooth",
+      "iconfont_id": 47658013
+    },
+    "house": {
+      "file": "lucide/house.svg",
+      "lucide": "house",
+      "iconfont_id": 47658436
+    },
+    "monitor": {
+      "file": "lucide/monitor.svg",
+      "lucide": "monitor",
+      "iconfont_id": 47658650
+    },
+    "moon-star": {
+      "file": "lucide/moon-star.svg",
+      "lucide": "moon-star",
+      "iconfont_id": 47658651
+    },
+    "puzzle": {
+      "file": "lucide/puzzle.svg",
+      "lucide": "puzzle",
+      "iconfont_id": 47658806
+    },
+    "map-pin": {
+      "file": "lucide/map-pin.svg",
+      "lucide": "map-pin",
+      "iconfont_id": 47658853
+    },
+    "sliders-horizontal": {
+      "file": "lucide/sliders-horizontal.svg",
+      "lucide": "sliders-horizontal",
+      "iconfont_id": 47658980
+    },
+    "sunset": {
+      "file": "lucide/sunset.svg",
+      "lucide": "sunset",
+      "iconfont_id": 47659267
+    },
+    "unknown": {
+      "file": "lucide/circle-question-mark.svg",
+      "lucide": "circle-question-mark",
+      "iconfont_id": 47658023
+    }
+  }
+}

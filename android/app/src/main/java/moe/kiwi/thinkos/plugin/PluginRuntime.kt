@@ -3,12 +3,23 @@ package moe.kiwi.thinkos.plugin
 import moe.kiwi.thinkos.core.WallClock
 import android.content.Context
 import android.os.FileObserver
+import android.os.Debug
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.os.SystemClock
 import android.util.AtomicFile
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
+import kotlin.coroutines.resume
 import moe.kiwi.thinkos.BuildConfig
 import moe.kiwi.thinkos.i18n.Formats
 import moe.kiwi.thinkos.i18n.Labels
@@ -18,11 +29,13 @@ import moe.kiwi.thinkos.i18n.SystemStrings
 import moe.kiwi.thinkos.media.MediaEngine
 import moe.kiwi.thinkos.media.StoragePermission
 import moe.kiwi.thinkos.net.PluginHttp
+import moe.kiwi.thinkos.net.PluginDnsResolver
 import moe.kiwi.thinkos.settings.SettingError
 import moe.kiwi.thinkos.settings.SettingField
 import moe.kiwi.thinkos.settings.SettingsDescriber
 import moe.kiwi.thinkos.settings.SettingsScope
 import moe.kiwi.thinkos.settings.SettingsStore
+import moe.kiwi.thinkos.settings.SystemSettings
 import moe.kiwi.thinkos.settings.TimezoneSource
 import moe.kiwi.thinkos.tz.ZoneFormat
 import moe.kiwi.thinkos.tz.ZoneNames
@@ -35,6 +48,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.Executors
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
@@ -43,6 +57,9 @@ import java.util.concurrent.atomic.AtomicLong
 class PluginRuntime(
     context: Context, private val callbacks: Callbacks, private val settings: SettingsStore,
     private val media: MediaEngine, storagePermission: StoragePermission,
+    private val device: moe.kiwi.thinkos.device.DeviceControl,
+    /** `tos.cast.status()`: what the receivers are doing, read when asked. */
+    private val castStatus: () -> Map<String, Any?> = { emptyMap() },
 ) {
     interface Callbacks {
         fun onCatalog(pages: List<PluginPage>, widgets: List<PluginWidget>)
@@ -50,12 +67,42 @@ class PluginRuntime(
         fun onFocus(pageKey: String, live: Boolean, release: Boolean, answersTap: Boolean = false)
         fun onTileAnimation(pluginId: String, name: String) {}
         fun onError(pluginId: String, message: String)
+        /** `tos.panel.close()`: the control sheet's plugin is done. */
+        fun onPanelClose() {}
+        /** `tos.device.openAndroid(target)`: leave for one of Android's own screens (`wifi` or `settings`). */
+        fun onOpenAndroid(target: String) {}
+        fun onOpenApp(entry: moe.kiwi.thinkos.apps.AppEntry, result: (Boolean) -> Unit) { result(false) }
+        /** `tos.settings.open(scope)`: show a settings page; [scope] is `system` or a plugin id. */
+        fun onOpenSettings(scope: String) {}
+        /** Native legal notices; restricted to the built-in settings administrator. */
+        fun onAbout() {}
+        /** Native touch confirmation, never a plugin-supplied approval. */
+        fun onPluginConsent(request: RegistryConsent, result: (Boolean) -> Unit) { result(false) }
+        /** Main-thread check of the actual visible page. */
+        fun registryVisible(id: String): Boolean = false
+        fun onboardingStatus(): Map<String, Any?> = mapOf("version" to 1, "active" to false, "updater" to false)
+        fun onOpenOnboarding(mode: String) {}
+        fun onPractice(pluginId: String, name: String?, text: String) {}
+        /** Read-only, immutable update projection. No network on the plugin thread. */
+        fun updateStatus(): Map<String, Any?> = emptyMap()
+        fun onOpenUpdates(): Boolean = false
+        /** Public settings may request a native prompt, never installation approval. */
+        fun onEnableMiracast(): Boolean = false
+        /** Returns cancellation for the admission task, not an installer/IO handle. */
+        fun onUpdateAction(action: String, tapElapsed: Long, result: (Boolean, String?) -> Unit): (() -> Unit)? {
+            result(false, "unavailable"); return null
+        }
+        /** `tos.back.intercept(on)`: the plugin wants to hear Back before the screen leaves its page (ADR-040). */
+        fun onBackIntercept(pluginId: String, on: Boolean) {}
+        /** The plugin reacted to the `back` event it was sent. */
+        fun onBackAnswered(pluginId: String) {}
     }
     private val app = context.applicationContext
     private val thread = HandlerThread("ThinkOS-Plugin").apply { start() }
     private val worker = Handler(thread.looper)
     private val main = Handler(Looper.getMainLooper())
     private val io = Executors.newFixedThreadPool(4) { Thread(it, "ThinkOS-PluginIO") }
+    private val dns = PluginDnsResolver()
     private val astroWorker = Executors.newSingleThreadExecutor { Thread(it, "ThinkOS-Astro") }
     private val storeIO = Executors.newSingleThreadExecutor { Thread(it, "ThinkOS-StoreIO") }
     private val root = File(app.filesDir, "plugins")
@@ -63,6 +110,78 @@ class PluginRuntime(
     private val active = linkedMapOf<String, Instance>()
     private val pending = linkedMapOf<String, Instance>()
     private val factory = linkedMapOf<String, Bundle>()
+    @Volatile private var registryReady = false
+    @Volatile private var registryFrame = false
+    private val registryPreparing = ConcurrentHashMap.newKeySet<String>()
+    @Volatile private var factoryForRegistry = emptyMap<String, Bundle>()
+    private val registryWaiters = mutableMapOf<String, Pair<String, (Boolean) -> Unit>>()
+    private val registryScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val registry by lazy { RegistryRepository(app, settings, object : RegistryRepository.Host {
+        override fun prepare(index: PluginFiles.Index, blobs: Map<String, File>, record: JSONObject): File {
+            val path = File(root, "${index.id}/${index.version}-${index.digest}").absolutePath
+            registryPreparing.add(path)
+            return try {
+                val bundle = install(index) { file -> blobs.getValue(file).inputStream() }
+                RegistryPolicy.manifest(bundle.manifest, JSONObject().put("permissions", record.getJSONArray("confirmed")), record, factoryForRegistry[index.id]?.manifest)
+                RegistryPolicy.verifyDirectory(bundle.directory, index.digest)
+                bundle.directory
+            } catch (error: Exception) { registryPreparing.remove(path); throw error }
+        }
+        override suspend fun activate(record: JSONObject): Boolean {
+            val id = record.getString("id"); val bundled = factoryForRegistry[id]
+            if (bundled != null && RegistryPolicy.compare(bundled.version, record.getString("version")) >= 0) {
+                registryPreparing.remove(File(root, "$id/${record.getString("version")}-${record.getString("digest")}").absolutePath)
+                return true
+            }
+            val bundle = withContext(Dispatchers.IO) {
+                val directory = File(root, "$id/${record.getString("version")}-${record.getString("digest")}")
+                val index = RegistryPolicy.verifyDirectory(directory, record.getString("digest"))
+                val manifest = readObject(resolve(directory, "manifest.json"))
+                RegistryPolicy.manifest(manifest, JSONObject().put("permissions", record.getJSONArray("confirmed")), record, bundled?.manifest)
+                require(index.id == id && index.version == record.getString("version"))
+                Bundle(directory, manifest, index.digest, registry = true)
+            }
+            return withTimeout(15_000) { suspendCancellableCoroutine { continuation ->
+                worker.post {
+                    if (closed || safe) { if (continuation.isActive) continuation.resume(false); return@post }
+                    if (active[id]?.bundle?.digest == bundle.digest && active[id]?.disabled != true) { if (continuation.isActive) continuation.resume(true); return@post }
+                    registryWaiters[id] = bundle.digest to { result -> if (continuation.isActive) continuation.resume(result) }
+                    if (!activate(bundle)) registryWaiters.remove(id)?.second?.invoke(false)
+                }
+                continuation.invokeOnCancellation { worker.post { registryWaiters.remove(id); pending[id]?.takeIf { it.bundle.digest == bundle.digest }?.let { pending.remove(id); it.terminate(false) } } }
+            } }
+        }
+        override suspend fun remove(id: String) = suspendCancellableCoroutine<Unit> { continuation -> worker.post {
+            registryWaiters.remove(id)?.second?.invoke(false)
+            pending[id]?.takeIf { it.bundle.registry }?.let { pending.remove(id); it.terminate(false) }
+            active[id]?.takeIf { it.bundle.registry }?.let { active.remove(id); it.terminate(true); settings.unregister(id); factory[id]?.let { bundled -> activate(bundled) } }
+            publishCatalog(); if (continuation.isActive) continuation.resume(Unit)
+        } }
+        override suspend fun open(id: String): Boolean = suspendCancellableCoroutine { continuation -> worker.post {
+            val instance = active[id]?.takeUnless { it.disabled }; val page = instance?.pages?.firstOrNull { it.app }
+            if (page == null) { if (continuation.isActive) continuation.resume(false) }
+            else main.post { if (!closed) callbacks.onFocus(page.key, false, false, true); if (continuation.isActive) continuation.resume(!closed) }
+        } }
+        override suspend fun busy(id: String): Boolean = suspendCancellableCoroutine { continuation -> worker.post {
+            val owner = (mediaSnapshot["owner"] as? String).orEmpty().substringBefore(':')
+            val mediaBusy = owner == id || devDigests.containsKey(id)
+            main.post { if (continuation.isActive) continuation.resume(mediaBusy || callbacks.registryVisible(id)) }
+        } }
+        override suspend fun consent(value: RegistryConsent): Boolean = suspendCancellableCoroutine { continuation -> main.post {
+            if (closed) { if (continuation.isActive) continuation.resume(false) }
+            else callbacks.onPluginConsent(value) { accepted -> if (continuation.isActive) continuation.resume(accepted) }
+        } }
+        override fun changed() { event(null, "plugins") }
+        override fun ready() { worker.post { registryReady = true; cleanupVersions() } }
+    }) }
+    /** Downloaded plugins start only after the first actual frame, one at a time. */
+    fun registryAfterFirstFrame() {
+        registryFrame = true
+        worker.post { if (!safe && !closed && !loading && factoryForRegistry.isNotEmpty()) registry.start() }
+    }
+    internal fun registryOverrideForTest(roots: moe.kiwi.thinkos.update.UpdateKeys, sources: List<String>) {
+        check(BuildConfig.DEBUG); registry.overrideForTest(roots, sources)
+    }
     private val stores = mutableMapOf<String, LocalStore>()
     private val devDigests = mutableMapOf<String, String>()
     private val devFiles = mutableMapOf<String, String>()
@@ -74,6 +193,7 @@ class PluginRuntime(
     @Volatile private var closed = false
     @Volatile private var safe = false
     @Volatile private var diagnosticSnapshot = emptyList<PluginDiagnostic>()
+    private val diagnosticCpuNanos = ConcurrentHashMap<String, AtomicLong>()
     /** Immutable copy of every active plugin's translated strings, safe to read from the UI thread. */
     @Volatile private var stringTables = emptyMap<String, StringTable>()
     fun text(pluginId: String, key: String): String? = stringTables[pluginId]?.format(key, Locale.getDefault())
@@ -133,6 +253,43 @@ class PluginRuntime(
     private val systemValues = moe.kiwi.thinkos.settings.SystemValues(settings)
     private val astronomy = AstroHost { location.get().toMap() }
     private val mediaCapability = MediaCapability(app, media, storagePermission, io, main)
+    private val installedApps = moe.kiwi.thinkos.apps.InstalledApps(app) { event(null, "apps") }
+    private val deviceLocale = moe.kiwi.thinkos.device.DeviceLocale(app)
+    private val updater = moe.kiwi.thinkos.update.UpdaterClient()
+    // A module is activated by a reboot; probe it once per application process.
+    // Repeated setup rendering must not block the plugin thread on missing IPC.
+    private val setupCapabilities by lazy { registryScope.async { updater.status().getOrNull()?.setup } }
+
+    /** Fixed routing table; handlers only move existing host branches. */
+    private val hostCapabilities: Map<String, HostCapability> = linkedMapOf<String, HostCapability>().apply {
+        val capability0 = CoreCalls()
+        listOf("config", "state.set", "state.get", "data.get", "command.call", "store.get", "store.set", "log", "module").forEach { put(it, capability0) }
+        val capability1 = SettingsCalls()
+        listOf("settings.list", "settings.get", "settings.set", "settings.setMany", "settings.reset", "settings.open", "settings.about").forEach { put(it, capability1) }
+        val updates = UpdateCalls()
+        listOf("update.status", "update.open", "update.check", "update.download", "update.install").forEach { put(it, updates) }
+        val registryCalls = RegistryCalls()
+        listOf("plugins.catalog", "plugins.installed", "plugins.open", "plugins.install", "plugins.update", "plugins.uninstall", "plugins.setAuto").forEach { put(it, registryCalls) }
+        val capability2 = DeviceCalls()
+        listOf("device.get", "device.mode", "device.setMode", "device.wifi", "device.mute", "device.openAndroid", "device.canSetLocale", "device.setLocale", "device.canSetTimeZone", "device.setTimeZone", "cast.status", "panel.close").forEach { put(it, capability2) }
+        val onboarding = OnboardingCalls()
+        listOf("onboarding.status", "onboarding.open", "onboarding.practice", "onboarding.stop").forEach { put(it, onboarding) }
+        val capability3 = NavigationCalls()
+        listOf("back.intercept", "tile.animate", "page.focus", "page.release").forEach { put(it, capability3) }
+        val capability4 = TimeCalls()
+        listOf("i18n.t", "time.now", "time.format", "tz.home", "tz.info", "tz.zones", "units.get", "units.temperature", "units.wind", "locale").forEach { put(it, capability4) }
+        val capability5 = AstroCalls()
+        listOf("location.get", "astro.sun", "astro.moon", "astro.seasons").forEach { put(it, capability5) }
+        val capability6 = ScheduledCalls()
+        listOf("timer.add", "timer.cancel", "sleep").forEach { put(it, capability6) }
+        val capability7 = MediaCalls()
+        listOf("media.load", "media.play", "media.pause", "media.toggle", "media.next", "media.prev", "media.seek", "media.volume", "media.stop", "media.shuffle", "media.repeat", "media.jump", "media.live", "media.audioTrack", "media.textTrack", "media.probe", "library.list").forEach { put(it, capability7) }
+        val capability8 = NetworkCalls()
+        listOf("http.get", "http.post", "net.resolve").forEach { put(it, capability8) }
+        val applications = AppsCalls()
+        listOf("apps.list", "apps.open").forEach { put(it, applications) }
+    }
+
     /** Settings changed (Server delivery or the device's own settings page): tell the plugin that owns them. */
     private val settingsListener = SettingsStore.Listener { scope, keys ->
         if (scope != SettingsStore.SYSTEM) worker.post { if (!closed) active[scope]?.let(::configChanged) }
@@ -140,10 +297,11 @@ class PluginRuntime(
             event(null, "location", JSONArray())
         }
         if (scope == SettingsStore.SYSTEM && keys.any { it.startsWith("units.") }) event(null, "units", JSONArray())
+        if (scope == SettingsStore.SYSTEM && keys.any { it == SystemSettings.Keys.APPS_ANDROID || it == SystemSettings.Keys.APPS_HIDDEN }) event(null, "apps")
     }
     init { settings.addListener(settingsListener) }
 
-    private data class Bundle(val directory: File, val manifest: JSONObject, val digest: String) {
+    private data class Bundle(val directory: File, val manifest: JSONObject, val digest: String, val registry: Boolean = false) {
         val id: String get() = manifest.getString("id")
         val version: String get() = manifest.getString("version")
     }
@@ -186,10 +344,13 @@ class PluginRuntime(
     }
     private inner class Instance(val bundle: Bundle, previous: Instance? = null) {
         val permissions = arrayValues(bundle.manifest.optJSONArray("permissions")).map(Any::toString).toSet()
+        /** The `system.*` permissions are only ever given to the copy that shipped inside the APK (ADR-035), never to a Git or development copy. */
+        fun grantedPermissions(): Set<String> = PluginAuthority.granted(permissions, factory[bundle.id]?.digest == bundle.digest)
+        private val appPages = arrayObjects(bundle.manifest.optJSONArray("apps")).map { it.getString("page") }.toSet()
         /** Names this instance's media session; a replacement gets a new token, so late callbacks cannot reach it. */
         val mediaOwner = "${bundle.id}:${NEXT_INSTANCE.incrementAndGet()}"
         val mediaLive = AtomicBoolean(true)
-        val imageOwner = moe.kiwi.thinkos.image.ImageOwner(bundle.directory, permissions)
+        val imageOwner = moe.kiwi.thinkos.image.ImageOwner(bundle.directory, grantedPermissions())
         val exports = PublicData.exports(bundle.manifest)
         val uses = PublicData.uses(bundle.manifest)
         val calls = PublicData.calls(bundle.manifest)
@@ -211,17 +372,25 @@ class PluginRuntime(
             text.startsWith("@") -> strings.format(text.substring(1), Locale.getDefault()) ?: text.substring(1)
             else -> text
         }
-        val scope: SettingsScope? = bundle.manifest.optJSONObject("settings")?.let { declared ->
+        val scope: SettingsScope? = if (bundle.manifest.has("settings") || bundle.manifest.has("related")) {
+            val declared = bundle.manifest.optJSONObject("settings") ?: JSONObject()
             SettingsScope(bundle.id, bundle.manifest.optString("name", bundle.id), linkedMapOf<String, SettingField>().also { fields ->
                 declared.keys().forEach { key -> fields[key] = SettingField.parse(key, declared.getJSONObject(key), false, TimezoneSource) }
-            })
-        }
+            }, related = arrayValues(bundle.manifest.optJSONArray("related")).map(Any::toString))
+        } else null
         val health: PluginHealth = previous?.health ?: PluginHealth()
         val store = stores.getOrPut(bundle.id) { LocalStore(bundle.id) }
         var publishPending = false
+        /** While the plugin handles a `back` event: whether it asked the OS for anything but a reading. */
+        var backSlice = false
+        var backAnswered = false
+        var updateTapElapsed: Long? = null
+        var onboardingTapElapsed: Long? = null
         var error: String? = null
         var disabled = false
         var startTask = 0
+        var startupPeak: NativeLua.Step? = null
+        var stateTiming: String? = null
         val timers = mutableMapOf<Int, Runnable>()
         val awaits = mutableMapOf<Int, Future<*>?>()
         val pages = arrayObjects(bundle.manifest.optJSONArray("pages")).map { page ->
@@ -229,8 +398,9 @@ class PluginRuntime(
             val variants = page.optJSONArray("variants") ?: view.optJSONArray("variants")
             PluginPage(bundle.id, page.getString("id"), label(page.optString("title", page.getString("id"))), view,
                 arrayValues(variants).map { if (it is JSONObject) it.getString("id") else it.toString() },
-                arrayValues(page.optJSONArray("roles")).map(Any::toString), page.optInt("priority"), page.optBoolean("live"),
-                page.optString("title").takeIf { it.startsWith("@") && !it.startsWith("@@") }?.substring(1))
+                if (bundle.registry) emptyList() else arrayValues(page.optJSONArray("roles")).map(Any::toString), page.optInt("priority"), !bundle.registry && page.optBoolean("live"),
+                page.optString("title").takeIf { it.startsWith("@") && !it.startsWith("@@") }?.substring(1),
+                app = bundle.registry || page.getString("id") in appPages)
         }
         val widgets = arrayObjects(bundle.manifest.optJSONArray("widgets")).map { widget ->
             val alternates = widget.optJSONObject("alternates")
@@ -239,6 +409,7 @@ class PluginRuntime(
                 alternates?.keys()?.asSequence()?.associateWith { readObject(resolve(bundle.directory, alternates.getString(it))) }.orEmpty())
         }
         fun terminate(sendStop: Boolean) {
+            updateTapElapsed = null
             mediaLive.set(false)
             main.post { runCatching { media.releaseOwner(mediaOwner) }.onFailure { Log.w(TAG, "Media owner cleanup failed", it) } }
             if (sendStop) runCatching { slice(this) { lua?.dispatch("stop") } }
@@ -253,6 +424,7 @@ class PluginRuntime(
     }
 
     fun start(safeMode: Boolean = false) {
+        installedApps.start()
         safe = safeMode
         worker.post {
             root.mkdirs()
@@ -293,6 +465,8 @@ class PluginRuntime(
                     } catch (e: Exception) { report(id, e) }
                 }
                 loading = false
+                factoryForRegistry = factory.toMap()
+                if (registryFrame && !safe) registry.start()
                 persistInstalled(); cleanupVersions()
                 publishCatalog()
                 if (BuildConfig.DEBUG && !safe) {
@@ -315,15 +489,24 @@ class PluginRuntime(
     /** When each plugin's own page was last tapped, so a page change it asks for in reply is allowed through. */
     private val tapped = java.util.concurrent.ConcurrentHashMap<String, Long>()
     fun event(pluginId: String?, name: String, args: JSONArray = JSONArray()) {
+        val eventElapsed = SystemClock.elapsedRealtime()
         if (pluginId != null && name == "tap") tapped[pluginId] = SystemClock.elapsedRealtime()
         val values = (JsonDocument.toHost(args) as List<*>).toTypedArray()
         worker.post {
             if (pluginId == null && name == "attention") currentAttention = values
             val targets = if (pluginId == null) active.values.toList() else listOfNotNull(active[pluginId])
             targets.forEach { instance ->
-                if (name in setOf("presence", "gesture") && !arrayValues(instance.bundle.manifest.optJSONArray("permissions")).contains("presence")) return@forEach
-                if (name == "location" && !arrayValues(instance.bundle.manifest.optJSONArray("permissions")).contains("location")) return@forEach
-                execute(instance) { it.dispatch(name, values) }
+                if (name == "mode" && instance.bundle.manifest.getInt("api") < 10) return@forEach
+                if (pluginId != null && PluginUpdatePolicy.userEvent(name, values)) instance.updateTapElapsed = eventElapsed
+                if (pluginId != null && name in setOf("tap", "form.change")) instance.onboardingTapElapsed = eventElapsed
+                if (name in PluginEventPolicy.restricted && !PluginEventPolicy.allows(
+                        name, instance.bundle.manifest.getInt("api"), instance.grantedPermissions())) return@forEach
+                if (name != "back") { execute(instance) { it.dispatch(name, values) }; return@forEach }
+                // Back (ADR-040): did the plugin do anything about it? If not, the next press leaves without it.
+                instance.backSlice = true
+                instance.backAnswered = false
+                try { execute(instance) { it.dispatch(name, values) } } finally { instance.backSlice = false }
+                if (instance.backAnswered) main.post { if (!closed) callbacks.onBackAnswered(instance.bundle.id) }
             }
         }
     }
@@ -331,9 +514,23 @@ class PluginRuntime(
         worker.post { active[pluginId]?.let { it.state.set("variant", variant); publishState(it) } }
     }
     fun diagnostics(): List<PluginDiagnostic> = diagnosticSnapshot
+    /** Debug receiver only: cumulative worker CPU, including host calls, without private plugin state. */
+    fun debugCpuNanos(): Map<String, Long> = if (BuildConfig.DEBUG) diagnosticCpuNanos.mapValues { it.value.get() } else emptyMap()
+    /** Debug-only failure exercise. Restarting the process restores the normal catalog. */
+    fun debugDisableAll() {
+        if (!BuildConfig.DEBUG) return
+        worker.post {
+            pending.values.toList().forEach { it.terminate(false) }
+            pending.clear()
+            active.values.toList().forEach { it.terminate(true); it.disabled = true }
+            publishCatalog()
+            Log.i(TAG, "DEBUG plugins_disabled count=${active.size} lua=${active.values.sumOf { it.lua?.bytes() ?: 0 }}")
+        }
+    }
     /** Language, 12/24-hour setting or time zone changed: tell every plugin so it can recompute its text. */
     fun localeChanged() { Formats.invalidate(); event(null, "locale", JSONArray()) }
     fun restoreFactory() {
+        registry.restoreFactory()
         worker.post {
             dev.listFiles()?.forEach(PluginFiles::deleteTree)
             devDigests.clear(); devFiles.clear(); previousDirectories.clear()
@@ -346,6 +543,8 @@ class PluginRuntime(
     }
     fun close() {
         closed = true
+        registry.close(); registryScope.cancel()
+        installedApps.close()
         imageOwners = emptyMap()
         settings.removeListener(settingsListener)
         observer?.stopWatching()
@@ -353,6 +552,7 @@ class PluginRuntime(
             pending.values.toList().forEach { it.terminate(false) }; pending.clear()
             active.values.toList().forEach { it.terminate(true) }; active.clear()
             stores.values.forEach { it.flush() }
+            dns.close()
             io.shutdownNow()
             astroWorker.shutdownNow()
             storeIO.shutdown()
@@ -363,8 +563,15 @@ class PluginRuntime(
     }
     private fun owned(instance: Instance) = !closed && (active[instance.bundle.id] === instance || pending[instance.bundle.id] === instance)
     private inline fun <T> slice(instance: Instance, body: () -> T): T {
+        val began = if (BuildConfig.DEBUG) Debug.threadCpuTimeNanos() else 0L
         crashTracker?.enter(instance.bundle.id, instance.bundle.digest)
-        return try { body() } finally { crashTracker?.clear() }
+        return try { body() } finally {
+            crashTracker?.clear()
+            instance.stateTiming?.let { Log.d(TAG, "[plugin:${instance.bundle.id}] state.set $it") }
+            instance.stateTiming = null
+            if (BuildConfig.DEBUG) diagnosticCpuNanos.getOrPut(instance.bundle.id) { AtomicLong() }
+                .addAndGet((Debug.threadCpuTimeNanos() - began).coerceAtLeast(0))
+        }
     }
     private fun activate(bundle: Bundle, previous: Instance? = null): Boolean {
         pending.remove(bundle.id)?.terminate(false)
@@ -406,6 +613,8 @@ class PluginRuntime(
         val previous = active.put(instance.bundle.id, instance)
         if (previous != null && previous.bundle.directory != instance.bundle.directory) previousDirectories[instance.bundle.id] = previous.bundle.directory
         previous?.terminate(true)
+        registryPreparing.remove(instance.bundle.directory.absolutePath)
+        registryWaiters[instance.bundle.id]?.takeIf { it.first == instance.bundle.digest }?.let { registryWaiters.remove(instance.bundle.id); it.second(true) }
         if (instance.exports.isNotEmpty() || instance.exportValues.isNotEmpty()) captureExports(instance, instance.state.snapshot())
         // A plugin installed/replaced while already asleep must learn that state before
         // its deferred work starts, even when the sensors have no new transition to emit.
@@ -415,13 +624,16 @@ class PluginRuntime(
         publishCatalog()
         publishState(instance)
         cleanupVersions()
-        Log.i(TAG, "[plugin:${instance.bundle.id}] loaded ${instance.bundle.version}; Lua ${instance.lua?.bytes() ?: 0} bytes")
+        val timing = instance.startupPeak?.let { "; start ${it.timing()}" }.orEmpty()
+        Log.i(TAG, "[plugin:${instance.bundle.id}] loaded ${instance.bundle.version}; Lua ${instance.lua?.bytes() ?: 0} bytes$timing")
     }
     /** A plugin's declared settings exist from the moment its code starts, so `tos.config` is right in `start`. */
     private fun registerScope(instance: Instance) {
         instance.scope?.let(settings::register) ?: settings.unregister(instance.bundle.id)
     }
     private fun failCandidate(instance: Instance, error: Exception) {
+        registryPreparing.remove(instance.bundle.directory.absolutePath)
+        registryWaiters[instance.bundle.id]?.takeIf { it.first == instance.bundle.digest }?.let { registryWaiters.remove(instance.bundle.id); it.second(false) }
         if (pending[instance.bundle.id] === instance) pending.remove(instance.bundle.id)
         // The old version keeps running with its own declarations.
         active[instance.bundle.id]?.let(::registerScope) ?: settings.unregister(instance.bundle.id)
@@ -441,9 +653,10 @@ class PluginRuntime(
         catch (error: Exception) { instance.error = error.message; report(instance.bundle.id, error); recover(instance, true) }
     }
     private fun handleStep(instance: Instance, step: NativeLua.Step, startup: Boolean = false) {
+        if (startup && step.cpuMicros > (instance.startupPeak?.cpuMicros ?: -1)) instance.startupPeak = step
         if (step.status != NativeLua.WAITING) instance.awaits.remove(step.taskId)?.cancel(false)
         if (step.failed) {
-            val failure = LuaFailure(step)
+            val failure = LuaFailure(step, if (startup) "start" else "event")
             if (startup) failCandidate(instance, failure)
             else {
                 instance.error = step.message
@@ -455,6 +668,11 @@ class PluginRuntime(
     private fun recover(instance: Instance, resource: Boolean) {
         val action = instance.health.failure(SystemClock.elapsedRealtime(), resource)
         if (action != PluginHealth.Action.KEEP) {
+            if (instance.bundle.registry && registry.isTrial(instance.bundle.id, instance.bundle.digest)) {
+                instance.terminate(false); instance.disabled = true
+                registry.failed(instance.bundle.id, instance.bundle.digest)
+                publishCatalog(); return
+            }
             instance.terminate(false)
             instance.disabled = action == PluginHealth.Action.COOL_DOWN
             val delay = (instance.health.retryAt - SystemClock.elapsedRealtime()).coerceAtLeast(1)
@@ -484,175 +702,562 @@ class PluginRuntime(
         }
     }
     private fun host(instance: Instance, method: String, args: Array<Any?>, taskId: Int): Any? {
-        val bundle = instance.bundle
-        fun arg(index: Int) = args.getOrNull(index)
-        fun number(index: Int) = (arg(index) as Number).toDouble()
-        return when (method) {
-            "config" -> LinkedHashMap(settings.snapshot(bundle.id))
-            "state.set" -> {
-                val patch = statePatch(arg(0), reserveUses = bundle.manifest.getInt("api") >= 6)
-                instance.state.merge(patch); publishState(instance); null
-            }
-            "settings.list" -> { requireSettingsAdmin(instance); describer.list(Locale.getDefault()) }
-            "settings.get" -> { requireSettingsAdmin(instance); describer.describe(arg(0) as String, Locale.getDefault()) }
-            "settings.set" -> {
-                requireSettingsAdmin(instance)
-                try {
-                    mapOf("value" to settings.set(arg(0) as String, arg(1) as String, arg(2)))
-                } catch (error: SettingError) {
-                    // An ordering error names the other setting; hand over its label, not its key.
-                    val args = LinkedHashMap(error.args)
-                    (args["key"] as? String)?.let { other ->
-                        settings.scope(arg(0) as String)?.fields?.get(other)?.let { args["label"] = labels.resolve(arg(0) as String, it.label, Locale.getDefault()) }
+        if (instance.backSlice && method !in QUIET_METHODS) instance.backAnswered = true
+        val capability = hostCapabilities[method] ?: error("Unavailable API: $method")
+        return capability.call(instance, method, args, taskId)
+    }
+
+    private fun interface HostCapability {
+        fun call(instance: Instance, method: String, args: Array<Any?>, taskId: Int): Any?
+    }
+
+    private inner class CoreCalls : HostCapability {
+        override fun call(instance: Instance, method: String, args: Array<Any?>, taskId: Int): Any? {
+            val bundle = instance.bundle
+            fun arg(index: Int) = args.getOrNull(index)
+            fun number(index: Int) = (arg(index) as Number).toDouble()
+            return when (method) {
+                "config" -> LinkedHashMap(settings.snapshot(bundle.id))
+                "state.set" -> {
+                    val trace = BuildConfig.DEBUG && (arg(0) as? String)?.let { it.length >= 16 * 1024 } == true
+                    val began = if (trace) Debug.threadCpuTimeNanos() else 0
+                    val collections = if (trace) Debug.getRuntimeStat("art.gc.blocking-gc-count") else null
+                    val patch = statePatch(arg(0), reserveUses = bundle.manifest.getInt("api") >= 6)
+                    val parsed = if (trace) Debug.threadCpuTimeNanos() else 0
+                    instance.state.merge(patch)
+                    val merged = if (trace) Debug.threadCpuTimeNanos() else 0
+                    publishState(instance)
+                    if (trace) {
+                        val done = Debug.threadCpuTimeNanos()
+                        instance.stateTiming = "chars=${(arg(0) as String).length} parse=${(parsed - began) / 1000}us merge=${(merged - parsed) / 1000}us publish=${(done - merged) / 1000}us gc=$collections->${Debug.getRuntimeStat("art.gc.blocking-gc-count")}"
                     }
-                    mapOf("error" to mapOf("code" to error.code, "args" to args, "message" to error.message))
+                    null
                 }
-            }
-            "settings.setMany" -> {
-                requireSettingsAdmin(instance)
-                val values = (arg(1) as? Map<*, *>)?.entries?.associate { (key, value) ->
-                    require(key is String) { "setting key must be text" }
-                    key to value
-                } ?: error("settings values must be a table")
-                try {
-                    mapOf("value" to settings.setMany(arg(0) as String, values))
-                } catch (error: SettingError) {
-                    mapOf("error" to mapOf("code" to error.code, "args" to error.args, "message" to error.message))
+                "state.get" -> {
+                    val requested = arg(0) as? String ?: ""
+                    if (requested == "media" || requested.startsWith("media.")) {
+                        require("media" in instance.permissions) { "media permission required" }
+                        JsonDocument.toHost(path(mediaJson, requested.removePrefix("media").removePrefix(".")))
+                    } else JsonDocument.toHost(path(instance.state.value, requested))
                 }
-            }
-            "settings.reset" -> { requireSettingsAdmin(instance); settings.reset(arg(0) as String, arg(1) as? String); null }
-            "i18n.t" -> {
-                val params = (arg(1) as? Map<*, *>)?.entries?.associate { (k, v) -> k.toString() to v }.orEmpty()
-                instance.strings.format(arg(0) as String, Locale.getDefault(), params) ?: arg(0)
-            }
-            "state.get" -> {
-                val requested = arg(0) as? String ?: ""
-                if (requested == "media" || requested.startsWith("media.")) {
-                    require("media" in instance.permissions) { "media permission required" }
-                    JsonDocument.toHost(path(mediaJson, requested.removePrefix("media").removePrefix(".")))
-                } else JsonDocument.toHost(path(instance.state.value, requested))
-            }
-            "tile.animate" -> {
-                val name = arg(0) as? String
-                if (name == null || name !in TileAnimations.names) mapOf("error" to "unknown")
-                else if (!instance.animationGate.allow(name, SystemClock.elapsedRealtime(), TileAnimations.COOLDOWN_MILLIS)) mapOf("error" to "cooldown")
-                else {
-                    main.post { if (!closed) callbacks.onTileAnimation(bundle.id, name) }
-                    mapOf("ok" to true)
+                "data.get" -> readUse(instance, arg(0) as String)
+                "command.call" -> callCommand(instance, arg(0) as String, arg(1))
+                "store.get" -> JsonDocument.toHost(instance.store.document.value.opt(arg(0) as String))
+                "store.set" -> { instance.store.set(arg(0) as String, arg(1)); null }
+                "log" -> {
+                    val level = when (arg(0)) { "error" -> Log.ERROR; "warn" -> Log.WARN; else -> Log.INFO }
+                    Log.println(level, TAG, "[plugin:${bundle.id}] ${(arg(1) as? String).orEmpty().take(4096)}")
+                    null
                 }
-            }
-            "data.get" -> readUse(instance, arg(0) as String)
-            "command.call" -> callCommand(instance, arg(0) as String, arg(1))
-            "store.get" -> JsonDocument.toHost(instance.store.document.value.opt(arg(0) as String))
-            "store.set" -> { instance.store.set(arg(0) as String, arg(1)); null }
-            "time.now" -> WallClock.now().takeIf { it >= 1_577_836_800_000L }
-            "time.format" -> {
-                // Named formats (@time, @dateFull, …) follow the system locale and 12/24-hour setting.
-                val pattern = arg(1) as? String ?: "@time"
-                require(pattern.length <= 128)
-                ZoneFormat.format(pattern, number(0).toLong(), Zones.clock(arg(2) as? String))
-            }
-            "tz.home" -> Zones.home().id
-            "tz.info" -> zoneInfo(arg(0) as String)
-            "location.get" -> {
-                require(arrayValues(bundle.manifest.optJSONArray("permissions")).contains("location")) { "location permission required" }
-                location.get().toMap()
-            }
-            "astro.sun", "astro.moon" -> {
-                require(arrayValues(bundle.manifest.optJSONArray("permissions")).contains("location")) { "location permission required" }
-                require(taskId != 0 && instance.awaits.size < 8 && (active.values + pending.values).sumOf { it.awaits.size } < 32)
-                instance.awaits[taskId] = null
-                instance.awaits[taskId] = astroWorker.submit {
-                    val response = runCatching { astronomy.call(method, args) }
-                    worker.post { resume(instance, taskId, if (response.isSuccess) arrayOf(response.getOrThrow(), null)
-                        else arrayOf(null, response.exceptionOrNull()?.message ?: "astronomy error")) }
+                "module" -> {
+                    val name = arg(0) as String
+                    require(name.length <= 128 && name.matches(Regex("[A-Za-z0-9_.-]+")) && !name.contains(".."))
+                    val module = resolve(bundle.directory, name.replace('.', '/') + ".lua")
+                    require(module.isFile && module.length() <= MAX_STATE)
+                    module.readText()
                 }
-                null
+                else -> error("Unavailable API: $method")
             }
-            "astro.seasons" -> astronomy.call(method, args)
-            "units.get" -> systemValues.units.toMap()
-            "units.temperature" -> number(0).let { require(it.isFinite()); systemValues.units.temperature(it) }
-            "units.wind" -> number(0).let { require(it.isFinite()); systemValues.units.wind(it) }
-            "locale" -> {
-                val locale = Locale.getDefault()
-                mapOf("tag" to locale.toLanguageTag(), "language" to locale.language, "region" to locale.country,
-                    "script" to LocaleChain.script(locale), "rtl" to LocaleChain.isRtl(locale), "hour24" to Formats.env.hour24)
-            }
-            "timer.add" -> {
-                val id = number(0).toInt(); val seconds = number(1)
-                require(seconds.isFinite() && seconds in 0.05..2_592_000.0)
-                require(instance.timers.size < 64)
-                val every = arg(2) == true; val align = arg(3) == true
-                val delay = (seconds * 1000).toLong()
-                val timer = object : Runnable {
-                    override fun run() {
-                        if (!owned(instance) || instance.disabled || instance.lua == null) return
-                        if (pending[bundle.id] === instance) { worker.postDelayed(this, 50); return }
-                        if (!every) instance.timers.remove(id)
-                        execute(instance) { it.timer(id, every) }
-                        if (every && instance.timers[id] === this && instance.lua != null) worker.postDelayed(this, if (align) delay - WallClock.now().mod(delay) else delay)
-                    }
-                }
-                instance.timers.put(id, timer)?.let(worker::removeCallbacks)
-                worker.postDelayed(timer, if (align) delay - WallClock.now().mod(delay) else delay)
-                null
-            }
-            "timer.cancel" -> { instance.timers.remove(number(0).toInt())?.let(worker::removeCallbacks); null }
-            "sleep" -> {
-                require(taskId != 0 && number(0).isFinite() && number(0) in 0.001..3600.0)
-                require(instance.awaits.size < 8)
-                instance.awaits[taskId] = null
-                worker.postDelayed({ resume(instance, taskId, emptyArray()) }, (number(0) * 1000).toLong())
-                null
-            }
-            "media.load", "media.play", "media.pause", "media.toggle", "media.next", "media.prev", "media.seek",
-            "media.volume", "media.stop", "media.shuffle", "media.repeat", "media.jump", "media.live", "media.audioTrack",
-            "media.textTrack", "library.list" -> {
-                require(taskId != 0 && instance.awaits.size < 8 && (active.values + pending.values).sumOf { it.awaits.size } < 32)
-                // Playback, storage permission prompts and library scans run on the main/IO threads; the plugin only waits.
-                val job = CapabilityAwait({ !closed && instance.mediaLive.get() }) { values ->
-                    worker.post { resume(instance, taskId, values) }
-                }
-                instance.awaits[taskId] = job
-                mediaCapability.call(instance.mediaOwner, instance.permissions, method, args, job)
-                null
-            }
-            "http.get", "http.post" -> {
-                require(arrayValues(bundle.manifest.optJSONArray("permissions")).contains("network")) { "network permission required" }
-                require(taskId != 0 && instance.awaits.size < 8 && (active.values + pending.values).sumOf { it.awaits.size } < 32)
-                val url = arg(0) as String
-                val body = if (method == "http.post") arg(1) as? String else null
-                val options = arg(if (method == "http.post") 2 else 1) as? Map<*, *>
-                instance.awaits[taskId] = null
-                instance.awaits[taskId] = io.submit {
-                    val response = runCatching { PluginHttp.request(if (method == "http.get") "GET" else "POST", url, body, options) }
-                    worker.post { resume(instance, taskId, if (response.isSuccess) arrayOf(response.getOrThrow(), null) else arrayOf(null, response.exceptionOrNull()?.message ?: "network error")) }
-                }
-                null
-            }
-            "page.focus", "page.release" -> {
-                val id = (arg(0) as String).removePrefix("${bundle.id}.")
-                val page = instance.pages.firstOrNull { it.id == id } ?: error("page does not belong to plugin")
-                val live = arg(1) == true; require(!live || page.live)
-                val answersTap = SystemClock.elapsedRealtime() - (tapped[bundle.id] ?: Long.MIN_VALUE / 2) < TAP_ANSWER_MILLIS
-                main.post { if (!closed) callbacks.onFocus(page.key, live, method == "page.release", answersTap) }
-                null
-            }
-            "log" -> {
-                val level = when (arg(0)) { "error" -> Log.ERROR; "warn" -> Log.WARN; else -> Log.INFO }
-                Log.println(level, TAG, "[plugin:${bundle.id}] ${(arg(1) as? String).orEmpty().take(4096)}")
-                null
-            }
-            "module" -> {
-                val name = arg(0) as String
-                require(name.length <= 128 && name.matches(Regex("[A-Za-z0-9_.-]+")) && !name.contains(".."))
-                val module = resolve(bundle.directory, name.replace('.', '/') + ".lua")
-                require(module.isFile && module.length() <= MAX_STATE)
-                module.readText()
-            }
-            else -> error("Unavailable API: $method")
         }
     }
+
+    private inner class SettingsCalls : HostCapability {
+        private fun beforeWrite(scope: String, values: Map<String, Any>) {
+            if (scope == SettingsStore.SYSTEM && values[SystemSettings.Keys.CAST_MIRACAST] == true &&
+                settings.get(scope, SystemSettings.Keys.CAST_MIRACAST) != true && !callbacks.onEnableMiracast())
+                throw SettingError("feature_pending", message = app.getString(moe.kiwi.thinkos.R.string.feature_module_checking))
+        }
+        override fun call(instance: Instance, method: String, args: Array<Any?>, taskId: Int): Any? {
+            val bundle = instance.bundle
+            fun arg(index: Int) = args.getOrNull(index)
+            fun number(index: Int) = (arg(index) as Number).toDouble()
+            return when (method) {
+                "settings.list" -> { requireSettingsAdmin(instance); describer.list(Locale.getDefault()) }
+                "settings.get" -> { requireSettingsAdmin(instance); describer.describe(arg(0) as String, Locale.getDefault()) }
+                "settings.set" -> {
+                    requireSettingsAdmin(instance)
+                    try {
+                        mapOf("value" to settings.set(arg(0) as String, arg(1) as String, arg(2)) { beforeWrite(arg(0) as String, it) })
+                    } catch (error: SettingError) {
+                        // An ordering error names the other setting; hand over its label, not its key.
+                        val args = LinkedHashMap(error.args)
+                        (args["key"] as? String)?.let { other ->
+                            settings.scope(arg(0) as String)?.fields?.get(other)?.let { args["label"] = labels.resolve(arg(0) as String, it.label, Locale.getDefault()) }
+                        }
+                        mapOf("error" to mapOf("code" to error.code, "args" to args, "message" to error.message))
+                    }
+                }
+                "settings.setMany" -> {
+                    requireSettingsAdmin(instance)
+                    val values = (arg(1) as? Map<*, *>)?.entries?.associate { (key, value) ->
+                        require(key is String) { "setting key must be text" }
+                        key to value
+                    } ?: error("settings values must be a table")
+                    try {
+                        mapOf("value" to settings.setMany(arg(0) as String, values) { beforeWrite(arg(0) as String, it) })
+                    } catch (error: SettingError) {
+                        mapOf("error" to mapOf("code" to error.code, "args" to error.args, "message" to error.message))
+                    }
+                }
+                "settings.reset" -> {
+                    requireSettingsAdmin(instance)
+                    try {
+                        settings.reset(arg(0) as String, arg(1) as? String) { beforeWrite(arg(0) as String, it) }
+                        null
+                    } catch (error: SettingError) {
+                        mapOf("error" to mapOf("code" to error.code, "args" to error.args, "message" to error.message))
+                    }
+                }
+                "settings.open" -> {
+                    // Showing a settings page is what a tap on the plugin's own button asks for, never something it does on its own.
+                    val scope = arg(0) as? String ?: error("settings scope required")
+                    require(SystemClock.elapsedRealtime() - (tapped[bundle.id] ?: Long.MIN_VALUE / 2) < TAP_ANSWER_MILLIS) { "settings.open answers a tap" }
+                    require(scope == SettingsStore.SYSTEM || settings.scope(scope) != null) { "unknown settings scope" }
+                    main.post { if (!closed) callbacks.onOpenSettings(scope) }
+                    null
+                }
+                "settings.about" -> {
+                    require(bundle.manifest.getInt("api") >= 9) { "settings.about requires API 9" }
+                    requireSettingsAdmin(instance)
+                    main.post { if (!closed) callbacks.onAbout() }
+                    null
+                }
+                else -> error("Unavailable API: $method")
+            }
+        }
+    }
+
+    private inner class RegistryCalls : HostCapability {
+        override fun call(instance: Instance, method: String, args: Array<Any?>, taskId: Int): Any? {
+            require(instance.bundle.manifest.getInt("api") >= 10) { "plugins requires API 10" }
+            requireSystem(instance, "system.plugins")
+            if (method == "plugins.installed") {
+                require(args.isEmpty())
+                return registry.installed()
+            }
+            if (method != "plugins.catalog") require(PluginUpdatePolicy.fresh(instance.updateTapElapsed, SystemClock.elapsedRealtime(), TAP_ANSWER_MILLIS)) { "plugins operation answers a tap" }
+            val id = if (method == "plugins.catalog") null else (args.getOrNull(0) as? String)?.takeIf { it.matches(Regex("[a-z][a-z0-9-]{0,63}")) } ?: error("Invalid plugin ID")
+            if (method == "plugins.setAuto") {
+                require(args.size == 2 && args[1] is Boolean)
+                return if (registry.setAuto(id!!, args[1] as Boolean)) mapOf("value" to true) else mapOf("error" to "not-installed")
+            }
+            require(taskId != 0 && instance.awaits.size < 8 && (active.values + pending.values).sumOf { it.awaits.size } < 32)
+            val options = if (method == "plugins.catalog") (args.getOrNull(0) as? Map<*, *>) ?: emptyMap<Any, Any>() else emptyMap<Any, Any>()
+            val task = CapabilityAwait({ !closed && instance.mediaLive.get() }) { values -> worker.post { resume(instance, taskId, values) } }
+            instance.awaits[taskId] = task
+            val job = registryScope.launch {
+                try {
+                    val result = if (method == "plugins.catalog") registry.catalog(options) else registry.mutate(method.substringAfter('.'), id!!)
+                    task.finish(result)
+                } catch (_: kotlinx.coroutines.CancellationException) { task.cancel(true) }
+                catch (error: Exception) { task.finish(null, (error.message ?: "unavailable").take(160)) }
+            }
+            task.onCancel { job.cancel() }
+            return null
+        }
+    }
+
+    private inner class UpdateCalls : HostCapability {
+        override fun call(instance: Instance, method: String, args: Array<Any?>, taskId: Int): Any? {
+            val bundle = instance.bundle
+            PluginUpdatePolicy.requireRead(bundle.manifest.getInt("api"), instance.permissions,
+                factory[bundle.id]?.digest == bundle.digest)
+            require(args.isEmpty()) { "update methods take no arguments" }
+            if (method == "update.status") return callbacks.updateStatus()
+            require(taskId != 0 && instance.awaits.size < 8 && (active.values + pending.values).sumOf { it.awaits.size } < 32)
+            val tap = instance.updateTapElapsed
+            val job = CapabilityAwait({ !closed && instance.mediaLive.get() }) { values -> worker.post { resume(instance, taskId, values) } }
+            instance.awaits[taskId] = job
+            main.post {
+                if (!job.live()) return@post
+                if (!PluginUpdatePolicy.fresh(tap, SystemClock.elapsedRealtime(), systemValues.updateManualMillis)) {
+                    job.finish(null, "tap"); return@post
+                }
+                try {
+                    if (method == "update.open") {
+                        val opened = callbacks.onOpenUpdates()
+                        job.finish(if (opened) true else null, if (opened) null else "unavailable")
+                    } else {
+                        val cancel = callbacks.onUpdateAction(method.removePrefix("update."), tap!!) { accepted, error ->
+                            job.finish(if (accepted) true else null, error)
+                        }
+                        if (cancel != null) job.onCancel(cancel)
+                    }
+                } catch (_: Exception) { job.finish(null, "unavailable") }
+            }
+            return null
+        }
+    }
+
+    private inner class OnboardingCalls : HostCapability {
+        override fun call(instance: Instance, method: String, args: Array<Any?>, taskId: Int): Any? {
+            require(instance.bundle.manifest.getInt("api") >= 10) { "onboarding requires API 10" }
+            requireSettingsAdmin(instance)
+            if (method == "onboarding.status") {
+                require(args.isEmpty())
+                return callbacks.onboardingStatus()
+            }
+            if (method == "onboarding.practice" || method == "onboarding.stop") {
+                require(args.size == if (method == "onboarding.stop") 0 else 2) { "invalid practice arguments" }
+                require(instance.pages.any { "onboarding" in it.roles }) { "onboarding role required" }
+                val name = if (method == "onboarding.stop") null else args.getOrNull(0) as? String
+                require(method == "onboarding.stop" || name in setOf("swipe", "variant", "panel", "back", "home", "long-press")) {
+                    "unknown practice"
+                }
+                val text = if (name == null) "" else args.getOrNull(1) as? String ?: ""
+                require(text.length <= 200) { "practice text too long" }
+                main.post { if (!closed) callbacks.onPractice(instance.bundle.id, name, text) }
+                return true
+            }
+            require(args.size == 1) { "onboarding.open needs one mode" }
+            val mode = args[0] as? String ?: error("onboarding mode must be text")
+            require(mode in setOf("restart", "resume")) { "unknown onboarding mode" }
+            require(PluginUpdatePolicy.fresh(instance.onboardingTapElapsed, SystemClock.elapsedRealtime(), TAP_ANSWER_MILLIS)) {
+                "onboarding.open answers a tap"
+            }
+            main.post { if (!closed) callbacks.onOpenOnboarding(mode) }
+            return true
+        }
+    }
+
+    private inner class DeviceCalls : HostCapability {
+        override fun call(instance: Instance, method: String, args: Array<Any?>, taskId: Int): Any? {
+            val bundle = instance.bundle
+            fun arg(index: Int) = args.getOrNull(index)
+            fun number(index: Int) = (arg(index) as Number).toDouble()
+            return when (method) {
+                "device.get" -> { requireSystem(instance, "system.device"); device.snapshot() }
+                "device.mode" -> {
+                    require(args.isEmpty()) { "device.mode needs no arguments" }
+                    DeviceModePolicy.requireRead(bundle.manifest.getInt("api"))
+                    device.currentMode()
+                }
+                "device.setMode" -> {
+                    require(args.size == 1) { "device.setMode needs one mode" }
+                    val value = arg(0) as? String ?: error("device mode must be text")
+                    val tap = instance.onboardingTapElapsed
+                    val api = bundle.manifest.getInt("api")
+                    val permissions = instance.permissions.toSet()
+                    val isFactory = factory[bundle.id]?.digest == bundle.digest
+                    fun authorize() = DeviceModePolicy.requireWrite(api, permissions, isFactory, value, tap, SystemClock.elapsedRealtime())
+                    DeviceModePolicy.requireRead(api)
+                    require(taskId != 0 && instance.awaits.size < 8 && (active.values + pending.values).sumOf { it.awaits.size } < 32)
+                    val task = CapabilityAwait({ !closed && instance.mediaLive.get() }) { values -> worker.post { resume(instance, taskId, values) } }
+                    instance.awaits[taskId] = task
+                    main.post {
+                        if (task.live()) {
+                            try {
+                                authorize()
+                                if (device.setMode(value)) task.finish(true) else task.finish(null, "unavailable")
+                            } catch (error: Exception) { task.finish(null, error.message ?: "unavailable") }
+                        }
+                    }
+                    null
+                }
+                "device.wifi" -> { requireSystem(instance, "system.device"); device.setWifi(arg(0) == true); null }
+                "device.mute" -> { requireSystem(instance, "system.device"); device.setMuted(arg(0) == true); null }
+                "device.openAndroid" -> {
+                    requireSystem(instance, "system.device")
+                    val target = arg(0) as? String ?: error("Android screen must be text")
+                    require(target in setOf("wifi", "settings", "locale", "date", "accessibility")) { "unknown Android screen" }
+                    require(target in setOf("wifi", "settings") || bundle.manifest.getInt("api") >= 10) { "Android screen requires API 10" }
+                    main.post { if (!closed) callbacks.onOpenAndroid(target) }
+                    null
+                }
+                "device.canSetLocale", "device.canSetTimeZone", "device.setLocale", "device.setTimeZone" -> {
+                    requireSystem(instance, "system.device")
+                    require(bundle.manifest.getInt("api") >= 10) { "device setup requires API 10" }
+                    val mutating = method == "device.setLocale" || method == "device.setTimeZone"
+                    require(args.size == if (mutating) 1 else 0)
+                    val value = if (mutating) arg(0) as? String ?: error("setup value must be text") else ""
+                    require(taskId != 0 && instance.awaits.size < 8 && (active.values + pending.values).sumOf { it.awaits.size } < 32)
+                    val tap = instance.onboardingTapElapsed
+                    val task = CapabilityAwait({ !closed && instance.mediaLive.get() }) { values -> worker.post { resume(instance, taskId, values) } }
+                    instance.awaits[taskId] = task
+                    val job = registryScope.launch {
+                        try {
+                            val capabilities = setupCapabilities.await()
+                            fun fresh() = PluginUpdatePolicy.fresh(tap, SystemClock.elapsedRealtime(), TAP_ANSWER_MILLIS)
+                            val supported = android.os.Build.VERSION.SDK_INT == 27
+                            val result = when (method) {
+                                "device.canSetLocale" -> deviceLocale.available() || supported && capabilities?.language == true
+                                "device.canSetTimeZone" -> supported && capabilities?.timezone == true
+                                "device.setLocale" -> {
+                                    if (!fresh()) false
+                                    else {
+                                        val granted = deviceLocale.available() || supported && capabilities?.language == true &&
+                                            updater.grantLanguage(tap!!).isSuccess
+                                        granted && fresh() && deviceLocale.set(value)
+                                    }
+                                }
+                                else -> supported && capabilities?.timezone == true && fresh() &&
+                                    moe.kiwi.thinkos.device.SystemTimeZone.set(updater, value, tap!!)
+                            }
+                            task.finish(result)
+                        } catch (_: kotlinx.coroutines.CancellationException) { task.cancel(true) }
+                        catch (_: Exception) { task.finish(false) }
+                    }
+                    task.onCancel { job.cancel() }
+                    null
+                }
+                "cast.status" -> {
+                    require("media" in instance.permissions) { "media permission required" }
+                    castStatus()
+                }
+                "panel.close" -> { requireSystem(instance, "system.device"); main.post { if (!closed) callbacks.onPanelClose() }; null }
+                else -> error("Unavailable API: $method")
+            }
+        }
+    }
+
+    private inner class NavigationCalls : HostCapability {
+        override fun call(instance: Instance, method: String, args: Array<Any?>, taskId: Int): Any? {
+            val bundle = instance.bundle
+            fun arg(index: Int) = args.getOrNull(index)
+            fun number(index: Int) = (arg(index) as Number).toDouble()
+            return when (method) {
+                "back.intercept" -> {
+                    val on = arg(0) == true
+                    main.post { if (!closed) callbacks.onBackIntercept(bundle.id, on) }
+                    null
+                }
+                "tile.animate" -> {
+                    val name = arg(0) as? String
+                    if (name == null || name !in TileAnimations.names) mapOf("error" to "unknown")
+                    else if (!instance.animationGate.allow(name, SystemClock.elapsedRealtime(), TileAnimations.COOLDOWN_MILLIS)) mapOf("error" to "cooldown")
+                    else {
+                        main.post { if (!closed) callbacks.onTileAnimation(bundle.id, name) }
+                        mapOf("ok" to true)
+                    }
+                }
+                "page.focus", "page.release" -> {
+                    val id = (arg(0) as String).removePrefix("${bundle.id}.")
+                    val page = instance.pages.firstOrNull { it.id == id } ?: error("page does not belong to plugin")
+                    val live = arg(1) == true; require(!live || page.live)
+                    val answersTap = SystemClock.elapsedRealtime() - (tapped[bundle.id] ?: Long.MIN_VALUE / 2) < TAP_ANSWER_MILLIS
+                    main.post { if (!closed) callbacks.onFocus(page.key, live, method == "page.release", answersTap) }
+                    null
+                }
+                else -> error("Unavailable API: $method")
+            }
+        }
+    }
+
+    private inner class TimeCalls : HostCapability {
+        override fun call(instance: Instance, method: String, args: Array<Any?>, taskId: Int): Any? {
+            val bundle = instance.bundle
+            fun arg(index: Int) = args.getOrNull(index)
+            fun number(index: Int) = (arg(index) as Number).toDouble()
+            return when (method) {
+                "i18n.t" -> {
+                    val params = (arg(1) as? Map<*, *>)?.entries?.associate { (k, v) -> k.toString() to v }.orEmpty()
+                    instance.strings.format(arg(0) as String, Locale.getDefault(), params) ?: arg(0)
+                }
+                "time.now" -> WallClock.now().takeIf { it >= 1_577_836_800_000L }
+                "time.format" -> {
+                    // Named formats (@time, @dateFull, …) follow the system locale and 12/24-hour setting.
+                    val pattern = arg(1) as? String ?: "@time"
+                    require(pattern.length <= 128)
+                    ZoneFormat.format(pattern, number(0).toLong(), Zones.clock(arg(2) as? String))
+                }
+                "tz.home" -> Zones.home().id
+                "tz.info" -> zoneInfo(arg(0) as String)
+                "tz.zones" -> {
+                    require(bundle.manifest.getInt("api") >= 10) { "tz.zones requires API 10" }
+                    val region = (arg(0) as? String)?.uppercase(Locale.ROOT).orEmpty()
+                    require(region.matches(Regex("[A-Z]{2}"))) { "region must be an ISO country code" }
+                    val locale = Locale.getDefault()
+                    val now = WallClock.now()
+                    Zones.database?.zones.orEmpty().filter { it.country == region }.map {
+                        mapOf("id" to it.id, "city" to ZoneNames.city(it.id, locale), "country" to ZoneNames.country(it.country, locale),
+                            "time" to ZoneFormat.format("@time", now, Zones.clock(it.id), locale))
+                    }
+                }
+                "units.get" -> systemValues.units.toMap()
+                "units.temperature" -> number(0).let { require(it.isFinite()); systemValues.units.temperature(it) }
+                "units.wind" -> number(0).let { require(it.isFinite()); systemValues.units.wind(it) }
+                "locale" -> {
+                    val locale = Locale.getDefault()
+                    mapOf("tag" to locale.toLanguageTag(), "language" to locale.language, "region" to locale.country,
+                        "script" to LocaleChain.script(locale), "rtl" to LocaleChain.isRtl(locale), "hour24" to Formats.env.hour24)
+                }
+                else -> error("Unavailable API: $method")
+            }
+        }
+    }
+
+    private inner class AstroCalls : HostCapability {
+        override fun call(instance: Instance, method: String, args: Array<Any?>, taskId: Int): Any? {
+            val bundle = instance.bundle
+            fun arg(index: Int) = args.getOrNull(index)
+            fun number(index: Int) = (arg(index) as Number).toDouble()
+            return when (method) {
+                "location.get" -> {
+                    require(arrayValues(bundle.manifest.optJSONArray("permissions")).contains("location")) { "location permission required" }
+                    location.get().toMap()
+                }
+                "astro.sun", "astro.moon" -> {
+                    require(arrayValues(bundle.manifest.optJSONArray("permissions")).contains("location")) { "location permission required" }
+                    require(taskId != 0 && instance.awaits.size < 8 && (active.values + pending.values).sumOf { it.awaits.size } < 32)
+                    instance.awaits[taskId] = null
+                    instance.awaits[taskId] = astroWorker.submit {
+                        val response = runCatching { astronomy.call(method, args) }
+                        worker.post { resume(instance, taskId, if (response.isSuccess) arrayOf(response.getOrThrow(), null)
+                            else arrayOf(null, response.exceptionOrNull()?.message ?: "astronomy error")) }
+                    }
+                    null
+                }
+                "astro.seasons" -> astronomy.call(method, args)
+                else -> error("Unavailable API: $method")
+            }
+        }
+    }
+
+    private inner class ScheduledCalls : HostCapability {
+        override fun call(instance: Instance, method: String, args: Array<Any?>, taskId: Int): Any? {
+            val bundle = instance.bundle
+            fun arg(index: Int) = args.getOrNull(index)
+            fun number(index: Int) = (arg(index) as Number).toDouble()
+            return when (method) {
+                "timer.add" -> {
+                    val id = number(0).toInt(); val seconds = number(1)
+                    require(seconds.isFinite() && seconds in 0.05..2_592_000.0)
+                    require(instance.timers.size < 64)
+                    val every = arg(2) == true; val align = arg(3) == true
+                    val delay = (seconds * 1000).toLong()
+                    val timer = object : Runnable {
+                        override fun run() {
+                            if (!owned(instance) || instance.disabled || instance.lua == null) return
+                            if (pending[bundle.id] === instance) { worker.postDelayed(this, 50); return }
+                            if (!every) instance.timers.remove(id)
+                            execute(instance) { it.timer(id, every) }
+                            if (every && instance.timers[id] === this && instance.lua != null) worker.postDelayed(this, if (align) delay - WallClock.now().mod(delay) else delay)
+                        }
+                    }
+                    instance.timers.put(id, timer)?.let(worker::removeCallbacks)
+                    worker.postDelayed(timer, if (align) delay - WallClock.now().mod(delay) else delay)
+                    null
+                }
+                "timer.cancel" -> { instance.timers.remove(number(0).toInt())?.let(worker::removeCallbacks); null }
+                "sleep" -> {
+                    require(taskId != 0 && number(0).isFinite() && number(0) in 0.001..3600.0)
+                    require(instance.awaits.size < 8)
+                    instance.awaits[taskId] = null
+                    worker.postDelayed({ resume(instance, taskId, emptyArray()) }, (number(0) * 1000).toLong())
+                    null
+                }
+                else -> error("Unavailable API: $method")
+            }
+        }
+    }
+
+    private inner class AppsCalls : HostCapability {
+        override fun call(instance: Instance, method: String, args: Array<Any?>, taskId: Int): Any? {
+            requireSystem(instance, "system.apps")
+            require(instance.bundle.manifest.getInt("api") >= 9) { "apps requires API 9" }
+            require(taskId != 0 && instance.awaits.size < 8 && (active.values + pending.values).sumOf { it.awaits.size } < 32)
+            val requested = if (method == "apps.open") (args.getOrNull(0) as? String)?.takeIf { it.length in 1..320 } ?: error("Invalid app id") else null
+            val pages = active.values.flatMap { source ->
+                val available = pagesForCatalog(source.pages, source.bundle.manifest.has("main"), source.lua != null, source.disabled).map { it.id }.toSet()
+                arrayObjects(source.bundle.manifest.optJSONArray("apps")).filter {
+                    it.getString("page") in available && (requested != null || it.optBoolean("listed", true))
+                }.map { entry ->
+                    moe.kiwi.thinkos.apps.AppEntry("${source.bundle.id}.${entry.getString("page")}", "page",
+                        moe.kiwi.thinkos.apps.AppCatalog.label(source.label(entry.getString("title"))), entry.optString("icon"))
+                }
+            }
+            val showAndroid = systemValues.appsAndroid
+            val hidden = systemValues.appsHidden
+            val locale = Locale.getDefault()
+            val job = CapabilityAwait({ !closed && instance.mediaLive.get() }) { values -> worker.post { resume(instance, taskId, values) } }
+            instance.awaits[taskId] = job
+            job.track(io.submit {
+                try {
+                    val entries = moe.kiwi.thinkos.apps.AppCatalog.list(pages, if (showAndroid) installedApps.list() else emptyList(), app.packageName, showAndroid, hidden, locale)
+                    if (requested == null) job.finish(JSONArray(entries.map { JSONObject(it.toMap()) }).toString())
+                    else if (requested == "launcher") main.post {
+                        if (job.live()) try { callbacks.onOpenApp(moe.kiwi.thinkos.apps.AppEntry("launcher", "launcher", "")) { job.finish(it) } }
+                        catch (error: Exception) { job.finish(false, error.message ?: "unavailable") }
+                    }
+                    else {
+                        val selected = entries.firstOrNull { it.id == requested }
+                        if (selected == null) job.finish(false, "unavailable")
+                        else main.post {
+                            if (job.live()) try { callbacks.onOpenApp(selected) { job.finish(it) } }
+                            catch (error: Exception) { job.finish(false, error.message ?: "unavailable") }
+                        }
+                    }
+                } catch (error: Exception) { job.finish(null, error.message ?: "Applications unavailable") }
+            })
+            return null
+        }
+    }
+
+    private inner class MediaCalls : HostCapability {
+        override fun call(instance: Instance, method: String, args: Array<Any?>, taskId: Int): Any? {
+            val bundle = instance.bundle
+            fun arg(index: Int) = args.getOrNull(index)
+            fun number(index: Int) = (arg(index) as Number).toDouble()
+            return when (method) {
+                "media.load", "media.play", "media.pause", "media.toggle", "media.next", "media.prev", "media.seek",
+                "media.volume", "media.stop", "media.shuffle", "media.repeat", "media.jump", "media.live", "media.audioTrack",
+                "media.textTrack", "media.probe", "library.list" -> {
+                    require(taskId != 0 && instance.awaits.size < 8 && (active.values + pending.values).sumOf { it.awaits.size } < 32)
+                    // Playback, storage permission prompts and library scans run on the main/IO threads; the plugin only waits.
+                    val job = CapabilityAwait({ !closed && instance.mediaLive.get() }) { values ->
+                        worker.post { resume(instance, taskId, values) }
+                    }
+                    instance.awaits[taskId] = job
+                    mediaCapability.call(instance.mediaOwner, instance.permissions, method, args, job, bundle.manifest.getInt("api"))
+                    null
+                }
+                else -> error("Unavailable API: $method")
+            }
+        }
+    }
+
+    private inner class NetworkCalls : HostCapability {
+        override fun call(instance: Instance, method: String, args: Array<Any?>, taskId: Int): Any? {
+            val bundle = instance.bundle
+            fun arg(index: Int) = args.getOrNull(index)
+            fun number(index: Int) = (arg(index) as Number).toDouble()
+            return when (method) {
+                "net.resolve" -> {
+                    require(bundle.manifest.getInt("api") >= 10) { "net.resolve requires API 10" }
+                    require("network" in instance.grantedPermissions()) { "network permission required" }
+                    require(args.size == 1 && arg(0) is String) { "DNS host required" }
+                    require(taskId != 0 && instance.awaits.size < 8 && (active.values + pending.values).sumOf { it.awaits.size } < 32)
+                    instance.awaits[taskId] = null
+                    instance.awaits[taskId] = dns.resolve(arg(0) as String) { response ->
+                        val values: Array<Any?> = response.fold({ entries ->
+                            arrayOf(entries.map { entry ->
+                                linkedMapOf<String, Any>("address" to entry.address).apply {
+                                    entry.name?.let { put("name", it) }
+                                }
+                            }, null)
+                        }, { error -> arrayOf(null, error.message ?: "dns unavailable") })
+                        worker.post { if (!closed) resume(instance, taskId, values) }
+                    }
+                    null
+                }
+                "http.get", "http.post" -> {
+                    require("network" in instance.grantedPermissions()) { "network permission required" }
+                    require(taskId != 0 && instance.awaits.size < 8 && (active.values + pending.values).sumOf { it.awaits.size } < 32)
+                    val url = arg(0) as String
+                    val body = if (method == "http.post") arg(1) as? String else null
+                    val options = arg(if (method == "http.post") 2 else 1) as? Map<*, *>
+                    instance.awaits[taskId] = null
+                    instance.awaits[taskId] = io.submit {
+                        val response = runCatching { PluginHttp.request(if (method == "http.get") "GET" else "POST", url, body, options) }
+                        worker.post { resume(instance, taskId, if (response.isSuccess) arrayOf(response.getOrThrow(), null) else arrayOf(null, response.exceptionOrNull()?.message ?: "network error")) }
+                    }
+                    null
+                }
+                else -> error("Unavailable API: $method")
+            }
+        }
+    }
+
     private fun scanDev() {
         if (closed || safe || !BuildConfig.DEBUG) return
         // A scan already queued by an earlier publication can run between the two replacement
@@ -720,6 +1325,17 @@ class PluginRuntime(
                     require(!MediaViews.used(view) || arrayValues(manifest.optJSONArray("permissions")).contains("media")) {
                         "controls, video and seekbar need the media permission"
                     }
+                    require(!DeviceViews.used(view) || "system.device" in arrayValues(manifest.optJSONArray("permissions"))) {
+                        "slider and the panel layout need the system.device permission"
+                    }
+                    if (collection == "pages") {
+                        val hasRole = "panel" in arrayValues(item.optJSONArray("roles"))
+                        require(hasRole == DeviceViews.isPanelLayout(view)) { "the panel role and the panel layout go together" }
+                        require(!hasRole || "system.device" in arrayValues(manifest.optJSONArray("permissions"))) { "the panel role needs the system.device permission" }
+                        require("launcher" !in arrayValues(item.optJSONArray("roles")) || "system.apps" in arrayValues(manifest.optJSONArray("permissions"))) {
+                            "the launcher role needs the system.apps permission"
+                        }
+                    }
                     require(view.has(if (collection == "pages") "layout" else "template")) { "wrong view kind for $collection" }
                     item.optJSONObject("alternates")?.let { alternates ->
                         alternates.keys().forEach { template ->
@@ -745,8 +1361,10 @@ class PluginRuntime(
 
     private fun publishCatalog() {
         if (loading) return
-        val pages = active.values.flatMap {
-            pagesForCatalog(it.pages, hasScript = it.bundle.manifest.has("main"), scriptRunning = it.lua != null, disabled = it.disabled)
+        val pages = active.values.flatMap { instance ->
+            pagesForCatalog(instance.pages, hasScript = instance.bundle.manifest.has("main"), scriptRunning = instance.lua != null, disabled = instance.disabled)
+                // System roles require actual factory grants, never just a declaration.
+                .filter { PluginAuthority.rolesAllowed(it.roles, instance.grantedPermissions()) }
         }.sortedWith(compareBy<PluginPage> { if ("home" in it.roles) 0 else if ("sleep" in it.roles) 1 else 2 }.thenBy { it.key })
         val widgets = active.values.flatMap { it.widgets }
         updateDiagnostics()
@@ -754,10 +1372,11 @@ class PluginRuntime(
         imageOwners = active.values.filter { !it.disabled && (!it.bundle.manifest.has("main") || it.lua != null) }
             .associate { it.bundle.id to it.imageOwner }
         permissionSnapshot = active.values.filter { !it.disabled && (!it.bundle.manifest.has("main") || it.lua != null) }
-            .associate { it.bundle.id to it.permissions }
+            .associate { it.bundle.id to it.grantedPermissions() }
         published.keys.retainAll(active.keys)
         refreshConsumers()
         main.post { if (!closed) callbacks.onCatalog(pages, widgets) }
+        event(null, "apps")
     }
     private fun publishState(instance: Instance) = schedulePublish(instance, 50)
     private fun schedulePublish(instance: Instance, delay: Long) {
@@ -877,6 +1496,10 @@ class PluginRuntime(
         execute(instance) { it.dispatch("config", arrayOf(LinkedHashMap(settings.snapshot(instance.bundle.id)))) }
         publishState(instance)
     }
+    /** A `system.*` permission is held only by the copy of a plugin that shipped inside the APK. */
+    private fun requireSystem(instance: Instance, permission: String) {
+        PluginAuthority.requireSystem(permission, instance.permissions, factory[instance.bundle.id]?.digest == instance.bundle.digest)
+    }
     /** Only the factory-installed settings plugin may manage settings; a Git copy never gets the permission. */
     private fun requireSettingsAdmin(instance: Instance) {
         require(arrayValues(instance.bundle.manifest.optJSONArray("permissions")).contains("system.settings")) { "system.settings permission required" }
@@ -898,7 +1521,8 @@ class PluginRuntime(
     }
     private fun cleanupVersions() {
         if (loading) return
-        val keep = (factory.values.map { it.directory } + pending.values.map { it.bundle.directory } + active.values.map { it.bundle.directory } + previousDirectories.values).map { it.absolutePath }.toSet()
+        if (!registryReady) return // Do not delete unloaded registry versions before the first-frame batch.
+        val keep = (factory.values.map { it.directory } + pending.values.map { it.bundle.directory } + active.values.map { it.bundle.directory } + previousDirectories.values).map { it.absolutePath }.toSet() + registry.keepDirectories() + registryPreparing
         root.listFiles()?.filter { it.isDirectory && !it.name.startsWith(".") }?.forEach { plugin ->
             plugin.listFiles()?.filter { it.isDirectory && it.absolutePath !in keep }?.forEach(PluginFiles::deleteTree)
         }
@@ -907,7 +1531,7 @@ class PluginRuntime(
         val message = error.message ?: error.javaClass.simpleName
         Log.e(TAG, "[plugin:$id] $message")
         if (error is LuaFailure && error.step.resourceFailure) {
-            Log.e(TAG, "[plugin:$id] slice cpu=${error.step.cpuMicros}us wall=${error.step.wallMicros}us")
+            Log.e(TAG, "[plugin:$id] slice ${error.step.timing()} phase=${error.phase} task=${error.step.taskId}")
         }
         main.post { if (!closed) callbacks.onError(id, message) }
     }
@@ -916,6 +1540,8 @@ class PluginRuntime(
         private const val MAX_STATE = 256 * 1024
         private val NEXT_INSTANCE = AtomicLong()
         private const val TAP_ANSWER_MILLIS = 5_000L
+        /** Host calls that only read: making one while handling `back` is no reaction to it. */
+        private val QUIET_METHODS = setOf("log", "i18n.t", "state.get", "config", "locale", "module", "units.get", "units.temperature", "units.wind", "update.status", "onboarding.status", "device.mode", "device.canSetLocale", "device.canSetTimeZone", "tz.zones", "plugins.installed", "plugins.catalog")
         private fun arrayValues(array: JSONArray?): List<Any> = if (array == null) emptyList() else (0 until array.length()).map(array::get)
         private fun arrayObjects(array: JSONArray?): List<JSONObject> = arrayValues(array).map { it as JSONObject }
         private fun path(state: JSONObject, path: String): Any? {
@@ -938,7 +1564,9 @@ class PluginRuntime(
         /** API 3 also accepts an encoded object to avoid large typed-JNI patches on armv7. */
         internal fun statePatch(value: Any?, reserveUses: Boolean = true): JSONObject {
             val patch = if (value is String) {
-                require(value.toByteArray(Charsets.UTF_8).size <= MAX_STATE) { "State patch exceeds 256 KiB" }
+                // Each UTF-16 code unit needs at most three UTF-8 bytes. Avoid
+                // allocating a second copy when length already proves it fits.
+                require(value.length <= MAX_STATE / 3 || value.toByteArray(Charsets.UTF_8).size <= MAX_STATE) { "State patch exceeds 256 KiB" }
                 parseObject(value)
             } else JsonDocument.fromHost(value) as JSONObject
             require(!patch.has("config")) { "'config' is reserved for the plugin's settings" }

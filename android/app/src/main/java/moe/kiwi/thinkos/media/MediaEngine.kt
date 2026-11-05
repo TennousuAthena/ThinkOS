@@ -10,8 +10,10 @@ import android.os.SystemClock
 import android.view.TextureView
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
+import androidx.media3.common.Format
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.Metadata
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
@@ -32,15 +34,23 @@ import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.drm.DrmSessionManagerProvider
+import androidx.media3.exoplayer.dash.DashMediaSource
 import androidx.media3.exoplayer.rtsp.RtspMediaSource
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
+import androidx.media3.exoplayer.source.MergingMediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy
 import androidx.media3.extractor.DefaultExtractorsFactory
+import androidx.media3.extractor.Extractor
+import androidx.media3.extractor.ExtractorsFactory
+import androidx.media3.extractor.text.DefaultSubtitleParserFactory
+import androidx.media3.extractor.text.SubtitleExtractor
+import androidx.media3.extractor.metadata.icy.IcyInfo
 import androidx.media3.extractor.ts.DefaultTsPayloadReaderFactory
 import moe.kiwi.thinkos.net.MediaHttpClient
+import moe.kiwi.thinkos.net.PublicNetworkPolicy
 import okhttp3.OkHttpClient
 import java.net.URI
 
@@ -61,6 +71,7 @@ import java.net.URI
 class MediaEngine(
     context: Context,
     private val listener: Listener,
+    sleeping: () -> Boolean = { false },
     private val policy: () -> MediaPolicy = { MediaPolicy() },
 ) {
     interface Listener {
@@ -69,11 +80,13 @@ class MediaEngine(
     }
 
     private class TrackRef(val group: Tracks.Group, val index: Int)
-    private data class SourceKey(val rtsp: Boolean, val progressive: Boolean, val origin: String?, val headers: Map<String, String>)
+    internal data class SourceKey(val rtsp: Boolean, val progressive: Boolean, val origin: String?,
+                                  val headers: Map<String, String>, val publicOnly: Boolean, val strictDash: Boolean = false)
 
     private val appContext = context.applicationContext
     private val handler = Handler(Looper.getMainLooper())
     private val queue = MediaQueue()
+    private val sleep = SleepPlaybackGate(sleeping)
     private val sources = Sources()
     private var player: ExoPlayer? = null
     private var builtWith: Triple<Int, Int, Boolean>? = null
@@ -85,6 +98,7 @@ class MediaEngine(
     /** A queue holding a [MirrorSource] always plays in the low-latency profile, whatever [lowLatency] says. */
     private var mirrorQueue = false
     private var client: OkHttpClient? = null
+    private var publicClient: OkHttpClient? = null
     private var owner: String? = null
     private var texture: TextureView? = null
     private var gain = 1f
@@ -97,6 +111,7 @@ class MediaEngine(
     private var droppedFrames = 0L
     private var videoDecoder = ""
     private var audioDecoder = ""
+    private var icyTrackTitle: String? = null
     private var stallPosition = -1L
     private var stallSince = 0L
     private var retries = 0
@@ -114,7 +129,7 @@ class MediaEngine(
     private val pacer = object : Runnable {
         override fun run() {
             val active = player
-            if (released || !mirrorQueue || stopped || active == null) { pace.reset(); return }
+            if (released || sleep.blocked || !mirrorQueue || stopped || active == null) { pace.reset(); return }
             if (active.playbackState == Player.STATE_READY && active.playWhenReady) {
                 val before = pace.speed
                 val speed = pace.update((active.bufferedPosition - active.currentPosition).coerceAtLeast(0))
@@ -155,7 +170,7 @@ class MediaEngine(
     private val retryRun = Runnable {
         retryPending = false
         val active = player
-        if (!released && active != null && queue.count > 0 && error == null && !stopped) {
+        if (!released && !sleep.blocked && active != null && queue.count > 0 && error == null && !stopped) {
             if (active.playbackState == Player.STATE_ENDED) active.seekToDefaultPosition()
             active.prepare()
             publish()
@@ -165,6 +180,12 @@ class MediaEngine(
     private val playerListener = object : Player.Listener {
         override fun onEvents(player: Player, events: Player.Events) {
             if (changingQueue || released) return
+            if (sleep.blocked) {
+                clearRetry()
+                if (player.playWhenReady) player.pause()
+                publish()
+                return
+            }
             if (queue.count > 0 && player.currentMediaItemIndex in 0 until queue.count) {
                 queue.selectPlayerIndex(player.currentMediaItemIndex)
             }
@@ -185,6 +206,7 @@ class MediaEngine(
             val index = this@MediaEngine.player?.currentMediaItemIndex ?: return
             if (index !in 0 until queue.count) return
             queue.selectPlayerIndex(index)
+            icyTrackTitle = null
             endDelivered = false
             error = null
             warning = null
@@ -198,6 +220,19 @@ class MediaEngine(
             textRefs = collect(tracks, C.TRACK_TYPE_TEXT)
         }
 
+        override fun onMetadata(metadata: Metadata) {
+            val entry = queue.current ?: return
+            if (changingQueue || released || stopped || entry.kind != "audio" || entry.scheme !in setOf("http", "https")) return
+            for (index in 0 until minOf(metadata.length(), 32)) {
+                val info = metadata[index] as? IcyInfo ?: continue
+                val title = info.title ?: continue
+                // MediaItem's supplied station name overrides ExoPlayer's merged
+                // title. A timed ICY title takes precedence only for this item.
+                icyTrackTitle = icyTitle(title)
+                publish()
+            }
+        }
+
         override fun onCues(cueGroup: CueGroup) {
             cueSink?.invoke(cueGroup.cues.mapNotNull { it.text })
         }
@@ -205,6 +240,7 @@ class MediaEngine(
         override fun onPlayerError(failure: PlaybackException) {
             if (changingQueue || released || queue.count == 0) return
             val active = player ?: return
+            if (sleep.blocked) { clearRetry(); active.pause(); publish(); return }
             if (failure.errorCode == PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW && liveRecoveries++ < MAX_LIVE_RECOVERIES) {
                 // The playhead fell out of the live window: rejoin at the live edge.
                 active.seekToDefaultPosition()
@@ -233,10 +269,12 @@ class MediaEngine(
 
     fun load(plugin: String, items: List<MediaEntry>, options: MediaOptions = MediaOptions()) {
         checkMain()
+        requireAwake()
         require(plugin.isNotBlank()) { "Media owner is required" }
         MediaQueue.validate(items, options)
         // No mutation/ownership notification before all caller-provided values and MediaItems pass.
         val prepared = items.map(::mediaItem)
+        sleep.userPlayback()
         mirrorQueue = items.any { it.mirror != null }
         val activePlayer = getPlayer()
         val oldOwner = owner
@@ -251,6 +289,7 @@ class MediaEngine(
         droppedFrames = 0
         videoDecoder = ""
         audioDecoder = ""
+        icyTrackTitle = null
         sources.clear()
         if (oldOwner != null && oldOwner != plugin) {
             listener.onEvent(oldOwner, "media.session", mapOf("reason" to "replaced", "owner" to plugin))
@@ -277,8 +316,26 @@ class MediaEngine(
         publish()
     }
 
+    /** Host call after publishing mode. Pause and cancel retries; waking never resumes the queue. */
+    fun onModeChanged() {
+        checkMain()
+        if (sleep.changed()) {
+            clearRetry()
+            handler.removeCallbacks(pacer)
+            pace.reset()
+            player?.pause()
+        }
+        publish()
+    }
+
+    /** Capability callers report a structured refusal; native controls simply remain paused. */
+    fun requireAwake(ticket: Long? = null) { checkMain(); sleep.requireAwake(ticket) }
+    /** Captured before an asynchronous permission/read step; a sleep transition invalidates it. */
+    fun playbackGeneration(): Long = sleep.ticket()
+
     fun play() {
         checkMain()
+        if (!sleep.userPlayback()) return
         val activePlayer = player ?: return
         if (queue.count == 0) return
         if (endDelivered || activePlayer.playbackState == Player.STATE_ENDED) {
@@ -309,6 +366,7 @@ class MediaEngine(
 
     fun next() {
         checkMain()
+        if (!sleep.userPlayback()) return
         if (queue.count == 0) return
         if (queue.next() == null) {
             player?.pause()
@@ -321,6 +379,7 @@ class MediaEngine(
 
     fun prev() {
         checkMain()
+        if (!sleep.userPlayback()) return
         if (queue.previous() == null) return
         seekItem()
     }
@@ -328,6 +387,7 @@ class MediaEngine(
     /** Play queue item [index] (1 based, as Lua numbers them). */
     fun jump(index: Int) {
         checkMain()
+        if (!sleep.userPlayback()) return
         if (queue.count == 0) return
         queue.select(index)
         seekItem()
@@ -335,6 +395,7 @@ class MediaEngine(
 
     private fun seekItem() {
         val activePlayer = player ?: return
+        icyTrackTitle = null
         endDelivered = false
         error = null
         warning = null
@@ -363,6 +424,7 @@ class MediaEngine(
     /** Rejoin the live edge of a live stream. */
     fun goLive() {
         checkMain()
+        if (!sleep.userPlayback()) return
         val activePlayer = player ?: return
         if (queue.count == 0 || !activePlayer.isCurrentMediaItemLive) return
         activePlayer.seekToDefaultPosition()
@@ -410,7 +472,7 @@ class MediaEngine(
         if (queue.shuffle == enabled) return
         val activePlayer = player
         val position = activePlayer?.currentPosition?.coerceAtLeast(0) ?: 0
-        val play = activePlayer?.playWhenReady ?: false
+        val play = !sleep.blocked && activePlayer?.playWhenReady == true
         queue.setShuffle(enabled)
         if (activePlayer != null && queue.count > 0) {
             changingQueue = true
@@ -436,6 +498,7 @@ class MediaEngine(
         checkMain()
         val previous = owner
         owner = null
+        icyTrackTitle = null
         queue.clear()
         stopped = true
         endDelivered = false
@@ -471,6 +534,12 @@ class MediaEngine(
         texture = null
     }
 
+    /** The queue in the order it was loaded (what the queue view lists); the list is replaced, never edited, when a new queue loads. */
+    fun queueEntries(): List<MediaEntry> {
+        checkMain()
+        return queue.entries
+    }
+
     /** Current playhead, read per frame by the seek bar; the published `position` only moves once a second. */
     fun positionNow(): Long {
         checkMain()
@@ -493,6 +562,7 @@ class MediaEngine(
         val live = entry != null && activePlayer?.isCurrentMediaItemLive == true
         val status = when {
             stopped || entry == null -> "stopped"
+            sleep.blocked -> "paused"
             error != null -> "error"
             retryPending -> "reconnecting"
             endDelivered || activePlayer?.playbackState == Player.STATE_ENDED -> "ended"
@@ -504,7 +574,7 @@ class MediaEngine(
         val audio = if (entry != null) activePlayer?.audioFormat else null
         return mapOf("status" to status, "owner" to owner.orEmpty(), "kind" to entry?.kind.orEmpty(),
             "index" to queue.index.toLong(), "count" to queue.count.toLong(),
-            "title" to clip(metadata?.title?.toString()?.takeIf(String::isNotBlank) ?: entry?.title.orEmpty(), TEXT_LIMIT),
+            "title" to clip(icyTrackTitle ?: metadata?.title?.toString()?.takeIf(String::isNotBlank) ?: entry?.title.orEmpty(), TEXT_LIMIT),
             "artist" to clip(metadata?.artist?.toString()?.takeIf(String::isNotBlank) ?: entry?.artist.orEmpty(), TEXT_LIMIT),
             "album" to clip(metadata?.albumTitle?.toString()?.takeIf(String::isNotBlank) ?: entry?.album.orEmpty(), TEXT_LIMIT),
             "art" to clip(metadata?.artworkUri?.toString()?.takeIf(String::isNotBlank) ?: entry?.art.orEmpty(), 2048),
@@ -541,10 +611,11 @@ class MediaEngine(
         networkCallback = null
         releasePlayer()
         texture = null
-        client?.dispatcher?.cancelAll()
-        client?.connectionPool?.evictAll()
-        client?.dispatcher?.executorService?.shutdown()
+        listOfNotNull(client, publicClient).forEach {
+            it.dispatcher.cancelAll(); it.connectionPool.evictAll(); it.dispatcher.executorService.shutdown()
+        }
         client = null
+        publicClient = null
     }
 
     private fun releasePlayer() {
@@ -600,13 +671,18 @@ class MediaEngine(
         return created
     }
 
-    private fun httpClient(): OkHttpClient = client ?: MediaHttpClient.create(allowPublicCleartext = { policy().publicCleartext }).also { client = it }
+    /** The `media.public_http` switch as it stands now, for [MediaProbe] to follow the rules playback follows. */
+    fun allowsPublicCleartext(): Boolean = policy().publicCleartext
+
+    private fun httpClient(publicOnly: Boolean): OkHttpClient = if (publicOnly)
+        publicClient ?: MediaHttpClient.create(publicOnly = true).also { publicClient = it }
+        else client ?: MediaHttpClient.create(allowPublicCleartext = { policy().publicCleartext }).also { client = it }
 
     /** Network data for one item. Credentials in [MediaEntry.headers] never leave the item's own origin. */
     private fun dataSource(entry: MediaEntry): DataSource.Factory {
         val userAgent = entry.headers.entries.firstOrNull { it.key.equals("user-agent", true) }?.value ?: USER_AGENT
         val extra = entry.headers.filterKeys { !it.equals("user-agent", true) }
-        val http: DataSource.Factory = OkHttpDataSource.Factory(httpClient()).setUserAgent(userAgent)
+        val http: DataSource.Factory = OkHttpDataSource.Factory(httpClient(entry.publicOnly)).setUserAgent(userAgent)
         val origin = entry.origin
         val upstream = if (extra.isEmpty()) http else ResolvingDataSource.Factory(http) { spec ->
             val sameOrigin = spec.uri.scheme in setOf("http", "https") && origin != null &&
@@ -614,7 +690,7 @@ class MediaEngine(
             val allowed = extra.filter { sameOrigin || it.key.lowercase() in MediaEntry.PORTABLE_HEADERS }
             if (allowed.isEmpty()) spec else spec.buildUpon().setHttpRequestHeaders(spec.httpRequestHeaders + allowed).build()
         }
-        return AuthorizedMediaDataSourceFactory(appContext, upstream)
+        return AuthorizedMediaDataSourceFactory(appContext, upstream, entry.publicOnly)
     }
 
     /** Builds the right [MediaSource] for each item, so one queue can mix local files, HLS, DASH and RTSP. */
@@ -635,7 +711,8 @@ class MediaEngine(
             entry.mirror?.let { return ProgressiveMediaSource.Factory(MirrorDataSourceFactory(it), mirrorExtractors).createMediaSource(mediaItem) }
             val rtsp = entry.effectiveType == MediaSourceType.RTSP
             val progressive = entry.type == MediaSourceType.PROGRESSIVE
-            val key = SourceKey(rtsp, progressive, entry.origin, entry.headers)
+            val strictDash = entry.publicOnly && !progressive && entry.effectiveType == MediaSourceType.DASH
+            val key = SourceKey(rtsp, progressive, entry.origin, entry.headers, entry.publicOnly, strictDash)
             val factory = cache.getOrPut(key) {
                 when {
                     rtsp -> RtspMediaSource.Factory()
@@ -645,10 +722,33 @@ class MediaEngine(
                         .setTimeoutMs(RTSP_TIMEOUT_MILLIS)
                         .setSocketFactory(PrivateSocketFactory { policy().publicCleartext })
                     progressive -> ProgressiveMediaSource.Factory(dataSource(entry), extractors)
+                    strictDash -> DashMediaSource.Factory(dataSource(entry)).setManifestParser(PublicDashManifestParser())
                     else -> DefaultMediaSourceFactory(dataSource(entry), extractors)
                 }
             }
-            return factory.createMediaSource(mediaItem)
+            val source = factory.createMediaSource(mediaItem)
+            if (!strictDash || entry.subtitles.isEmpty()) return source
+            // DefaultMediaSourceFactory normally performs this merge. The
+            // dedicated DASH parser keeps the same strict factory for text.
+            // Extract to Media3 cues: its default text renderer no longer
+            // decodes legacy SingleSample subtitle streams.
+            val parsers = DefaultSubtitleParserFactory()
+            val text = mediaItem.localConfiguration!!.subtitleConfigurations.map { subtitle ->
+                val input = Format.Builder().setSampleMimeType(subtitle.mimeType).setId(subtitle.id)
+                    .setLanguage(subtitle.language).setLabel(subtitle.label).setSelectionFlags(subtitle.selectionFlags)
+                    .setRoleFlags(subtitle.roleFlags).build()
+                check(parsers.supportsFormat(input)) { "Unsupported subtitle format" }
+                val textExtractors = ExtractorsFactory {
+                    // With a non-null input format the public extractor
+                    // announces its cue output, tracks and seek map itself,
+                    // preserving id/language/label/flags. No package-private
+                    // lazy-loading hook or legacy renderer is needed.
+                    arrayOf<Extractor>(SubtitleExtractor(parsers.create(input), input))
+                }
+                ProgressiveMediaSource.Factory(dataSource(entry), textExtractors)
+                    .createMediaSource(MediaItem.fromUri(subtitle.uri))
+            }
+            return MergingMediaSource(source, *text.toTypedArray())
         }
 
         fun clear() = cache.clear()
@@ -733,7 +833,7 @@ class MediaEngine(
     }
 
     private fun policyBlocked(error: Throwable) =
-        error.message?.let { it.contains("restricted to local/private") || it.contains("HTTPS downgrade") || it.contains("Cleartext") } == true
+        PublicNetworkPolicy.blocked(error) || error.message?.let { it.contains("restricted to local/private") || it.contains("HTTPS downgrade") || it.contains("Cleartext") } == true
 
     /** A certificate or handshake the device will not accept does not improve with a second try. */
     private fun tlsRefused(error: Throwable) = error is javax.net.ssl.SSLHandshakeException || error is javax.net.ssl.SSLPeerUnverifiedException ||
@@ -774,6 +874,7 @@ class MediaEngine(
     }
 
     private fun reconnectLive() {
+        if (sleep.blocked) return
         retries++
         retryPending = true
         handler.removeCallbacks(retryRun)
@@ -794,7 +895,7 @@ class MediaEngine(
         if (networkCallback != null) return
         val callback = object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
-                if (released || !retryPending) return
+                if (released || sleep.blocked || !retryPending) return
                 handler.removeCallbacks(retryRun)
                 handler.post(retryRun)
             }
@@ -850,7 +951,7 @@ class MediaEngine(
     private fun watchStall(active: Player) {
         // A mirror that goes quiet is a still screen, not a dead connection: the sender ends the session itself, and starting the player again
         // would only throw away the picture and the stream's format until the sender's next keyframe.
-        if (mirrorQueue || active.playbackState != Player.STATE_BUFFERING || retryPending || error != null || stopped) { stallPosition = -1; return }
+        if (sleep.blocked || mirrorQueue || active.playbackState != Player.STATE_BUFFERING || retryPending || error != null || stopped) { stallPosition = -1; return }
         val now = SystemClock.elapsedRealtime()
         val buffered = active.bufferedPosition
         if (buffered != stallPosition) { stallPosition = buffered; stallSince = now; return }
@@ -874,7 +975,7 @@ class MediaEngine(
         handler.removeCallbacks(tick)
         player?.let(::watchStall)
         listener.onState(snapshot())
-        if (queue.count > 0 && !stopped && error == null && !endDelivered &&
+        if (!sleep.blocked && queue.count > 0 && !stopped && error == null && !endDelivered &&
             (player?.isPlaying == true || player?.playbackState == Player.STATE_BUFFERING || retryPending)) {
             handler.postDelayed(tick, 1000)
         }

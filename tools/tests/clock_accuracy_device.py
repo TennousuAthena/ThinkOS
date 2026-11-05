@@ -9,8 +9,13 @@ import re
 import shlex
 import subprocess
 import time
+import sys
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path[:0] = [str(ROOT/'tools'), str(ROOT/'tools/tests')]
+from device_recovery import capture, restore
+from media_device import Device
+from ui_walkthrough import broadcast_json
 APP = 'moe.kiwi.thinkos'
 SETTINGS = 'files/settings/local.json'
 
@@ -20,10 +25,11 @@ def main():
     parser.add_argument('--serial', default=os.environ.get('ANDROID_SERIAL', 'HUA0BWUT'))
     parser.add_argument('--output', type=Path, default=ROOT / 'artifacts/clock/accuracy')
     parser.add_argument('--seconds', type=int, default=60, help='length of the steady run')
+    parser.add_argument('--face', choices=('digital','analog'), default='digital', help='Pin the tested face instead of inheriting a saved variant')
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     base = ['adb', '-s', args.serial]
-    report = {'complete': False, 'passed': []}
+    report = {'complete': False, 'passed': [], 'face': args.face}
 
     def adb(*values, data=None):
         return subprocess.run(base + list(map(str, values)), input=data, capture_output=True, timeout=60).stdout
@@ -54,12 +60,17 @@ def main():
     def start(): shell('am', 'start', '-n', APP + '/.MainActivity'); time.sleep(10)
     def prepare():
         debug('hold_attention'); shell('am', 'broadcast', '-n', APP + '/.DebugReceiver', '--es', 'command', 'hold_attention', '--es', 'value', 'AWAKE')
-        shell('am', 'broadcast', '-n', APP + '/.DebugReceiver', '--es', 'command', 'page', '--es', 'value', 'clock.face'); time.sleep(3)
+        shell('am', 'broadcast', '-n', APP + '/.DebugReceiver', '--es', 'command', 'page', '--es', 'value', 'clock.face')
+        shell('am', 'broadcast', '-n', APP + '/.DebugReceiver', '--es', 'command', 'variant', '--es', 'value', args.face); time.sleep(3)
     def read_settings(): return adb('shell', '-T', shlex.join(['run-as', APP, 'cat', SETTINGS]))
     def write_settings(raw):
         shell('run-as', APP, 'sh', '-c', f'cat > {SETTINGS}.new && mv {SETTINGS}.new {SETTINGS} && rm -f {SETTINGS}.bak', data=raw)
 
     original = read_settings()
+    device = Device(args.serial)
+    assert any(APP+'/' in line for line in device.shell('dumpsys', 'activity', 'activities').splitlines() if 'mResumedActivity' in line)
+    journal = capture(device, broadcast_json(device, 'ui_state'))
+    print('Private recovery journal: '+str(journal), flush=True)
     try:
         current = json.loads(original or b'{}')
         current.setdefault('clock', {})['seconds'] = True
@@ -93,11 +104,16 @@ def main():
         assert recovered['n'] >= 10 and recovered['skipped'] == 0 and recovered['p95'] <= 40, recovered
         passed(f'a main thread stalled 700 ms past a boundary shows the true second right after it (late by {stalled["max"]} ms, never stale); the next seconds are back to p95 {recovered["p95"]} ms')
         report['complete'] = True
+    except Exception as error:
+        report['failure'] = str(error)
+        raise
     finally:
-        stop(); write_settings(original) if original else None; start()
-        shell('am', 'broadcast', '-n', APP + '/.DebugReceiver', '--es', 'command', 'hold_attention')
-        (args.output / 'report.json').write_text(json.dumps(report, indent=2, ensure_ascii=False) + '\n')
         (args.output / 'logcat.txt').write_text(logs())
+        try: report.update(restore(journal, device))
+        except Exception as error:
+            report['recovery_error'] = str(error); report['private_recovery_journal'] = str(journal)
+        (args.output / 'report.json').write_text(json.dumps(report, indent=2, ensure_ascii=False) + '\n')
+    assert not report.get('recovery_error'), report.get('recovery_error')
 
 
 if __name__ == '__main__':

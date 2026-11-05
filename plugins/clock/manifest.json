@@ -2,7 +2,7 @@
   "id": "clock",
   "name": "@name",
   "version": "0.5.0",
-  "api": 6,
+  "api": 9,
   "main": "main.lua",
   "permissions": [
     "location"
@@ -12,14 +12,16 @@
       "type": "bool",
       "label": "@setting.seconds",
       "default": false,
-      "group": "@group.display"
+      "group": "@group.display",
+      "level": "normal"
     },
     "zone1": {
       "type": "choice",
       "label": "@setting.zone1",
       "default": "Asia/Hong_Kong",
       "source": "timezone",
-      "group": "@group.world"
+      "group": "@group.world",
+      "level": "normal"
     },
     "zone2": {
       "type": "choice",
@@ -27,7 +29,8 @@
       "default": "Europe/London",
       "source": "timezone",
       "allowEmpty": true,
-      "group": "@group.world"
+      "group": "@group.world",
+      "level": "normal"
     },
     "zone3": {
       "type": "choice",
@@ -35,7 +38,8 @@
       "default": "America/New_York",
       "source": "timezone",
       "allowEmpty": true,
-      "group": "@group.world"
+      "group": "@group.world",
+      "level": "normal"
     },
     "zone4": {
       "type": "choice",
@@ -43,7 +47,8 @@
       "default": "",
       "source": "timezone",
       "allowEmpty": true,
-      "group": "@group.world"
+      "group": "@group.world",
+      "level": "normal"
     }
   },
   "pages": [
@@ -92,5 +97,8 @@
       "view": "views/sunrise.json",
       "opens": "face"
     }
+  ],
+  "related": [
+    "motion.clock"
   ]
 }

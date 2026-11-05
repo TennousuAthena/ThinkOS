@@ -1,0 +1,10 @@
+{
+  "template": "tile",
+  "color": "#107C10",
+  "faces": [
+    {
+      "icon": "apps",
+      "label": "@name"
+    }
+  ]
+}

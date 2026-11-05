@@ -1,0 +1,316 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "catalog.json",
+  "title": "UpdateCatalogDocument",
+  "type": "object",
+  "required": [
+    "schema",
+    "channel",
+    "seq",
+    "published",
+    "expires",
+    "release"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "type": "integer",
+      "const": 1
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "stable",
+        "beta"
+      ]
+    },
+    "seq": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9223372036854775807,
+      "format": "int64"
+    },
+    "published": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9223372036854775807,
+      "format": "int64"
+    },
+    "expires": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9223372036854775807,
+      "format": "int64"
+    },
+    "release": {
+      "$ref": "#/$defs/release"
+    },
+    "mirrors": {
+      "type": "array",
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 2048,
+        "pattern": "^https?://"
+      },
+      "description": "Further URLs of THIS channel's catalog (each with its .sig next to it). The device keeps the list from the newest authenticated catalog and asks those sources after the configured ones, so a mirror can be added or replaced without shipping a new APK. Every response is still authenticated with the channel keys and the sequence floor."
+    }
+  },
+  "$defs": {
+    "release": {
+      "title": "UpdateRelease",
+      "type": "object",
+      "required": [
+        "version",
+        "code",
+        "api",
+        "device",
+        "sdk",
+        "sha256",
+        "size",
+        "signer",
+        "urls",
+        "modules",
+        "notes",
+        "source"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 16,
+          "pattern": "^(0|[1-9][0-9]{0,3})\\.(0|[1-9][0-9]{0,2})\\.(0|[1-9][0-9]{0,2})$"
+        },
+        "code": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "api": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "device": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+          },
+          "uniqueItems": true
+        },
+        "sdk": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "sha256": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 67108864,
+          "format": "int64"
+        },
+        "signer": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "urls": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "pattern": "^https?://"
+          },
+          "uniqueItems": true
+        },
+        "modules": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 7,
+          "items": {
+            "$ref": "#/$defs/module"
+          }
+        },
+        "notes": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 11,
+          "additionalProperties": false,
+          "properties": {
+            "zh-Hans": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 2048
+            },
+            "zh-Hant": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 2048
+            },
+            "en": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 2048
+            },
+            "es": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 2048
+            },
+            "fr": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 2048
+            },
+            "pt": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 2048
+            },
+            "ru": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 2048
+            },
+            "ar": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 2048
+            },
+            "hi": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 2048
+            },
+            "bn": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 2048
+            },
+            "ur": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 2048
+            }
+          }
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^https?://"
+        }
+      }
+    },
+    "module": {
+      "title": "UpdateModule",
+      "type": "object",
+      "required": [
+        "id",
+        "kind",
+        "version",
+        "code",
+        "policy",
+        "sha256",
+        "size",
+        "urls",
+        "manifest_urls"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": [
+            "thinkos-updater",
+            "thinkos-cast",
+            "thinkos-immersive",
+            "thinkos-shell",
+            "thinkos-certs",
+            "thinkos-power",
+            "timesync"
+          ]
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "magisk",
+            "vector"
+          ]
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "code": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "policy": {
+          "type": "string",
+          "enum": [
+            "always",
+            "installed",
+            "feature"
+          ]
+        },
+        "sha256": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16777216,
+          "format": "int64"
+        },
+        "urls": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "pattern": "^https?://"
+          },
+          "uniqueItems": true
+        },
+        "manifest_urls": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "pattern": "^https?://"
+          },
+          "uniqueItems": true
+        }
+      }
+    }
+  },
+  "description": "Authenticate raw bytes before decoding. Integer fields use decimal integer tokens, without fractions/exponents. Expiry warns only; device clock may be untrusted. Semantic version/code equality, expiry ordering, module kind/ID uniqueness and URL validation also apply. release.api is the resulting runtime plugin API, not an old-runtime ceiling on APK updates."
+}

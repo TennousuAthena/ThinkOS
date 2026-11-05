@@ -20,6 +20,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools"))
 from device_app_files import read_app_file
+from device_hierarchy import dump_hierarchy, visible_nodes
 
 PACKAGE = "moe.kiwi.thinkos"
 HOME = PACKAGE + "/.MainActivity"
@@ -73,10 +74,10 @@ def main():
             time.sleep(.2)
         raise AssertionError(message)
 
-    def snapshot(name="last-ui"):
+    def snapshot(name="last-ui", compressed=False):
         path = "/sdcard/thinkos-place-ui.xml"
         try:
-            shell("uiautomator", "dump", "--compressed", path)
+            dump_hierarchy(args.serial, path, compressed=compressed)
             raw = shell("cat", path)
             (args.output / (name + ".xml")).write_bytes(raw)
             return ET.fromstring(raw)
@@ -87,16 +88,19 @@ def main():
     def scroll(tree, target):
         view = next(n for n in tree.iter("node") if n.get("class") == "android.widget.ScrollView")
         a, b, c, d = box(view)
-        visible = [order[n.get("text")] for n in tree.iter("node") if n.get("text") in order]
-        up = visible and order.get(target, len(fields)) < min(visible)
+        # The native dialog title repeats the location-name label. Only rows
+        # inside this scroll view decide which way its content needs to move.
+        visible = [order[n.get("text")] for n in view.iter("node") if n.get("text") in order
+                   and len(box(n)) == 4 and box(n)[3] > box(n)[1]]
+        up = visible and order.get(target, len(fields)) <= min(visible)
         y1, y2 = b+(d-b)*.8, b+(d-b)*.25
         if up: y1, y2 = y2, y1
         shell("input", "swipe", (a+c)//2, round(y1), (a+c)//2, round(y2), 400)
 
     def find(text=None, resource=None, class_name=None, scroll_to=False):
         for _ in range(10 if scroll_to else 3):
-            tree = snapshot()
-            node = next((n for n in tree.iter("node") if (text is None or n.get("text") == text)
+            tree = snapshot(compressed=True)
+            node = next((n for n in visible_nodes(tree) if (text is None or n.get("text") == text)
                          and (resource is None or n.get("resource-id") == resource)
                          and (class_name is None or n.get("class") == class_name)), None)
             if node is not None: return node
@@ -128,42 +132,22 @@ def main():
             time.sleep(.3)
 
     def open_system():
-        shell("input", "keyevent", 3)
+        shell("input", "keyevent", 4)
+        shell("input", "keyevent", 4)
         debug("orientation", 0, "--ei")
-        wait_for(lambda: "orientation=LANDSCAPE" in state(), "landscape layout is not ready")
-        for _ in range(5):
-            if "page=home.main," in state(): break
-            shell("input", "swipe", 1100, 400, 150, 400, 450)
-            time.sleep(.3)
-        else: raise AssertionError("Home is not reachable")
-        # The immersive navigation bar can temporarily cover the physical right edge. Locate
-        # the home stacks' central gap from their visible content instead of pressing that edge.
-        tree = snapshot()
-        root = next(n for n in tree.iter("node") if n.get("package") == PACKAGE)
-        width = box(root)[2]
-        leaves = [box(n) for n in tree.iter("node") if n.get("package") == PACKAGE and not len(n)]
-        left = [r for r in leaves if (r[0]+r[2])/2 < width/2]
-        right = [r for r in leaves if (r[0]+r[2])/2 >= width/2]
-        assert left and right, "Home stack content is not ready"
-        x = (max(r[2] for r in left)+min(r[0] for r in right))//2
-        y = (box(root)[1]+box(root)[3])//2
-        shell("input", "swipe", x, y, x, y, 900)
-        find(text=labels["setting_system_name"])
+        debug("page", "home.main")
+        debug("settings", "system")
+        tap(find(text=labels["setting_section_location"]))
 
     def set_theme(theme):
+        debug("theme", theme)
         open_system()
-        if saved().get("system", {}).get("theme.night", True): tap(find(text=labels["setting_theme_night"]))
-        wait_for(lambda: saved().get("system", {}).get("theme.night") is False, "night mode did not turn off")
-        time.sleep(2.5)
-        if saved().get("system", {}).get("theme.mode") != theme.lower():
-            tap(find(text=labels["setting_theme_mode"]))
-            tap(find(text=labels["setting_theme_mode_" + theme.lower()]))
         wait_for(lambda: "theme=" + theme in state(), "fixed theme did not take effect")
         time.sleep(2.3)
 
     def open_place():
         tap(find(text=labels["setting_location_name"], scroll_to=True))
-        find(text=labels["form_place_manual"])
+        find(text=labels["setting_location_mode_manual"])
 
     def reopen_place():
         open_system()
@@ -171,17 +155,19 @@ def main():
 
     def manual():
         hide_keyboard()
-        tap(find(text=labels["form_place_manual"]))
+        tap(find(text=labels["setting_location_mode_manual"]))
         find(resource="android:id/button1")
 
     def input_for(label):
         hide_keyboard()
         for _ in range(10):
             tree = snapshot()
-            node = next((n for n in tree.iter("node") if n.get("text") == label), None)
+            body = next(n for n in tree.iter('node') if n.get('class') == 'android.widget.ScrollView'
+                        and any(c.get('class') == 'android.widget.EditText' for c in n.iter('node')))
+            node = next((n for n in body.iter("node") if n.get("text") == label and box(n)[3] > box(n)[1]), None)
             if node is not None:
                 bottom = box(node)[3]
-                candidates = [n for n in tree.iter("node") if n.get("class") == "android.widget.EditText"
+                candidates = [n for n in body.iter("node") if n.get("class") == "android.widget.EditText"
                               and bottom <= box(n)[1] < bottom+100 and box(n)[3]-box(n)[1] >= 50]
                 if candidates: return min(candidates, key=lambda n: box(n)[1])
             scroll(tree, label)
@@ -210,18 +196,28 @@ def main():
         return kept
 
     def picker_layout(name):
+        # A keyboard/back transition briefly reveals the ROM's immersive nav bar.
+        # Measure the controls once it has hidden again, without an overlay clipping them.
+        time.sleep(3.5)
         tree = snapshot(name)
         width, height = shot(name)
-        targets = [n for n in tree.iter("node") if n.get("text") in ("‹", "⌕", labels["form_place_manual"])]
+        viewport = box(tree.find('node'))
+        targets = [n for n in tree.iter("node") if n.get("text") in ("‹", "⌕", labels["setting_location_mode_manual"])]
         inside = len(targets) == 3
+        clipped = []
         for node in targets:
             a, b, c, d = box(node)
             inside &= 0 <= a < c <= width and 0 <= b < d <= height and d-b >= 78
-            # UIAutomator clips the rightmost search node when the immersive navigation bar
-            # temporarily appears. Only claim a measured minimum width for the unoccluded targets.
-            if node.get("text") != "⌕": inside &= c-a >= 78
-        check(inside and any(n.get("text") == labels["form_place_hint"] for n in tree.iter("node")),
-              name + ": offline guidance, 48dp back/manual targets and the search action are visible")
+            # API-27's legacy dumper clips right-hand controls at its app-display
+            # rectangle even when the screenshot includes the immersive area.
+            # Record that limitation; don't report a clipped width as a measurement
+            # of the full native target (manual has a 64dp minimum in the View).
+            if (c == viewport[2] and c < width) or (a == viewport[0] and a > 0):
+                clipped.append({'text':node.get('text'),'bounds':node.get('bounds')})
+            else: inside &= c-a >= 78
+        report[name + 'ClippedTargets'] = clipped
+        check(inside and any(n.get("text") == labels["form_place_attribution"] for n in tree.iter("node")),
+              name + ": attribution and action targets are visible; unoccluded targets meet 48dp")
 
     def dialog_appearance(name):
         hide_keyboard()
@@ -336,17 +332,19 @@ def main():
             edit(labels["setting_location_elevation"], "520")
             edit(labels["setting_location_timezone"], "America/Santiago")
             hide_keyboard(); tap(find(resource="android:id/button1"))
-            find(text=labels["form_place_invalid"], scroll_to=True)
+            find(text=labels["form_place_invalid_values"], scroll_to=True)
             invalid_tree = snapshot("invalid-latitude"); shot("invalid-latitude")
-            warning = next(n for n in invalid_tree.iter("node") if n.get("text") == labels["form_place_invalid"])
-            caption = next(n for n in invalid_tree.iter("node") if n.get("text") == labels["setting_location_latitude"])
+            warning = next(n for n in invalid_tree.iter("node") if n.get("text") == labels["form_place_invalid_values"])
+            caption = next(n for n in visible_nodes(invalid_tree) if n.get("text") in (
+                labels["setting_location_latitude"], labels["setting_location_longitude"],
+                labels["setting_location_elevation"], labels["setting_location_timezone"]))
             check(box(warning)[3]-box(warning)[1] >= box(caption)[3]-box(caption)[1],
                   "the invalid-place explanation has a full line visible above the action bar")
             check(location() == before, "out-of-range latitude shows an explanation without saving any field")
             edit(labels["setting_location_latitude"], "-33.449")
             edit(labels["setting_location_timezone"], "Not/A_Zone")
             hide_keyboard(); tap(find(resource="android:id/button1"))
-            find(text=labels["form_place_invalid"], scroll_to=True)
+            find(text=labels["form_place_invalid_values"], scroll_to=True)
             check(location() == before, "an unknown IANA timezone leaves the complete stored location unchanged")
             edit(labels["setting_location_timezone"], "")
             hide_keyboard(); tap(find(resource="android:id/button1"))

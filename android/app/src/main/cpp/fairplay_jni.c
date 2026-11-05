@@ -3,7 +3,8 @@
  *
  * The reply tables are from RPiPlay (https://github.com/FD-/RPiPlay, lib/fairplay_playfair.c, commit 64d0341e), GPLv3; the
  * decryption is the `playfair` library in playfair/ (same origin, same licence, see playfair/ORIGIN.md). The JNI glue is ThinkOS's.
- * This file, like the whole application, is distributed under the GNU General Public License version 3.
+ * This file is distributed under the GNU General Public License version 3.
+ * Other ThinkOS project code is MIT; see LICENSE and ADR-043 for the full APK's distribution terms.
  *
  * Nothing here keeps state: the Kotlin side holds the 164-byte key message of a connection and hands it back to `decrypt`.
  */

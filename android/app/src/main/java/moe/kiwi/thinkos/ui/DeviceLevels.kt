@@ -7,6 +7,8 @@ package moe.kiwi.thinkos.ui
 interface DeviceLevels {
     /** The brightness cap of an attentive display (the `display.brightness_max` setting), 0..1. Setting it applies at once. */
     var brightness: Float
+    /** Temporary cap while a native settings control is dragged. Null restores the saved cap. */
+    fun previewBrightness(value: Float?) = Unit
     /** The lowest brightness the setting allows: a drag must not be able to black the screen out. */
     val minimumBrightness: Float
     /** The media volume, the same one the volume keys change. */

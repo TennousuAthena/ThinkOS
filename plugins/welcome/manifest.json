@@ -1,0 +1,14 @@
+{
+  "id": "welcome",
+  "name": "@name",
+  "version": "0.1.0",
+  "api": 10,
+  "main": "main.lua",
+  "permissions": ["system.settings", "system.device", "system.update"],
+  "exports": {"setup": {"path": "public.setup", "shape": "onboarding/1"}},
+  "pages": [
+    {"id": "hello", "view": "views/hello.json", "title": "@name", "roles": ["onboarding"]},
+    {"id": "setup", "view": "views/setup.json", "title": "@name", "roles": ["onboarding"]},
+    {"id": "gestures", "view": "views/gestures.json", "title": "@gestures", "roles": ["onboarding"]}
+  ]
+}

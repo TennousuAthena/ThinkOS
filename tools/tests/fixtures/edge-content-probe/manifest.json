@@ -1,0 +1,16 @@
+{
+  "id": "edge-content-probe",
+  "name": "Edge content probe",
+  "version": "1.0.0",
+  "api": 9,
+  "main": "main.lua",
+  "permissions": ["media"],
+  "pages": [
+    {"id": "list", "title": "List", "view": "views/list.json"},
+    {"id": "tv", "title": "TV", "view": "views/tv.json"}
+  ],
+  "apps": [
+    {"id": "list", "page": "list", "title": "List", "listed": false},
+    {"id": "tv", "page": "tv", "title": "TV", "listed": false}
+  ]
+}

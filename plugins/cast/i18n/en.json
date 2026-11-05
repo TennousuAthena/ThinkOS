@@ -1,5 +1,15 @@
 {
   "name": "Casting",
   "page.video": "Casting video",
-  "page.audio": "Casting"
+  "page.audio": "Casting",
+  "app.cast": "Cast",
+  "page.home": "Cast",
+  "home.headline": "Cast to {name}",
+  "hint.dlna": "Video apps, Windows",
+  "hint.airplay": "iPhone, iPad and Mac",
+  "hint.miracast": "Android phones, Windows",
+  "state.on": "On",
+  "state.off": "Off",
+  "footer.offline": "Wi-Fi disconnected",
+  "state.module": "Needs system module"
 }

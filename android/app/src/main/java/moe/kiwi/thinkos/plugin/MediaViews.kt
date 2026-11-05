@@ -5,7 +5,7 @@ import org.json.JSONObject
 
 /** Views that attach to the OS media session. A plugin without the `media` permission cannot declare them. */
 internal object MediaViews {
-    private val TYPES = setOf("controls", "video", "seekbar")
+    private val TYPES = setOf("controls", "video", "seekbar", "nowplaying", "tv")
 
     fun used(value: Any?): Boolean = when (value) {
         is JSONObject -> value.optString("type") in TYPES || value.keys().asSequence().any { used(value.opt(it)) }

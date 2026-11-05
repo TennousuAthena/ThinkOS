@@ -38,8 +38,93 @@ class ThinkStage(
     private val pageHost = FrameLayout(context)
     private val overlay = FrameLayout(context)
     private val system = SystemLayer(context)
-    private val overlayText = TextView(context).apply { textSize = 16f; gravity = Gravity.CENTER; setPadding(20, 12, 20, 12) }
-    private val boot = TextView(context).apply { text = "ThinkOS"; textSize = 36f; gravity = Gravity.CENTER; typeface = Typeface.create("sans-serif-light", Typeface.NORMAL) }
+    /** The control sheet over everything else (ADR-035). It is an overlay, not a page, so the page below hears nothing. */
+    private val panel = PanelHost(context, events, { states[it] ?: JSONObject() },
+        dimBackground = { current?.photoStage == true || current?.videoStage == true }) { onInteraction() }
+    private val overlayText = TextView(context).apply { textSize = TextScale.BODY; gravity = Gravity.CENTER; setPadding(20, 12, 20, 12) }
+    private val practiceHint = PracticeHint(context).apply {
+        onUnavailable = { finishPracticeFeedback(cancelled = true) }
+    }
+    private var practiceName: String? = null
+    private var practiceText = ""
+    private var practiceDone = false
+    private var practiceFeedbackPage: String? = null
+    private var pendingPractice: Pair<String?, String>? = null
+    private var practiceFeedbackReady = false
+    private var practiceFeedbackGeneration = 0L
+    private var practiceFeedbackEnd: Runnable? = null
+    /** OS recognition only. The caller has already checked the built-in onboarding authority. */
+    var onPractice: ((String) -> Unit)? = null
+    fun setPractice(name: String?, text: String) {
+        val next = name?.takeIf { it in setOf("swipe", "variant", "panel", "back", "home", "long-press") }
+        if (practiceFeedbackPage != null) {
+            if (router.onboardingOpen && router.currentPage?.key == practiceFeedbackPage &&
+                router.currentPage?.roles?.contains("onboarding") == true) {
+                pendingPractice = next to text
+                return
+            }
+            cancelPracticeFeedback()
+        }
+        if (next != practiceName || text != practiceText) {
+            practiceName = next; practiceText = text; practiceDone = false
+            practiceHint.bind(next, text, false)
+        }
+        practiceHint.visibility = if (practiceActive()) VISIBLE else GONE
+    }
+    private fun practiceActive(): Boolean = practiceName != null && router.onboardingOpen &&
+        router.currentPage?.roles?.contains("onboarding") == true
+    private fun cancelPracticeFeedback(): Pair<String?, String>? {
+        val pending = pendingPractice
+        practiceFeedbackGeneration++
+        practiceFeedbackEnd?.let(handler::removeCallbacks); practiceFeedbackEnd = null
+        practiceHint.onCompleteDraw = null
+        practiceFeedbackPage = null; pendingPractice = null; practiceFeedbackReady = false
+        pageHost.visibility = VISIBLE
+        return pending
+    }
+    private fun finishPracticeFeedback(cancelled: Boolean = false) {
+        if (practiceFeedbackPage == null || !cancelled && (!practiceFeedbackReady || touching)) return
+        val samePage = router.onboardingOpen && router.currentPage?.key == practiceFeedbackPage &&
+            router.currentPage?.roles?.contains("onboarding") == true
+        val pending = cancelPracticeFeedback()
+        if (cancelled && touching) {
+            // Interrupted presentation ends this pointer, never arms the next lesson from its tail.
+            disarmLongPress(); cancelGesture(); endPanelTouch(); panelTouch = PanelTouch.SWALLOW
+        }
+        if (samePage && pending != null) setPractice(pending.first, pending.second)
+        else setPractice(null, "")
+    }
+    private fun reportPractice(name: String): Boolean {
+        if (!practiceActive()) return false
+        if (!practiceDone && practiceName == name) {
+            practiceDone = true
+            if (name != "home") {
+                cancelPracticeFeedback()
+                practiceFeedbackPage = router.currentPage?.key
+                // Lua advances immediately; keep the next page behind this lesson's checkmark.
+                pageHost.visibility = INVISIBLE
+                pendingPractice = null to ""
+                val ticket = practiceFeedbackGeneration
+                practiceHint.onCompleteDraw = {
+                    if (ticket == practiceFeedbackGeneration && practiceFeedbackPage != null) {
+                        val finish = Runnable {
+                            if (ticket == practiceFeedbackGeneration) {
+                                practiceFeedbackEnd = null; practiceFeedbackReady = true
+                                finishPracticeFeedback()
+                            }
+                        }
+                        practiceFeedbackEnd = finish
+                        handler.postDelayed(finish, Motion.FEEDBACK_EXIT)
+                    }
+                }
+            }
+            practiceHint.bind(practiceName, practiceText, true)
+            onPractice?.invoke(name)
+        }
+        // Every recognised action is suppressed while practising, including an incorrect one.
+        return true
+    }
+    private val boot = TextView(context).apply { text = "ThinkOS"; textSize = TextScale.TITLE; gravity = Gravity.CENTER; typeface = Typeface.create("sans-serif-light", Typeface.NORMAL) }
     private val states = mutableMapOf<String, JSONObject>()
     private var pages = emptyList<PluginPage>()
     private var widgets = emptyList<PluginWidget>()
@@ -49,6 +134,21 @@ class ThinkStage(
     private var previewQueued = false
     private var previewChecked = false
     private var touching = false
+    private var debugDownX = -1f
+    private var debugDownY = -1f
+    private var debugDownCount = 0L
+    /** Read-only debug receiver checkpoint for real edge input and lazy page construction. */
+    fun debugState(): JSONObject = JSONObject().put("downX", debugDownX).put("downY", debugDownY)
+        .put("downCount", debugDownCount).put("width", width).put("height", height)
+        .put("children", pageHost.childCount).put("touching", touching).put("page", deck.page)
+        .put("visibleChildren", (0 until pageHost.childCount).count { pageHost.getChildAt(it).visibility == VISIBLE })
+        .put("edge", panelTouch.name).put("upProgress", system.upProgress).put("offset", offset)
+        .put("translationY", current?.translationY ?: 0f).put("canGoBack", router.canGoBack)
+        .put("pageBack", current?.hasBack == true).put("animatorsEnabled", ValueAnimator.areAnimatorsEnabled())
+        .put("layoutDirection", layoutDirection).put("fontScale", resources.configuration.fontScale)
+        .put("panelOpen", panel.showing)
+        .put("practice", practiceName ?: JSONObject.NULL).put("practiceText", practiceText).put("practiceDone", practiceDone)
+        .put("practiceVisible", practiceHint.visibility == VISIBLE)
     private val previewIdle = MessageQueue.IdleHandler {
         previewQueued = false
         if (canPreparePreview()) {
@@ -94,6 +194,9 @@ class ThinkStage(
     private val slop = ViewConfiguration.get(context).scaledTouchSlop
     private val springs = mutableListOf<ValueAnimator>()
     private val handler = Handler(Looper.getMainLooper())
+    /** The flip that opens and closes apps (ADR-040), and where the finger was when it started one. */
+    private val appTransition = AppTransition(resources.displayMetrics.density, handler)
+    private var launchOrigin: PointF? = null
     private var maintenanceArmed = false
     private val maintenance = Runnable { if (maintenanceArmed) { maintenanceArmed = false; onMaintenance() } }
     private var lastDrift = 0L
@@ -113,13 +216,14 @@ class ThinkStage(
         pageHost.scaleX = 1f
         pageHost.scaleY = 1f
         current?.releasePress()
-        onLongPress(current?.ownerAt(downX, downY) ?: return@Runnable)
+        if (!reportPractice("long-press")) onLongPress(current?.ownerAt(downX, downY) ?: return@Runnable)
     }
     private fun armLongPress() {
         longPressArmed = true
         longPressFired = false
-        handler.postDelayed(pressFeedback, FEEDBACK_AFTER_MILLIS)
-        handler.postDelayed(longPress, LONG_PRESS_MILLIS)
+        val age = (SystemClock.uptimeMillis() - gestureDownTime).coerceAtLeast(0)
+        handler.postDelayed(pressFeedback, (FEEDBACK_AFTER_MILLIS - age).coerceAtLeast(0))
+        handler.postDelayed(longPress, (LONG_PRESS_MILLIS - age).coerceAtLeast(0))
         current?.pressAt(downX, downY)
     }
     private fun disarmLongPress() {
@@ -137,8 +241,11 @@ class ThinkStage(
         addView(pageHost, LayoutParams(-1, -1))
         addView(overlay, LayoutParams(-1, -1))
         addView(system, LayoutParams(-1, -1))
+        addView(panel, LayoutParams(-1, -1))
         pageHost.addView(boot, LayoutParams(-1, -1))
         overlay.addView(overlayText, LayoutParams(-1, -2, Gravity.TOP))
+        overlay.addView(practiceHint, LayoutParams(-1, -1))
+        practiceHint.visibility = GONE
         overlayText.visibility = GONE
         system.importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO
         ambient.importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO
@@ -167,6 +274,10 @@ class ThinkStage(
                     themeAnimating = true
                 }
                 renderDeck(store.current.deck)
+                if (practiceFeedbackPage != null && value.deck.page != practiceFeedbackPage) {
+                    cancelPracticeFeedback(); practiceName = null
+                }
+                if (!practiceActive()) { cancelPracticeFeedback(); practiceName = null; practiceHint.visibility = GONE }
                 val message = if (value.safeMode) context.getString(moe.kiwi.thinkos.R.string.safe_mode_banner) else value.overlay.message
                 overlayText.text = message.orEmpty()
                 overlayText.visibility = if (message == null) GONE else VISIBLE
@@ -190,6 +301,8 @@ class ThinkStage(
         queuePreview()
     }
     fun stop() {
+        cancelPracticeFeedback()
+        setPractice(null, "")
         collection?.cancel()
         collection = null
         scope?.cancel()
@@ -202,8 +315,18 @@ class ThinkStage(
         current?.tick(SystemClock.uptimeMillis(), Attention.ASLEEP)
         neighbor?.tick(SystemClock.uptimeMillis(), Attention.ASLEEP)
         cancelGesture()
+        panel.close(false)
+        endPanelTouch()
         handler.removeCallbacks(maintenance)
         maintenanceArmed = false
+    }
+    /** The control sheet is up: Home and the plugin's own "close" bring it back down. */
+    val panelOpen: Boolean get() = panel.showing
+    fun closePanel(animated: Boolean = true) = panel.close(animated)
+    fun prepareSystemHome() {
+        cancelPracticeFeedback(); setPractice(null, "")
+        panel.close(false); clearPrepared(); cancelGesture(); endPanelTouch()
+        if (touching) panelTouch = PanelTouch.SWALLOW
     }
     fun updateCatalog(nextPages: List<PluginPage>, nextWidgets: List<PluginWidget>) {
         clearPrepared()
@@ -216,8 +339,10 @@ class ThinkStage(
             visible.update(replacement, widgets)
         }
         renderDeck(store.current.deck)
+        if (!practiceActive()) { cancelPracticeFeedback(); practiceName = null; practiceHint.visibility = GONE }
         applyDrift()
         queuePreview()
+        panel.refresh(router.panelPage, widgets)
     }
     /** Language, 12/24-hour setting or time zone changed in Android's settings. */
     fun localeChanged() {
@@ -225,10 +350,12 @@ class ThinkStage(
         current?.localeChanged()
         neighbor?.localeChanged()
         prepared?.localeChanged()
+        panel.localeChanged()
     }
     fun updatePluginState(pluginId: String, state: JSONObject) {
         val changed = Binding.changed(states.put(pluginId, state), state)
         if (changed.isEmpty()) return
+        panel.bind(pluginId, changed)
         current?.bind(pluginId, changed)
         neighbor?.bind(pluginId, changed)
         prepared?.bind(pluginId, changed)
@@ -290,6 +417,7 @@ class ThinkStage(
     private fun renderDeck(next: DeckState) {
         if (next.page == deck.page && next.variant == deck.variant && current != null) return
         val page = pages.firstOrNull { it.key == next.page } ?: return
+        appTransition.snap()
         val old = current
         val preview = neighbor?.takeIf { it.page.key == next.page && it.variant == next.variant && commitDrag }
         val incoming = preview ?: takePrepared(page, next.variant) ?: newPage(page, next.variant).also { pageHost.addView(it, LayoutParams(-1, -1)) }
@@ -299,7 +427,7 @@ class ThinkStage(
         old?.active(false)
         incoming.active(true)
         pageHost.removeView(boot)
-        val vertical = next.vertical && next.page == deck.page
+        val vertical = next.transition == Transition.RISE || next.vertical && next.page == deck.page
         val direction = if (next.direction == 0) 1 else next.direction
         val extent = if (vertical) height.toFloat() else width.toFloat()
         if (old != null && old.page.key == next.page && !next.vertical) {
@@ -311,7 +439,17 @@ class ThinkStage(
                 retire(old)
             }.start()
             old.animate().alpha(0f).setDuration(180).start()
-        } else if (old != null && !governor.reducedMotion) {
+        } else if (old != null && next.transition in setOf(Transition.LAUNCH, Transition.RETURN) && old.page.key != next.page && preview == null &&
+            !governor.reducedMotion && ValueAnimator.areAnimatorsEnabled()) {
+            // An app opens or closes: the Start page turns away and the app turns in, or the other way round (ADR-040).
+            // The page that comes in is placed now: the turn needs its size (the hinge, which tiles there are), not the next frame's.
+            if (!incoming.isLaidOut && width > 0 && height > 0) {
+                incoming.measure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY))
+                incoming.layout(0, 0, width, height)
+            }
+            if (next.transition == Transition.LAUNCH) appTransition.launch(old, incoming, launchOrigin) { retire(old) }
+            else appTransition.back(old, incoming, launchOrigin) { retire(old) }
+        } else if (old != null && !governor.reducedMotion && ValueAnimator.areAnimatorsEnabled()) {
             if (preview == null) position(incoming, direction * extent, vertical)
             val speed = if (commitDrag) velocity?.let { if (vertical) it.yVelocity else it.xVelocity } ?: 0f else 0f
             springs += Motion.spring(position(incoming, vertical), 0f, speed, { position(incoming, it, vertical) })
@@ -324,11 +462,12 @@ class ThinkStage(
             position(incoming, 0f, vertical)
         }
         // A page opened by tap or command rises in; one the finger already dragged into view must not blink.
-        if (preview == null && old?.page?.key != next.page && !governor.reducedMotion) incoming.enterAnimation()
+        if (preview == null && old?.page?.key != next.page && !governor.reducedMotion && next.transition == Transition.SLIDE) incoming.enterAnimation()
         commitDrag = false
         deck = next
         val navigable = router.navigablePages
-        system.pageCount = navigable.size
+        // An app, a takeover or the settings page is not one of the sequence's pages: no dots for it.
+        system.pageCount = if (router.ownsSideways) 0 else navigable.size
         system.pageIndex = navigable.indexOf(page)
         system.variantCount = page.variants.size
         system.variantIndex = page.variants.indexOf(next.variant)
@@ -341,7 +480,7 @@ class ThinkStage(
     private fun position(view: View, value: Float, vertical: Boolean) {
         if (vertical) view.translationY = value else view.translationX = value
     }
-    private fun syncAmbient() { ambient.covered(current?.opaque == true && neighbor == null && axis == 0) }
+    private fun syncAmbient() { ambient.covered(current?.coversAmbient == true && neighbor == null && axis == 0) }
     private fun applyDrift() {
         // Full-screen backdrops stay at the viewport edges, including in swipe previews.
         val backdropVisible = current?.opaque == true || neighbor?.opaque == true
@@ -366,6 +505,9 @@ class ThinkStage(
         applyDrift()
     }
     private fun cancelGesture() {
+        appTransition.snap()
+        system.backProgress = 0f
+        system.upProgress = 0f
         springs.forEach(ValueAnimator::cancel)
         springs.clear()
         neighbor?.let(pageHost::removeView)
@@ -401,6 +543,9 @@ class ThinkStage(
         ambient.tick(now)
         current?.tick(now, governor.attention)
         neighbor?.tick(now, governor.attention)
+        panel.tick(now, governor.attention)
+        // Reuse this clock's existing wakeups, without adding a tutorial frame loop or observer.
+        if (practiceHint.visibility == VISIBLE) practiceHint.refreshMotion()
         if (now - lastDrift >= 1_000) {
             BurnIn.offset(now).let { driftX = it.first; driftY = it.second }
             lastDrift = now
@@ -411,7 +556,7 @@ class ThinkStage(
             if (now >= wakeUntil) system.wakeAt = 0
             system.invalidate()
         }
-        governor.activeAnimations = themeAnimating || systemActive || current?.activeAnimations == true || neighbor?.activeAnimations == true
+        governor.activeAnimations = themeAnimating || systemActive || panel.animating || appTransition.running || current?.activeAnimations == true || neighbor?.activeAnimations == true
         governor.ambientAnimations = current?.ambientAnimations == true || neighbor?.ambientAnimations == true
         queuePreview()
     }
@@ -422,10 +567,13 @@ class ThinkStage(
         neighbor?.colors(value)
         prepared?.colors(value)
         overlayText.setTextColor(value.secondary)
+        practiceHint.colors(value)
+        panel.colors(value)
         system.palette = value
         system.invalidate()
     }
     private fun applyNight() {
+        panel.night(night)
         current?.night(night)
         neighbor?.night(night)
         prepared?.night(night)
@@ -446,6 +594,8 @@ class ThinkStage(
         super.onSizeChanged(w, h, oldw, oldh)
         clearPrepared()
         cancelGesture()
+        endPanelTouch()
+        finishPracticeFeedback(cancelled = true)
         touching = false
         store.update { it.copy(orientation = if (w > h) Orientation.LANDSCAPE else Orientation.PORTRAIT) }
     }
@@ -466,6 +616,8 @@ class ThinkStage(
 
     /** Let controls tap and lists scroll vertically; claim horizontal swipes after intent is clear. */
     override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
+        // While the control sheet is up it owns every touch; the page under it must not start a swipe or a long press.
+        if (panel.showing) return false
         if (longPressFired && event.actionMasked in setOf(MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL)) return true
         if (router.settingsOpen) return false
         when (event.actionMasked) {
@@ -480,7 +632,7 @@ class ThinkStage(
                 velocity?.addMovement(event)
                 if (max(abs(dx), abs(dy)) > slop) disarmLongPress()
                 if (nativeHorizontal) return false
-                if (event.pointerCount == 1 && abs(dx) > slop && abs(dx) > abs(dy)) {
+                if (event.pointerCount == 1 && abs(dx) > slop && abs(dx) > abs(dy) && !router.ownsSideways) {
                     nativeTouch = false
                     axis = 1
                     return true
@@ -502,6 +654,288 @@ class ThinkStage(
     private var maintenanceX = 0f
     private var maintenanceY = 0f
 
+    private enum class PanelTouch { IDLE, CANDIDATE, PULL, BACK, UP, SWALLOW }
+    private var panelTouch = PanelTouch.IDLE
+    private var panelDown: MotionEvent? = null
+    private var panelDownY = 0f
+    private var panelDownX = 0f
+    /** What the touch that began at an edge could still become: the control sheet's pull-down, the back swipe, or both (the top-left corner). */
+    private var pullPossible = false
+    private var backPossible = false
+    private var upPossible = false
+    /** An undecided press goes to the page early enough to retain its pressed and long-press feedback. */
+    private val edgePress = Runnable {
+        if (panelTouch == PanelTouch.CANDIDATE) {
+            val down = panelDown
+            panelDown = null
+            endPanelTouch()
+            if (down != null) { super.dispatchTouchEvent(down); down.recycle() }
+        }
+    }
+
+    private fun endPanelTouch() {
+        panelTouch = PanelTouch.IDLE
+        handler.removeCallbacks(edgePress)
+        pullPossible = false; backPossible = false; upPossible = false
+        panelDown?.recycle()
+        panelDown = null
+    }
+
+    /**
+     * A single finger that goes down in an edge zone is not told to the page until it is clear what it does. At the top edge
+     * moving down pulls the control sheet (ADR-035); at the left edge moving right is Back (ADR-040), when something is layered over
+     * the page sequence for Back to peel. If it turns out to be a tap or any other swipe, the touch is handed to the page exactly as it
+     * began, so nothing the page did before is lost.
+     */
+    private fun panelGesture(event: MotionEvent): Boolean {
+        if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+            endPanelTouch()
+            val density = resources.displayMetrics.density
+            pullPossible = !panel.showing && events.panelEnabled && !router.settingsOpen && router.panelPage != null && event.y <= events.panelEdgeDp * density
+            backPossible = events.backEnabled && (panel.showing || router.canGoBack || current?.hasBack == true) && BackGesture.startsAtEdge(event.x, events.backEdgeDp * density)
+            upPossible = events.upEnabled && !store.current.safeMode && router.homePage != null &&
+                (panel.showing || router.currentPage != router.homePage || router.canGoBack) &&
+                BackGesture.startsAtEdge(height - event.y, events.upEdgeDp * density)
+            if (!pullPossible && !backPossible && !upPossible) return false
+            panelTouch = PanelTouch.CANDIDATE
+            panelDown = MotionEvent.obtain(event)
+            panelDownX = event.x; panelDownY = event.y
+            handler.postDelayed(edgePress, BackGesture.EDGE_HOLD_MILLIS)
+            return true
+        }
+        return when (panelTouch) {
+            PanelTouch.IDLE -> false
+            PanelTouch.SWALLOW -> { if (event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_CANCEL) panelTouch = PanelTouch.IDLE; true }
+            PanelTouch.CANDIDATE -> panelCandidate(event)
+            PanelTouch.PULL -> panelPull(event)
+            PanelTouch.BACK -> backSwipe(event)
+            PanelTouch.UP -> upSwipe(event)
+        }
+    }
+
+    private fun panelCandidate(event: MotionEvent): Boolean {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_MOVE -> {
+                val dy = event.y - panelDownY
+                val dx = event.x - panelDownX
+                when (BackGesture.classify(dx, dy, slop.toFloat(), backPossible, pullPossible, upPossible)) {
+                    BackGesture.Verdict.PULL -> {
+                        val down = panelDown
+                        panelTouch = PanelTouch.PULL
+                        handler.removeCallbacks(edgePress)
+                        if (!panel.prepare(router.panelPage, widgets)) { replayPanelTouch(event); return true }
+                        if (practiceActive()) {
+                            velocity?.recycle()
+                            velocity = VelocityTracker.obtain().also { tracker -> down?.let(tracker::addMovement); tracker.addMovement(event) }
+                            onInteraction()
+                            return true
+                        }
+                        clearPrepared()
+                        panel.beginPull(width, height)
+                        down?.let { panel.pullTo(0f, it) }
+                        panel.pullTo(dy, event)
+                        onInteraction()
+                    }
+                    BackGesture.Verdict.BACK -> beginBackSwipe(event)
+                    BackGesture.Verdict.UP -> beginUpSwipe(event)
+                    BackGesture.Verdict.PAGE -> replayPanelTouch(event)
+                    BackGesture.Verdict.WAIT -> Unit
+                }
+            }
+            MotionEvent.ACTION_UP -> {
+                if (BackGesture.classify(event.x - panelDownX, event.y - panelDownY, slop.toFloat(), backPossible, pullPossible, upPossible) == BackGesture.Verdict.UP) {
+                    beginUpSwipe(event); upSwipe(event)
+                } else replayPanelTouch(event)
+            }
+            MotionEvent.ACTION_CANCEL -> endPanelTouch()
+            MotionEvent.ACTION_POINTER_DOWN -> { endPanelTouch(); panelTouch = PanelTouch.SWALLOW }
+        }
+        return true
+    }
+
+    private fun panelPull(event: MotionEvent): Boolean {
+        if (practiceActive()) {
+            velocity?.addMovement(event)
+            when (event.actionMasked) {
+                MotionEvent.ACTION_UP -> {
+                    velocity?.computeCurrentVelocity(1000)
+                    if (panel.pullWouldOpen(event.y - panelDownY, velocity?.yVelocity ?: 0f, width, height)) reportPractice("panel")
+                    velocity?.recycle(); velocity = null
+                    endPanelTouch()
+                }
+                MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_POINTER_DOWN -> {
+                    velocity?.recycle(); velocity = null
+                    endPanelTouch()
+                    if (event.actionMasked == MotionEvent.ACTION_POINTER_DOWN) panelTouch = PanelTouch.SWALLOW
+                }
+            }
+            return true
+        }
+        when (event.actionMasked) {
+            MotionEvent.ACTION_MOVE -> panel.pullTo(event.y - panelDownY, event)
+            MotionEvent.ACTION_UP -> { panel.pullTo(event.y - panelDownY, event); panel.release(false); endPanelTouch() }
+            MotionEvent.ACTION_CANCEL -> { panel.release(true); endPanelTouch() }
+            MotionEvent.ACTION_POINTER_DOWN -> { panel.release(true); endPanelTouch(); panelTouch = PanelTouch.SWALLOW }
+        }
+        return true
+    }
+
+    // ---- back (ADR-040) ----
+
+    /** Back from the Back key. True if something took it: the control sheet, a menu on the page, an app that wanted it, or a layer that went. */
+    fun back(): Boolean = dispatchBack(false)
+
+    private fun dispatchBack(viaGesture: Boolean): Boolean {
+        if (panel.showing) { panel.close(true); return true }
+        appTransition.snap()
+        if (current?.back() == true) return true
+        return router.back(viaGesture) != DeckRouter.BackResult.NONE
+    }
+
+    private fun beginBackSwipe(event: MotionEvent) {
+        val down = panelDown
+        panelTouch = PanelTouch.BACK
+        handler.removeCallbacks(edgePress)
+        cancelGesture()
+        clearPrepared()
+        ambient.covered(false)
+        // The page Back leads to slides in from the left under the finger; an app that wants Back for itself has nothing to show there.
+        (if (practiceActive() || panel.showing || current?.hasBack == true) null else router.previewBack())?.let { (page, variant) ->
+            neighbor = newPage(page, variant).also { pageHost.addView(it, LayoutParams(-1, -1)) }
+        }
+        dragDirection = -1
+        axis = 1
+        offset = 0f
+        velocity = VelocityTracker.obtain().also { tracker -> down?.let(tracker::addMovement); tracker.addMovement(event) }
+        onInteraction()
+        applyDrift()
+        moveBackSwipe(event)
+    }
+
+    private fun moveBackSwipe(event: MotionEvent) {
+        offset = (event.x - panelDownX).coerceAtLeast(0f)
+        if (practiceActive()) return
+        current?.let { position(it, if (neighbor == null) offset * .16f else offset, false) }
+        neighbor?.let { position(it, offset - width, false) }
+        system.backProgress = BackGesture.progress(offset, width.toFloat())
+        system.backY = event.y
+        system.invalidate()
+    }
+
+    private fun backSwipe(event: MotionEvent): Boolean {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_MOVE -> { velocity?.addMovement(event); moveBackSwipe(event) }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                velocity?.addMovement(event)
+                velocity?.computeCurrentVelocity(1000, ViewConfiguration.get(context).scaledMaximumFlingVelocity.toFloat())
+                val speed = velocity?.xVelocity ?: 0f
+                val up = event.actionMasked == MotionEvent.ACTION_UP
+                if (up) moveBackSwipe(event)
+                val commit = up && BackGesture.commits(offset, speed, width.toFloat(), resources.displayMetrics.density)
+                system.backProgress = 0f
+                system.invalidate()
+                val generation = router.navigationGeneration
+                if (commit) {
+                    if (!reportPractice("back")) {
+                        commitDrag = neighbor != null
+                        dispatchBack(viaGesture = neighbor != null)
+                    }
+                }
+                // Not far enough, or an app took Back for itself: the page returns to where it was.
+                if (!commit || router.navigationGeneration == generation) {
+                    commitDrag = false
+                    settleBackSwipe(if (up) speed else 0f)
+                }
+                axis = 0
+                endPanelTouch()
+            }
+            MotionEvent.ACTION_POINTER_DOWN -> {
+                system.backProgress = 0f
+                system.invalidate()
+                settleBackSwipe(0f)
+                axis = 0
+                endPanelTouch()
+                panelTouch = PanelTouch.SWALLOW
+            }
+        }
+        return true
+    }
+
+    private fun settleBackSwipe(speed: Float) {
+        current?.let { view -> springs += Motion.spring(position(view, false), 0f, speed, { position(view, it, false) }) }
+        neighbor?.let { view ->
+            springs += Motion.spring(position(view, false), -width.toFloat(), speed, { position(view, it, false) }) { retire(view) }
+        }
+    }
+
+    private fun beginUpSwipe(event: MotionEvent) {
+        panelTouch = PanelTouch.UP
+        handler.removeCallbacks(edgePress)
+        cancelGesture()
+        clearPrepared()
+        // Home is built only after release commits. A drag moves just the current page and OS arrow.
+        axis = 2
+        offset = 0f
+        velocity = VelocityTracker.obtain().also { tracker -> panelDown?.let(tracker::addMovement); tracker.addMovement(event) }
+        onInteraction()
+        moveUpSwipe(event)
+    }
+
+    private fun moveUpSwipe(event: MotionEvent) {
+        offset = (panelDownY - event.y).coerceAtLeast(0f)
+        if (practiceActive()) return
+        current?.let { position(it, -offset * .16f, true) }
+        system.upProgress = BackGesture.progress(offset, height.toFloat())
+        system.invalidate()
+    }
+
+    private fun upSwipe(event: MotionEvent): Boolean {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_MOVE -> { velocity?.addMovement(event); moveUpSwipe(event) }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                velocity?.addMovement(event)
+                velocity?.computeCurrentVelocity(1000, ViewConfiguration.get(context).scaledMaximumFlingVelocity.toFloat())
+                val speed = -(velocity?.yVelocity ?: 0f)
+                val released = event.actionMasked == MotionEvent.ACTION_UP
+                if (released) moveUpSwipe(event)
+                val commit = released && BackGesture.commits(offset, speed, height.toFloat(), resources.displayMetrics.density)
+                system.upProgress = 0f; system.invalidate()
+                if (commit) { cancelPracticeFeedback(); reportPractice("home") }
+                if (commit) panel.close(false)
+                if (!commit || !router.homeGesture()) settleUpSwipe(if (released) speed else 0f)
+                axis = 0
+                endPanelTouch()
+            }
+            MotionEvent.ACTION_POINTER_DOWN -> {
+                system.upProgress = 0f; system.invalidate()
+                settleUpSwipe(0f)
+                axis = 0
+                endPanelTouch(); panelTouch = PanelTouch.SWALLOW
+            }
+        }
+        return true
+    }
+
+    private fun settleUpSwipe(speed: Float) {
+        current?.let { view ->
+            if (governor.reducedMotion || !ValueAnimator.areAnimatorsEnabled()) position(view, 0f, true)
+            else springs += Motion.spring(position(view, true), 0f, -speed * .16f, { position(view, it, true) })
+        }
+    }
+
+    /** The finger was not pulling the sheet after all: the page gets the whole touch, beginning with its first point. */
+    private fun replayPanelTouch(event: MotionEvent) {
+        // Take the stored press out first: ending the panel touch recycles whatever is stored, and it is recycled here instead.
+        val down = panelDown
+        panelDown = null
+        endPanelTouch()
+        if (down != null) {
+            super.dispatchTouchEvent(down)
+            down.recycle()
+        }
+        super.dispatchTouchEvent(event)
+    }
+
     /** The hidden recovery gesture (two fingers held top-left) must work on every page, form included. */
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
         when (event.actionMasked) {
@@ -509,7 +943,13 @@ class ThinkStage(
             MotionEvent.ACTION_POINTER_DOWN, MotionEvent.ACTION_POINTER_UP -> router.noteInteraction()
         }
         when (event.actionMasked) {
-            MotionEvent.ACTION_DOWN -> { touching = true; maintenanceX = event.x; maintenanceY = event.y }
+            MotionEvent.ACTION_DOWN -> {
+                if (moe.kiwi.thinkos.BuildConfig.DEBUG) { debugDownX = event.x; debugDownY = event.y; debugDownCount++ }
+                // Only swallow the release of the press that opened settings. Settings
+                // bypass beginTouch(), so its next tap must clear the old press flag here.
+                longPressFired = false
+                touching = true; maintenanceX = event.x; maintenanceY = event.y
+            }
             MotionEvent.ACTION_POINTER_DOWN -> if (event.pointerCount == 2 && maintenanceX < width * .25f && maintenanceY < height * .25f) {
                 maintenanceArmed = true
                 handler.removeCallbacks(maintenance)
@@ -524,12 +964,20 @@ class ThinkStage(
                 maintenanceArmed = false
             }
         }
+        practiceHint.touch(if (practiceActive() && event.actionMasked !in setOf(MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL)) PointF(event.x, event.y) else null)
+        if (panelGesture(event)) {
+            if (event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_CANCEL) {
+                touching = false; queuePreview(); finishPracticeFeedback()
+            }
+            return true
+        }
         val handled = super.dispatchTouchEvent(event)
         // A seek bar owns its whole gesture, so its parent no longer sees the moves that would cancel the long press.
         if (nativeHorizontal && event.actionMasked == MotionEvent.ACTION_DOWN) disarmLongPress()
         if (event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_CANCEL) {
             touching = false
             queuePreview()
+            finishPracticeFeedback()
         }
         return handled
     }
@@ -572,7 +1020,12 @@ class ThinkStage(
                 velocity?.computeCurrentVelocity(1000, ViewConfiguration.get(context).scaledMaximumFlingVelocity.toFloat())
                 val vertical = axis == 2
                 val speed = velocity?.let { if (vertical) it.yVelocity else it.xVelocity } ?: 0f
-                if (stackDrag) current?.releaseVertical(if (event.actionMasked == MotionEvent.ACTION_CANCEL) 0f else offset,
+                if (practiceActive() && axis != 0) {
+                    val extent = if (vertical) height else width
+                    val commit = event.actionMasked == MotionEvent.ACTION_UP &&
+                        (abs(offset) > extent * .22f || abs(speed) > 700 * resources.displayMetrics.density && offset * speed > 0)
+                    if (commit) reportPractice(if (vertical) "variant" else "swipe")
+                } else if (stackDrag) current?.releaseVertical(if (event.actionMasked == MotionEvent.ACTION_CANCEL) 0f else offset,
                     if (event.actionMasked == MotionEvent.ACTION_CANCEL) 0f else speed)
                 else if (axis != 0) {
                     val extent = if (vertical) height else width
@@ -589,7 +1042,10 @@ class ThinkStage(
                         }
                     }
                 } else if (event.actionMasked == MotionEvent.ACTION_UP) {
-                    if (current?.tapAt(event.x, event.y) != true) current?.openAt(event.x, event.y)?.let(router::open)
+                    if (current?.tapAt(event.x, event.y) != true) current?.openAt(event.x, event.y)?.let {
+                        launchOrigin = PointF(event.x, event.y)
+                        router.open(it)
+                    }
                     performClick()
                 }
                 axis = 0
@@ -606,6 +1062,12 @@ class ThinkStage(
             axis = if (abs(dx) > abs(dy)) 1 else 2
         }
         if (axis == 0) return
+        if (practiceActive()) {
+            offset = if (axis == 2) dy else dx
+            return
+        }
+        // An app, a takeover and the settings page keep their sideways swipes for themselves: no page change, no give at the edge (ADR-040).
+        if (axis == 1 && router.ownsSideways) return
         val vertical = axis == 2
         offset = if (vertical) dy else dx
         stackDrag = vertical && current?.dragVertical(downX, downY, offset) == true
@@ -613,6 +1075,188 @@ class ThinkStage(
             prepareNeighbor(if (offset < 0) 1 else -1, vertical)
             current?.let { position(it, if (neighbor == null) offset * .16f else offset, vertical) }
             neighbor?.let { position(it, offset + dragDirection * if (vertical) height else width, vertical) }
+        }
+    }
+
+    /** Static guidance plus one cached RenderThread pointer; recognition and navigation stay with ThinkStage. */
+    private class PracticeHint(context: Context) : FrameLayout(context) {
+        var onCompleteDraw: (() -> Unit)? = null
+        var onUnavailable: (() -> Unit)? = null
+        private val density = resources.displayMetrics.density
+        private val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = 2 * density; strokeCap = Paint.Cap.ROUND; strokeJoin = Paint.Join.ROUND }
+        private val label = android.text.TextPaint(Paint.ANTI_ALIAS_FLAG).apply { textSize = TextScale.BODY * resources.displayMetrics.scaledDensity }
+        private var name: String? = null
+        private var text = ""
+        private var complete = false
+        private var touch: PointF? = null
+        private var textLayout: android.text.StaticLayout? = null
+        private var initialized = false
+        private var motionEnabled = ValueAnimator.areAnimatorsEnabled()
+        private val demonstration = PracticeDemonstration()
+        private var reverse = false
+        private var queued = false
+        private var cycling = false
+        private var finishDemo: Runnable? = null
+        private val marker = Paint(stroke)
+        private var demoPress = true
+        private val demo = object : View(context) {
+            override fun onDraw(canvas: Canvas) {
+                val x = width / 2f; val y = height / 2f
+                val radius = (min(width, height) - marker.strokeWidth).coerceAtLeast(0f) / 2f
+                if (demoPress) canvas.drawCircle(x, y, radius, marker)
+                else {
+                    // Cache one right-pointing chevron; View rotation follows each physical leg.
+                    canvas.drawLine(x - radius, y - radius * .7f, x + radius, y, marker)
+                    canvas.drawLine(x + radius, y, x - radius, y + radius * .7f, marker)
+                }
+            }
+        }.apply {
+            importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO
+            isClickable = false; isFocusable = false; visibility = INVISIBLE
+            setLayerType(LAYER_TYPE_HARDWARE, null)
+        }
+        private val runDemo = object : Runnable {
+            override fun run() {
+                queued = false
+                if (!canDemonstrate()) { stopDemo(); return }
+                val path = PracticeDemonstration.path(name, width, height, density, reverse) ?: return
+                if (demo.width <= 0 || demo.height <= 0) return
+                val scale = runCatching { Settings.Global.getFloat(context.contentResolver,
+                    Settings.Global.ANIMATOR_DURATION_SCALE, 1f) }.getOrDefault(1f)
+                if (!scale.isFinite() || scale <= 0f) { stopDemo(); return }
+                val ticket = demonstration.begin()
+                if (demoPress != path.press) { demoPress = path.press; demo.invalidate() }
+                val direction = if (path.press) 0f else Math.toDegrees(atan2(
+                    (path.toY - path.fromY).toDouble(), (path.toX - path.fromX).toDouble())).toFloat()
+                if (demo.rotation != direction) demo.rotation = direction
+                demo.translationX = path.fromX - demo.width / 2f
+                demo.translationY = path.fromY - demo.height / 2f
+                demo.scaleX = 1f; demo.scaleY = 1f; demo.visibility = VISIBLE
+                cycling = true
+                val duration = when (name) { "variant", "home" -> Motion.VARIANT; "long-press" -> LONG_PRESS_MILLIS; else -> Motion.PAGE }
+                demo.animate().translationX(path.toX - demo.width / 2f).translationY(path.toY - demo.height / 2f)
+                    .scaleX(if (path.press) .65f else 1f).scaleY(if (path.press) .65f else 1f)
+                    .setDuration(duration).setStartDelay(0).setInterpolator(Motion.EASE)
+                    .setListener(null).setUpdateListener(null).withStartAction(null).withEndAction(null).start()
+                // Actions/listeners would defeat API 27's RenderThread path. Like PropertyBreath,
+                // schedule one scaled wakeup instead; no main-thread update is attached to a frame.
+                val finish = Runnable {
+                    if (demonstration.accepts(ticket, true)) {
+                        finishDemo = null
+                        if (!canDemonstrate()) stopDemo()
+                        else {
+                            cycling = false; demo.animate().cancel(); demo.visibility = INVISIBLE
+                            reverse = !reverse
+                            queued = postDelayed(this, Motion.BREATH / 2)
+                        }
+                    }
+                }
+                finishDemo = finish
+                // Existing feedback token briefly holds the destination before the pointer lifts.
+                postDelayed(finish, ((duration + Motion.FEEDBACK_EXIT) * scale).toLong().coerceAtLeast(1))
+            }
+        }
+        init {
+            importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES; isClickable = false
+            setWillNotDraw(false)
+            val size = (16 * density).toInt().coerceAtLeast(1)
+            // Physical LEFT: a right-to-left locale must not move the gesture origins.
+            addView(demo, LayoutParams(size, size, Gravity.TOP or Gravity.LEFT))
+            initialized = true
+        }
+        fun bind(name: String?, text: String, complete: Boolean) {
+            if (!complete) onCompleteDraw = null
+            if (this.name != name) reverse = false
+            if (this.text != text) textLayout = null
+            this.name = name; this.text = text; this.complete = complete
+            contentDescription = text; invalidate(); syncDemo()
+        }
+        fun colors(palette: Palette) {
+            stroke.color = palette.accentText; marker.color = palette.accentText; label.color = palette.primary
+            demo.invalidate(); invalidate()
+        }
+        fun touch(value: PointF?) {
+            val wasTouching = touch != null
+            touch = value // Raw physical coordinates; no RTL or animation transform applies to the finger.
+            if (wasTouching != (value != null)) syncDemo()
+            if (visibility == VISIBLE) invalidate()
+        }
+        fun refreshMotion() {
+            val enabled = ValueAnimator.areAnimatorsEnabled()
+            if (enabled != motionEnabled || !queued && !cycling && canDemonstrate()) syncDemo()
+        }
+        private fun canDemonstrate() = PracticeDemonstration.eligible(name, complete, touch != null,
+            isAttachedToWindow, isShown, hasWindowFocus(), windowVisibility == VISIBLE,
+            motionEnabled && ValueAnimator.areAnimatorsEnabled())
+        private fun stopDemo() {
+            demonstration.cancel() // Invalidate a late animation-end callback before cancelling Android's animator.
+            removeCallbacks(runDemo); queued = false; cycling = false
+            finishDemo?.let(::removeCallbacks); finishDemo = null
+            demo.animate().setListener(null).setUpdateListener(null).withStartAction(null).withEndAction(null).cancel()
+            demo.visibility = INVISIBLE
+        }
+        private fun syncDemo() {
+            if (!initialized) return
+            stopDemo()
+            motionEnabled = ValueAnimator.areAnimatorsEnabled() && !MotionOff.reduced(context)
+            if (canDemonstrate()) queued = postDelayed(runDemo, Motion.PAGE)
+        }
+        override fun onAttachedToWindow() { super.onAttachedToWindow(); syncDemo() }
+        override fun onDetachedFromWindow() {
+            if (initialized) onUnavailable?.invoke()
+            stopDemo(); super.onDetachedFromWindow()
+        }
+        override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
+            super.onWindowFocusChanged(hasWindowFocus)
+            if (initialized && !hasWindowFocus) onUnavailable?.invoke()
+            syncDemo(); invalidate()
+        }
+        override fun onWindowVisibilityChanged(visibility: Int) {
+            super.onWindowVisibilityChanged(visibility)
+            if (initialized && visibility != VISIBLE) onUnavailable?.invoke()
+            syncDemo()
+        }
+        override fun onVisibilityChanged(changedView: View, visibility: Int) {
+            super.onVisibilityChanged(changedView, visibility)
+            if (initialized && visibility != VISIBLE) onUnavailable?.invoke()
+            syncDemo()
+        }
+        override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+            super.onSizeChanged(w, h, oldw, oldh)
+            textLayout = null; syncDemo()
+        }
+        override fun onDraw(canvas: Canvas) {
+            super.onDraw(canvas)
+            if (!hasWindowFocus() || windowVisibility != VISIBLE) return
+            val x = width / 2f; val y = height * .42f; val length = 48 * density; val head = 12 * density
+            fun arrow(fromX: Float, fromY: Float, toX: Float, toY: Float, both: Boolean = false) {
+                canvas.drawLine(fromX, fromY, toX, toY, stroke)
+                fun end(ex: Float, ey: Float, sx: Float, sy: Float) {
+                    val angle = atan2(ey - sy, ex - sx)
+                    canvas.drawLine(ex, ey, ex - head * cos(angle - .6f), ey - head * sin(angle - .6f), stroke)
+                    canvas.drawLine(ex, ey, ex - head * cos(angle + .6f), ey - head * sin(angle + .6f), stroke)
+                }
+                end(toX, toY, fromX, fromY)
+                if (both) end(fromX, fromY, toX, toY)
+            }
+            if (complete) {
+                val path = Path().apply { moveTo(x - length / 2, y); lineTo(x - length / 8, y + length / 3); lineTo(x + length / 2, y - length / 3) }
+                canvas.drawPath(path, stroke)
+            } else when (name) {
+                "swipe" -> arrow(x - length, y, x + length, y, true)
+                "variant" -> arrow(x, y - length, x, y + length, true)
+                "panel" -> arrow(x, y - length, x, y + length)
+                "back" -> arrow(x - length, y, x + length, y)
+                "home" -> arrow(x, y + length, x, y - length)
+                "long-press" -> { canvas.drawCircle(x, y, 28 * density, stroke); canvas.drawCircle(x, y, 4 * density, stroke) }
+            }
+            val textWidth = (width - 48 * density).toInt().coerceAtLeast(1)
+            val layout = textLayout ?: android.text.StaticLayout.Builder.obtain(text, 0, text.length, label, textWidth)
+                .setAlignment(android.text.Layout.Alignment.ALIGN_CENTER).setIncludePad(false).build().also { textLayout = it }
+            canvas.save(); canvas.translate((width - textWidth) / 2f, height * .6f); layout.draw(canvas); canvas.restore()
+            touch?.let { canvas.drawCircle(it.x, it.y, 8 * density, stroke) }
+            // Start feedback visibility only after its checkmark was actually drawn.
+            if (complete) onCompleteDraw?.also { onCompleteDraw = null }?.invoke()
         }
     }
     override fun performClick(): Boolean { super.performClick(); return true }
@@ -683,10 +1327,44 @@ private class SystemLayer(context: Context) : View(context) {
     var variantIndex = 0
     var shownAt = 0L
     var wakeAt = 0L
+    /** The back swipe (ADR-040): how far along it is, 0 to 1, and where the finger is; the arrow comes in from the left edge with it. */
+    var backProgress = 0f
+    var backY = 0f
+    var upProgress = 0f
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     override fun onDraw(canvas: Canvas) {
         val now = SystemClock.uptimeMillis()
         val density = resources.displayMetrics.density
+        if (backProgress > 0f) {
+            val radius = 20 * density
+            val x = -radius + backProgress * (radius + 20 * density)
+            val y = backY.coerceIn(radius, (height - radius).coerceAtLeast(radius))
+            paint.style = Paint.Style.FILL
+            paint.color = palette.secondary
+            paint.alpha = (190 * backProgress).toInt()
+            canvas.drawCircle(x, y, radius, paint)
+            paint.style = Paint.Style.STROKE
+            paint.strokeWidth = Stroke.ICON * density
+            paint.strokeCap = Paint.Cap.ROUND
+            paint.color = palette.bg
+            paint.alpha = (255 * backProgress).toInt()
+            val direction = if (layoutDirection == LAYOUT_DIRECTION_RTL) -1f else 1f
+            canvas.drawLine(x + 3 * density * direction, y - 7 * density, x - 4 * density * direction, y, paint)
+            canvas.drawLine(x - 4 * density * direction, y, x + 3 * density * direction, y + 7 * density, paint)
+            paint.strokeCap = Paint.Cap.BUTT
+        }
+        if (upProgress > 0f) {
+            val radius = 20 * density
+            val x = width / 2f
+            val y = height + radius - upProgress * (radius + 20 * density)
+            paint.style = Paint.Style.FILL; paint.color = palette.secondary; paint.alpha = (190 * upProgress).toInt()
+            canvas.drawCircle(x, y, radius, paint)
+            paint.style = Paint.Style.STROKE; paint.strokeWidth = Stroke.ICON * density; paint.strokeCap = Paint.Cap.ROUND
+            paint.color = palette.bg; paint.alpha = (255 * upProgress).toInt()
+            canvas.drawLine(x - 7 * density, y + 3 * density, x, y - 4 * density, paint)
+            canvas.drawLine(x, y - 4 * density, x + 7 * density, y + 3 * density, paint)
+            paint.strokeCap = Paint.Cap.BUTT
+        }
         val age = now - shownAt
         val visibility = if (age < 2_000) 1f else (1 - (age - 2_000) / 500f).coerceIn(0f, 1f)
         if (visibility > 0) {
@@ -705,7 +1383,7 @@ private class SystemLayer(context: Context) : View(context) {
         val progress = (now - wakeAt) / 750f
         if (wakeAt != 0L && progress in 0f..1f) {
             paint.style = Paint.Style.STROKE
-            paint.strokeWidth = 1.5f * density
+            paint.strokeWidth = Stroke.ICON * density
             paint.color = palette.accent
             paint.alpha = ((1 - progress) * 80).toInt()
             canvas.drawCircle(width / 2f, height / 2f, min(width, height) * (.12f + progress * .47f), paint)

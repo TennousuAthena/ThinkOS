@@ -1,0 +1,208 @@
+# Local template. Owner approval is required before enabling a real registry repository.
+name: Discover community and scan plugin tags
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  prepare:
+    permissions:
+      contents: read
+    outputs:
+      review_artifact_id: ${{ steps.registry_unsigned.outputs.artifact-id }}
+      review_repository: ${{ steps.review_binding.outputs.repository }}
+      review_run_id: ${{ steps.review_binding.outputs.run_id }}
+      review_run_attempt: ${{ steps.review_binding.outputs.run_attempt }}
+      review_commit: ${{ steps.review_binding.outputs.commit }}
+      review_tools_commit: ${{ steps.review_binding.outputs.tools_commit }}
+      review_requests_sha: ${{ steps.review_binding.outputs.requests_sha }}
+      review_context_sha: ${{ steps.review_binding.outputs.context_sha }}
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TOOLS_COMMIT: ${{ vars.THINKOS_TOOLS_COMMIT }}
+      BLOB_BASE: ${{ vars.REGISTRY_BLOB_BASE }}
+      FIRST_BUILD: ${{ vars.REGISTRY_INITIAL }}
+    steps:
+      - name: Load only the maintainer-pinned validator
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -c 'import os,re; assert re.fullmatch("[a-f0-9]{40}",os.environ["TOOLS_COMMIT"])'
+          mkdir "$RUNNER_TEMP/empty-hooks" "$RUNNER_TEMP/tools"
+          git -c init.templateDir= init "$RUNNER_TEMP/tools"
+          git -C "$RUNNER_TEMP/tools" -c core.hooksPath="$RUNNER_TEMP/empty-hooks" fetch --depth 1 https://github.com/TennousuAthena/ThinkOS.git "$TOOLS_COMMIT"
+          git -C "$RUNNER_TEMP/tools" -c core.hooksPath="$RUNNER_TEMP/empty-hooks" checkout --detach FETCH_HEAD
+      - name: Automatically validate topic community and prepare unsigned registry
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          initial=()
+          if [ "$FIRST_BUILD" = true ]; then initial=(--initial); fi
+          python3 "$RUNNER_TEMP/tools/tools/registry_ci.py" --mode community --github-token-env GITHUB_TOKEN \
+            --repository "$GITHUB_REPOSITORY" --commit "$GITHUB_SHA" \
+            --workspace "$RUNNER_TEMP/registry-ci" --blob-base "$BLOB_BASE" "${initial[@]}"
+      # Append after the existing trusted scan has produced output/.
+      - name: Bind review data to this trusted producer run
+        id: review_binding
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I - <<'PY'
+          import hashlib, os, re, stat, subprocess
+          from pathlib import Path
+          source = Path(os.environ['RUNNER_TEMP']) / 'registry-ci/output'
+          tools = Path(os.environ['RUNNER_TEMP']) / 'tools'
+          expected = os.environ['TOOLS_COMMIT']
+          assert re.fullmatch('[a-f0-9]{40}', expected)
+          actual = subprocess.check_output(['git', '-C', str(tools), 'rev-parse', 'HEAD'], text=True).strip()
+          assert actual == expected
+          bound = {'repository': os.environ['GITHUB_REPOSITORY'], 'run_id': os.environ['GITHUB_RUN_ID'],
+                   'run_attempt': os.environ['GITHUB_RUN_ATTEMPT'], 'commit': os.environ['GITHUB_SHA'],
+                   'tools_commit': actual}
+          for filename, output, limit in [('review-requests.json', 'requests_sha', 1048576),
+                                          ('ci-context.json', 'context_sha', 65536)]:
+              path = source / filename
+              assert path.absolute() == path.resolve() and stat.S_ISREG(path.lstat().st_mode)
+              with path.open('rb') as stream:
+                  raw = stream.read(limit + 1)
+              assert len(raw) <= limit
+              bound[output] = hashlib.sha256(raw).hexdigest()
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
+              for key, value in bound.items():
+                  assert '\n' not in value and '\r' not in value
+                  output.write(key + '=' + value + '\n')
+          PY
+      - name: Preserve this run's unsigned review data
+        id: registry_unsigned
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2, MIT
+        with:
+          name: registry-scan-review-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/registry-ci/output
+          if-no-files-found: error
+          overwrite: false
+      - name: Preserve bounded discovery diagnostics even when discovery stops
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2, MIT
+        with:
+          name: registry-scan-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/registry-ci/reports
+            ${{ runner.temp }}/registry-ci/topic-cache
+          if-no-files-found: warn
+
+  review:
+    needs: prepare
+    if: >-
+      needs.prepare.result == 'success' &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') &&
+      github.event.repository.default_branch == 'main' &&
+      github.repository == github.event.repository.full_name
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    concurrency:
+      group: registry-review-main-${{ github.repository }}
+      cancel-in-progress: false
+    env:
+      TOOLS_COMMIT: ${{ needs.prepare.outputs.review_tools_commit }}
+      REVIEW_ARTIFACT_ID: ${{ needs.prepare.outputs.review_artifact_id }}
+      REVIEW_REPOSITORY: ${{ needs.prepare.outputs.review_repository }}
+      REVIEW_RUN_ID: ${{ needs.prepare.outputs.review_run_id }}
+      REVIEW_RUN_ATTEMPT: ${{ needs.prepare.outputs.review_run_attempt }}
+      REVIEW_COMMIT: ${{ needs.prepare.outputs.review_commit }}
+      REVIEW_REQUESTS_SHA: ${{ needs.prepare.outputs.review_requests_sha }}
+      REVIEW_CONTEXT_SHA: ${{ needs.prepare.outputs.review_context_sha }}
+    steps:
+      - name: Refuse missing or different producer identity before download
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I - <<'PY'
+          import os, re
+          for actual, current in [('REVIEW_REPOSITORY', 'GITHUB_REPOSITORY'), ('REVIEW_RUN_ID', 'GITHUB_RUN_ID'),
+                                  ('REVIEW_RUN_ATTEMPT', 'GITHUB_RUN_ATTEMPT'), ('REVIEW_COMMIT', 'GITHUB_SHA')]:
+              assert os.environ[actual] == os.environ[current]
+          for key in ['REVIEW_ARTIFACT_ID', 'REVIEW_RUN_ID', 'REVIEW_RUN_ATTEMPT']:
+              assert re.fullmatch('[1-9][0-9]{0,19}', os.environ[key])
+              assert int(os.environ[key]) <= 9007199254740991
+          for key in ['REVIEW_COMMIT', 'TOOLS_COMMIT']:
+              assert re.fullmatch('[a-f0-9]{40}', os.environ[key])
+          for key in ['REVIEW_REQUESTS_SHA', 'REVIEW_CONTEXT_SHA']:
+              assert re.fullmatch('[a-f0-9]{64}', os.environ[key])
+          PY
+      - name: Download only the successful producer's immutable artifact ID
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0, MIT
+        with:
+          artifact-ids: ${{ needs.prepare.outputs.review_artifact_id }}
+          path: ${{ runner.temp }}/registry-review-input
+          merge-multiple: true # Exactly one numeric ID; extract its JSON at this fixed root.
+          # Deliberately no github-token/repository/run-id inputs. This pinned
+          # action defaults to the current repository and workflow run only.
+      - name: Verify exact JSON bytes and scanned commit before granting review actions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I - <<'PY'
+          import hashlib, json, os, stat
+          from pathlib import Path
+          root = Path(os.environ['RUNNER_TEMP']) / 'registry-review-input'
+          verified = {}
+          for filename, expected, limit in [('review-requests.json', 'REVIEW_REQUESTS_SHA', 1048576),
+                                            ('ci-context.json', 'REVIEW_CONTEXT_SHA', 65536)]:
+              path = root / filename
+              assert path.absolute() == path.resolve() and stat.S_ISREG(path.lstat().st_mode)
+              with path.open('rb') as stream:
+                  raw = stream.read(limit + 1)
+              assert len(raw) <= limit and hashlib.sha256(raw).hexdigest() == os.environ[expected]
+              verified[filename] = raw
+          def pairs(items):
+              value = {}
+              for key, item in items:
+                  assert key not in value
+                  value[key] = item
+              return value
+          def invalid(_):
+              raise ValueError('Invalid review context number')
+          context = json.loads(verified['ci-context.json'].decode('utf-8'), object_pairs_hook=pairs,
+                               parse_float=invalid, parse_constant=invalid)
+          assert type(context['schema']) is int and context['schema'] == 1 and context['mode'] in ('scan', 'community')
+          assert context['registry_commit'] == os.environ['GITHUB_SHA']
+          assert all(context[key] is False for key in ['signed', 'published', 'remote_actions_performed'])
+          PY
+      - name: Load the same maintainer-pinned tools as the producer
+        shell: bash
+        env:
+          GIT_CONFIG_NOSYSTEM: '1'
+          GIT_CONFIG_GLOBAL: /dev/null
+          GIT_ALLOW_PROTOCOL: https
+          GIT_TERMINAL_PROMPT: '0'
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/empty-hooks" "$RUNNER_TEMP/tools"
+          git -c init.templateDir= init "$RUNNER_TEMP/tools"
+          git -C "$RUNNER_TEMP/tools" -c core.hooksPath="$RUNNER_TEMP/empty-hooks" fetch --depth 1 https://github.com/TennousuAthena/ThinkOS.git "$TOOLS_COMMIT"
+          git -C "$RUNNER_TEMP/tools" -c core.hooksPath="$RUNNER_TEMP/empty-hooks" checkout --detach FETCH_HEAD
+          python3 -I - <<'PY'
+          import os, subprocess
+          actual = subprocess.check_output(['git', '-C', os.environ['RUNNER_TEMP'] + '/tools', 'rev-parse', 'HEAD'], text=True).strip()
+          assert actual == os.environ['TOOLS_COMMIT']
+          PY
+      - name: Open exact permission reviews and source-integrity issues
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 -I "$RUNNER_TEMP/tools/tools/registry_review.py" \
+            --repository "$GITHUB_REPOSITORY" --commit "$GITHUB_SHA" \
+            --requests "$RUNNER_TEMP/registry-review-input/review-requests.json"

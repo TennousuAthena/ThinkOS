@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sequences.json",
+  "title": "UpdateSequenceDocument",
+  "description": "Private device anti-rollback ledger, not a Server API. Channel sequence/digest pairs are atomic; equal sequence accepts only identical authenticated bytes. Corruption fails closed.",
+  "type": "object",
+  "required": [
+    "schema"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "type": "integer",
+      "const": 1
+    },
+    "stable": {
+      "$ref": "#/$defs/floor"
+    },
+    "beta": {
+      "$ref": "#/$defs/floor"
+    }
+  },
+  "$defs": {
+    "floor": {
+      "title": "UpdateSequence",
+      "type": "object",
+      "required": [
+        "seq",
+        "digest"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "seq": {
+          "type": "integer",
+          "format": "int64",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "digest": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    }
+  },
+  "minProperties": 2
+}

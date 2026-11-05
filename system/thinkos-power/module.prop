@@ -1,0 +1,6 @@
+id=thinkos-power
+name=ThinkOS Power Guard
+version=v0.1
+versionCode=1
+author=ThinkOS
+description=ThinkOS 的断电保护：这台设备没有电源键，关机靠拔线。root 守护进程盯着系统主供电轨，一旦掉压就先刷盘、再把所有读写分区紧急转成只读，让 eMMC 在断电时是闲的。不改动 /system。

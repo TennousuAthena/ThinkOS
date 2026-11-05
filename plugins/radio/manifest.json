@@ -1,0 +1,199 @@
+{
+  "id": "radio",
+  "name": "@name",
+  "version": "0.1.0",
+  "api": 10,
+  "main": "main.lua",
+  "permissions": [
+    "media",
+    "network"
+  ],
+  "settings": {
+    "directory": {
+      "type": "bool",
+      "label": "@setting.directory",
+      "default": false,
+      "group": "@group.directory",
+      "level": "normal"
+    },
+    "country_auto": {
+      "type": "bool",
+      "label": "@setting.country_auto",
+      "default": true,
+      "group": "@group.directory",
+      "level": "normal",
+      "depends": {
+        "key": "directory",
+        "not": false
+      }
+    },
+    "country": {
+      "type": "choice",
+      "label": "@setting.country",
+      "default": "",
+      "source": "region",
+      "allowEmpty": true,
+      "group": "@group.directory",
+      "level": "normal",
+      "depends": {
+        "key": "country_auto",
+        "not": true
+      }
+    },
+    "directory_url": {
+      "type": "text",
+      "label": "@setting.directory_url",
+      "default": "https://all.api.radio-browser.info",
+      "maxLength": 1024,
+      "group": "@group.directory",
+      "level": "advanced",
+      "depends": {
+        "key": "directory",
+        "not": false
+      }
+    },
+    "click": {
+      "type": "bool",
+      "label": "@setting.click",
+      "default": false,
+      "warn": "@setting.click_warn",
+      "group": "@group.directory",
+      "level": "advanced",
+      "depends": {
+        "key": "directory",
+        "not": false
+      }
+    },
+    "source": {
+      "type": "text",
+      "label": "@setting.source",
+      "default": "",
+      "maxLength": 1024,
+      "group": "@group.sources",
+      "placeholder": "@placeholder.source",
+      "level": "normal"
+    },
+    "stream_url": {
+      "type": "text",
+      "label": "@setting.stream",
+      "default": "",
+      "maxLength": 1024,
+      "group": "@group.sources",
+      "placeholder": "@placeholder.stream",
+      "level": "normal"
+    },
+    "station_name": {
+      "type": "text",
+      "label": "@setting.station_name",
+      "default": "",
+      "maxLength": 120,
+      "group": "@group.sources",
+      "level": "normal"
+    },
+    "reconnect_s": {
+      "type": "number",
+      "label": "@setting.reconnect_s",
+      "default": 30,
+      "min": 5,
+      "max": 600,
+      "step": 1,
+      "unit": "s",
+      "group": "@group.playback",
+      "level": "advanced"
+    },
+    "failover_limit": {
+      "type": "number",
+      "label": "@setting.failover_limit",
+      "default": 5,
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "group": "@group.playback",
+      "level": "advanced"
+    },
+    "test": {
+      "type": "bool",
+      "label": "@setting.test",
+      "default": true,
+      "group": "@group.lines",
+      "level": "advanced"
+    },
+    "test_gap": {
+      "type": "number",
+      "label": "@setting.test_gap",
+      "default": 10,
+      "group": "@group.lines",
+      "level": "advanced",
+      "min": 3,
+      "max": 600,
+      "step": 1,
+      "unit": "s"
+    },
+    "cooldown": {
+      "type": "number",
+      "label": "@setting.cooldown",
+      "default": 10,
+      "group": "@group.lines",
+      "level": "advanced",
+      "min": 1,
+      "max": 720,
+      "step": 1,
+      "unit": "min"
+    },
+    "recheck": {
+      "type": "number",
+      "label": "@setting.recheck",
+      "default": 12,
+      "group": "@group.lines",
+      "level": "advanced",
+      "min": 1,
+      "max": 168,
+      "step": 1,
+      "unit": "h"
+    },
+    "host_cooldown": {
+      "type": "bool",
+      "label": "@setting.host_cooldown",
+      "default": false,
+      "group": "@group.lines",
+      "level": "advanced"
+    }
+  },
+  "pages": [
+    {
+      "id": "stations",
+      "title": "@page.stations",
+      "view": "views/stations.json"
+    },
+    {
+      "id": "now",
+      "title": "@name",
+      "view": "views/now.json",
+      "live": true
+    }
+  ],
+  "apps": [
+    {
+      "id": "radio",
+      "page": "stations",
+      "title": "@name",
+      "icon": "radio"
+    }
+  ],
+  "widgets": [
+    {
+      "id": "tile",
+      "view": "views/tile.json",
+      "opens": "stations"
+    }
+  ],
+  "related": [
+    "media.public_http"
+  ],
+  "uses": {
+    "onboarding": {
+      "export": "welcome.setup",
+      "shape": "onboarding/1"
+    }
+  }
+}

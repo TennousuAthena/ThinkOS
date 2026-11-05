@@ -1,0 +1,1 @@
+Local template for the future ota branch. tools/release.sh prepare produces reviewable APK/module/channel materials. Creating a remote branch, pushing or publishing still requires explicit owner action.

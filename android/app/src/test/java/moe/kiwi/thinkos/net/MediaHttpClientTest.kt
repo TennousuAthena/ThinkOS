@@ -18,7 +18,7 @@ class MediaHttpClientTest {
 
     @Test fun aCleartextAnswerIsPinnedUntilTheRequestEndsAndRevalidatedOnTheNextRequest() {
         var calls = 0
-        val dns = MediaHttpClient.RequestDns(resolver { calls++; if (calls == 1) listOf(local) else listOf(public) })
+        val dns = RequestDns(resolver { calls++; if (calls == 1) listOf(local) else listOf(public) })
         dns.forRequest("http://media.test/song.mp3".toHttpUrl()) {
             assertEquals(listOf(local), dns.lookup("media.test"))
             assertEquals(listOf(local), dns.lookup("media.test"))
@@ -35,7 +35,7 @@ class MediaHttpClientTest {
     }
 
     @Test fun mixedAnswersAndReusedPublicConnectionsCannotBypassTheCleartextGate() {
-        val dns = MediaHttpClient.RequestDns(resolver { listOf(local, public) })
+        val dns = RequestDns(resolver { listOf(local, public) })
         assertThrows(IOException::class.java) {
             dns.forRequest("http://media.test/a".toHttpUrl()) { fail("mixed DNS must fail") }
         }
@@ -47,7 +47,7 @@ class MediaHttpClientTest {
 
     @Test fun theUserCanOpenPlainHttpToPublicHostsButStillNotHttpsDowngrades() {
         var allowed = false
-        val dns = MediaHttpClient.RequestDns(resolver { listOf(public) }) { allowed }
+        val dns = RequestDns(resolver { listOf(public) }) { allowed }
         assertThrows(IOException::class.java) { dns.forRequest("http://tv.test/live".toHttpUrl()) { fail("refused while the switch is off") } }
         allowed = true
         dns.forRequest("http://tv.test/live".toHttpUrl()) { assertEquals(listOf(public), dns.lookup("tv.test")) }
@@ -61,13 +61,13 @@ class MediaHttpClientTest {
     }
 
     @Test fun failedRequestScopeIsRemovedBeforeTheNextRequest() {
-        val dns = MediaHttpClient.RequestDns(resolver { listOf(local) })
+        val dns = RequestDns(resolver { listOf(local) })
         assertThrows(IOException::class.java) {
             dns.forRequest("http://media.test/a".toHttpUrl()) { throw IOException("cancelled") }
         }
         // If a per-request cached answer leaked, this second request would avoid a fresh lookup.
         var calls = 0
-        val fresh = MediaHttpClient.RequestDns(resolver { calls++; listOf(local) })
+        val fresh = RequestDns(resolver { calls++; listOf(local) })
         fresh.forRequest("http://media.test/a".toHttpUrl()) { fresh.lookup("media.test") }
         fresh.forRequest("http://media.test/a".toHttpUrl()) { fresh.lookup("media.test") }
         assertEquals(2, calls)

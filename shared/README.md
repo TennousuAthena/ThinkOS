@@ -20,9 +20,11 @@ shared/
 ├── schema/settings/         # 设置（ADR-017，docs/06-plugins.md §11）
 │   ├── field.json           # 字段格式：bool / choice / number / text
 │   └── system.json          # 系统级设置清单（docs/04-ui-spec.md §9）
+├── schema/update/           # 独立schema 1：签名OTA目录、APK公钥与设备私有序号记录
 └── gen/
-    ├── gen_kotlin.py        # → android/…/net/Protocol.kt、plugin/PluginSchema.kt
-    └── gen_go.py            # → server/internal/protocol/*.go
+    ├── gen_kotlin.py        # → android/…/plugin/PluginSchema.kt、update/UpdateModels.kt
+    ├── gen_go.py            # → server/internal/protocol/plugin_generated.go、update_generated.go
+    └── update_contracts.py  # 两个标准入口共同调用的更新契约生成器
 ```
 
 插件格式和设置格式也放在这里：设备端用它解析插件、校验设置值，Server 从 Git 取回插件时用同一份 schema 校验，保证下发的文件集设备一定能解析。

@@ -1,9 +1,16 @@
 {
   "template": "glance",
   "children": [
-    { "type": "text", "value": "@now", "style": "caption" },
-    { "type": "clock", "style": "digital", "format": "@time" },
-    { "type": "text", "value": "{{weekday}}", "style": "body" }
+    {
+      "type": "clock",
+      "style": "digital",
+      "format": "@time"
+    },
+    {
+      "type": "text",
+      "value": "{{weekday}}",
+      "style": "body"
+    }
   ],
   "relevance": 0.5
 }

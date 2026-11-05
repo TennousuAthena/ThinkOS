@@ -1,0 +1,31 @@
+{
+  "layout": "tiles",
+  "slots": {
+    "tiles": [
+      {
+        "widget": "player.tile",
+        "size": "medium"
+      },
+      {
+        "widget": "iptv.tile",
+        "size": "medium"
+      },
+      {
+        "widget": "cast.tile",
+        "size": "medium"
+      },
+      {
+        "widget": "apps.tile",
+        "size": "medium"
+      },
+      {
+        "widget": "radio.tile",
+        "size": "medium"
+      },
+      {
+        "widget": "hub.tile",
+        "size": "medium"
+      }
+    ]
+  }
+}

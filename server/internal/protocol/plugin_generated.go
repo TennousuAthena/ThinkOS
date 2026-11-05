@@ -86,6 +86,11 @@ type SchemaForm struct {
 	Done *string `json:"done,omitempty"`
 	Tap *string `json:"tap,omitempty"`
 	Weight *float64 `json:"weight,omitempty"`
+	Nav *string `json:"nav,omitempty"`
+	Subtitle *string `json:"subtitle,omitempty"`
+	Primary *string `json:"primary,omitempty"`
+	Secondary *string `json:"secondary,omitempty"`
+	Back *string `json:"back,omitempty"`
 }
 
 type SchemaFormView struct {
@@ -128,6 +133,7 @@ type SchemaList struct {
 	Item SchemaListRow `json:"item"`
 	Tap *string `json:"tap,omitempty"`
 	Weight *float64 `json:"weight,omitempty"`
+	Current any `json:"current,omitempty"`
 }
 
 type SchemaDaylight struct {
@@ -256,6 +262,85 @@ type SchemaAeroSlots struct {
 	Windows []SchemaWidgetReference `json:"windows"`
 }
 
+type SchemaNowPlaying struct {
+	Type string `json:"type"`
+	Style *string `json:"style,omitempty"`
+	Idle *string `json:"idle,omitempty"`
+	Notice *string `json:"notice,omitempty"`
+	Weight *float64 `json:"weight,omitempty"`
+}
+
+type SchemaTv struct {
+	Type string `json:"type"`
+	Channel *string `json:"channel,omitempty"`
+	Tap *string `json:"tap,omitempty"`
+	Weight *float64 `json:"weight,omitempty"`
+	Fit *string `json:"fit,omitempty"`
+}
+
+type SchemaTabs struct {
+	Type string `json:"type"`
+	Items string `json:"items"`
+	Current any `json:"current,omitempty"`
+	Tap *string `json:"tap,omitempty"`
+	Weight *float64 `json:"weight,omitempty"`
+}
+
+type SchemaSlider struct {
+	Type string `json:"type"`
+	Level string `json:"level"`
+	Weight *float64 `json:"weight,omitempty"`
+}
+
+type SchemaToggle struct {
+	Type string `json:"type"`
+	Icon string `json:"icon"`
+	Label string `json:"label"`
+	On any `json:"on,omitempty"`
+	Tap string `json:"tap"`
+	Weight *float64 `json:"weight,omitempty"`
+}
+
+type SchemaGridCell struct {
+	Icon *string `json:"icon,omitempty"`
+	Image *string `json:"image,omitempty"`
+	Title string `json:"title"`
+}
+
+type SchemaGrid struct {
+	Type string `json:"type"`
+	Items string `json:"items"`
+	Item SchemaGridCell `json:"item"`
+	Tap *string `json:"tap,omitempty"`
+	Weight *float64 `json:"weight,omitempty"`
+}
+
+type SchemaPanelView struct {
+	Layout string `json:"layout"`
+	Slots map[string]any `json:"slots"`
+}
+
+type SchemaFormLink struct {
+	Key string `json:"key"`
+	Type string `json:"type"`
+	Label string `json:"label"`
+	Display *string `json:"display,omitempty"`
+	Icon *string `json:"icon,omitempty"`
+	Group *string `json:"group,omitempty"`
+	Confirm *string `json:"confirm,omitempty"`
+}
+
+type SchemaFormNav struct {
+	Items []SchemaFormNavItem `json:"items"`
+	Current *string `json:"current,omitempty"`
+}
+
+type SchemaFormNavItem struct {
+	Id string `json:"id"`
+	Label string `json:"label"`
+	Icon *string `json:"icon,omitempty"`
+}
+
 type SchemaManifest struct {
 	Id string `json:"id"`
 	Name string `json:"name"`
@@ -271,6 +356,8 @@ type SchemaManifest struct {
 	Exports map[string]any `json:"exports,omitempty"`
 	Uses map[string]any `json:"uses,omitempty"`
 	Calls []string `json:"calls,omitempty"`
+	Apps []SchemaApp `json:"apps,omitempty"`
+	Related []string `json:"related,omitempty"`
 }
 
 type SchemaPage struct {
@@ -311,6 +398,13 @@ type SchemaSetting struct {
 	MaxLength *int `json:"maxLength,omitempty"`
 	Secret *bool `json:"secret,omitempty"`
 	Hidden *bool `json:"hidden,omitempty"`
+	Warn *string `json:"warn,omitempty"`
+	Placeholder *string `json:"placeholder,omitempty"`
+	Level *string `json:"level,omitempty"`
+	Depends any `json:"depends,omitempty"`
+	Format *string `json:"format,omitempty"`
+	Zero *string `json:"zero,omitempty"`
+	Presets []float64 `json:"presets,omitempty"`
 }
 
 type SchemaSettingChoice struct {
@@ -337,15 +431,73 @@ type SchemaUse struct {
 	Shape string `json:"shape"`
 }
 
-const PluginAPI = 7
+type SchemaApp struct {
+	Id string `json:"id"`
+	Page string `json:"page"`
+	Title string `json:"title"`
+	Icon *string `json:"icon,omitempty"`
+	Listed *bool `json:"listed,omitempty"`
+}
 
-var renderComponentTypes = map[string]int{"text": 1, "icon": 1, "clock": 1, "form": 1, "progress": 2, "chart": 2, "list": 2, "daylight": 2, "moon": 2, "image": 3, "carousel": 3, "controls": 7, "video": 7, "seekbar": 7}
+const PluginAPI = 10
 
-var renderLayouts = map[string]int{"stacks": 1, "focus": 1, "form": 1, "split": 2, "stage": 2, "tiles": 4, "aero": 5}
+var renderComponentTypes = map[string]int{"text": 1, "icon": 1, "clock": 1, "form": 1, "progress": 2, "chart": 2, "list": 2, "daylight": 2, "moon": 2, "image": 3, "carousel": 3, "controls": 7, "video": 7, "seekbar": 7, "nowplaying": 8, "tv": 8, "tabs": 8, "slider": 8, "toggle": 8, "grid": 8}
 
-var renderComponentProperties = map[string]int{"tap": 2, "weight": 2}
+var renderLayouts = map[string]int{"stacks": 1, "focus": 1, "form": 1, "split": 2, "stage": 2, "tiles": 4, "aero": 5, "panel": 8}
+
+var renderComponentProperties = map[string]int{"tap": 2, "weight": 2, "current": 8, "nav": 9, "subtitle": 10, "primary": 10, "secondary": 10, "back": 10}
 
 var renderTemplates = map[string]int{"glance": 1, "tile": 4}
+
+var renderPageRoles = map[string]int{"launcher": 9, "onboarding": 10}
+
+var renderPermissions = map[string]int{"system.update": 10, "system.plugins": 10}
+
+var renderLayoutSlots = map[string]int{"panel.update": 10, "form.hero": 10}
+
+var renderFormFields = map[string]int{"link": 1, "confirm": 9, "preview": 9, "nav": 9, "link.icon": 10, "nav.items.icon": 10, "time": 10}
+
+var renderSettingTypes = map[string]int{"time": 10}
+
+var renderFormIcons = map[string]bool{"wifi": true, "wifi-off": true, "volume": true, "volume-off": true, "brightness": true, "tv": true, "radio": true, "cast": true, "apps": true, "settings": true, "clear-day": true, "clear-night": true, "partly-day": true, "partly-night": true, "cloud": true, "fog": true, "rain": true, "shower": true, "snow": true, "thunder": true, "sun": true, "moon": true, "unknown": true, "monitor": true, "map-pin": true, "house": true, "sliders-horizontal": true, "puzzle": true, "moon-star": true, "sunset": true, "bluetooth": true}
+
+// ValidateSettingTime accepts only API10 HH:mm values in five-minute steps.
+func ValidateSettingTime(value string, api int) error {
+    if api < renderSettingTypes["time"] || api > PluginAPI { return fmt.Errorf("time requires a newer plugin API") }
+    if len(value) != 5 || value[2] != ':' || value[0] < '0' || value[0] > '2' || value[1] < '0' || value[1] > '9' || value[3] < '0' || value[3] > '5' || (value[4] != '0' && value[4] != '5') || (value[0] == '2' && value[1] > '3') { return fmt.Errorf("time must be HH:mm in five-minute steps") }
+    return nil
+}
+
+// ValidateFormIcon applies the fixed descriptor vocabulary and API gate, not image paths or style parameters.
+func ValidateFormIcon(name string, api int, navigation bool) error {
+    key := "link.icon"
+    if navigation { key = "nav.items.icon" }
+    if api < 1 || api > PluginAPI || api < renderFormFields[key] { return fmt.Errorf("form icon requires a newer plugin API") }
+    if !renderFormIcons[name] { return fmt.Errorf("unknown form vector icon") }
+    return nil
+}
+
+// ValidatePageRoles follows manifest schema validation; actual system grants belong to the device.
+func ValidatePageRoles(roles []string, permissions []string, api int) error {
+    if api < 1 || api > PluginAPI { return fmt.Errorf("unsupported plugin API %d", api) }
+    for _, permission := range permissions {
+        if minimum := renderPermissions[permission]; minimum > api { return fmt.Errorf("permission requires a newer plugin API") }
+    }
+    for _, role := range roles {
+        if minimum := renderPageRoles[role]; minimum > api { return fmt.Errorf("page role requires a newer plugin API") }
+        if role == "launcher" {
+            allowed := false
+            for _, permission := range permissions { if permission == "system.apps" { allowed = true } }
+            if !allowed { return fmt.Errorf("the launcher role needs the system.apps permission") }
+        }
+        if role == "onboarding" || role == "settings" {
+            allowed := false
+            for _, permission := range permissions { if permission == "system.settings" { allowed = true } }
+            if !allowed { return fmt.Errorf("the settings/onboarding role needs the system.settings permission") }
+        }
+    }
+    return nil
+}
 
 // ValidateRenderAPI gates the fixed render vocabulary after schema validation.
 // The version table is generated from layouts.json, the same source used by Android and Python.
@@ -380,6 +532,12 @@ func ValidateRenderAPI(value any, api int) error {
                             if _, own := object["content"]; own { return fmt.Errorf("tile face content requires a newer plugin API") }
                         }
                     }
+                }
+            }
+            if slots, present := node["slots"].(map[string]any); present {
+                layout, _ := node["layout"].(string)
+                for slot := range slots {
+                    if minimum := renderLayoutSlots[layout+"."+slot]; minimum > api { return fmt.Errorf("layout slot requires a newer plugin API") }
                 }
             }
             rawKind, component := node["type"]

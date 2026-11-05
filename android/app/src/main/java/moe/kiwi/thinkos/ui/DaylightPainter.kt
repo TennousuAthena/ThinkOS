@@ -12,7 +12,7 @@ internal class DaylightPainter {
     private val dot = Paint(Paint.ANTI_ALIAS_FLAG)
 
     fun draw(canvas: Canvas, cx: Float, cy: Float, radius: Float, sun: JSONObject?, now: Long, palette: Palette, density: Float) {
-        line.strokeWidth = 5 * density
+        line.strokeWidth = Stroke.TRACK * density
         line.color = palette.divider
         line.alpha = 255
         canvas.drawCircle(cx, cy, radius, line)

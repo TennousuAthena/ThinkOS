@@ -91,6 +91,23 @@ class SettingsStoreTest {
     }
 
     @Test
+    fun editingBackToServerLeavesNoLocalOverrideAndFollowsLaterManagement() {
+        val memory = Memory()
+        val settings = store(memory)
+        settings.applyServer(JSONObject("""{"plugins":{"weather":{"city":"London"}}}"""))
+        settings.set("weather", "city", "Paris")
+        assertTrue(settings.resolved("weather", "city").overridden)
+        settings.set("weather", "city", "London")
+        assertFalse(settings.resolved("weather", "city").overridden)
+        assertEquals(0, settings.overrides().length())
+        val restarted = store(memory)
+        assertEquals("London", restarted.get("weather", "city"))
+        restarted.applyServer(JSONObject("""{"plugins":{"weather":{"city":"Berlin"}}}"""))
+        assertEquals("Berlin", restarted.get("weather", "city"))
+        assertFalse(restarted.resolved("weather", "city").overridden)
+    }
+
+    @Test
     fun unrelatedServerUpdatesDoNotWipeDeviceEdits() {
         val settings = store()
         settings.applyServer(JSONObject("""{"plugins":{"weather":{"city":"London"}}}"""))
@@ -98,6 +115,33 @@ class SettingsStoreTest {
         settings.applyServer(JSONObject("""{"plugins":{"weather":{"city":"London","interval":20}}}"""))
         assertEquals("Paris", settings.get("weather", "city"))
         assertEquals(20L, settings.get("weather", "interval"))
+    }
+
+    @Test
+    fun removingAWholeServerScopeNotifiesItsOldKeysAndPreservesLocalEdits() {
+        val settings = store()
+        settings.applyServer(JSONObject("""{"theme":{"mode":"dark"},"plugins":{"weather":{"city":"London","interval":30}}}"""))
+        settings.set("system", "theme.mode", "auto")
+        settings.set("weather", "unit", "f")
+        val local = settings.overrides().toString()
+        val weather = settings.snapshot("weather")
+        val seen = mutableListOf<Pair<String, Set<String>>>()
+        settings.addListener { scope, keys -> seen += scope to keys }
+
+        settings.applyServer(JSONObject("""{"plugins":{"weather":{"city":"London","interval":30}}}"""))
+        assertEquals(listOf("system" to setOf("theme.mode")), seen)
+        assertEquals("auto", settings.get("system", "theme.mode"))
+        assertTrue(settings.resolved("system", "theme.mode").overridden)
+        assertEquals(weather, settings.snapshot("weather"))
+        assertEquals(local, settings.overrides().toString())
+
+        seen.clear()
+        settings.applyServer(JSONObject())
+        assertEquals(listOf("weather" to setOf("city", "interval")), seen)
+        assertEquals("Hong Kong", settings.get("weather", "city"))
+        assertEquals(10L, settings.get("weather", "interval"))
+        assertEquals("f", settings.get("weather", "unit"))
+        assertEquals(local, settings.overrides().toString())
     }
 
     @Test

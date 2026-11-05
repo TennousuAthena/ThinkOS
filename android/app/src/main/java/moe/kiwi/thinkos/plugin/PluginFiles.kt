@@ -159,6 +159,8 @@ internal object PluginFiles {
     private fun allowed(path: String): Boolean {
         val parts = path.split('/')
         if (parts.any { it.startsWith('.') }) return false
+        if (parts.first() == "store" || path == "store.json") return false
+        if (path in setOf("LICENSE", "LICENSE.txt", "LICENSE.md", "COPYING", "NOTICE", "NOTICE.txt")) return true
         val ext = path.substringAfterLast('.', "")
         return path == "manifest.json" || ext == "lua" ||
             (parts.size > 1 && parts[0] in setOf("views", "i18n") && ext == "json") ||

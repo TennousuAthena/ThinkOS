@@ -1,0 +1,74 @@
+[
+  {
+    "file": "micro-ecc/uECC.c",
+    "sha256": "e9db3217c2e8aacb2e1930004a9236b7502d4f0d44fd5796f45e3923f61eaeba",
+    "size": 57333,
+    "url": "https://raw.githubusercontent.com/kmackay/micro-ecc/541b3a78026420a3e369c4c9281c396b5e531113/uECC.c"
+  },
+  {
+    "file": "micro-ecc/uECC.h",
+    "sha256": "9d480aa6920155f68503064bebefb815a82aab318ab305efdcf04674d2a9cba7",
+    "size": 13777,
+    "url": "https://raw.githubusercontent.com/kmackay/micro-ecc/541b3a78026420a3e369c4c9281c396b5e531113/uECC.h"
+  },
+  {
+    "file": "micro-ecc/uECC_vli.h",
+    "sha256": "a8ff7957855e6520674cad4bcaf8f3e752d40f6c3f7501915c3504c777be1e7a",
+    "size": 6927,
+    "url": "https://raw.githubusercontent.com/kmackay/micro-ecc/541b3a78026420a3e369c4c9281c396b5e531113/uECC_vli.h"
+  },
+  {
+    "file": "micro-ecc/types.h",
+    "sha256": "61bd255c0dca4c69dfc779cc5c1fe1cbff47039d4bb7f37578a88f63b7fca466",
+    "size": 3000,
+    "url": "https://raw.githubusercontent.com/kmackay/micro-ecc/541b3a78026420a3e369c4c9281c396b5e531113/types.h"
+  },
+  {
+    "file": "micro-ecc/platform-specific.inc",
+    "sha256": "e0f036628b47fb7180bfaeb0903a41edbbcda8e1ef99098456eb3b1cdcb4531e",
+    "size": 2323,
+    "url": "https://raw.githubusercontent.com/kmackay/micro-ecc/541b3a78026420a3e369c4c9281c396b5e531113/platform-specific.inc"
+  },
+  {
+    "file": "micro-ecc/curve-specific.inc",
+    "sha256": "9e9d8d6771731dce2e084a4469d0dd2e9ac6245c8773766198a83f82d24b6313",
+    "size": 50986,
+    "url": "https://raw.githubusercontent.com/kmackay/micro-ecc/541b3a78026420a3e369c4c9281c396b5e531113/curve-specific.inc"
+  },
+  {
+    "file": "micro-ecc/LICENSE.txt",
+    "sha256": "ffd8b033d2df7568c25a98866bd92b1656f7da82d7f813c0b2eb85ec36611193",
+    "size": 1300,
+    "url": "https://raw.githubusercontent.com/kmackay/micro-ecc/541b3a78026420a3e369c4c9281c396b5e531113/LICENSE.txt"
+  },
+  {
+    "file": "micro-ecc/README.md",
+    "sha256": "6dc943ae31e374dc0307f296dc4fe5a636858a4860c1cae309388a7c68f9ae1e",
+    "size": 2513,
+    "url": "https://raw.githubusercontent.com/kmackay/micro-ecc/541b3a78026420a3e369c4c9281c396b5e531113/README.md"
+  },
+  {
+    "file": "sha-2/sha-256.c",
+    "sha256": "7a74437adc78576b8faff060f9573ba88a6da798914f45d263c75b149add3d27",
+    "size": 7516,
+    "url": "https://raw.githubusercontent.com/amosnier/sha-2/565f65009bdd98267361b17d50cddd7c9beb3e6c/sha-256.c"
+  },
+  {
+    "file": "sha-2/sha-256.h",
+    "sha256": "c2173d83813a0c29fcc3345ce489766efeadee6a52ca927ecd0f917a120df9fb",
+    "size": 4312,
+    "url": "https://raw.githubusercontent.com/amosnier/sha-2/565f65009bdd98267361b17d50cddd7c9beb3e6c/sha-256.h"
+  },
+  {
+    "file": "sha-2/LICENSE.md",
+    "sha256": "506de94a03e23bbc34e32a8b628b56688ac7c33672982388822816887727f1ac",
+    "size": 2202,
+    "url": "https://raw.githubusercontent.com/amosnier/sha-2/565f65009bdd98267361b17d50cddd7c9beb3e6c/LICENSE.md"
+  },
+  {
+    "file": "sha-2/README.md",
+    "sha256": "3691c80fbc973ff2417341e13f0540e2b08f6c07a81a800ca8852fb5d15bf2ce",
+    "size": 3886,
+    "url": "https://raw.githubusercontent.com/amosnier/sha-2/565f65009bdd98267361b17d50cddd7c9beb3e6c/README.md"
+  }
+]

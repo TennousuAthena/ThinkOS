@@ -14,7 +14,10 @@ import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools"))
-from device_hierarchy import dump_hierarchy
+from device_hierarchy import dump_hierarchy, visible_nodes
+from device_recovery import capture, restore
+from media_device import Device
+from ui_walkthrough import broadcast_json
 from package_plugins import package_plugin
 from plugin_push import publish_directory, remove_plugin
 
@@ -82,13 +85,18 @@ def main():
     def find(text=None, resource=None, scroll=False):
         for _ in range(8 if scroll else 1):
             tree = snapshot()
+            viewport = box(tree.find("node"))
             found = next((n for n in tree.iter("node") if
                           (text is None or n.attrib.get("text") == text) and
-                          (resource is None or n.attrib.get("resource-id") == resource)), None)
+                          (resource is None or n.attrib.get("resource-id") == resource) and
+                          box(n)[2] > box(n)[0] and box(n)[3] > box(n)[1] and
+                          viewport[0] <= (box(n)[0] + box(n)[2]) // 2 < viewport[2] and
+                          viewport[1] <= (box(n)[1] + box(n)[3]) // 2 < viewport[3]), None)
             if found is not None:
                 return found
             if scroll:
-                shell("input", "swipe", 650, 685, 650, 210, 600)
+                w, h = viewport[2] - viewport[0], viewport[3] - viewport[1]
+                shell("input", "swipe", w // 2, int(h * .84), w // 2, int(h * .28), 450)
                 time.sleep(.25)
         raise AssertionError("Missing UI element: " + str(text or resource))
 
@@ -118,7 +126,7 @@ def main():
     def open_owner_settings(x=300):
         shell("input", "swipe", x, 380, x, 380, 900)
         time.sleep(.3)
-        wait_text("设置UI样例" if x < 640 else "系统设置")
+        wait_text("设置UI样例" if x < 640 else "显示")
 
     def edit(label, text, secret=False):
         tap(find(text=label, scroll=True))
@@ -137,11 +145,16 @@ def main():
         time.sleep(.3)
 
     initial_settings = settings()
-    initial_pid = shell("pidof", "moe.kiwi.thinkos").strip()
-    assert initial_pid
     assert not shell("run-as", "moe.kiwi.thinkos", "ls", "files/dev-plugins").strip(), "Keep existing development overrides intact"
-    result["initialPid"] = initial_pid.decode()
+    device = Device(args.serial)
+    assert "moe.kiwi.thinkos/" in device.shell('dumpsys', 'activity', 'activities').split('mResumedActivity')[-1]
+    journal = capture(device, broadcast_json(device, 'ui_state'))
+    print('Private recovery journal: '+str(journal), flush=True)
     try:
+        shell("am", "start", "-W", "-n", "moe.kiwi.thinkos/.MainActivity")
+        initial_pid = shell("pidof", "moe.kiwi.thinkos").strip()
+        assert initial_pid
+        result["initialPid"] = initial_pid.decode()
         with tempfile.TemporaryDirectory(prefix="thinkos-settings-ui-") as temporary:
             out = Path(temporary) / "packages"
             for name in (PROBE, "plain-ui-probe"):
@@ -179,26 +192,51 @@ def main():
             issue("boolean setting does not expose its checked state to accessibility")
         result["switchAccessibility"] = switch.attrib if switch is not None else None
         (args.output / "switch-and-reset.xml").write_bytes(ET.tostring(tree, encoding="utf-8"))
-        reset = next(n for n in tree.iter("node") if n.attrib.get("content-desc", "").endswith("已在本机修改，点按可重置"))
+        reset = find(text="恢复默认", scroll=True)
+        targets = [n for n in snapshot().iter("node") if n.get("clickable") == "true"
+                   and any(child.get("text") == "恢复默认" for child in n.iter("node"))]
+        assert targets, "The page reset must expose a clickable row"
+        reset = min(targets, key=lambda n: (box(n)[2] - box(n)[0]) * (box(n)[3] - box(n)[1]))
         a, b, c, d = box(reset)
         result["resetTargetPx"] = [c-a, d-b]
         if min(c-a, d-b) < 78:
             issue("reset hit target is smaller than 48dp on the 260dpi device")
         tap(reset)
+        find(text="恢复这一页的默认设置？")
+        tap(find(resource="android:id/button2"))
+        assert settings().get(PROBE, {}).get("enabled") is True
+        passed("canceling the page reset preserves the edit")
+        tap(find(text="恢复默认", scroll=True))
+        tap(find(resource="android:id/button1"))
         # Resetting the only override removes the key rather than storing its default.
         deadline = time.monotonic()+8
         while time.monotonic()<deadline and "enabled" in settings().get(PROBE, {}):
             time.sleep(.2)
         assert "enabled" not in settings().get(PROBE, {})
+        go_home()
+        open_owner_settings()
         tree = snapshot()
         switch = next((n for n in tree.iter("node") if n.attrib.get("class") == "android.widget.Switch"), None)
         if switch is None or switch.attrib.get("checked") != "false":
             issue("reset boolean does not expose its unchecked state to accessibility")
-        passed("boolean editing and explicit reset update the existing settings store")
+        assert not any(n.get("text") == "恢复默认" for n in tree.iter("node"))
+        passed("the confirmed page reset clears the override and removes its reset link")
 
+        tap(find(text="强度演示", scroll=True))
+        assert any(n.get('text') == '+' for n in snapshot().iter('node'))
         tap(find(text="+"))
         wait_saved("level", 6)
-        tap(find(text="方案演示"))
+        controls = {n.get('text'): box(n) for n in snapshot().iter('node') if n.get('text') in ('−', '+')}
+        left, right = controls['−'][2], controls['+'][0]
+        y = (controls['−'][1]+controls['−'][3])//2
+        row_before = box(find(text='强度演示'))
+        shell('input', 'swipe', (left+right)//2, y, (left+right)//2, max(100, y-160), 500)
+        assert settings().get(PROBE, {}).get('level') == 6, 'A vertical start on the slider must not commit a number'
+        moved = next((n for n in visible_nodes(snapshot()) if n.get('text') == '强度演示'), None)
+        assert moved is None or box(moved) != row_before, 'A vertical start must scroll the form'
+        passed('a vertical start on the expanded number scrolls the form without saving a value')
+        tap(find(text="方案演示", scroll=True))
+        assert not any(n.get('text') == '+' for n in snapshot().iter('node')), 'Opening a choice must collapse the number control'
         tap(find(text="方案二"))
         wait_saved("mode", "second")
         edit("名称演示", "UI-CHANGED")
@@ -266,28 +304,19 @@ def main():
         raise
     finally:
         (args.output / "logcat.txt").write_bytes(adb("logcat", "-d", "-s", "ThinkOS:V", "AndroidRuntime:E"))
-        # Stop before editing test-only persisted scopes, so no delayed writer can restore them.
-        # Other user settings are taken from the current file and preserved, rather than restoring
-        # a whole old snapshot. No production preferences or system partition is changed.
-        shell("cmd", "package", "set-home-activity", "org.lineageos.trebuchet/com.android.launcher3.searchlauncher.SearchLauncher")
-        shell("am", "force-stop", "moe.kiwi.thinkos")
-        for name in ("home", PROBE, "plain-ui-probe"):
-            remove_plugin(name, args.serial)
-        restored = settings()
-        if PROBE in initial_settings:
-            restored[PROBE] = initial_settings[PROBE]
-        else:
-            restored.pop(PROBE, None)
-        encoded = json.dumps(restored, ensure_ascii=False, separators=(",", ":")).encode()
-        shell("run-as", "moe.kiwi.thinkos", "sh", "-c", "cat > files/settings/local.json.ui-restore", data=encoded)
-        shell("run-as", "moe.kiwi.thinkos", "mv", "files/settings/local.json.ui-restore", "files/settings/local.json")
-        shell("run-as", "moe.kiwi.thinkos", "rm", "-f", "files/settings/local.json.bak")
-        shell("cmd", "package", "set-home-activity", "moe.kiwi.thinkos/.MainActivity")
-        shell("am", "start", "-n", "moe.kiwi.thinkos/.MainActivity")
+        try:
+            shell("am", "force-stop", "moe.kiwi.thinkos")
+            for name in ("home", PROBE, "plain-ui-probe"):
+                remove_plugin(name, args.serial)
+            result.update(restore(journal, device))
+        except Exception as error:
+            result['recovery_error'] = str(error)
+            result['private_recovery_journal'] = str(journal)
         result["settingsRestored"] = settings() == initial_settings
         result["elapsedSeconds"] = round(time.monotonic()-began, 2)
         (args.output / "results.json").write_text(json.dumps(result, ensure_ascii=False, indent=2)+"\n")
         assert result["settingsRestored"]
+        assert not result.get('recovery_error'), result.get('recovery_error')
     assert result["complete"], result["issues"]
 
 

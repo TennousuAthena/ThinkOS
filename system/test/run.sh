@@ -3,4 +3,5 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 ./build.sh --host >/dev/null
+bash test/run-btsink.sh
 exec python3 -I -W ignore test/test_wfdd.py "$@"

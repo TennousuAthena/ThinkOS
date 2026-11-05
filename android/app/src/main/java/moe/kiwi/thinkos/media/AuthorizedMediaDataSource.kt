@@ -10,14 +10,16 @@ import androidx.media3.datasource.DataSourceException
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.TransferListener
 import java.io.IOException
+import moe.kiwi.thinkos.net.PublicNetworkPolicy
 
 /** All local playback opens go through the same descriptor gate as media listing and images. */
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-internal class AuthorizedMediaDataSourceFactory(context: Context, private val http: DataSource.Factory) : DataSource.Factory {
+internal class AuthorizedMediaDataSourceFactory(context: Context, private val http: DataSource.Factory,
+                                               private val publicOnly: Boolean = false) : DataSource.Factory {
     private val app = context.applicationContext
-    override fun createDataSource(): DataSource = Routing(app, http)
+    override fun createDataSource(): DataSource = Routing(app, http, publicOnly)
 
-    private class Routing(private val app: Context, private val http: DataSource.Factory) : DataSource {
+    private class Routing(private val app: Context, private val http: DataSource.Factory, private val publicOnly: Boolean) : DataSource {
         private var current: DataSource? = null
         private val listeners = ArrayList<TransferListener>()
         override fun addTransferListener(transferListener: TransferListener) {
@@ -26,6 +28,11 @@ internal class AuthorizedMediaDataSourceFactory(context: Context, private val ht
         }
         override fun open(dataSpec: DataSpec): Long {
             check(current == null) { "Media source is already open" }
+            // Media3 sends child manifests/segments/keys and side-loaded text
+            // through this same factory. Never route their local schemes to
+            // Local(), even when the plugin also has a library grant.
+            if (publicOnly) try { PublicNetworkPolicy.validate(dataSpec.uri.toString()) }
+                catch (error: IllegalArgumentException) { throw IOException(error.message, error) }
             val selected = when (dataSpec.uri.scheme) {
                 "https", "http" -> http.createDataSource()
                 "file", "content" -> Local(app)

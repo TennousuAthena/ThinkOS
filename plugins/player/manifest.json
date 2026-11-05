@@ -1,8 +1,8 @@
 {
   "id": "player",
   "name": "@name",
-  "version": "0.2.0",
-  "api": 7,
+  "version": "0.4.0",
+  "api": 9,
   "main": "main.lua",
   "permissions": [
     "media",
@@ -15,36 +15,41 @@
       "label": "@setting.music_dir",
       "default": "/sdcard/Music",
       "maxLength": 512,
-      "group": "@group.library"
+      "group": "@group.library",
+      "level": "normal"
     },
     "video_dir": {
       "type": "text",
       "label": "@setting.video_dir",
       "default": "/sdcard/Movies",
       "maxLength": 512,
-      "group": "@group.library"
+      "group": "@group.library",
+      "level": "normal"
     },
     "resume": {
       "type": "bool",
       "label": "@setting.resume",
       "default": true,
-      "group": "@group.library"
+      "group": "@group.library",
+      "level": "normal"
     },
     "stream_url": {
       "type": "text",
       "label": "@setting.stream_url",
       "default": "",
       "maxLength": 1024,
-      "help": "@help.stream_url",
-      "group": "@group.streams"
+      "group": "@group.streams",
+      "placeholder": "@placeholder.stream_url",
+      "level": "normal"
     },
     "playlist_url": {
       "type": "text",
       "label": "@setting.playlist_url",
       "default": "",
       "maxLength": 1024,
-      "help": "@help.playlist_url",
-      "group": "@group.streams"
+      "group": "@group.streams",
+      "placeholder": "@placeholder.playlist_url",
+      "level": "normal"
     }
   },
   "pages": [
@@ -93,6 +98,22 @@
       "id": "now",
       "view": "views/now.json",
       "opens": "library"
+    },
+    {
+      "id": "tile",
+      "view": "views/tile.json",
+      "opens": "library"
     }
+  ],
+  "apps": [
+    {
+      "id": "media",
+      "page": "library",
+      "title": "@page.library",
+      "icon": "music"
+    }
+  ],
+  "related": [
+    "media.public_http"
   ]
 }

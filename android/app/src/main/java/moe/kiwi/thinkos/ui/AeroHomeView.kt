@@ -42,21 +42,21 @@ internal class AeroHomeView(
 
     private val windows = mutableListOf<Window>()
     private val wallpaper = AeroWallpaper(context)
-    private val heading = text(18f, Color.WHITE)
+    private val heading = text(TextScale.BODY, Color.WHITE)
     private val brand =
-        text(13f, Color.WHITE).apply {
+        text(TextScale.CAPTION, Color.WHITE).apply {
             text = "ThinkOS"
             gravity = Gravity.END or Gravity.CENTER_VERTICAL
         }
     private val taskbar = View(context)
     private val start =
-        text(24f, Color.WHITE).apply {
+        text(TextScale.TITLE, Color.WHITE).apply {
             text = "T"
             gravity = Gravity.CENTER
             typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
         }
     private val tray =
-        text(12f, Color.WHITE).apply {
+        text(TextScale.CAPTION, Color.WHITE).apply {
             gravity = Gravity.END or Gravity.CENTER_VERTICAL
             maxLines = 2
         }
@@ -140,7 +140,7 @@ internal class AeroHomeView(
             windows += window
             addView(frame, indexOfChild(taskbar))
             val button =
-                text(13f, Color.WHITE).apply {
+                text(TextScale.CAPTION, Color.WHITE).apply {
                     text = title
                     contentDescription = title
                     gravity = Gravity.CENTER
@@ -170,7 +170,7 @@ internal class AeroHomeView(
     }
 
     private fun menuItem(title: String, action: () -> Unit) =
-        text(16f, 0xff12253b.toInt()).apply {
+        text(TextScale.BODY, 0xff12253b.toInt()).apply {
             text = title
             setPadding(dp(14), 0, dp(14), 0)
             minHeight = dp(48)
@@ -203,6 +203,14 @@ internal class AeroHomeView(
                 .setInterpolator(moe.kiwi.thinkos.anim.Motion.EASE)
                 .start()
         }
+    }
+
+    /** Back closes the start menu before it leaves the page (ADR-040). */
+    val hasBack: Boolean get() = menu.visibility == VISIBLE
+    fun back(): Boolean {
+        if (menu.visibility != VISIBLE) return false
+        closeMenu()
+        return true
     }
 
     private fun closeMenu() {
@@ -546,7 +554,7 @@ private class AeroWindow(context: Context, title: String, private val body: Comp
     private val caption =
         TextView(context).apply {
             text = title
-            textSize = 14f
+            textSize = TextScale.CAPTION
             maxLines = 1
             ellipsize = TextUtils.TruncateAt.END
             gravity = Gravity.CENTER_VERTICAL

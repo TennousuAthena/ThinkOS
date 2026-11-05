@@ -2,6 +2,7 @@ package moe.kiwi.thinkos.media
 
 import java.net.URI
 import java.util.Locale
+import moe.kiwi.thinkos.net.PublicNetworkPolicy
 
 /** How the player should read an item. `auto` follows the URL (`.m3u8`, `.mpd`, `rtsp:`), then sniffs the container. */
 enum class MediaSourceType(val id: String) {
@@ -79,6 +80,8 @@ data class MediaEntry(
     val subtitles: List<MediaSubtitle> = emptyList(),
     /** A live stream the OS produces itself (screen mirroring). Lua has no way to set it, and [MirrorSource.SCHEME] is refused in every plugin-supplied URL. */
     val mirror: MirrorSource? = null,
+    /** Narrow all media and subtitle fetches to public HTTPS, including HLS/DASH children. */
+    val publicOnly: Boolean = false,
 ) {
     init {
         require(url.isNotBlank() && url.length <= 8192) { "Invalid media URL" }
@@ -87,6 +90,10 @@ data class MediaEntry(
         require(mimeType == null || mimeType.length <= 128 && mimeType.none { it.code < 32 || it.code == 127 } &&
             (mimeType.startsWith("audio/") || mimeType.startsWith("video/") || mimeType in MANIFEST_MIME_TYPES)) { "Invalid media MIME type" }
         val uri = URI(normalizedUrl)
+        if (publicOnly) {
+            PublicNetworkPolicy.validate(uri)
+            subtitles.forEach { PublicNetworkPolicy.validate(URI(it.normalizedUrl)) }
+        }
         require(uri.fragment == null) { "Media URL cannot contain a fragment" }
         if (mirror != null) {
             require(uri.scheme == MirrorSource.SCHEME && kind == "video" && type == MediaSourceType.PROGRESSIVE && headers.isEmpty() && subtitles.isEmpty()) {
@@ -209,7 +216,10 @@ data class MediaEntry(
             return MediaEntry(string("url"), string("title"), string("artist"), string("album"),
                 string("art"), string("kind", "audio"), value["mime"]?.let {
                     require(it is String) { "media.mime must be a string" }; it
-                }, MediaSourceType.parse(string("type", "auto")), headers, subtitles)
+                }, MediaSourceType.parse(string("type", "auto")), headers, subtitles,
+                publicOnly = if (value.containsKey("public_only")) value["public_only"].let {
+                    require(it is Boolean) { "media.public_only must be a boolean" }; it
+                } else false)
         }
     }
 }

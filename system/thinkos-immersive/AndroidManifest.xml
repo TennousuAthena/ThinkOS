@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A Vector (Xposed) module: it runs inside the system server, so it needs no permission of its own. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="moe.kiwi.thinkos.immersive">
+    <application android:label="ThinkOS Immersive" android:allowBackup="false" android:hasCode="true">
+        <meta-data android:name="xposedmodule" android:value="true" />
+        <meta-data android:name="xposeddescription" android:value="ThinkOS全局系统手势：与Shell和新版APK配合屏蔽所有应用的安卓系统栏，左缘返回、底缘回首页，顶部由ThinkOS控制栏接收。作用范围：系统框架。" />
+        <meta-data android:name="xposedminversion" android:value="93" />
+        <meta-data android:name="xposedscope" android:resource="@array/xposedscope" />
+    </application>
+</manifest>

@@ -1,0 +1,10 @@
+{
+  "template": "tile",
+  "color": "#007272",
+  "faces": [
+    {
+      "icon": "cast",
+      "label": "@app.cast"
+    }
+  ]
+}

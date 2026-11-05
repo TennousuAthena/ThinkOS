@@ -1,7 +1,6 @@
 {
   "name": "Horloge",
   "title": "Horloge",
-  "now": "Maintenant",
   "waiting": "En attente de synchronisation de l’heure",
   "calendar": "Calendrier",
   "group.display": "Affichage",

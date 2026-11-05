@@ -1,0 +1,11 @@
+{
+  "layout": "stage",
+  "slots": {
+    "stage": {
+      "type": "tv",
+      "fit": "contain",
+      "channel": "{{tv}}",
+      "tap": "tv"
+    }
+  }
+}

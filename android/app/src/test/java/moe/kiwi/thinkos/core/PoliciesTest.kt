@@ -31,14 +31,14 @@ class PoliciesTest {
         policy.touch(300_002)
         assertEquals(Attention.ENGAGED, policy.level(300_003))
     }
-    @Test fun disablingNightModeAppliesImmediatelyWhileEditingSettings() {
+    @Test fun dayThemeNeverOwnsRedshiftEvenIfLegacyNightFieldsAreEnabled() {
         for (mode in listOf("auto", "light", "dark")) {
-            var limits = ThemeThresholds(mode = mode)
+            val limits = ThemeThresholds(mode = mode)
             val policy = ThemePolicy(Theme.NIGHT) { limits }
-            assertEquals(Theme.NIGHT, policy.sample(.1f, 0, engaged = true))
-            limits = limits.copy(nightEnabled = false)
             assertEquals(if (mode == "light") Theme.LIGHT else Theme.DARK,
-                policy.sample(.1f, 1, engaged = true))
+                policy.sample(.1f, 0, engaged = true))
+            assertEquals(if (mode == "light") Theme.LIGHT else Theme.DARK,
+                policy.sample(.1f, 1_000_000, engaged = false))
         }
     }
     @Test fun transientLightAndEngagementCannotSwitchTheme() {
@@ -65,12 +65,10 @@ class PoliciesTest {
         day = true
         assertEquals(Theme.LIGHT, policy.sample(300f, 3_000, engaged = false))
     }
-    @Test fun sunModeKeepsRedNightModeByLuxAndLeavesItBySun() {
+    @Test fun sunDayThemeCannotIntroduceNightAtVeryLowLux() {
         val policy = ThemePolicy(Theme.LIGHT, { true }) { ThemeThresholds(mode = "sun") }
-        policy.sample(2f, 0, false)
-        assertEquals(Theme.NIGHT, policy.sample(2f, 10_000, false))
-        policy.sample(100f, 30_000, false)
-        assertEquals(Theme.NIGHT, policy.sample(100f, 39_999, false))
+        assertEquals(Theme.LIGHT, policy.sample(2f, 0, false))
+        assertEquals(Theme.LIGHT, policy.sample(2f, 10_000, false))
         assertEquals(Theme.LIGHT, policy.sample(100f, 40_000, false))
     }
     @Test fun sunModeFallsBackToAmbientLightWhileTheSunIsUnknown() {
@@ -80,13 +78,13 @@ class PoliciesTest {
         assertEquals(Theme.LIGHT, policy.sample(20f, 29_000, false))
         assertEquals(Theme.DARK, policy.sample(20f, 30_000, false))
     }
-    @Test fun nightHasSeparateDwellAndExitHysteresis() {
-        val policy=ThemePolicy(Theme.DARK)
-        policy.sample(2f,0,false)
-        assertEquals(Theme.DARK,policy.sample(2f,9_999,false))
-        assertEquals(Theme.NIGHT,policy.sample(2f,10_000,false))
-        assertEquals(Theme.NIGHT,policy.sample(12f,80_000,false))
-        policy.sample(20f,81_000,false)
-        assertEquals(Theme.DARK,policy.sample(20f,91_000,false))
+    @Test fun dayDwellAndMinimumIntervalAreInjectedRatherThanProductConstants() {
+        val policy = ThemePolicy(Theme.LIGHT, timings = { ThemeTimings(2_000, 8_000) })
+        assertEquals(Theme.LIGHT, policy.sample(20f, 0, false))
+        assertEquals(Theme.LIGHT, policy.sample(20f, 1_999, false))
+        assertEquals(Theme.DARK, policy.sample(20f, 2_000, false))
+        policy.sample(200f, 3_000, false)
+        assertEquals(Theme.DARK, policy.sample(200f, 9_999, false))
+        assertEquals(Theme.LIGHT, policy.sample(200f, 10_000, false))
     }
 }

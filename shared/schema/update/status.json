@@ -1,0 +1,277 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "status.json",
+  "title": "UpdateStatusDocument",
+  "description": "Read-only tos.update.status API10 payload, also used by native recovery. No paths, download URLs or trust material. Components describe authenticated catalog targets. Optional inventory describes locally authenticated root STATUS independently of catalogs, channel keys and sources; it carries no targets, progress or results. Not a Server HTTP API.",
+  "type": "object",
+  "required": [
+    "schema",
+    "phase",
+    "channel",
+    "current_version",
+    "current_code",
+    "configured",
+    "can_check",
+    "can_download",
+    "can_install",
+    "downloaded",
+    "size",
+    "components"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "type": "integer",
+      "const": 1
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "idle",
+        "checking",
+        "available",
+        "paused",
+        "downloading",
+        "ready",
+        "installing",
+        "failed",
+        "up_to_date",
+        "unavailable"
+      ]
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "stable",
+        "beta"
+      ]
+    },
+    "current_version": {
+      "type": "string",
+      "maxLength": 16
+    },
+    "current_code": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2147483647
+    },
+    "configured": {
+      "type": "boolean"
+    },
+    "can_check": {
+      "type": "boolean"
+    },
+    "can_download": {
+      "type": "boolean"
+    },
+    "can_install": {
+      "type": "boolean"
+    },
+    "downloaded": {
+      "type": "integer",
+      "format": "int64",
+      "minimum": 0,
+      "maximum": 67108864
+    },
+    "size": {
+      "type": "integer",
+      "format": "int64",
+      "minimum": 0,
+      "maximum": 67108864
+    },
+    "components": {
+      "type": "array",
+      "maxItems": 7,
+      "items": {
+        "title": "UpdateComponentStatus",
+        "type": "object",
+        "required": [
+          "id",
+          "version",
+          "code",
+          "state"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "thinkos-updater",
+              "thinkos-cast",
+              "thinkos-immersive",
+              "thinkos-shell",
+              "thinkos-certs",
+              "thinkos-power",
+              "timesync"
+            ]
+          },
+          "version": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "code": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "requires_updater",
+              "current",
+              "skipped",
+              "available",
+              "downloading",
+              "ready",
+              "staged",
+              "failed"
+            ]
+          },
+          "installed_code": {
+            "type": "integer",
+            "minimum": -1,
+            "maximum": 2147483647
+          },
+          "downloaded": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 16777216
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 16777216
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "updated",
+              "rolled_back",
+              "install_failed",
+              "rollback_failed",
+              "cancelled"
+            ]
+          }
+        }
+      }
+    },
+    "version": {
+      "type": "string",
+      "maxLength": 16
+    },
+    "code": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2147483647
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 2048
+    },
+    "error": {
+      "type": "string",
+      "enum": [
+        "keys",
+        "sources",
+        "network",
+        "metadata",
+        "storage",
+        "package",
+        "interrupted",
+        "unavailable",
+        "incompatible",
+        "blacklisted"
+      ]
+    },
+    "blocked": {
+      "type": "string",
+      "enum": [
+        "video",
+        "casting",
+        "foreign",
+        "media"
+      ]
+    },
+    "silent_install": {
+      "type": "boolean"
+    },
+    "result": {
+      "title": "UpdateResultStatus",
+      "type": "object",
+      "required": [
+        "kind",
+        "version",
+        "code",
+        "message",
+        "notes"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "updated",
+            "rolled_back",
+            "install_failed",
+            "rollback_failed"
+          ]
+        },
+        "version": {
+          "type": "string",
+          "maxLength": 16
+        },
+        "code": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 80
+        }
+      }
+    },
+    "inventory": {
+      "title": "UpdateSystemInventory",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["updater", "modules"],
+      "properties": {
+        "updater": {
+          "type": "string",
+          "enum": ["unavailable", "read_only", "ready"],
+          "description": "Local capability only, never installation admission. A reachable keyless updater or missing APK system-key asset is read_only; installed inventory remains visible."
+        },
+        "modules": {
+          "type": "array",
+          "maxItems": 7,
+          "items": {
+            "title": "UpdateInstalledComponent",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id"],
+            "properties": {
+              "id": {"$ref": "catalog.json#/$defs/module/properties/id"},
+              "installed_code": {
+                "type": "integer",
+                "minimum": -1,
+                "maximum": 2147483647,
+                "description": "Actual root-reported installed build number. Zero means absent; -1 or omission means unknown. Never inferred from a catalog or converted into a version name."
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

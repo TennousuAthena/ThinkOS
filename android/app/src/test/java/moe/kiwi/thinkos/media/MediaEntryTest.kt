@@ -6,6 +6,37 @@ import org.junit.Test
 class MediaEntryTest {
     private fun rejected(block: () -> Unit) = assertThrows(IllegalArgumentException::class.java) { block() }
 
+    @Test fun publicOnlyIsAStrictBooleanThatSurvivesQueueCopies() {
+        val entry = MediaEntry.fromMap(mapOf("url" to "https://radio.test/live", "public_only" to true,
+            "headers" to mapOf("User-Agent" to "Radio/1")))
+        assertTrue(entry.publicOnly)
+        assertTrue(entry.copy(title = "Another title").publicOnly)
+        val queue = MediaQueue()
+        queue.load(listOf(entry), MediaOptions())
+        assertTrue(queue.current!!.publicOnly)
+        assertFalse(MediaEntry.fromMap(mapOf("url" to "http://192.168.1.1/live", "public_only" to false)).publicOnly)
+        assertFalse(MediaEntry("file:///sdcard/music.mp3").publicOnly)
+        for (value in listOf("true", "false", 1, 0, emptyMap<String, Any>(), null))
+            rejected { MediaEntry.fromMap(mapOf("url" to "https://radio.test/live", "public_only" to value)) }
+    }
+
+    @Test fun publicOnlyRejectsNonHttpsAndLocalSideLoadedTextBeforePlayback() {
+        for (url in listOf("http://8.8.8.8/live", "https://127.0.0.1/live", "rtsp://8.8.8.8/live", "file:///sdcard/live.m3u8", "content://media/1"))
+            rejected { MediaEntry(url, publicOnly = true) }
+        for (url in listOf("file:///sdcard/text.vtt", "content://media/text", "http://8.8.8.8/text.vtt", "https://192.168.1.1/text.vtt"))
+            rejected { MediaEntry("https://radio.test/live.m3u8", publicOnly = true, subtitles = listOf(MediaSubtitle(url, MediaSubtitle.VTT))) }
+        MediaEntry("https://radio.test/live.m3u8", publicOnly = true, subtitles = listOf(MediaSubtitle("https://cdn.test/text.vtt")))
+    }
+
+    @Test fun sourceFactoryIdentityDoesNotReuseAnOrdinaryFactoryForAStrictEntry() {
+        val ordinary = MediaEngine.SourceKey(false, false, "https://radio.test:443", emptyMap(), false)
+        val strict = MediaEngine.SourceKey(false, false, "https://radio.test:443", emptyMap(), true)
+        val cache = hashMapOf(ordinary to "LAN-compatible factory", strict to "public-only factory")
+        assertEquals(2, cache.size)
+        assertNotEquals(ordinary, strict)
+        assertEquals("public-only factory", cache[strict])
+    }
+
     @Test fun theSourceTypeFollowsTheUrlUnlessTheItemSaysOtherwise() {
         assertEquals(MediaSourceType.HLS, MediaEntry("https://tv.test/live/index.m3u8?token=1").effectiveType)
         assertEquals(MediaSourceType.DASH, MediaEntry("https://tv.test/manifest.MPD").effectiveType)

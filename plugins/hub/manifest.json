@@ -1,0 +1,8 @@
+{
+  "id": "hub", "name": "@name", "version": "0.1.0", "api": 10, "main": "main.lua",
+  "permissions": ["system.plugins", "system.update"],
+  "pages": [{"id":"main","view":"views/main.json","title":"@name"}],
+  "apps": [{"id":"hub","page":"main","title":"@name","icon":"apps"}],
+  "widgets": [{"id":"tile","view":"views/tile.json","opens":"main"}],
+  "related": ["plugins.auto_update", "plugins.community", "plugins.mirror"]
+}

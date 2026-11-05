@@ -1,0 +1,11 @@
+{
+  "layout": "focus",
+  "slots": {
+    "over": {"type": "text", "value": "@back", "style": "caption", "tap": "gesture.back"},
+    "hero": {"type": "text", "value": "{{instruction}}", "style": "body", "tap": "gesture.next"},
+    "under": {"children": [
+      {"type": "text", "value": "{{gestureNext}}", "style": "body", "tap": "gesture.next"},
+      {"type": "text", "value": "{{gestureSkip}}", "style": "caption", "tap": "gesture.skip"}
+    ]}
+  }
+}

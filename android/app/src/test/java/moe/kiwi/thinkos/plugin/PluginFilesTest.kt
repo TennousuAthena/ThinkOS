@@ -117,4 +117,28 @@ class PluginFilesTest {
         assertThrows(IllegalArgumentException::class.java) { PluginFiles.readDirectory(directory) }
         assertThrows(IllegalArgumentException::class.java) { PluginFiles.openDirectory(directory, "manifest.json") }
     }
+
+    private fun indexWith(extra: String): JSONObject {
+        val bytes = "{}\n".toByteArray()
+        fun hash(value: ByteArray) = java.security.MessageDigest.getInstance("SHA-256").digest(value).joinToString("") { "%02x".format(it.toInt() and 255) }
+        val paths = listOf("manifest.json", extra).sorted()
+        val canonical = paths.joinToString("") { it + "\u0000" + hash(bytes) + "\n" }
+        return JSONObject().put("id", "license-probe").put("version", "1.0.0").put("digest", hash(canonical.toByteArray()))
+            .put("files", JSONArray(paths.map { JSONObject().put("path", it).put("size", bytes.size).put("sha256", hash(bytes)) }))
+    }
+
+    @Test fun fixedRootLegalTextsAreDistributedWithoutOpeningMarkdownGenerally() {
+        for (name in listOf("LICENSE", "LICENSE.txt", "LICENSE.md", "COPYING", "NOTICE", "NOTICE.txt")) {
+            assertTrue(PluginFiles.parse(indexWith(name)).files.any { it.path == name })
+        }
+        for (name in listOf("README.md", "LICENSE.html", "docs/LICENSE.md", "assets/NOTICE.txt")) {
+            assertThrows(IllegalArgumentException::class.java) { PluginFiles.parse(indexWith(name)) }
+        }
+    }
+
+    @Test fun storeMetadataAndScriptsNeverReachTheDevice() {
+        for (name in listOf("store.json", "store/main.lua", "store/views/main.json", "store/LICENSE.md")) {
+            assertThrows(IllegalArgumentException::class.java) { PluginFiles.parse(indexWith(name)) }
+        }
+    }
 }

@@ -1,4 +1,4 @@
-# 插件契约（API 1 / 2 / 3 / 4 / 5 / 6 / 7）
+# 插件契约（API 1–10）
 
 `manifest.json` 定义包元信息；`view.json` 引用 `layouts.json` 中已经实现的固定渲染词汇。API 1 接受 `stacks` / `focus` / `form` 页面、`glance` 卡片、`text` / `icon` / `clock` / `form` 组件。API 2 增加 `split` / `stage`、组件组和 `progress` / `chart` / `list` / `daylight` / `moon`。API 3 增加本地/包内/HTTP(S) `image` / `carousel` 与 `tos.library.list`；`tos.state.set` 同时接受对象 JSON 文本以承载大清单。
 
@@ -42,3 +42,17 @@ Lua 语法和运行安全由设备的 Lua 5.4 文本加载器与预算检查；P
 API 4 新增 `tiles.slots.tiles` 引用数组（1–16 项；widget、size 必填），size 为 small=1×1、medium=2×2、wide=4×2、large=4×4。`tile` 模板含 faces（1–4 面，每面 label 必填，icon/value/detail 可选）、可选 badge/content/color；content 仅 clock/progress/chart/daylight/moon。颜色只能是不透明 #RRGGBB 或 {{绑定}}，页面引用 > 卡片 > 系统 accent；非法绑定逐级回退并记 warn，前景由 OS 选黑/白（ADR-025）。glance 放入 tiles 显示空占位，tile 放入 stacks 按 large 显示。横屏 6×4、竖屏 4×6 首次适配网格，无滚动，放不下丢弃。版本闸门同时检查 layout、template、component。
 
 API 5 新增固定原生桌面 `aero.slots.windows`（1–3 个普通 widgetReference）。OS 绘制窗口、玻璃光泽、任务栏、开始菜单和原创背景；不接受颜色、尺寸或样式字段。横竖屏自动重排，点击 opens、长按卡片所属插件设置。示例见 `plugins/aero`，设计见 `docs/25-windows-design.md`。
+
+API 8（ADR-036）增加 `nowplaying`（`style` 为 `full` / `bar` / `card`，可带 `idle` 与 `notice`，需 manifest 声明 `media` 权限）、`tabs`（`items` / `current` / `tap`）和 `list.current`。音乐播放器的封面、取色、控件、音量条与队列全部由 OS 绘制；设计与验证见 `docs/30-player-ui.md`。
+
+API 8（ADR-038）还增加 `tv`（`channel` 指向频道对象的状态路径，`tap` 事件名，`fit`，需 manifest 声明 `media` 权限）：影院视图加直播界面，台号、节目与进度、上一台 / 下一台 / 频道列表 / 线路 / 收藏全部由 OS 绘制，按钮以 `(tap, action)` 发给插件。设计与验证见 `docs/31-iptv.md`。
+
+API 9（ADR-044）：设置的 `warn` 仅用于 bool，启用时显示；`placeholder` 仅用于 text，编辑框中显示。版本门槛来自 `settingFields`，第三方旧 `help` 保持兼容。状态中的 `formLink` 描述可带 `confirm`，确认后才发 `form.change(key, true)`；它不赋予任何设置写入权限。
+
+API 10：`settingTypes.time` / `formFields.time` 登记 `time` 控件。值必须是ASCII `HH:mm`、00:00至23:55且分钟是5的倍数；不接收秒、时区、AM/PM、外观或自定步长。时刻采用本地草稿，取消不发事件，确定一次 `form.change(key, value)`。`device.mode` 只读与无权限的 `mode` 事件使用 `day` / `redshift` / `sleep`；`device.setMode` 仍须真实 `system.device` 授权及OS点按信用。
+
+原生数字描述可带 OS 计算的 `formPreview` 值 `brightness`（API 9），拖动时经 DeviceLevels 临时预览，取消恢复、松手才提交；它不是 manifest 属性。OS 重新核对注册字段和设置管理员权限，状态文字不能授予设备能力。
+
+`form.nav`（API9）引用状态里的`formNav`，仅提供分类`items:[{id,label}]`和`current`，不含尺寸或颜色。原生实现按700dp断点启用两栏，发送`form.layout(wide)`和`form.navigate(id)`；旧表单不加此属性继续单列。Kotlin/Python/生成Go的版本门槛来自同一`componentProperties.nav`表。
+
+API 10 增加 `system.update`、`tos.update.status/open/check/download` 与 `update` 事件，不改变渲染词汇。权限有安装时 API 门槛，运行时只授予摘要匹配的 APK 出厂副本；开发/Git 副本即使声明也没有权限。操作要求来自 OS 的真实界面点按，最多5秒；`status` 与事件不需要点按。安装器尚未接入，所以 `install()` 未开放、`can_install` 恒 false。状态契约见 `../update/status.json`。

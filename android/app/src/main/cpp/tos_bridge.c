@@ -29,6 +29,9 @@ typedef struct {
     lua_State *L;
     size_t used;
     uint64_t deadline, wall_deadline, host_credit;
+    uint64_t host_cpu, host_max_cpu, compile_cpu;
+    unsigned host_calls;
+    char host_max_method[64];
     unsigned instructions, clock_ticks, pattern_steps;
     int exhausted, memory_limit, next_task, dispatch_ref, timer_ref;
     Task tasks[MAX_TASKS], *running;
@@ -107,6 +110,9 @@ static void begin_slice(Runtime *r) {
     r->deadline = cpu_nanos() + CPU_NS;
     r->wall_deadline = nanos() + WALL_NS;
     r->host_credit = 0;
+    r->host_cpu = r->host_max_cpu = r->compile_cpu = 0;
+    r->host_calls = 0;
+    r->host_max_method[0] = '\0';
 }
 static int finish_safe_call(lua_State *L, int status, lua_KContext extra) {
     check_budget(L, 1);
@@ -512,7 +518,7 @@ static void init_java(JNIEnv *e) {
     j.number_long = (*e)->GetMethodID(e, j.number, "longValue", "()J");
     j.number_double = (*e)->GetMethodID(e, j.number, "doubleValue", "()D");
     j.bool_value = (*e)->GetMethodID(e, j.boolean, "booleanValue", "()Z");
-    j.step_new = (*e)->GetMethodID(e, j.step, "<init>", "(IILjava/lang/String;JJ)V");
+    j.step_new = (*e)->GetMethodID(e, j.step, "<init>", "(IILjava/lang/String;JJJILjava/lang/String;JJ)V");
     (*e)->DeleteLocalRef(e, iterable);
     (*e)->DeleteLocalRef(e, iter);
     (*e)->DeleteLocalRef(e, entry);
@@ -709,6 +715,15 @@ static int invoke_host_inner(lua_State *L) {
     jobject result = (*e)->CallObjectMethod(e, r->host, r->call, name, args, r->running ? r->running->id : 0);
     {
         uint64_t spent = cpu_nanos() - before;
+        r->host_cpu += spent;
+        r->host_calls++;
+        if (spent > r->host_max_cpu) {
+            r->host_max_cpu = spent;
+            size_t length = strlen(method);
+            if (length >= sizeof(r->host_max_method)) length = sizeof(r->host_max_method) - 1;
+            memcpy(r->host_max_method, method, length);
+            r->host_max_method[length] = '\0';
+        }
         uint64_t room = HOST_CREDIT_NS - r->host_credit;
         uint64_t credit = spent < room ? spent : room;
         r->host_credit += credit;
@@ -752,7 +767,9 @@ static int text_load(lua_State *L) {
     /* Inspect the arguments before loading pushes the compiled function. With three
        arguments that function occupies slot 4; it must not become its own _ENV. */
     int has_environment = lua_gettop(L) >= 4;
+    uint64_t before = cpu_nanos();
     int status = luaL_loadbufferx(L, s, len, name, "t");
+    owner(L)->compile_cpu += cpu_nanos() - before;
     if (status != LUA_OK) {
         lua_pushnil(L);
         lua_insert(L, -2);
@@ -884,10 +901,15 @@ static jobject step_result(Runtime *r, Task *t, int status, const char *message,
                            uint64_t wall) {
     JNIEnv *e = r->env;
     jstring msg = message ? utf8_java(e, message) : NULL;
+    jstring method = r->host_max_method[0] ? (*e)->NewStringUTF(e, r->host_max_method) : NULL;
     jobject result =
-        (*e)->NewObject(e, j.step, j.step_new, t ? t->id : 0, status, msg, (jlong)cpu, (jlong)wall);
+        (*e)->NewObject(e, j.step, j.step_new, t ? t->id : 0, status, msg, (jlong)cpu, (jlong)wall,
+                       (jlong)(r->host_cpu / 1000), (jint)r->host_calls, method,
+                       (jlong)(r->host_max_cpu / 1000), (jlong)(r->compile_cpu / 1000));
     if (msg)
         (*e)->DeleteLocalRef(e, msg);
+    if (method)
+        (*e)->DeleteLocalRef(e, method);
     return result;
 }
 static void release_task(Runtime *r, Task *t) {

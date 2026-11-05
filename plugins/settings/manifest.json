@@ -2,10 +2,23 @@
   "id": "settings",
   "name": "@name",
   "version": "0.1.0",
-  "api": 1,
+  "api": 10,
   "main": "main.lua",
-  "permissions": ["system.settings"],
+  "permissions": [
+    "system.settings",
+    "system.device",
+    "system.update",
+    "system.apps"
+  ],
+  "uses": {"onboarding": {"export": "welcome.setup", "shape": "onboarding/1"}},
   "pages": [
-    { "id": "form", "view": "views/form.json", "title": "@title", "roles": ["settings"] }
+    {
+      "id": "form",
+      "view": "views/form.json",
+      "title": "@title",
+      "roles": [
+        "settings"
+      ]
+    }
   ]
 }

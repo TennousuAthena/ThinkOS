@@ -37,7 +37,10 @@
         4,
         5,
         6,
-        7
+        7,
+        8,
+        9,
+        10
       ]
     },
     "icon": {
@@ -61,11 +64,15 @@
           "presence",
           "server",
           "system.settings",
-          "location"
+          "location",
+          "system.device",
+          "system.apps",
+          "system.update",
+          "system.plugins"
         ]
       },
       "uniqueItems": true,
-      "maxItems": 8
+      "maxItems": 12
     },
     "settings": {
       "type": "object",
@@ -118,6 +125,24 @@
         "pattern": "^[a-z][a-z0-9-]*\\.[a-z][a-z0-9-]*$",
         "maxLength": 130
       }
+    },
+    "apps": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "$ref": "#/$defs/app"
+      }
+    },
+    "related": {
+      "type": "array",
+      "maxItems": 32,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$",
+        "maxLength": 128
+      },
+      "description": "System setting keys shown by the settings administrator. Grants no read or write permission. Each must exist, be non-hidden and non-secret."
     }
   },
   "$defs": {
@@ -153,11 +178,14 @@
               "home",
               "ambient",
               "sleep",
-              "settings"
+              "settings",
+              "panel",
+              "launcher",
+              "onboarding"
             ]
           },
           "uniqueItems": true,
-          "maxItems": 4
+          "maxItems": 7
         },
         "priority": {
           "type": "integer",
@@ -258,7 +286,8 @@
             "bool",
             "choice",
             "number",
-            "text"
+            "text",
+            "time"
           ]
         },
         "label": {
@@ -292,7 +321,8 @@
         "source": {
           "enum": [
             "timezone",
-            "place"
+            "place",
+            "region"
           ]
         },
         "allowEmpty": {
@@ -321,6 +351,43 @@
         },
         "hidden": {
           "type": "boolean"
+        },
+        "warn": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "placeholder": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "level": {
+          "enum": [
+            "normal",
+            "advanced",
+            "hidden"
+          ]
+        },
+        "depends": {
+          "$ref": "#/$defs/settingDependency"
+        },
+        "format": {
+          "enum": [
+            "duration"
+          ]
+        },
+        "zero": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "presets": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": {
+            "type": "number"
+          }
         }
       }
     },
@@ -443,6 +510,119 @@
           "maxLength": 64
         }
       }
+    },
+    "app": {
+      "title": "SchemaApp",
+      "type": "object",
+      "required": [
+        "id",
+        "page",
+        "title"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "page": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "icon": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "listed": {
+          "type": "boolean"
+        }
+      },
+      "description": "An app: one of this plugin's pages shown full screen on its own. The page is not in the left-right page sequence and sideways swipes inside it belong to the app; it is entered from a tile, a card, the app list or the plugin's own request, and left with Back (the edge swipe or the Back key), which the app may take for itself with tos.back.intercept. The page cannot hold a role. 'listed' false keeps the page an app without showing it in the list."
+    },
+    "settingDependency": {
+      "description": "A condition on another setting in the same scope: value, in, or not (mutually exclusive). Equality is type-sensitive; numeric equality compares the numeric value. Every condition in a dependency chain must hold; values are retained while rows are collapsed. Targets and cycles are validated at install time.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "key",
+            "value"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "value": {
+              "type": [
+                "string",
+                "number",
+                "boolean"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "key",
+            "in"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "in": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 64,
+              "uniqueItems": true,
+              "items": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "key",
+            "not"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "not": {
+              "type": [
+                "string",
+                "number",
+                "boolean"
+              ]
+            }
+          }
+        }
+      ]
     }
   }
 }

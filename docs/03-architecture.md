@@ -20,7 +20,7 @@
 | G5 | **插件优先，加功能不重装** | 每个页面、每张卡片都由插件提供；插件是「声明式视图 + Lua 脚本」的目录，来自 Git 仓库，由 Server 取回并下发、设备热加载（ADR-013、ADR-016、ADR-018） |
 | G6 | **重活交给 Server，但只是可选增强** | 照片裁切、语音识别等吃 CPU 的事放在 Server；Server 不在时功能降级而不是失效 |
 
-不在目标内：聊天对话、本地大模型、WebView 界面、Home Assistant、视频通话、多用户。
+不在目标内：聊天对话、本地大模型、WebView 界面、Home Assistant、多用户。（视频通话原在此列，2026-11-04 改为要做，见 ADR-047。）
 
 ---
 
@@ -33,7 +33,7 @@
 │        │ tos.* API                                                                │
 │  ┌─────┴───────────────────────────── 运行时（APK）───────────────────────────────┐ │
 │  │ plugin  ── Lua 5.4 运行时 · 沙箱 · 预算 · 视图绑定 · 目录安装与热加载          │ │
-│  │ core    ── DeviceState · Reducer · Effects · DeckRouter · TimeSource          │ │
+│  │ core    ── DeviceState · Store.update · DeckRouter · NavStack · WallClock          │ │
 │  │ settings ── 设置存储（系统级 + 页面级）· 校验 · 叠加 · 回报                    │ │
 │  │ tz/i18n ── 自带 IANA 规则 · 系统语言/日期格式 · 插件翻译                       │ │
 │  │ astro/location ── 本地日月/季节计算 · 配置位置 · 可选地点搜索                   │ │
@@ -136,61 +136,60 @@ ThinkOS 自身**不实现任何具体功能**。时钟、天气、相册、音�
 
 ## 3. 设备端架构
 
-### 3.1 进程与组件
+### 3.1 进程与组件（2026-11-03 按代码核对）
 
 ```
-Application (ThinkOSApp)
- ├─ AppGraph（手写依赖容器，单例；不用 Dagger/Hilt，减少启动开销）
- │   ├─ Store<DeviceState>          状态树 + Reducer
- │   ├─ PluginRuntime               Lua 运行时（独立线程）+ 插件目录安装
- │   ├─ SettingsStore               系统级 + 页面级设置的校验、叠加、持久化（§3.18）
- │   ├─ DeckRouter                  页面序列、角色、焦点仲裁
- │   ├─ PlayerController            ExoPlayer（生命周期跟随 Service）
- │   ├─ PerceptionManager           传感器 + 相机 + 检测
- │   ├─ SyncAgent                   期望状态同步（Server 可选）
- │   ├─ LiveLink                    实时通道（Server 可选）
- │   └─ CacheManager                图片 / 画面快照缓存
- ├─ KioskService（前台服务）         持有长生命周期部件；看门狗
- ├─ MainActivity（singleTask、HOME） 只持有 Stage（视图）
- └─ BootReceiver                     开机拉起 Service + Activity
+ThinkApplication
+ ├─ RuntimeHost（进程内单例，Application 持有）
+ │   ├─ Store                      DeviceState / StateFlow，主线程 update{}
+ │   ├─ PluginRuntime              单一 Plugin 线程、每插件独立 Lua 沙箱、目录加载
+ │   ├─ SettingsStore              声明校验、三层叠加、异步持久化
+ │   ├─ DeckRouter / NavStack       页面序列、角色、应用与返回
+ │   ├─ MediaEngine / CastHost      唯一播放器、DLNA / AirPlay / Miracast
+ │   ├─ SensorController            AttentionPolicy / ThemePolicy、亮度
+ │   ├─ TimeSync / LocationProvider 授时、位置、日月计算
+ │   └─ ImageLoader / DeviceControl 图片缓存、亮度音量与安卓入口
+ ├─ KioskService                    前台服务与恢复应用
+ ├─ MainActivity（singleTask、HOME） ThinkStage 和窗口、权限、救援菜单
+ └─ BootReceiver                    开机拉起 Service 和 Activity
 ```
 
-- **单进程**：2GB 设备上多进程会重复加载运行时，得不偿失。Lua 插件跑在同进程的独立线程里。
-- **单 Activity**：所有翻页都在同一棵 View 树里完成，才能做跨页面的编排动画。
-- **Activity 可死，Service 不死**：插件运行时、音乐、相机、同步都放在 Service 侧；Activity 重建时插件不重启、音乐不断。
-- `configChanges` 声明 `orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden`，旋转**不重建** Activity（§3.5）。
+- 单进程、单 Activity；Lua 不在主线程执行。运行时由 Application 持有，不由 Activity 持有；旋转不重建 Activity，声明见 `AndroidManifest.xml`。
+- `AppGraph`、`PlayerController`、`PerceptionManager`、`CacheManager` 不是现有类名，职责由上表实际对象承担。
+- `SyncAgent`、`LiveLink` 与摄像头感知仍是计划，Server 只有共享协议包，没有入口程序。
 
-### 3.2 单向数据流（状态模型）
+### 3.2 单向数据流（当前实现）
 
 ```
- 输入源                         Reducer                     输出
- ─────────                     ─────────                   ─────────
- 插件焦点请求    ─┐                                  ┌─> Stage 渲染（页面/叠层）
- 触摸/手势       ─┤   Intent ──> reduce(state, i) ──>├─> Effects：亮度、相机档位、帧率档位、主题
- 感知/传感器     ─┤          (纯函数，主线程)        ├─> 分发给插件：tos.on(...) 事件
- 播放器回调      ─┤                                  ├─> 回报：状态与指标（Server 在线时）
- 同步/实时消息   ─┘                                  └─> 持久化：最后画面快照
+传感器 / 触摸 → SensorController 的 Policy → Store.update{} → StateFlow → ThinkStage
+插件 page 请求 → RuntimeHost → DeckRouter / NavStack → Store.update{}
+插件 state 更新 → PluginRuntime.Callbacks → RendererObserver → 页面局部绑定
+播放器回调 → RuntimeHost → PluginRuntime 的 media 状态 / 事件
+设置变更 → RuntimeHost → SystemValues / SensorController / 舞台 / 插件 config 事件
 ```
+
+`PluginRuntime.host()` 只做 Back 应答记账和固定能力分派。61个宿主入口由9个私有能力对象处理：状态/存储/模块、设置、设备、导航、时间/本地化、天文、计时、媒体、网络；实例生命周期、权限检查实现、线程/挂起取消仍由原运行时持有，分支逻辑保留。能力对象每个运行时创建一次。
+
+`RuntimeObservers.kt` 将进程内通知分为 Renderer、Display、Kiosk、Navigation、StoragePermission、Diagnostic 六类；订阅者按所需接口注册。`RuntimeHost.Observer` 是 Activity 使用的聚合接口；初始目录/状态、亮度、方向、Kiosk通知保持原顺序，每次通知仍先取订阅者快照。
 
 ```kotlin
 data class DeviceState(
-    val attention: Attention,        // 有没有人、要不要亮
-    val deck: DeckState,             // 页面序列（均来自插件）与当前页、当前变体
-    val overlay: OverlayState,       // 通知/提示叠层队列
-    val link: LinkState,             // 与 Server 的连接：UNPAIRED / OFFLINE / ONLINE
-    val playback: PlaybackState,     // 播放器镜像
-    val clock: ClockState,           // 时间是否可信
-    val theme: Theme,                // LIGHT / DARK / NIGHT，环境光驱动（04 §1）
-    val orientation: Orientation,
-    val perf: PerfTier,              // 当前动效降级档位
+    val attention: Attention = Attention.AWAKE,
+    val deck: DeckState = DeckState(),
+    val overlay: OverlayState = OverlayState(),
+    val link: Link = Link.UNPAIRED,
+    val theme: Theme = Theme.DARK,
+    val orientation: Orientation = Orientation.LANDSCAPE,
+    val safeMode: Boolean = false,
 )
 ```
 
-- `Store` 用 `MutableStateFlow`，Reducer 只在主线程执行，**禁止在 Reducer 里做 IO**。
-- 副作用集中在 `Effects`：订阅状态的某一片段（`distinctUntilChanged`），例如 `attention` 变化 → 调亮度、切相机档位、切帧率档位、通知插件。
-- 插件的视图内容**不在** DeviceState 里：每个插件的状态由 PluginRuntime 持有，按变化的路径直接推给对应的 View（§3.7.4），避免一次插件更新触发整树 diff。
+- `Store` 用 `MutableStateFlow`；主线程调用 `update { old -> ... }`，没有独立的 `Reducer` 或 `Effects` 类。主题和注意力由纯 Kotlin Policy 决定，实际副作用由 `RuntimeHost`、观察者和各能力对象执行。
+- 插件内容不放入 DeviceState；按状态路径更新绑定。`MediaEngine` 保存播放状态，`TimeSync` 保存授时状态；DeviceState 没有 `playback`、`clock`、`perf` 字段。
+- `OverlayState` 目前只有可选 `message`；`Link` 保留协议状态，通知队列、实时连接、性能自动降档仍为计划。
+- 磁盘和网络工作放到工作线程，状态更新与 UI 在主线程。
 
-### 3.3 状态机：四条正交的轴 **[提议，替代旧版单一状态机]**
+### 3.3 状态机：四条正交的轴
 
 旧版把 IDLE/AWAKE/ACTIVE/ALERT 揉成一条状态机，会出现组合爆炸。拆成四条互不干扰的轴：
 
@@ -239,11 +238,11 @@ data class DeviceState(
 
 冲突规则：**用户最近 30s 内的本地操作优先于任何焦点请求**；ASLEEP 时焦点请求不唤醒屏幕（只有通知可以）；多个插件同时请求时按 manifest `priority` + 配置排序。
 
-#### ③ Overlay（叠层）—— 队列
+#### ③ Overlay（叠层）—— 队列（计划）
 
 `NONE` / `ALERT(queue)` / `TOAST` / `VOICE_HINT`。通知进入队列逐个展示，不打断页面本身。展示形态随 Attention 变化：AMBIENT/ASLEEP 时居中大图标 + 标题，提升到 AWAKE 亮度，数秒后收起；AWAKE/ENGAGED 时从顶部滑入卡片。夜间模式下通知同样走红色滤镜，只有 `level=urgent` 例外。
 
-#### ④ Link（与 Server 的连接）
+#### ④ Link（与 Server 的连接，通讯计划）
 
 `UNPAIRED` / `OFFLINE` / `ONLINE`。**只影响**同步、远程推送和一个可选的状态点（维护设置里开启才显示），不影响其它三条轴，也不影响任何插件的运行。
 
@@ -632,22 +631,22 @@ android/app/src/main/
     └── voice/                      VoiceUplink [可选]
 ```
 
-### 3.17 依赖
+### 3.17 依赖（按 `android/app/build.gradle.kts`）
 
-| 用途 | 库 | 说明 |
+| 用途 | 当前依赖 | 说明 |
 |---|---|---|
-| 协程 | kotlinx-coroutines-android | — |
-| 序列化 | kotlinx-serialization-json | 编译期生成，无反射 |
-| 网络 / WS | OkHttp 4.x | 含 WebSocket 与磁盘缓存 |
-| 播放 | Media3 ExoPlayer | 含 `TeeAudioProcessor` |
-| 动画 | Lottie 6.x | — |
-| 视觉 | MediaPipe Tasks Vision | 预编译 native 依赖；版本以实测含 `armeabi-v7a` 者为准 |
-| 脚本 | Lua 5.4（源码，NDK 编译） | 自己编译，天然只有 armeabi-v7a |
-| 图片 | 不引入 Coil/Glide **[提议]** | 照片集已裁好尺寸，自写轻量加载器（OkHttp + BitmapFactory + LruCache） |
+| 协程 | kotlinx-coroutines-android 1.10.2 | 纯 JVM/Android |
+| JSON | `org.json` | Android 自带；JVM 测试用 20240303 |
+| 网络 | OkHttp | Media3 的 okhttp 数据源传递引入；插件 HTTP 和媒体各自执行策略 |
+| 播放 | Media3 ExoPlayer 1.9.2 | HLS、DASH、RTSP、OkHttp 数据源，纯 Java |
+| 音频解码扩展 | Jellyfin media3-ffmpeg-decoder 1.9.0+1 | 含 armv7，GPLv3，可用 `-Pthinkos.ffmpeg=false` 关闭 |
+| 脚本 | Lua 5.4 源码 | NDK 编译为 armv7 `libtos.so` |
+| AirPlay 镜像 | playfair 源码 | NDK 编译为 armv7，GPLv3，见 ADR-043 |
+| 图片 | 自有 ImageLoader / BitmapFactory / LruCache | 没有 Coil / Glide |
+| 动画 | Canvas / View 属性动画 / Motion | 没有 Lottie 依赖，`assets/lottie/` 为空 |
+| 测试 | JUnit 4.13.2、org.json | 不打包到 APK |
 
-- 没有 DI 框架、没有 RxJava、没有 Compose、没有 WebView。
-- `compileSdk` 按依赖要求设置，`minSdk = targetSdk = 27` 不变。
-- 每加一个预编译依赖都要执行 `unzip -l xxx.aar | grep jni/`，确认含 `armeabi-v7a`。
+计划中的 kotlinx-serialization、Lottie、MediaPipe Tasks Vision 尚未引入；频谱、相机感知也未实现。没有 DI 框架、RxJava、Compose 或 WebView。当前 compileSdk 35、minSdk = targetSdk = 27；所有打包原生库只含 `armeabi-v7a`。新增预编译依赖须先检查 armv7 与许可证。
 
 ### 3.18 设置（settings/，ADR-017）
 
@@ -731,7 +730,7 @@ desired(device) = {
 
 - 用户改 `config.toml`、执行 `plugin add / update / remove`，或本地目录来源的文件变化 → registry 重新取回并校验 → `rev` 递增 → live 推 `nudge` → 设备拉取并对齐。
 - **加功能的路径**：`thinkos-server plugin add <git 仓库地址>`（或把目录放进本地来源）→ 设备自动收到并热加载。不重装 APK、不重启任何东西（`06-plugins.md` §12）。
-- APK 更新：Server 只下发并提示；安装需要用户在设备维护页确认（或人工 `adb install`），不做静默安装。
+- APK更新按`34-ota-and-plugin-registry.md` §4执行：Device Owner或已配置且实际具备静默资格的受限更新器支持静默安装，`update.auto_install`默认开启，满足安静时段及媒体/前台等门禁后才自动安装；关闭后等待用户点“立即安装”。两者均无时走Android确认。Server只是可选镜像/管理者，不能绕过目录验签与安装门禁。此处不宣称正式钥匙/来源端到端、安静时段全部分支已验收，实际范围见`36-task-list.md` OTA组。
 
 ### 4.4 Server 端服务（可选增强）
 

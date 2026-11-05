@@ -1,0 +1,124 @@
+{
+  "id": "icon-probe",
+  "name": "Icon probe",
+  "version": "1.0.0",
+  "api": 8,
+  "main": "main.lua",
+  "permissions": [],
+  "pages": [
+    {
+      "id": "tiles",
+      "title": "Icons",
+      "view": "views/tiles.json"
+    },
+    {
+      "id": "list",
+      "title": "Icon list",
+      "view": "views/list.json"
+    },
+    {
+      "id": "weather",
+      "title": "Weather",
+      "view": "views/weather.json"
+    },
+    {
+      "id": "weather-list",
+      "title": "Weather list",
+      "view": "views/weather-list.json"
+    }
+  ],
+  "widgets": [
+    {
+      "id": "wifi",
+      "view": "views/wifi.json"
+    },
+    {
+      "id": "wifi-off",
+      "view": "views/wifi-off.json"
+    },
+    {
+      "id": "volume",
+      "view": "views/volume.json"
+    },
+    {
+      "id": "volume-off",
+      "view": "views/volume-off.json"
+    },
+    {
+      "id": "brightness",
+      "view": "views/brightness.json"
+    },
+    {
+      "id": "tv",
+      "view": "views/tv.json"
+    },
+    {
+      "id": "radio",
+      "view": "views/radio.json"
+    },
+    {
+      "id": "cast",
+      "view": "views/cast.json"
+    },
+    {
+      "id": "apps",
+      "view": "views/apps.json"
+    },
+    {
+      "id": "settings",
+      "view": "views/settings.json"
+    },
+    {
+      "id": "clear-day",
+      "view": "views/clear-day.json"
+    },
+    {
+      "id": "clear-night",
+      "view": "views/clear-night.json"
+    },
+    {
+      "id": "partly-day",
+      "view": "views/partly-day.json"
+    },
+    {
+      "id": "partly-night",
+      "view": "views/partly-night.json"
+    },
+    {
+      "id": "cloud",
+      "view": "views/cloud.json"
+    },
+    {
+      "id": "fog",
+      "view": "views/fog.json"
+    },
+    {
+      "id": "rain",
+      "view": "views/rain.json"
+    },
+    {
+      "id": "shower",
+      "view": "views/shower.json"
+    },
+    {
+      "id": "snow",
+      "view": "views/snow.json"
+    },
+    {
+      "id": "thunder",
+      "view": "views/thunder.json"
+    },
+    {
+      "id": "sun",
+      "view": "views/sun.json"
+    },
+    {
+      "id": "moon",
+      "view": "views/moon.json"
+    },
+    {
+      "id": "unknown",
+      "view": "views/unknown.json"
+    }
+  ]
+}

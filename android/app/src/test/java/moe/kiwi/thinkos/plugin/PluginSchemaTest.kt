@@ -6,6 +6,58 @@ import org.junit.Test
 import org.junit.Assert.fail
 
 class PluginSchemaTest {
+    @Test fun timeSettingsRequireApiTenAndRejectAppearanceOrCustomSteps() {
+        val value = manifest().put("api", 10).put("settings", JSONObject("""{"at":{"type":"time","label":"时刻","default":"23:55"}}"""))
+        PluginSchema.validateManifest(value)
+        for (api in 1..9) rejected { PluginSchema.validateManifest(JSONObject(value.toString()).put("api", api)) }
+        for (bad in listOf("23:59", "24:00", "7:00", "12:00:00")) {
+            val copy = JSONObject(value.toString())
+            copy.getJSONObject("settings").getJSONObject("at").put("default", bad)
+            rejected { PluginSchema.validateManifest(copy) }
+        }
+        for ((name, extra) in listOf("step" to 1, "style" to "clock", "maxLength" to 5)) {
+            val copy = JSONObject(value.toString())
+            copy.getJSONObject("settings").getJSONObject("at").put(name, extra)
+            rejected { PluginSchema.validateManifest(copy) }
+        }
+    }
+    @Test fun formDescriptorIconsRequireApiTenAndRegisteredVectorsWithoutStyleParameters() {
+        val link = JSONObject("""{"key":"section:display","type":"link","label":"显示"}""")
+        PluginSchema.validateFormLink(link, 1)
+        link.put("icon", "monitor")
+        PluginSchema.validateFormLink(link, 10)
+        rejected { PluginSchema.validateFormLink(link, 9) }
+        for (icon in listOf<Any>("../monitor", "MONITOR", "not-registered", "", 7, JSONObject.NULL)) {
+            rejected { PluginSchema.validateFormLink(JSONObject(link.toString()).put("icon", icon), 10) }
+        }
+        rejected { PluginSchema.validateFormLink(JSONObject(link.toString()).put("color", "#ffffff"), 10) }
+        val nav = JSONObject("""{"items":[{"id":"display","label":"显示","icon":"monitor"}],"current":"display"}""")
+        PluginSchema.validateFormNavigation(nav, 10)
+        rejected { PluginSchema.validateFormNavigation(nav, 9) }
+        nav.getJSONArray("items").getJSONObject(0).remove("icon")
+        PluginSchema.validateFormNavigation(nav, 9)
+        rejected { PluginSchema.validateFormNavigation(nav, 8) }
+        nav.getJSONArray("items").getJSONObject(0).put("icon", "not-registered")
+        rejected { PluginSchema.validateFormNavigation(nav, 10) }
+    }
+
+    @Test fun panelUpdatePreviewRequiresApiTenAndUsesOnlyTheFixedTextComponent() {
+        val view = JSONObject("""{"layout":"panel","slots":{"update":{"type":"text","value":"已更新到 0.1.5","tap":"updates"}}}""")
+        PluginSchema.validateView(view, 10)
+        rejected { PluginSchema.validateView(view, 9) }
+        rejected { PluginSchema.validateView(JSONObject("""{"layout":"panel","slots":{"update":{"widget":"clock.now"}}}"""), 10) }
+    }
+    @Test fun systemUpdateDeclarationsNeedApiTenEvenBeforeRuntimeAuthorityChecks() {
+        val value = JSONObject("""{"id":"update-probe","name":"Updates","version":"0.1.0","api":10,"permissions":["system.update"]}""")
+        PluginSchema.validateManifest(value)
+        for (api in 1..9) rejected { PluginSchema.validateManifest(JSONObject(value.toString()).put("api", api)) }
+    }
+    @Test fun launcherRequiresApiNineAndTheDeclaredSystemCapability() {
+        val value = JSONObject("""{"id":"launcher-test","name":"Launcher","version":"1.0.0","api":9,"permissions":["system.apps"],"pages":[{"id":"main","title":"Apps","view":"views/main.json","roles":["launcher"]}]}""")
+        PluginSchema.validateManifest(value)
+        rejected { PluginSchema.validateManifest(JSONObject(value.toString()).put("api", 8)) }
+        rejected { PluginSchema.validateManifest(JSONObject(value.toString()).put("permissions", JSONArray())) }
+    }
     @Test fun aeroRequiresApiFiveAndKeepsOsOwnedAppearance() {
         val page = JSONObject("""{"layout":"aero","slots":{"windows":[{"widget":"clock.desktop"}]}}""")
         PluginSchema.validateView(page,5)
@@ -93,9 +145,65 @@ class PluginSchemaTest {
     }
 
     @Test fun rejectsNewApiAndPrivateFields() {
-        rejected { PluginSchema.validateManifest(manifest().put("api", 8)) }
+        rejected { PluginSchema.validateManifest(manifest().put("api", PluginSchema.API + 1)) }
         rejected { PluginSchema.validateManifest(manifest().put("privateBridge", true)) }
         rejected { PluginSchema.validateManifest(manifest().put("main", "../escape.lua")) }
+    }
+
+    @Test fun settingsWarningsAndPlaceholdersRequireApi9WhileLegacyHelpStillWorks() {
+        val fields = JSONObject("""{"cast":{"type":"bool","label":"Cast","default":false,"warn":"Anyone nearby can cast"},"url":{"type":"text","label":"Address","default":"","placeholder":"https://example.test"}}""")
+        PluginSchema.validateManifest(manifest().put("api", 9).put("settings", fields))
+        rejected { PluginSchema.validateManifest(manifest().put("api", 8).put("settings", fields)) }
+        PluginSchema.validateManifest(manifest().put("api", 1).put("settings", JSONObject("""{"old":{"type":"bool","label":"Old","default":false,"help":"Old third-party help"}}""")))
+    }
+
+    @Test fun theMusicPlayerVocabularyBelongsToApi8() {
+        val player = JSONObject("""{"layout":"focus","variants":[{"id":"cover","title":"Cover"},{"id":"queue","title":"Queue"}],"slots":{"hero":{"type":"nowplaying","style":"full","idle":"{{nowTitle}}","notice":"{{playNotice}}"}}}""")
+        PluginSchema.validateManifest(manifest().put("api", 8))
+        PluginSchema.validateView(player, 8)
+        rejected { PluginSchema.validateView(player, 7) }
+        val library = JSONObject("""{"layout":"focus","slots":{"over":{"type":"tabs","items":"{{tabs}}","current":"{{tab}}","tap":"tab"},"hero":{"type":"list","items":"{{items}}","current":"{{current}}","item":{"title":"{{.title}}"},"tap":"play"},"under":{"type":"nowplaying","style":"bar","idle":"{{footer}}"}}}""")
+        PluginSchema.validateView(library, 8)
+        rejected { PluginSchema.validateView(library, 7) }
+        // `current` on a list is API 8 on its own, and the components accept nothing the OS does not draw.
+        rejected { PluginSchema.validateView(JSONObject("""{"layout":"focus","slots":{"hero":{"type":"list","items":"{{items}}","current":2,"item":{"title":"{{.title}}"}}}}"""), 7) }
+        PluginSchema.validateView(JSONObject("""{"template":"glance","children":[{"type":"nowplaying","style":"card","idle":"Nothing playing"}]}"""), 8)
+        for (bad in listOf(
+            """{"type":"nowplaying","style":"huge"}""", """{"type":"nowplaying","style":"full","color":"#ff0000"}""",
+            """{"type":"nowplaying","tap":"x"}""", """{"type":"tabs"}""", """{"type":"tabs","items":"{{tabs}}","style":"pill"}""",
+        )) rejected { PluginSchema.validateView(JSONObject("""{"template":"glance","children":[$bad]}"""), 8) }
+    }
+
+    @Test fun formNavigationIsOptionalAndRequiresApiNine() {
+        val legacy = JSONObject("""{"layout":"form","slots":{"body":{"type":"form","path":"fields"}}}""")
+        PluginSchema.validateView(legacy, 1)
+        legacy.getJSONObject("slots").getJSONObject("body").put("nav", "settingsNav")
+        PluginSchema.validateView(legacy, 9)
+        for (api in 1..8) rejected { PluginSchema.validateView(legacy, api) }
+        legacy.getJSONObject("slots").getJSONObject("body").put("nav", JSONObject())
+        rejected { PluginSchema.validateView(legacy, 9) }
+    }
+
+    @Test fun withdrawnListFieldsAreRejectedAndGridKeepsItsExistingApi() {
+        for (property in listOf("image", "group")) {
+            val view = JSONObject("""{"layout":"focus","slots":{"hero":{"type":"list","items":"items","item":{"title":"{{.title}}"}}}}""")
+            view.getJSONObject("slots").getJSONObject("hero").getJSONObject("item").put(property, "{{.$property}}")
+            for (api in 2..9) rejected { PluginSchema.validateView(view, api) }
+        }
+        val grid = JSONObject("""{"layout":"focus","slots":{"hero":{"type":"grid","items":"items","item":{"title":"{{.title}}","image":"{{.image}}","icon":"apps"}}}}""")
+        PluginSchema.validateView(grid, 8)
+        PluginSchema.validateView(grid, 9)
+        rejected { PluginSchema.validateView(grid, 7) }
+    }
+
+    @Test fun theTelevisionViewBelongsToApi8AndTakesOnlyWhatTheOsDraws() {
+        val live = JSONObject("""{"layout":"stage","slots":{"stage":{"type":"tv","fit":"contain","channel":"{{tv}}","tap":"tv"}}}""")
+        PluginSchema.validateView(live, 8)
+        rejected { PluginSchema.validateView(live, 7) }
+        PluginSchema.validateView(JSONObject("""{"layout":"stage","slots":{"stage":{"type":"tv"}}}"""), 8)
+        for (bad in listOf(
+            """{"type":"tv","fit":"stretch"}""", """{"type":"tv","color":"#ff0000"}""", """{"type":"tv","channel":5}""", """{"type":"tv","tap":"not valid"}""",
+        )) rejected { PluginSchema.validateView(JSONObject("""{"layout":"stage","slots":{"stage":$bad}}"""), 8) }
     }
 
     @Test fun rejectsDuplicateIdsAndInvalidConfiguration() {

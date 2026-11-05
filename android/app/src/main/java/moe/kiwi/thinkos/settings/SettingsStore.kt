@@ -3,9 +3,30 @@ package moe.kiwi.thinkos.settings
 import org.json.JSONObject
 
 /** A group of settings: the system itself (`system`) or one plugin. */
-class SettingsScope(val id: String, val name: String, val fields: Map<String, SettingField>, val constraints: List<Pair<String, String>> = emptyList()) {
+class SettingsScope(
+    val id: String,
+    val name: String,
+    val fields: Map<String, SettingField>,
+    val constraints: List<Pair<String, String>> = emptyList(),
+    val sections: List<SettingSection> = emptyList(),
+    val related: List<String> = emptyList(),
+) {
+    init {
+        SettingDeclarations.validate(fields)
+        for ((first, second) in constraints) {
+            val a = requireNotNull(fields[first]); val b = requireNotNull(fields[second])
+            require(a.type == b.type && a.type in setOf(FieldType.NUMBER, FieldType.TIME)) { "constraint needs two numbers or two times" }
+            require(if (a.type == FieldType.TIME) a.default != b.default else (a.default as Number).toDouble() < (b.default as Number).toDouble()) { "constraint defaults conflict" }
+        }
+        require(sections.size <= 32 && sections.map { it.id }.toSet().size == sections.size) { "settings sections must be unique (at most 32)" }
+        require(id == SettingsStore.SYSTEM || sections.isEmpty()) { "sections belong to the system scope" }
+        for (field in fields.values) field.section?.let { section ->
+            require(id == SettingsStore.SYSTEM && sections.any { it.id == section }) { "settings.${field.key}: unknown section $section" }
+        }
+    }
     /** What the device's settings page lists. Hidden fields are still stored, validated and deliverable by the Server. */
     val visibleFields: List<SettingField> get() = fields.values.filter { !it.hidden }
+    val hasSettingsPage: Boolean get() = visibleFields.isNotEmpty() || related.isNotEmpty()
 }
 
 /** Durable bytes by name. The Android implementation writes through AtomicFile. */
@@ -40,6 +61,7 @@ class SettingsStore(
     private val listeners = mutableListOf<Listener>()
     private var rejected = emptyList<RejectedSetting>()
     private var writePending = false
+    private var revisionValue = 0L
 
     init {
         server = load("server.json")
@@ -55,10 +77,25 @@ class SettingsStore(
     @Synchronized fun addListener(listener: Listener) { listeners += listener }
     @Synchronized fun removeListener(listener: Listener) { listeners -= listener }
 
-    @Synchronized fun register(scope: SettingsScope) { scopes[scope.id] = scope }
-    @Synchronized fun unregister(id: String) { scopes.remove(id) }
+    @Synchronized fun register(scope: SettingsScope) {
+        if (scope.related.isNotEmpty()) SettingDeclarations.related(scope.related,
+            scopes[SYSTEM]?.visibleFields.orEmpty().filter { !it.secret }.map { it.key }.toSet())
+        advanceRevision()
+        scopes[scope.id] = scope
+        if (scope.id == SYSTEM && hasModeSettings()) migrateNightSetting()
+    }
+    @Synchronized fun unregister(id: String) {
+        if (scopes.containsKey(id)) { advanceRevision(); scopes.remove(id) }
+    }
     @Synchronized fun scope(id: String): SettingsScope? = scopes[id]
     @Synchronized fun scopes(): List<SettingsScope> = scopes.values.toList()
+
+    /** Process-local intent revision, observed under the same lock as writes.
+     * A successful same-value edit is a newer intent too. Never persisted. */
+    @Synchronized fun revision(): Long = revisionValue
+
+    /** All callers hold this store's monitor. Rejected validation/guards do not advance it. */
+    private fun advanceRevision() { revisionValue = Math.addExact(revisionValue, 1L) }
 
     // ---- reading -------------------------------------------------------------------------
 
@@ -66,6 +103,12 @@ class SettingsStore(
         val field = field(scope, key)
         return resolve(scope, field).value
     }
+
+    /** Migration checks the presence of a delivered or local value, not whether its default is zero. */
+    @Synchronized fun hasValue(scope: String, key: String): Boolean =
+        if (scope == SYSTEM && key == SystemSettings.Keys.THEME_NIGHT && hasModeSettings())
+            hasValue(scope, SystemSettings.Keys.REDSHIFT_TRIGGER)
+        else local.optJSONObject(scope)?.has(key) == true || server.optJSONObject(scope)?.has(key) == true
 
     /** Immutable copy of every effective value of [scope]. */
     @Synchronized fun snapshot(scope: String): Map<String, Any> {
@@ -81,6 +124,10 @@ class SettingsStore(
         scopes[scope]?.fields?.get(key) ?: throw SettingError("unknown", message = "unknown setting $scope.$key")
 
     private fun resolve(scope: String, field: SettingField): Resolved {
+        if (scope == SYSTEM && field.key == SystemSettings.Keys.THEME_NIGHT && hasModeSettings()) {
+            val current = resolve(scope, this.field(scope, SystemSettings.Keys.REDSHIFT_TRIGGER))
+            return Resolved(current.value != "off", current.overridden)
+        }
         stored(local, scope, field)?.let { return Resolved(it, true) }
         stored(server, scope, field)?.let { return Resolved(it, false) }
         return Resolved(field.default, false)
@@ -92,22 +139,58 @@ class SettingsStore(
         return try { field.validate(raw, sources) } catch (_: SettingError) { null }
     }
 
+    private fun hasModeSettings(): Boolean = scopes[SYSTEM]?.fields?.let {
+        SystemSettings.Keys.THEME_NIGHT in it && SystemSettings.Keys.REDSHIFT_TRIGGER in it
+    } == true
+
+    /** Consume each layer's old bool without changing local-over-Server precedence.
+     * A new value wins in its own layer; resetting it cannot resurrect the old bool. */
+    private fun migrateNightSetting() {
+        val old = field(SYSTEM, SystemSettings.Keys.THEME_NIGHT)
+        val trigger = field(SYSTEM, SystemSettings.Keys.REDSHIFT_TRIGGER)
+        var changed = false
+        for (layer in listOf(local, server)) layer.optJSONObject(SYSTEM)?.let { values ->
+            val legacy = stored(layer, SYSTEM, old) as? Boolean
+            if (legacy != null && stored(layer, SYSTEM, trigger) == null) {
+                values.put(trigger.key, trigger.validate(if (legacy) "sun" else "off", sources))
+                changed = true
+            }
+            if (values.has(old.key)) { values.remove(old.key); changed = true }
+            if (values.length() == 0) layer.remove(SYSTEM)
+        }
+        if (changed) markDirty()
+    }
+
     // ---- writing -------------------------------------------------------------------------
 
     /** Edits a value on the device. Throws [SettingError] with a user-facing reason. */
-    fun set(scope: String, key: String, value: Any?): Any {
-        return setMany(scope, mapOf(key to value)).getValue(key)
+    fun set(scope: String, key: String, value: Any?, beforeWrite: ((Map<String, Any>) -> Unit)? = null): Any {
+        return setMany(scope, mapOf(key to value), beforeWrite).getValue(key)
     }
 
     /** Validate a compound edit before writing any part of it; listeners see one coherent snapshot. */
-    fun setMany(scope: String, values: Map<String, Any?>): Map<String, Any> {
+    fun setMany(scope: String, values: Map<String, Any?>, beforeWrite: ((Map<String, Any>) -> Unit)? = null): Map<String, Any> {
         if (values.isEmpty()) return emptyMap()
+        if (scope == SYSTEM && SystemSettings.Keys.THEME_NIGHT in values && synchronized(this) { hasModeSettings() }) {
+            val legacy = synchronized(this) { field(scope, SystemSettings.Keys.THEME_NIGHT).validate(values[SystemSettings.Keys.THEME_NIGHT], sources) as Boolean }
+            val translated = values.toMutableMap().apply {
+                remove(SystemSettings.Keys.THEME_NIGHT)
+                if (!containsKey(SystemSettings.Keys.REDSHIFT_TRIGGER)) put(SystemSettings.Keys.REDSHIFT_TRIGGER, if (legacy) "sun" else "off")
+            }
+            val result = setMany(scope, translated, beforeWrite)
+            return values.keys.associateWith { if (it == SystemSettings.Keys.THEME_NIGHT) get(scope, it) else result.getValue(it) }
+        }
         val changed: Map<String, Any>
         synchronized(this) {
             changed = values.mapValues { (key, value) -> field(scope, key).validate(value, sources) }
             val definition = scopes.getValue(scope)
             for ((low, high) in definition.constraints) {
                 if (low !in changed && high !in changed) continue
+                if (definition.fields.getValue(low).type == FieldType.TIME) {
+                    if ((changed[low] ?: get(scope, low)) == (changed[high] ?: get(scope, high)))
+                        throw SettingError("time_window", mapOf("key" to if (low in changed) high else low), "start and end must differ")
+                    continue
+                }
                 val a = (changed[low] ?: get(scope, low)) as Number
                 val b = (changed[high] ?: get(scope, high)) as Number
                 if (a.toDouble() >= b.toDouble()) {
@@ -117,6 +200,10 @@ class SettingsStore(
                         if (lowChanged) "must be below $high" else "must be above $low")
                 }
             }
+            // A public UI write may require native confirmation. Validation and
+            // compound constraints finish first; refusal leaves every key unchanged.
+            beforeWrite?.invoke(changed)
+            advanceRevision()
             val layer = local.optJSONObject(scope) ?: JSONObject().also { local.put(scope, it) }
             for ((key, value) in changed) {
                 val field = field(scope, key)
@@ -131,11 +218,28 @@ class SettingsStore(
     }
 
     /** Clears device edits: one key, or a whole scope when [key] is null. */
-    fun reset(scope: String, key: String? = null) {
+    fun reset(scope: String, key: String? = null, beforeWrite: ((Map<String, Any>) -> Unit)? = null) {
+        if (scope == SYSTEM && key == SystemSettings.Keys.THEME_NIGHT && synchronized(this) { hasModeSettings() }) {
+            reset(scope, SystemSettings.Keys.REDSHIFT_TRIGGER, beforeWrite)
+            return
+        }
         val keys: Set<String>
         synchronized(this) {
             val layer = local.optJSONObject(scope) ?: return
+            for ((first, second) in scopes.getValue(scope).constraints) {
+                if (field(scope, first).type != FieldType.TIME || (key != null && key != first && key != second)) continue
+                fun afterReset(name: String): Any = if (key == null || key == name) stored(server, scope, field(scope, name)) ?: field(scope, name).default else get(scope, name)
+                if (afterReset(first) == afterReset(second)) throw SettingError("time_window", message = "start and end must differ")
+            }
             keys = if (key == null) layer.keys().asSequence().toSet() else setOf(key).filter { layer.has(it) }.toSet()
+            // Clearing a local false can reveal a delivered true. Inspect the
+            // actual post-reset values before removing any part of this scope.
+            // Retired local keys still clear/notify normally; they have no current
+            // effective value and must not block a whole-scope reset.
+            if (keys.isNotEmpty()) beforeWrite?.invoke(keys.filter { it in scopes.getValue(scope).fields }.associateWith { name ->
+                stored(server, scope, field(scope, name)) ?: field(scope, name).default
+            })
+            if (keys.isNotEmpty()) advanceRevision()
             if (key == null) local.remove(scope) else { layer.remove(key); if (layer.length() == 0) local.remove(scope) }
             if (keys.isNotEmpty()) markDirty()
         }
@@ -145,6 +249,7 @@ class SettingsStore(
     fun resetAll() {
         val before = synchronized(this) {
             val scopesWithEdits = local.keys().asSequence().associateWith { id -> local.getJSONObject(id).keys().asSequence().toSet() }
+            advanceRevision()
             local = JSONObject()
             markDirty()
             scopesWithEdits
@@ -175,10 +280,41 @@ class SettingsStore(
                     }
                 }
             }
+            // Old Server documents keep working, but never reintroduce the consumed bool.
+            if (hasModeSettings()) next.optJSONObject(SYSTEM)?.let { incoming ->
+                val legacy = incoming.opt(SystemSettings.Keys.THEME_NIGHT) as? Boolean
+                if (legacy != null && !incoming.has(SystemSettings.Keys.REDSHIFT_TRIGGER))
+                    incoming.put(SystemSettings.Keys.REDSHIFT_TRIGGER, if (legacy) "sun" else "off")
+                incoming.remove(SystemSettings.Keys.THEME_NIGHT)
+                if (incoming.length() == 0) next.remove(SYSTEM)
+            }
+            // A time window may cross midnight; only equal endpoints are invalid. Reject
+            // the pair together, including an update that would clear a local override.
+            for (definition in scopes.values) for ((first, second) in definition.constraints) {
+                if (definition.fields.getValue(first).type != FieldType.TIME) continue
+                val incoming = next.optJSONObject(definition.id)
+                val previous = server.optJSONObject(definition.id)
+                fun base(name: String): Any = incoming?.opt(name) ?: definition.fields.getValue(name).default
+                fun effective(name: String): Any {
+                    val replaced = incoming?.has(name) == true && !same(previous?.opt(name), incoming.get(name))
+                    return (if (replaced) null else stored(local, definition.id, definition.fields.getValue(name))) ?: base(name)
+                }
+                if (base(first) == base(second) || effective(first) == effective(second)) {
+                    val restored = incoming ?: JSONObject().also { next.put(definition.id, it) }
+                    for (name in listOf(first, second)) {
+                        restored.remove(name)
+                        previous?.opt(name)?.let { restored.put(name, it) }
+                        problems += RejectedSetting(definition.id, name, "start and end must differ")
+                    }
+                    if (restored.length() == 0) next.remove(definition.id)
+                }
+            }
             // Values for scopes that are not registered yet (plugin still loading) are kept untouched.
             for (id in server.keys()) if (scopes[id] == null) next.put(id, server.getJSONObject(id))
-            for (id in next.keys()) {
-                val incoming = next.getJSONObject(id)
+            advanceRevision()
+            val changedScopes = server.keys().asSequence().toSet() + next.keys().asSequence().toSet()
+            for (id in changedScopes) {
+                val incoming = next.optJSONObject(id) ?: JSONObject()
                 val previous = server.optJSONObject(id)
                 for (key in incoming.keys()) {
                     if (!same(previous?.opt(key), incoming.get(key))) {

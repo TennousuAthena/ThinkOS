@@ -1,14 +1,21 @@
 {
   "layout": "focus",
+  "variants": [
+    {
+      "id": "cover",
+      "title": "Cover"
+    },
+    {
+      "id": "queue",
+      "title": "Queue"
+    }
+  ],
   "slots": {
     "hero": {
-      "children": [
-        { "type": "text", "style": "title", "value": "{{media.title}}" },
-        { "type": "text", "style": "caption", "value": "{{media.artist}}" },
-        { "type": "seekbar" },
-        { "type": "controls", "mode": "queue" }
-      ]
-    },
-    "under": { "type": "text", "style": "caption", "value": "{{playNotice}}" }
+      "type": "nowplaying",
+      "style": "full",
+      "idle": "{{nowTitle}}",
+      "notice": "{{playNotice}}"
+    }
   }
 }

@@ -16,13 +16,20 @@ android/app/src/main/assets/plugins/
 android/local.properties
 *.apk
 *.aab
+# Generated upstream source attachment; keep its hashes and manifests reviewable.
+artifacts/lic/LIC-04/*.tar.gz
 *.so
 *.o
 
 # 签名材料与密钥（绝不提交）
 *.jks
 *.keystore
+keystore.properties
+*.p12
+*.key
 *.pem
+# Public Mozilla CA roots that the update transport bundles (certificates only, no key material).
+!android/app/src/main/resources/moe/kiwi/thinkos/update/roots.pem
 .env
 .env.*
 

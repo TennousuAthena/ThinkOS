@@ -2,6 +2,8 @@
 
 > **2026-11-01 补记**：本文的媒体接口、`media` 状态、`video` / `controls` / `seekbar`、HLS / DASH、`player` 插件已按另一份计划实现，见 `27-streaming.md` 与 ADR-030（API 7）。**没有实现的部分仍以本文为准**：`nowplaying` 版式、歌词、频谱（SpectrumTap）、`list.current`、封面主色 `mood`、`tos.audio` 系统音量。下面保留 2026-10-30 的原文。
 
+> **2026-11-02 补记**：音频页的封面、队列变体、音量条、资料库迷你条、首页卡片和 `list.current` 已用一个 OS 组件 `nowplaying` 实现（API 8，ADR-036，见 `30-player-ui.md`），没有照本文做 `nowplaying` 版式。歌词、频谱、`mood` 背景染色、嵌入封面仍以本文为准。
+
 > 2026-10-30。**这是策划与讨论稿，没有改动任何实现代码。** 新增的只有本文，以及 `figures/player/` 下的 HTML 原型和 19 张截图。
 > 标记：**已核对** = 读过代码/文档，或实际发过请求、跑过命令；**提议** = 我的设计，可以推翻；**待确认** = 需要用户决定（§13）；**未核对** = 推断，开工前先验证。
 > 先读：`AGENTS.md` → `14-handoff.md` §D → `08-decisions.md` ADR-022 → `21-gallery-handoff.md`（图片管线与 carousel 的做法是本文的样板）→ `06-plugins.md` §4 / §6 → 本文。

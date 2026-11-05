@@ -1,5 +1,6 @@
 package moe.kiwi.thinkos.ui.form
 
+import moe.kiwi.thinkos.ui.Stroke
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
@@ -70,6 +71,7 @@ internal class SliderView(context: Context) : View(context) {
     private var current = 0.0
     private var committed = 0.0
     private var tracking = false
+    val isTracking: Boolean get() = tracking
     private var downX = 0f
     private var downY = 0f
     private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
@@ -82,6 +84,7 @@ internal class SliderView(context: Context) : View(context) {
         }
     var onPreview: (Double) -> Unit = {}
     var onCommit: (Double) -> Unit = {}
+    var onCancel: () -> Unit = {}
     private var dragging = false
 
     init { importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO }
@@ -113,7 +116,7 @@ internal class SliderView(context: Context) : View(context) {
         val cy = height / 2f
         val left = inset
         val right = width - inset
-        val track = 4 * dp
+        val track = Stroke.TRACK * dp
         paint.color = palette.divider
         canvas.drawRoundRect(RectF(left, cy - track / 2, right, cy + track / 2), track, track, paint)
         val f = fraction()
@@ -161,10 +164,12 @@ internal class SliderView(context: Context) : View(context) {
         current = committed
         parent?.requestDisallowInterceptTouchEvent(false)
         onPreview(current)
+        onCancel()
         invalidate()
     }
 
     override fun onDetachedFromWindow() { cancelTracking(); super.onDetachedFromWindow() }
+    fun cancelGesture() = cancelTracking()
 
     private fun update(x: Float) {
         val next = valueAt(x)

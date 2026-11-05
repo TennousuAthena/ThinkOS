@@ -72,7 +72,7 @@ object PlaceSearch {
             if (name.isEmpty() || latitude !in -90.0..90.0 || longitude !in -180.0..180.0 ||
                 elevation !in -500.0..10_000.0 || timezone.isEmpty()) return@mapNotNull null
             val detail = listOf("admin1", "admin2", "admin3", "country")
-                .map { clean(row.optString(it)) }.filter { it.isNotEmpty() && it != name }.distinct().joinToString(" · ")
+                .map { clean(row.optString(it)) }.filter { it.isNotEmpty() && it != name }.distinct().joinToString(", ")
             PlaceResult(DeviceLocation(name, latitude, longitude, elevation, timezone, "manual"), detail)
         }
     }

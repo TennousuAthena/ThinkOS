@@ -1,0 +1,214 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "state.json",
+  "title": "RegistryState",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "disabled",
+    "installed",
+    "blocked"
+  ],
+  "properties": {
+    "schema": {
+      "type": "integer",
+      "const": 1
+    },
+    "disabled": {
+      "type": "boolean"
+    },
+    "installed": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    },
+    "blocked": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "$ref": "#/$defs/block"
+      }
+    }
+  },
+  "$defs": {
+    "previous": {
+      "title": "RegistryPrevious",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "digest",
+        "commit",
+        "repo",
+        "tier",
+        "name",
+        "confirmed"
+      ],
+      "properties": {
+        "version": {
+          "type": "string",
+          "maxLength": 48,
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[A-Za-z0-9.-]+)?$"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "repo": {
+          "type": "string",
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+        },
+        "tier": {
+          "type": "string",
+          "enum": [
+            "official",
+            "reviewed",
+            "community"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "confirmed": {
+          "type": "array",
+          "maxItems": 7,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "maxLength": 40,
+            "enum": [
+              "network",
+              "alert",
+              "media",
+              "library",
+              "presence",
+              "server",
+              "location"
+            ]
+          }
+        }
+      }
+    },
+    "record": {
+      "title": "RegistryInstalled",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "digest",
+        "commit",
+        "repo",
+        "tier",
+        "name",
+        "confirmed",
+        "auto",
+        "enabled",
+        "trial"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "version": {
+          "type": "string",
+          "maxLength": 48,
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[A-Za-z0-9.-]+)?$"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "repo": {
+          "type": "string",
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+        },
+        "tier": {
+          "type": "string",
+          "enum": [
+            "official",
+            "reviewed",
+            "community"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "confirmed": {
+          "type": "array",
+          "maxItems": 7,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "maxLength": 40,
+            "enum": [
+              "network",
+              "alert",
+              "media",
+              "library",
+              "presence",
+              "server",
+              "location"
+            ]
+          }
+        },
+        "auto": {
+          "type": "boolean"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "trial": {
+          "type": "boolean"
+        },
+        "error": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "previous": {
+          "$ref": "#/$defs/previous"
+        }
+      }
+    },
+    "block": {
+      "title": "RegistryBlocked",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "digest",
+        "reason"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 160
+        }
+      }
+    }
+  }
+}

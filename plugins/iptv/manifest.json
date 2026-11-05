@@ -1,0 +1,164 @@
+{
+  "id": "iptv",
+  "name": "@name",
+  "version": "0.3.0",
+  "api": 9,
+  "main": "main.lua",
+  "permissions": [
+    "media",
+    "network"
+  ],
+  "settings": {
+    "source_1": {
+      "type": "text",
+      "label": "@setting.source_1",
+      "default": "https://guovin.github.io/iptv-api/result.m3u",
+      "maxLength": 1024,
+      "group": "@group.sources",
+      "placeholder": "@placeholder.source",
+      "level": "normal"
+    },
+    "source_2": {
+      "type": "text",
+      "label": "@setting.source_2",
+      "default": "",
+      "maxLength": 1024,
+      "group": "@group.sources",
+      "placeholder": "@placeholder.source",
+      "level": "normal",
+      "depends": {
+        "key": "source_1",
+        "not": ""
+      }
+    },
+    "source_3": {
+      "type": "text",
+      "label": "@setting.source_3",
+      "default": "",
+      "maxLength": 1024,
+      "group": "@group.sources",
+      "placeholder": "@placeholder.source",
+      "level": "normal",
+      "depends": {
+        "key": "source_2",
+        "not": ""
+      }
+    },
+    "source_4": {
+      "type": "text",
+      "label": "@setting.source_4",
+      "default": "",
+      "maxLength": 1024,
+      "group": "@group.sources",
+      "placeholder": "@placeholder.source",
+      "level": "normal",
+      "depends": {
+        "key": "source_3",
+        "not": ""
+      }
+    },
+    "epg_url": {
+      "type": "text",
+      "label": "@setting.epg_url",
+      "default": "https://api.cntv.cn/epg/epginfo",
+      "maxLength": 1024,
+      "group": "@group.guide",
+      "placeholder": "@placeholder.epg_url",
+      "level": "advanced"
+    },
+    "epg_zone": {
+      "type": "text",
+      "label": "@setting.epg_zone",
+      "default": "",
+      "maxLength": 64,
+      "group": "@group.guide",
+      "placeholder": "@placeholder.epg_zone",
+      "level": "advanced"
+    },
+    "test": {
+      "type": "bool",
+      "label": "@setting.test",
+      "default": true,
+      "group": "@group.lines",
+      "level": "advanced"
+    },
+    "test_gap": {
+      "type": "number",
+      "label": "@setting.test_gap",
+      "default": 10,
+      "min": 3,
+      "max": 600,
+      "step": 1,
+      "unit": "s",
+      "group": "@group.lines",
+      "level": "advanced"
+    },
+    "cooldown": {
+      "type": "number",
+      "label": "@setting.cooldown",
+      "default": 10,
+      "min": 1,
+      "max": 720,
+      "step": 1,
+      "unit": "min",
+      "group": "@group.lines",
+      "level": "advanced"
+    },
+    "recheck": {
+      "type": "number",
+      "label": "@setting.recheck",
+      "default": 12,
+      "min": 1,
+      "max": 168,
+      "step": 1,
+      "unit": "h",
+      "group": "@group.lines",
+      "level": "advanced"
+    }
+  },
+  "pages": [
+    {
+      "id": "channels",
+      "title": "@page.channels",
+      "view": "views/channels.json"
+    },
+    {
+      "id": "live",
+      "title": "@page.live",
+      "view": "views/live.json",
+      "live": true
+    }
+  ],
+  "commands": [
+    {
+      "id": "next",
+      "phrases": [
+        "channel up"
+      ]
+    },
+    {
+      "id": "prev",
+      "phrases": [
+        "channel down"
+      ]
+    }
+  ],
+  "apps": [
+    {
+      "id": "tv",
+      "page": "channels",
+      "title": "@app.tv",
+      "icon": "tv"
+    }
+  ],
+  "widgets": [
+    {
+      "id": "tile",
+      "view": "views/tile.json",
+      "opens": "channels"
+    }
+  ],
+  "related": [
+    "media.public_http"
+  ]
+}

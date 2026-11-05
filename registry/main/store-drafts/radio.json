@@ -1,0 +1,1 @@
+{"name":{"zh-Hans":"电台","en":"Radio"},"summary":{"zh-Hans":"收听网络电台","en":"Listen to internet radio"},"author":"TennousuAthena","license":"MIT","tags":["media","radio"],"why":{"media":{"zh-Hans":"播放电台音频","en":"Play radio audio"},"network":{"zh-Hans":"读取电台列表与播放来源","en":"Read station lists and streams"}}}

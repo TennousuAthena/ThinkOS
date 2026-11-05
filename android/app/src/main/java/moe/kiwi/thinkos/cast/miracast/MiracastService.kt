@@ -71,6 +71,7 @@ internal class MiracastService(
     private val player: EngineCastPlayer,
     private val deviceName: () -> String,
     private val log: (String) -> Unit,
+    private val onAvailabilityChanged: () -> Unit = {},
 ) {
     private class Active(val sink: WfdSink, val socket: Socket, val source: MirrorSource, val rtp: RtpReceiver) {
         @Volatile var shown = false
@@ -81,7 +82,10 @@ internal class MiracastService(
     private var enabled = false
     private var maintenance: ScheduledFuture<*>? = null
     private var receiver: BroadcastReceiver? = null
-    private var available: Boolean? = null
+    private val availability = MiracastAvailability({ action -> main.post { action() } }, onAvailabilityChanged)
+    private val available: Boolean? get() = availability.value
+    /** Whether the system module answered the last time it was asked; null before the first answer or while Miracast is off. */
+    val moduleAvailable: Boolean? get() = available
     @Volatile private var active: Active? = null
     @Volatile private var dialing = false
     @Volatile private var generation = 0
@@ -113,11 +117,11 @@ internal class MiracastService(
     private fun disable() {
         if (!enabled) return
         enabled = false
+        availability.set(null) // Revoke old queued answers before teardown can block on IO.
         maintenance?.cancel(false); maintenance = null
         unregister()
         end("disabled")
         control.sinkOff()
-        available = null
         log("Miracast is off")
     }
 
@@ -127,15 +131,15 @@ internal class MiracastService(
         val status = control.status()
         if (status == null) {
             if (available != false) log("Miracast: the ThinkOS Cast system module is not running (see system/README.md)")
-            available = false
+            availability.set(false)
             return
         }
         val name = WfdControl.p2pName(deviceName())
         if (!status.sinkOn || status.name != name || !status.wpaUp || status.element.isEmpty() || status.port != WfdControl.CONTROL_PORT) {
             val reply = control.sinkOn(WfdControl.CONTROL_PORT, name)
             if (reply.ok) log("Miracast: visible as \"$name\"") else if (available != false || reply is WfdReply.Failed) log("Miracast: the system module answered $reply")
-            available = reply.ok
-        } else available = true
+            availability.set(reply.ok)
+        } else availability.set(true)
     }
 
     // ---- the Wi-Fi Direct group -----------------------------------------------------------------------------------------------

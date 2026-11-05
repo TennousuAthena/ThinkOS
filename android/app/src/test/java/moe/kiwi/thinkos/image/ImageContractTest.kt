@@ -94,6 +94,13 @@ class ImageContractTest {
         assertNull(sequence.adjacent(1))
     }
 
+    @Test fun appIconsNeedGrantedSystemAuthorityAndAcceptOnlyPackageNames() {
+        assertEquals(ImageSource.AppIcon("com.example.reader"), ImageSource.parse("app:com.example.reader", setOf("system.apps")))
+        assertThrows(IllegalArgumentException::class.java) { ImageSource.parse("app:com.example.reader", setOf("library", "network")) }
+        for (bad in listOf("app:", "app:../reader", "app:com.example/Activity", "app:com.example?secret=1", "app:com.example#fragment"))
+            assertThrows(bad, IllegalArgumentException::class.java) { ImageSource.parse(bad, setOf("system.apps")) }
+    }
+
     @Test fun refreshReorderRemovalDuplicatesAndFailureSkippingUseStableIds() {
         val sequence = PhotoSequence()
         val a = Photo("a", "/a"); val b = Photo("b", "/b"); val c = Photo("c", "/c")

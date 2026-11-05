@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"cache.json","title":"RegistryCache","type":"object","additionalProperties":false,"required":["schema","document","signature"],"properties":{"schema":{"type":"integer","const":1},"document":{"type":"string","minLength":1,"maxLength":1398104},"signature":{"type":"string","minLength":1,"maxLength":1368}}}

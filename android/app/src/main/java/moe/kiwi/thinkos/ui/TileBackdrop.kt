@@ -7,6 +7,7 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PixelFormat
 import android.graphics.Rect
+import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.drawable.Drawable
 
@@ -31,6 +32,7 @@ internal class TileBackdrop(val variant: Variant) : Drawable() {
     private val ribbonB = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0x06ffffff }
     private val pathA = Path()
     private val pathB = Path()
+    private var level = 255
 
     override fun onBoundsChange(bounds: Rect) {
         val w = bounds.width().toFloat(); val h = bounds.height().toFloat()
@@ -44,13 +46,21 @@ internal class TileBackdrop(val variant: Variant) : Drawable() {
 
     override fun draw(canvas: Canvas) {
         if (bounds.isEmpty) return
+        // Only an app opening or closing fades the backdrop (AppTransition); at rest it is drawn straight into the display list.
+        val saved = if (level < 255) canvas.saveLayerAlpha(RectF(bounds), level) else -1
         canvas.drawRect(bounds, fill)
         canvas.drawPath(pathA, ribbonA)
         canvas.drawPath(pathB, ribbonB)
+        if (saved >= 0) canvas.restoreToCount(saved)
     }
 
-    override fun setAlpha(alpha: Int) = Unit
+    override fun setAlpha(alpha: Int) {
+        if (level == alpha) return
+        level = alpha
+        invalidateSelf()
+    }
+    override fun getAlpha(): Int = level
     override fun setColorFilter(filter: ColorFilter?) = Unit
     @Deprecated("Required by Drawable", ReplaceWith("PixelFormat.OPAQUE"))
-    override fun getOpacity() = PixelFormat.OPAQUE
+    override fun getOpacity() = if (level < 255) PixelFormat.TRANSLUCENT else PixelFormat.OPAQUE
 }

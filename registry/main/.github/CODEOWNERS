@@ -1,0 +1,4 @@
+# Enable required owner reviews when creating the real registry.
+/official-allowlist.json @TennousuAthena
+/.github/ @TennousuAthena
+/approvals.json @TennousuAthena

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "module-pending.json",
+  "title": "ModuleUpdatePending",
+  "description": "Private optional-updater transaction. Raw signed catalog/manifest pairs are separately retained unchanged and reauthenticated before use. Operation is committed BEFORE sending a mutating request; unresolved operations must never be blindly repeated.",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema", "id", "root_id", "previous_root_id", "catalog_digest", "channel", "from", "to", "mode", "phase", "operation", "selected", "staged", "created", "attempts", "max_attempts", "health_ms", "poll_ms"],
+  "properties": {
+    "schema": {"type": "integer", "const": 1},
+    "id": {"type": "string", "pattern": "^[a-f0-9]{32}$", "minLength": 32, "maxLength": 32},
+    "root_id": {"type": "string", "pattern": "^(?:[a-f0-9]{32})?$", "maxLength": 32},
+    "previous_root_id": {"type": "string", "pattern": "^(?:[a-f0-9]{32})?$", "maxLength": 32},
+    "catalog_digest": {"$ref": "pending.json#/properties/catalog_digest"},
+    "channel": {"$ref": "pending.json#/properties/channel"},
+    "from": {"$ref": "pending.json#/$defs/apk"},
+    "to": {"$ref": "pending.json#/$defs/apk"},
+    "mode": {"$ref": "pending.json#/properties/mode"},
+    "phase": {"type": "string", "enum": ["PREPARED", "ACTIVE", "TRIAL", "HEALTHY_PENDING", "COMPLETE", "CANCELLED", "FAILED", "UNKNOWN"]},
+    "operation": {"type": "string", "enum": ["", "BEGIN", "STAGE", "INSTALL_APK", "REBOOT", "HEALTHY", "ROLLBACK"]},
+    "operation_id": {"type": "string", "maxLength": 64},
+    "selected": {"type": "array", "maxItems": 7, "items": {"title": "ModuleUpdateTarget", "type": "object", "additionalProperties": false, "required": ["id", "code"], "properties": {
+      "id": {"$ref": "catalog.json#/$defs/module/properties/id"}, "code": {"$ref": "catalog.json#/$defs/module/properties/code"}
+    }}},
+    "staged": {"type": "array", "maxItems": 7, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 64}},
+    "created": {"$ref": "pending.json#/$defs/time"},
+    "attempts": {"$ref": "pending.json#/properties/attempts"},
+    "max_attempts": {"$ref": "pending.json#/properties/max_attempts"},
+    "health_ms": {"$ref": "pending.json#/properties/health_ms"},
+    "poll_ms": {"type": "integer", "format": "int64", "minimum": 1000, "maximum": 60000},
+    "reboot_boot": {"type": "integer", "format": "int64", "minimum": 0, "maximum": 9223372036854775807},
+    "trial_id": {"$ref": "pending.json#/properties/trial_id"},
+    "trial_started": {"$ref": "pending.json#/$defs/time"},
+    "reason": {"type": "string", "maxLength": 128},
+    "feature": {"type": "string", "enum": ["miracast"], "description": "Final native-touch consent committed with PREPARED, never by feature download. Before the first BEGIN the app must enable and flush this schema setting; ordinary updates omit this field."}
+  }
+}

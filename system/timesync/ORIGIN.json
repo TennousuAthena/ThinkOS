@@ -1,0 +1,10 @@
+{
+  "source": "Owner-authored timesync-v1.0.zip, documented in docs/19-provisioning-for-agent.md",
+  "archive_sha256": "d9dc4e6fa17371aeffdc5acf3a55ccce19b0d835fc784880687b16912a05d28c",
+  "author": "takuenn",
+  "license": "MIT (project-authored code)",
+  "unmodified_files": {
+    "module.prop": "491c6943d8b04fd03799253e4865a4357c8e686248b0b3391ddc8f87f027b488",
+    "service.sh": "f4da4b74aae31e3b99f3b95d534a3ccc78796e5dbba8577ca52d6428a2a75436"
+  }
+}

@@ -1,6 +1,8 @@
 object PluginSchema {
     const val API = @@API@@
     private val renderApis by lazy { JSONObject(@@RENDER_APIS@@) }
+    // Generated from system.json, so install validation also works before plugins are started.
+    private val relatedKeys = setOf(@@RELATED_KEYS@@)
     private val documents by lazy { mapOf(
 @@SCHEMAS@@
     ) }
@@ -12,9 +14,30 @@ object PluginSchema {
         validate(value, documents.getValue("catalog.json"), "catalog.json", "catalog", 0)
     }
 
+    fun formIconNames(): Set<String> = documents.getValue("layouts.json").getJSONObject("\$defs")
+        .getJSONObject("formIcon").getJSONArray("enum").let { names ->
+            (0 until names.length()).map { names.getString(it) }.toSet()
+        }
+
+    fun validateFormLink(value: JSONObject, api: Int = API) {
+        require(api in 1..API) { "unsupported plugin API" }
+        validate(value, documents.getValue("layouts.json").getJSONObject("\$defs").getJSONObject("formLink"), "layouts.json", "formLink", 0)
+        require(!value.has("confirm") || renderApis.getJSONObject("formFields").getInt("confirm") <= api) { "form confirmation requires a newer plugin API" }
+        require(!value.has("icon") || renderApis.getJSONObject("formFields").getInt("link.icon") <= api) { "form link icon requires a newer plugin API" }
+    }
+
+    fun validateFormNavigation(value: JSONObject, api: Int = API) {
+        require(api in 1..API) { "unsupported plugin API" }
+        require(renderApis.getJSONObject("formFields").getInt("nav") <= api) { "form navigation requires a newer plugin API" }
+        validate(value, documents.getValue("layouts.json").getJSONObject("\$defs").getJSONObject("formNav"), "layouts.json", "formNav", 0)
+        val items = value.getJSONArray("items")
+        for (index in 0 until items.length()) require(!items.getJSONObject(index).has("icon") ||
+            renderApis.getJSONObject("formFields").getInt("nav.items.icon") <= api) { "form navigation icon requires a newer plugin API" }
+    }
+
     fun validateManifest(value: JSONObject) {
         validate(value, documents.getValue("manifest.json"), "manifest.json", "manifest", 0)
-        for (name in listOf("pages", "widgets", "commands")) {
+        for (name in listOf("pages", "widgets", "commands", "apps")) {
             val entries = value.optJSONArray(name) ?: continue
             val ids = HashSet<String>()
             for (i in 0 until entries.length()) require(ids.add(entries.getJSONObject(i).getString("id"))) { "$name: duplicate id" }
@@ -22,7 +45,11 @@ object PluginSchema {
         require(value.getString("id") != "system") { "manifest.id: 'system' is reserved for the OS's own settings" }
         value.optJSONObject("settings")?.let { declared ->
             // Semantic rules live in one place, shared with the runtime store.
-            for (key in declared.keys()) moe.kiwi.thinkos.settings.SettingField.parse(key, declared.getJSONObject(key), false)
+            val fields = declared.keys().asSequence().associateWith { key -> moe.kiwi.thinkos.settings.SettingField.parse(key, declared.getJSONObject(key), false) }
+            moe.kiwi.thinkos.settings.SettingDeclarations.validate(fields)
+        }
+        value.optJSONArray("related")?.let { keys ->
+            moe.kiwi.thinkos.settings.SettingDeclarations.related(List(keys.length()) { keys.getString(it) }, relatedKeys)
         }
         val pages = value.optJSONArray("pages")
         val pageIds = (0 until (pages?.length() ?: 0)).map { pages!!.getJSONObject(it).getString("id") }.toSet()
@@ -30,6 +57,15 @@ object PluginSchema {
             for (i in 0 until widgets.length()) {
                 val widget = widgets.getJSONObject(i)
                 require(!widget.has("opens") || widget.getString("opens") in pageIds) { "widget opens unknown page" }
+            }
+        }
+        value.optJSONArray("apps")?.let { apps ->
+            for (i in 0 until apps.length()) {
+                val page = apps.getJSONObject(i).getString("page")
+                require(page in pageIds) { "app opens unknown page" }
+                // An app is entered and left by the user; a page that holds a role (home, sleep, settings, …) is placed by the OS.
+                val declared = (0 until pages!!.length()).map { pages.getJSONObject(it) }.first { it.getString("id") == page }
+                require((declared.optJSONArray("roles")?.length() ?: 0) == 0) { "app page cannot hold a role" }
             }
         }
         validatePublicContract(value)
@@ -43,6 +79,37 @@ object PluginSchema {
             for (key in minimums.keys()) if (entry.has(key)) require(minimums.getInt(key) <= api) { "$key requires a newer plugin API" }
         }
         gate(value, "manifestFields")
+        value.optJSONArray("permissions")?.let { permissions ->
+            val versions = renderApis.getJSONObject("permissions")
+            for (i in 0 until permissions.length()) require(versions.optInt(permissions.getString(i), 1) <= api) {
+                "permission requires a newer plugin API"
+            }
+        }
+        value.optJSONArray("pages")?.let { pages ->
+            val roleVersions = renderApis.getJSONObject("pageRoles")
+            val permissions = value.optJSONArray("permissions")
+            for (i in 0 until pages.length()) pages.getJSONObject(i).optJSONArray("roles")?.let { roles ->
+                for (j in 0 until roles.length()) {
+                    val role = roles.getString(j)
+                    require(roleVersions.optInt(role, 1) <= api) { "page role requires a newer plugin API" }
+                    require(role != "launcher" || (0 until (permissions?.length() ?: 0)).any { permissions!!.getString(it) == "system.apps" }) {
+                        "the launcher role needs the system.apps permission"
+                    }
+                    require(role !in setOf("onboarding", "settings") || (0 until (permissions?.length() ?: 0)).any { permissions!!.getString(it) == "system.settings" }) {
+                        "the settings/onboarding role needs the system.settings permission"
+                    }
+                }
+            }
+        }
+        value.optJSONObject("settings")?.let { fields ->
+            val sources = renderApis.getJSONObject("settingSources")
+            for (key in fields.keys()) {
+                val field = fields.getJSONObject(key)
+                gate(field, "settingFields")
+                require(renderApis.getJSONObject("settingTypes").optInt(field.optString("type"), 1) <= api) { "setting type requires a newer plugin API" }
+                require(sources.optInt(field.optString("source"), 1) <= api) { "setting source requires a newer plugin API" }
+            }
+        }
         value.optJSONArray("widgets")?.let { for (i in 0 until it.length()) gate(it.getJSONObject(i), "widgetFields") }
         value.optJSONArray("commands")?.let {
             for (i in 0 until it.length()) {
@@ -69,6 +136,10 @@ object PluginSchema {
         value.optJSONArray("calls")?.let { for (i in 0 until it.length()) require(it.getString(i).substringBefore('.') != id) { "a plugin cannot call its own command" } }
     }
 
+    /** Runtime media options share the same version registry as render vocabulary. */
+    fun mediaPublicOnlyApi(probe: Boolean): Int = renderApis
+        .getJSONObject(if (probe) "mediaProbeOptions" else "mediaEntryFields").getInt("public_only")
+
     fun validateView(value: JSONObject, api: Int = API) {
         require(api in 1..API) { "unsupported plugin API" }
         validate(value, documents.getValue("view.json"), "view.json", "view", 0)
@@ -78,6 +149,8 @@ object PluginSchema {
                 is JSONObject -> {
                     if (value.has("layout")) require(renderApis.getJSONObject("layouts").optInt(value.getString("layout"), API + 1) <= api) { "layout requires a newer plugin API" }
                     value.optJSONObject("slots")?.let { slots ->
+                        val versions = renderApis.optJSONObject("layoutSlots")
+                        for (key in slots.keys()) require((versions?.optInt(value.optString("layout") + "." + key, 1) ?: 1) <= api) { "layout slot requires a newer plugin API" }
                         for (key in slots.keys()) require(slots.optJSONObject(key)?.has("widget") != true || renderApis.getInt("slotWidgets") <= api) { "widget references in slots require a newer plugin API" }
                     }
                     if (value.has("template")) require(renderApis.getJSONObject("templates").optInt(value.getString("template"), API + 1) <= api) { "template requires a newer plugin API" }

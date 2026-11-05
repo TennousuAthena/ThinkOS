@@ -124,6 +124,191 @@
     "default": true,
     "hidden": false
    }
+  },
+  {
+   "key": "cast",
+   "field": {
+    "type": "bool",
+    "label": "Cast",
+    "default": false,
+    "warn": "Anyone nearby can cast"
+   }
+  },
+  {
+   "key": "url",
+   "field": {
+    "type": "text",
+    "label": "Address",
+    "default": "",
+    "placeholder": "https://example.test/list.m3u"
+   }
+  },
+  {
+   "key": "enabled",
+   "field": {
+    "type": "bool",
+    "label": "Enabled",
+    "default": false,
+    "level": "normal"
+   }
+  },
+  {
+   "key": "enabled",
+   "field": {
+    "type": "bool",
+    "label": "Enabled",
+    "default": false,
+    "level": "advanced"
+   }
+  },
+  {
+   "key": "enabled",
+   "field": {
+    "type": "bool",
+    "label": "Enabled",
+    "default": false,
+    "level": "hidden"
+   }
+  },
+  {
+   "key": "enabled",
+   "field": {
+    "type": "bool",
+    "label": "Enabled",
+    "default": false,
+    "hidden": false
+   }
+  },
+  {
+   "key": "delay",
+   "field": {
+    "type": "number",
+    "label": "Delay",
+    "default": 30,
+    "min": 0,
+    "max": 7200,
+    "format": "duration",
+    "zero": "Off",
+    "presets": [
+     0,
+     30,
+     120,
+     3600
+    ]
+   }
+  },
+  {
+   "key": "delay",
+   "field": {
+    "type": "number",
+    "label": "Delay",
+    "default": 31,
+    "min": 0,
+    "max": 7200,
+    "presets": [
+     0,
+     30,
+     120
+    ]
+   }
+  },
+  {
+   "key": "dependent",
+   "field": {
+    "type": "text",
+    "label": "Source",
+    "default": "",
+    "depends": {
+     "key": "enabled",
+     "value": true
+    }
+   }
+  },
+  {
+   "key": "dependent",
+   "field": {
+    "type": "text",
+    "label": "Source",
+    "default": "",
+    "depends": {
+     "key": "source",
+     "in": [
+      "bing",
+      "all"
+     ]
+    }
+   }
+  },
+  {
+   "key": "dependent",
+   "field": {
+    "type": "text",
+    "label": "Source",
+    "default": "",
+    "depends": {
+     "key": "n",
+     "in": [
+      1,
+      2.5
+     ]
+    }
+   }
+  },
+  {
+   "key": "cast.airplay",
+   "system": true,
+   "field": {
+    "type": "bool",
+    "label": "Enabled",
+    "default": false,
+    "section": "media",
+    "level": "normal"
+   }
+  },
+  {
+   "key": "length",
+   "field": {
+    "type": "text",
+    "label": "Text",
+    "default": "",
+    "maxLength": 4
+   }
+  },
+  {
+   "key": "source_2",
+   "field": {
+    "type": "text",
+    "label": "Source",
+    "default": "",
+    "depends": {
+     "key": "source_1",
+     "not": ""
+    }
+   }
+  },
+  {
+   "key": "at",
+   "field": {
+    "type": "time",
+    "label": "At",
+    "default": "00:00"
+   }
+  },
+  {
+   "key": "at",
+   "field": {
+    "type": "time",
+    "label": "At",
+    "default": "23:55"
+   }
+  },
+  {
+   "key": "at",
+   "field": {
+    "type": "time",
+    "label": "At",
+    "default": "07:05"
+   }
   }
  ],
  "invalid": [
@@ -393,6 +578,1273 @@
     "label": "x",
     "default": true,
     "hidden": 1
+   }
+  },
+  {
+   "key": "bad",
+   "field": {
+    "type": "text",
+    "label": "Bad",
+    "default": "",
+    "warn": "Invalid type"
+   },
+   "why": "warn/placeholder must be typed text on their respective field type"
+  },
+  {
+   "key": "bad",
+   "field": {
+    "type": "bool",
+    "label": "Bad",
+    "default": false,
+    "placeholder": "Invalid type"
+   },
+   "why": "warn/placeholder must be typed text on their respective field type"
+  },
+  {
+   "key": "bad",
+   "field": {
+    "type": "bool",
+    "label": "Bad",
+    "default": false,
+    "warn": true
+   },
+   "why": "warn/placeholder must be typed text on their respective field type"
+  },
+  {
+   "key": "bad",
+   "field": {
+    "type": "text",
+    "label": "Bad",
+    "default": "",
+    "placeholder": 123
+   },
+   "why": "warn/placeholder must be typed text on their respective field type"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "bool",
+    "label": "Enabled",
+    "default": false,
+    "hidden": false,
+    "level": "normal"
+   },
+   "why": "both hidden and level"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "bool",
+    "label": "Enabled",
+    "default": false,
+    "level": "expert"
+   },
+   "why": "unknown level"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "bool",
+    "label": "Enabled",
+    "default": false,
+    "level": false
+   },
+   "why": "nontext level"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "bool",
+    "label": "Enabled",
+    "default": false,
+    "section": "media"
+   },
+   "why": "section is system only"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "bool",
+    "label": "Enabled",
+    "default": false,
+    "depends": {
+     "key": "n",
+     "value": true,
+     "in": [
+      true
+     ]
+    }
+   },
+   "why": "depends unknown shape"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "bool",
+    "label": "Enabled",
+    "default": false,
+    "depends": {
+     "key": "n",
+     "value": true,
+     "extra": 1
+    }
+   },
+   "why": "depends extra key"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "bool",
+    "label": "Enabled",
+    "default": false,
+    "depends": {
+     "key": "n"
+    }
+   },
+   "why": "depends no operand"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "bool",
+    "label": "Enabled",
+    "default": false,
+    "depends": {
+     "key": "cast.airplay",
+     "value": true
+    }
+   },
+   "why": "depends dotted plugin key"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "bool",
+    "label": "Enabled",
+    "default": false,
+    "depends": {
+     "key": "n",
+     "value": null
+    }
+   },
+   "why": "depends null"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "bool",
+    "label": "Enabled",
+    "default": false,
+    "depends": {
+     "key": "n",
+     "value": [
+      true
+     ]
+    }
+   },
+   "why": "depends array value"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "bool",
+    "label": "Enabled",
+    "default": false,
+    "depends": {
+     "key": "n",
+     "in": []
+    }
+   },
+   "why": "depends empty in"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "bool",
+    "label": "Enabled",
+    "default": false,
+    "depends": {
+     "key": "n",
+     "in": [
+      1,
+      1
+     ]
+    }
+   },
+   "why": "depends repeated numbers"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "bool",
+    "label": "Enabled",
+    "default": false,
+    "format": "duration"
+   },
+   "why": "format on bool"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "number",
+    "label": "Delay",
+    "default": 30,
+    "min": 0,
+    "max": 7200,
+    "format": "percent"
+   },
+   "why": "unknown number format"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "number",
+    "label": "Delay",
+    "default": 30,
+    "min": -1,
+    "max": 7200,
+    "format": "duration"
+   },
+   "why": "negative duration"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "number",
+    "label": "Delay",
+    "default": 30,
+    "min": 0,
+    "max": 7200,
+    "zero": "Off"
+   },
+   "why": "zero without duration"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "number",
+    "label": "Delay",
+    "default": 30,
+    "min": 1,
+    "max": 7200,
+    "format": "duration",
+    "zero": "Off"
+   },
+   "why": "zero outside range"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "number",
+    "label": "Delay",
+    "default": 30,
+    "min": 0,
+    "max": 7200,
+    "format": "duration",
+    "zero": ""
+   },
+   "why": "empty zero label"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "number",
+    "label": "Delay",
+    "default": 30,
+    "min": 0,
+    "max": 7200,
+    "presets": [
+     false,
+     30
+    ]
+   },
+   "why": "presets bool value"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "number",
+    "label": "Delay",
+    "default": 30,
+    "min": 0,
+    "max": 7200,
+    "presets": [
+     30,
+     9000
+    ]
+   },
+   "why": "presets out of range"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "number",
+    "label": "Delay",
+    "default": 30,
+    "min": 0,
+    "max": 7200,
+    "presets": [
+     30,
+     30
+    ]
+   },
+   "why": "presets duplicate numbers"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "number",
+    "label": "Delay",
+    "default": 30,
+    "min": 0,
+    "max": 7200,
+    "presets": [
+     30
+    ]
+   },
+   "why": "presets too short"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "number",
+    "label": "Delay",
+    "default": 30,
+    "min": 0,
+    "max": 7200,
+    "presets": {
+     "fast": 30
+    }
+   },
+   "why": "presets object"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "number",
+    "label": "Delay",
+    "default": 30,
+    "min": "0",
+    "max": 7200
+   },
+   "why": "nonnumber min"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "bool",
+    "label": 1,
+    "default": false
+   },
+   "why": "label is numeric"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "bool",
+    "label": " ",
+    "default": false
+   },
+   "why": "label is whitespace"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "bool",
+    "label": "Field",
+    "default": false,
+    "help": 1
+   },
+   "why": "help is numeric"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "bool",
+    "label": "Field",
+    "default": false,
+    "group": 1
+   },
+   "why": "group is numeric"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "text",
+    "label": "T",
+    "default": "",
+    "secret": "true"
+   },
+   "why": "secret is not boolean"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "choice",
+    "label": "T",
+    "default": "",
+    "source": "timezone",
+    "allowEmpty": "true"
+   },
+   "why": "allowEmpty is not boolean"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "text",
+    "label": "T",
+    "default": "",
+    "maxLength": true
+   },
+   "why": "text length boolean"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "text",
+    "label": "T",
+    "default": "",
+    "maxLength": 1.5
+   },
+   "why": "text length fractional"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "choice",
+    "label": "T",
+    "default": "a",
+    "choices": [
+     {
+      "value": "a",
+      "label": "A"
+     },
+     {
+      "value": 2,
+      "label": "B"
+     }
+    ]
+   },
+   "why": "choice value is numeric"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "choice",
+    "label": "T",
+    "default": "a",
+    "choices": [
+     {
+      "value": "a",
+      "label": "A"
+     },
+     {
+      "value": "b",
+      "label": " "
+     }
+    ]
+   },
+   "why": "choice label whitespace"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "choice",
+    "label": "T",
+    "default": "a",
+    "choices": [
+     {
+      "value": "a",
+      "label": "A"
+     },
+     {
+      "value": "b",
+      "label": 2
+     }
+    ]
+   },
+   "why": "choice label numeric"
+  },
+  {
+   "key": "field",
+   "field": {
+    "type": "number",
+    "label": "N",
+    "default": 1,
+    "min": 0,
+    "max": 2,
+    "unit": 1
+   },
+   "why": "unit numeric"
+  },
+  {
+   "key": "child",
+   "why": "not and value are mutually exclusive",
+   "field": {
+    "type": "text",
+    "label": "Source",
+    "default": "",
+    "depends": {
+     "key": "parent",
+     "not": "",
+     "value": ""
+    }
+   }
+  },
+  {
+   "key": "child",
+   "why": "not operand must be scalar",
+   "field": {
+    "type": "text",
+    "label": "Source",
+    "default": "",
+    "depends": {
+     "key": "parent",
+     "not": []
+    }
+   }
+  },
+  {
+   "key": "brightness",
+   "field": {
+    "type": "number",
+    "label": "Brightness",
+    "default": 85,
+    "min": 20,
+    "max": 100,
+    "preview": "brightness"
+   },
+   "why": "preview is computed by the OS, never a manifest field"
+  },
+  {
+   "why": "time rejects string default \"7:00\"",
+   "key": "at",
+   "field": {
+    "type": "time",
+    "label": "At",
+    "default": "7:00"
+   }
+  },
+  {
+   "why": "time rejects string default \"24:00\"",
+   "key": "at",
+   "field": {
+    "type": "time",
+    "label": "At",
+    "default": "24:00"
+   }
+  },
+  {
+   "why": "time rejects string default \"12:60\"",
+   "key": "at",
+   "field": {
+    "type": "time",
+    "label": "At",
+    "default": "12:60"
+   }
+  },
+  {
+   "why": "time rejects string default \"12:03\"",
+   "key": "at",
+   "field": {
+    "type": "time",
+    "label": "At",
+    "default": "12:03"
+   }
+  },
+  {
+   "why": "time rejects string default \"12:00:00\"",
+   "key": "at",
+   "field": {
+    "type": "time",
+    "label": "At",
+    "default": "12:00:00"
+   }
+  },
+  {
+   "why": "time rejects string default \"１２:００\"",
+   "key": "at",
+   "field": {
+    "type": "time",
+    "label": "At",
+    "default": "１２:００"
+   }
+  },
+  {
+   "why": "time rejects string default \"12:00\\n\"",
+   "key": "at",
+   "field": {
+    "type": "time",
+    "label": "At",
+    "default": "12:00\n"
+   }
+  },
+  {
+   "why": "time rejects string default \" 12:00\"",
+   "key": "at",
+   "field": {
+    "type": "time",
+    "label": "At",
+    "default": " 12:00"
+   }
+  },
+  {
+   "why": "time rejects boolean default true",
+   "key": "at",
+   "field": {
+    "type": "time",
+    "label": "At",
+    "default": true
+   }
+  },
+  {
+   "why": "time rejects number default 720",
+   "key": "at",
+   "field": {
+    "type": "time",
+    "label": "At",
+    "default": 720
+   }
+  },
+  {
+   "why": "time rejects step",
+   "key": "at",
+   "field": {
+    "type": "time",
+    "label": "At",
+    "default": "07:00",
+    "step": 5
+   }
+  },
+  {
+   "why": "time rejects min",
+   "key": "at",
+   "field": {
+    "type": "time",
+    "label": "At",
+    "default": "07:00",
+    "min": 5
+   }
+  },
+  {
+   "why": "time rejects maxLength",
+   "key": "at",
+   "field": {
+    "type": "time",
+    "label": "At",
+    "default": "07:00",
+    "maxLength": 5
+   }
+  },
+  {
+   "why": "time rejects secret",
+   "key": "at",
+   "field": {
+    "type": "time",
+    "label": "At",
+    "default": "07:00",
+    "secret": false
+   }
+  },
+  {
+   "why": "time rejects source",
+   "key": "at",
+   "field": {
+    "type": "time",
+    "label": "At",
+    "default": "07:00",
+    "source": "timezone"
+   }
+  }
+ ],
+ "validManifests": [
+  {
+   "id": "setting-probe",
+   "name": "Settings probe",
+   "version": "1.0.0",
+   "api": 1,
+   "settings": {
+    "enabled": {
+     "type": "bool",
+     "label": "Enabled",
+     "default": false
+    }
+   }
+  },
+  {
+   "id": "setting-probe",
+   "name": "Settings probe",
+   "version": "1.0.0",
+   "api": 9,
+   "related": [
+    "location.name",
+    "units.system",
+    "units.wind"
+   ]
+  },
+  {
+   "id": "setting-probe",
+   "name": "Settings probe",
+   "version": "1.0.0",
+   "api": 9,
+   "settings": {
+    "enabled": {
+     "type": "bool",
+     "label": "Enabled",
+     "default": false
+    },
+    "child": {
+     "type": "text",
+     "label": "Source",
+     "default": "",
+     "depends": {
+      "key": "enabled",
+      "value": true
+     }
+    }
+   }
+  },
+  {
+   "id": "setting-probe",
+   "name": "Settings probe",
+   "version": "1.0.0",
+   "api": 9,
+   "settings": {
+    "n": {
+     "type": "number",
+     "label": "Delay",
+     "default": 30,
+     "min": 0,
+     "max": 7200
+    },
+    "child": {
+     "type": "bool",
+     "label": "Enabled",
+     "default": false,
+     "depends": {
+      "key": "n",
+      "in": [
+       0,
+       30
+      ]
+     }
+    }
+   }
+  },
+  {
+   "id": "setting-probe",
+   "name": "Probe",
+   "version": "1.0.0",
+   "api": 9,
+   "settings": {
+    "source_1": {
+     "type": "text",
+     "label": "Source",
+     "default": ""
+    },
+    "source_2": {
+     "type": "text",
+     "label": "Source",
+     "default": "",
+     "depends": {
+      "key": "source_1",
+      "not": ""
+     }
+    }
+   }
+  }
+ ],
+ "invalidManifests": [
+  {
+   "why": "unknown dependency",
+   "manifest": {
+    "id": "setting-probe",
+    "name": "Settings probe",
+    "version": "1.0.0",
+    "api": 9,
+    "settings": {
+     "child": {
+      "type": "text",
+      "label": "Source",
+      "default": "",
+      "depends": {
+       "key": "missing",
+       "value": true
+      }
+     }
+    }
+   }
+  },
+  {
+   "why": "self cycle",
+   "manifest": {
+    "id": "setting-probe",
+    "name": "Settings probe",
+    "version": "1.0.0",
+    "api": 9,
+    "settings": {
+     "a": {
+      "type": "bool",
+      "label": "Enabled",
+      "default": false,
+      "depends": {
+       "key": "a",
+       "value": true
+      }
+     }
+    }
+   }
+  },
+  {
+   "why": "two node cycle",
+   "manifest": {
+    "id": "setting-probe",
+    "name": "Settings probe",
+    "version": "1.0.0",
+    "api": 9,
+    "settings": {
+     "a": {
+      "type": "bool",
+      "label": "Enabled",
+      "default": false,
+      "depends": {
+       "key": "b",
+       "value": true
+      }
+     },
+     "b": {
+      "type": "bool",
+      "label": "Enabled",
+      "default": false,
+      "depends": {
+       "key": "a",
+       "value": true
+      }
+     }
+    }
+   }
+  },
+  {
+   "why": "dependency type mismatch",
+   "manifest": {
+    "id": "setting-probe",
+    "name": "Settings probe",
+    "version": "1.0.0",
+    "api": 9,
+    "settings": {
+     "a": {
+      "type": "bool",
+      "label": "Enabled",
+      "default": false
+     },
+     "b": {
+      "type": "text",
+      "label": "Source",
+      "default": "",
+      "depends": {
+       "key": "a",
+       "value": 1
+      }
+     }
+    }
+   }
+  },
+  {
+   "why": "dependency outside bounds",
+   "manifest": {
+    "id": "setting-probe",
+    "name": "Settings probe",
+    "version": "1.0.0",
+    "api": 9,
+    "settings": {
+     "n": {
+      "type": "number",
+      "label": "Delay",
+      "default": 30,
+      "min": 0,
+      "max": 7200
+     },
+     "b": {
+      "type": "text",
+      "label": "Source",
+      "default": "",
+      "depends": {
+       "key": "n",
+       "value": 9000
+      }
+     }
+    }
+   }
+  },
+  {
+   "why": "dependency unknown choice",
+   "manifest": {
+    "id": "setting-probe",
+    "name": "Settings probe",
+    "version": "1.0.0",
+    "api": 9,
+    "settings": {
+     "a": {
+      "type": "choice",
+      "label": "A",
+      "default": "yes",
+      "choices": [
+       {
+        "value": "yes",
+        "label": "Y"
+       },
+       {
+        "value": "no",
+        "label": "N"
+       }
+      ]
+     },
+     "b": {
+      "type": "text",
+      "label": "Source",
+      "default": "",
+      "depends": {
+       "key": "a",
+       "value": "maybe"
+      }
+     }
+    }
+   }
+  },
+  {
+   "why": "related unknown",
+   "manifest": {
+    "id": "setting-probe",
+    "name": "Settings probe",
+    "version": "1.0.0",
+    "api": 9,
+    "related": [
+     "missing.key"
+    ]
+   }
+  },
+  {
+   "why": "related secret",
+   "manifest": {
+    "id": "setting-probe",
+    "name": "Settings probe",
+    "version": "1.0.0",
+    "api": 9,
+    "related": [
+     "server.token"
+    ]
+   }
+  },
+  {
+   "why": "related hidden",
+   "manifest": {
+    "id": "setting-probe",
+    "name": "Settings probe",
+    "version": "1.0.0",
+    "api": 9,
+    "related": [
+     "location.latitude"
+    ]
+   }
+  },
+  {
+   "why": "related duplicate",
+   "manifest": {
+    "id": "setting-probe",
+    "name": "Settings probe",
+    "version": "1.0.0",
+    "api": 9,
+    "related": [
+     "location.name",
+     "location.name"
+    ]
+   }
+  },
+  {
+   "why": "related requires API9",
+   "manifest": {
+    "id": "setting-probe",
+    "name": "Settings probe",
+    "version": "1.0.0",
+    "api": 8,
+    "related": [
+     "units.system"
+    ]
+   }
+  },
+  {
+   "why": "level requires API9",
+   "manifest": {
+    "id": "setting-probe",
+    "name": "Settings probe",
+    "version": "1.0.0",
+    "api": 8,
+    "settings": {
+     "a": {
+      "type": "bool",
+      "label": "Enabled",
+      "default": false,
+      "level": "advanced"
+     }
+    }
+   }
+  },
+  {
+   "why": "negated dependency still validates target type",
+   "manifest": {
+    "id": "setting-probe",
+    "name": "Probe",
+    "version": "1.0.0",
+    "api": 9,
+    "settings": {
+     "parent": {
+      "type": "bool",
+      "label": "Switch",
+      "default": false
+     },
+     "child": {
+      "type": "text",
+      "label": "Source",
+      "default": "",
+      "depends": {
+       "key": "parent",
+       "not": ""
+      }
+     }
+    }
+   }
+  }
+ ],
+ "validSystems": [
+  {
+   "scope": "system",
+   "sections": [
+    {
+     "id": "display",
+     "label": "Display",
+     "icon": "monitor"
+    }
+   ],
+   "fields": {}
+  },
+  {
+   "scope": "system",
+   "sections": [
+    {
+     "id": "display",
+     "label": "Display"
+    }
+   ],
+   "fields": {
+    "display.delay": {
+     "type": "number",
+     "label": "Delay",
+     "default": 30,
+     "min": 0,
+     "max": 7200,
+     "section": "display",
+     "level": "advanced",
+     "format": "duration"
+    }
+   }
+  },
+  {
+   "scope": "system",
+   "fields": {
+    "display.delay": {
+     "type": "number",
+     "label": "Delay",
+     "default": 30,
+     "min": 0,
+     "max": 7200
+    }
+   }
+  }
+ ],
+ "invalidSystems": [
+  {
+   "why": "section icon must be a registered vector",
+   "document": {
+    "scope": "system",
+    "sections": [
+     {
+      "id": "display",
+      "label": "Display",
+      "icon": "not-registered"
+     }
+    ],
+    "fields": {}
+   }
+  },
+  {
+   "why": "section icon cannot be a path",
+   "document": {
+    "scope": "system",
+    "sections": [
+     {
+      "id": "display",
+      "label": "Display",
+      "icon": "../monitor"
+     }
+    ],
+    "fields": {}
+   }
+  },
+  {
+   "why": "section icon cannot be blank",
+   "document": {
+    "scope": "system",
+    "sections": [
+     {
+      "id": "display",
+      "label": "Display",
+      "icon": ""
+     }
+    ],
+    "fields": {}
+   }
+  },
+  {
+   "why": "section icon cannot be a number",
+   "document": {
+    "scope": "system",
+    "sections": [
+     {
+      "id": "display",
+      "label": "Display",
+      "icon": 7
+     }
+    ],
+    "fields": {}
+   }
+  },
+  {
+   "why": "section icon cannot be null",
+   "document": {
+    "scope": "system",
+    "sections": [
+     {
+      "id": "display",
+      "label": "Display",
+      "icon": null
+     }
+    ],
+    "fields": {}
+   }
+  },
+  {
+   "why": "unknown section",
+   "document": {
+    "scope": "system",
+    "sections": [],
+    "fields": {
+     "display.delay": {
+      "type": "number",
+      "label": "Delay",
+      "default": 30,
+      "min": 0,
+      "max": 7200,
+      "section": "display",
+      "level": "advanced",
+      "format": "duration"
+     }
+    }
+   }
+  },
+  {
+   "why": "duplicate section",
+   "document": {
+    "scope": "system",
+    "sections": [
+     {
+      "id": "display",
+      "label": "Display"
+     },
+     {
+      "id": "display",
+      "label": "Display"
+     }
+    ],
+    "fields": {
+     "display.delay": {
+      "type": "number",
+      "label": "Delay",
+      "default": 30,
+      "min": 0,
+      "max": 7200,
+      "section": "display",
+      "level": "advanced",
+      "format": "duration"
+     }
+    }
+   }
+  },
+  {
+   "why": "invalid section id",
+   "document": {
+    "scope": "system",
+    "sections": [
+     {
+      "id": "UPPER",
+      "label": "Display"
+     }
+    ],
+    "fields": {
+     "display.delay": {
+      "type": "number",
+      "label": "Delay",
+      "default": 30,
+      "min": 0,
+      "max": 7200,
+      "section": "display",
+      "level": "advanced",
+      "format": "duration"
+     }
+    }
+   }
+  },
+  {
+   "why": "section extra key",
+   "document": {
+    "scope": "system",
+    "sections": [
+     {
+      "id": "display",
+      "label": "Display",
+      "style": "custom"
+     }
+    ],
+    "fields": {
+     "display.delay": {
+      "type": "number",
+      "label": "Delay",
+      "default": 30,
+      "min": 0,
+      "max": 7200,
+      "section": "display",
+      "level": "advanced",
+      "format": "duration"
+     }
+    }
+   }
+  },
+  {
+   "why": "system dependency missing",
+   "document": {
+    "scope": "system",
+    "fields": {
+     "display.delay": {
+      "type": "number",
+      "label": "Delay",
+      "default": 30,
+      "min": 0,
+      "max": 7200,
+      "depends": {
+       "key": "display.enabled",
+       "value": true
+      }
+     }
+    }
    }
   }
  ]

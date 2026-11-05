@@ -1,0 +1,1 @@
+{"layout": "focus", "slots": {"hero": {"type": "list", "items": "{{weatherRows}}", "item": {"icon": "{{.icon}}", "title": "{{.title}}", "subtitle": "icon: {{.icon}}"}}}}

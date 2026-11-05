@@ -1,0 +1,10 @@
+{
+  "layout": "focus",
+  "slots": {
+    "over": { "type": "text", "value": "Grid", "style": "title" },
+    "hero": {
+      "type": "grid", "items": "rows", "item": { "icon": "{{.icon}}", "title": "{{.title}}" }, "tap": "choose"
+    },
+    "under": { "type": "text", "value": "{{selected}}", "style": "caption" }
+  }
+}

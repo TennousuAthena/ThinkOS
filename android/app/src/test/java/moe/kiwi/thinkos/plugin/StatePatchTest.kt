@@ -5,6 +5,15 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class StatePatchTest {
+    @Test fun chineseEncodedPatchUsesBytesRatherThanCharacterCountAtTheLimit() {
+        val prefix = "{\"text\":\""
+        val suffix = "\"}"
+        val room = 256 * 1024 - prefix.length - suffix.length
+        val exact = prefix + "汉".repeat(room / 3) + "x".repeat(room % 3) + suffix
+        assertEquals(256 * 1024, exact.toByteArray(Charsets.UTF_8).size)
+        assertTrue(PluginRuntime.statePatch(exact).has("text"))
+        assertThrows(IllegalArgumentException::class.java) { PluginRuntime.statePatch(exact.dropLast(2) + "x" + suffix) }
+    }
     @Test fun typedAndEncodedPatchesHaveTheSameDataAndMergeSemantics() {
         val typed = PluginRuntime.statePatch(mapOf("photos" to listOf(mapOf("src" to "file:///a.jpg", "title" to "照片"))))
         val encoded = PluginRuntime.statePatch("""{"photos":[{"src":"file:///a.jpg","title":"照片"}]}""")

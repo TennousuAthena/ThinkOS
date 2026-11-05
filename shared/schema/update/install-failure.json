@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "install-failure.json",
+  "title": "UpdateFailureDocument",
+  "description": "One app-private failure record per version. The bounded recent history is not the blacklist authority, so old failed versions do not become eligible after history eviction.",
+  "type": "object",
+  "required": [
+    "schema",
+    "entry"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "type": "integer",
+      "const": 1
+    },
+    "entry": {
+      "$ref": "install-history.json#/properties/failures/items"
+    }
+  }
+}

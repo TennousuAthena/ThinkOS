@@ -1,7 +1,6 @@
 {
   "name": "Clock",
   "title": "Clock",
-  "now": "Now",
   "waiting": "Waiting for time sync",
   "calendar": "Calendar",
   "group.display": "Display",

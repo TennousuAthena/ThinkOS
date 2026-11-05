@@ -1,0 +1,14 @@
+{
+  "sdk": 27,
+  "arch": "arm",
+  "target_package": "com.android.bluetooth",
+  "target_path": "/system/app/Bluetooth/Bluetooth.apk",
+  "target_sha256": "7568679597d73871be7f5fb526938080ab0e67afcccffd02baf13c7459d36767",
+  "observed_default_bools": {
+    "profile_supported_a2dp_sink": false,
+    "profile_supported_avrcp_controller": false
+  },
+  "evidence": "artifacts/bt/BT-0/resource-preflight-1/results.json",
+  "bluetooth_on": "0",
+  "device_overlay_verified": false
+}

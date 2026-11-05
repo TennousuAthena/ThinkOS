@@ -1,12 +1,48 @@
 {
   "description": "System-level settings (ADR-017). Labels are '@a.b' references resolved from Android string resources a_b. The same field format as plugin settings.",
   "scope": "system",
+  "sections": [
+    {
+      "id": "display",
+      "label": "@setting.section.display",
+      "icon": "monitor"
+    },
+    {
+      "id": "mode",
+      "label": "@setting.section.mode",
+      "icon": "moon-star"
+    },
+    {
+      "id": "location",
+      "label": "@setting.section.location",
+      "icon": "map-pin"
+    },
+    {
+      "id": "desktop",
+      "label": "@setting.section.desktop",
+      "icon": "house"
+    },
+    {
+      "id": "media",
+      "label": "@setting.section.media",
+      "icon": "cast"
+    },
+    {
+      "id": "system",
+      "label": "@setting.section.system",
+      "icon": "sliders-horizontal"
+    },
+    {
+      "id": "plugins",
+      "label": "@setting.section.plugins",
+      "icon": "puzzle"
+    }
+  ],
   "fields": {
     "theme.mode": {
       "type": "choice",
       "label": "@setting.theme.mode",
       "default": "auto",
-      "group": "@setting.group.theme",
       "choices": [
         {
           "value": "auto",
@@ -24,63 +60,223 @@
           "value": "dark",
           "label": "@setting.theme.mode.dark"
         }
-      ]
+      ],
+      "level": "normal",
+      "section": "display"
     },
     "theme.night": {
       "type": "bool",
       "label": "@setting.theme.night",
       "default": true,
-      "group": "@setting.group.theme"
+      "level": "hidden"
     },
-    "theme.dark_below_lux": {
-      "type": "number",
-      "label": "@setting.theme.dark_below_lux",
-      "default": 50,
-      "min": 10,
-      "max": 200,
-      "step": 5,
-      "unit": "lux",
-      "group": "@setting.group.theme",
-      "hidden": true
+    "redshift.trigger": {
+      "type": "choice",
+      "label": "@setting.redshift.trigger",
+      "default": "sun",
+      "choices": [
+        {
+          "value": "sun",
+          "label": "@setting.redshift.trigger.sun"
+        },
+        {
+          "value": "lux",
+          "label": "@setting.redshift.trigger.lux"
+        },
+        {
+          "value": "fixed",
+          "label": "@setting.redshift.trigger.fixed"
+        },
+        {
+          "value": "off",
+          "label": "@setting.redshift.trigger.off"
+        }
+      ],
+      "level": "normal",
+      "section": "mode"
     },
-    "theme.light_above_lux": {
+    "redshift.start": {
+      "type": "time",
+      "label": "@setting.redshift.start",
+      "default": "19:00",
+      "depends": {
+        "key": "redshift.trigger",
+        "value": "fixed"
+      },
+      "level": "normal",
+      "section": "mode"
+    },
+    "redshift.end": {
+      "type": "time",
+      "label": "@setting.redshift.end",
+      "default": "07:00",
+      "depends": {
+        "key": "redshift.trigger",
+        "value": "fixed"
+      },
+      "level": "normal",
+      "section": "mode"
+    },
+    "sleep.enabled": {
+      "type": "bool",
+      "label": "@setting.sleep.enabled",
+      "default": false,
+      "level": "normal",
+      "section": "mode"
+    },
+    "sleep.start": {
+      "type": "time",
+      "label": "@setting.sleep.start",
+      "default": "23:00",
+      "depends": {
+        "key": "sleep.enabled",
+        "value": true
+      },
+      "level": "normal",
+      "section": "mode"
+    },
+    "sleep.end": {
+      "type": "time",
+      "label": "@setting.sleep.end",
+      "default": "07:00",
+      "depends": {
+        "key": "sleep.enabled",
+        "value": true
+      },
+      "level": "normal",
+      "section": "mode"
+    },
+    "sleep.wake": {
+      "type": "choice",
+      "label": "@setting.sleep.wake",
+      "default": "double",
+      "choices": [
+        {
+          "value": "double",
+          "label": "@setting.sleep.wake.double"
+        },
+        {
+          "value": "single",
+          "label": "@setting.sleep.wake.single"
+        },
+        {
+          "value": "off",
+          "label": "@setting.sleep.wake.off"
+        }
+      ],
+      "depends": {
+        "key": "sleep.enabled",
+        "value": true
+      },
+      "level": "normal",
+      "section": "mode"
+    },
+    "mode.manual_hold": {
+      "type": "choice",
+      "label": "@setting.mode.manual_hold",
+      "default": "next",
+      "choices": [
+        {
+          "value": "next",
+          "label": "@setting.mode.manual_hold.next"
+        },
+        {
+          "value": "forever",
+          "label": "@setting.mode.manual_hold.forever"
+        }
+      ],
+      "level": "normal",
+      "section": "mode"
+    },
+    "mode.minimum_switch_s": {
       "type": "number",
-      "label": "@setting.theme.light_above_lux",
+      "label": "@setting.mode.minimum_switch_s",
       "default": 120,
-      "min": 50,
-      "max": 1000,
-      "step": 10,
-      "unit": "lux",
-      "group": "@setting.group.theme",
-      "hidden": true
-    },
-    "theme.night_below_lux": {
-      "type": "number",
-      "label": "@setting.theme.night_below_lux",
-      "default": 5,
-      "min": 1,
-      "max": 20,
+      "min": 0,
+      "max": 3600,
       "step": 1,
-      "unit": "lux",
-      "group": "@setting.group.theme",
-      "hidden": true
+      "level": "hidden",
+      "format": "duration"
     },
-    "theme.night_above_lux": {
+    "mode.engaged_delay_s": {
       "type": "number",
-      "label": "@setting.theme.night_above_lux",
-      "default": 15,
-      "min": 5,
-      "max": 50,
+      "label": "@setting.mode.engaged_delay_s",
+      "default": 600,
+      "min": 0,
+      "max": 3600,
       "step": 1,
-      "unit": "lux",
-      "group": "@setting.group.theme",
-      "hidden": true
+      "level": "hidden",
+      "format": "duration"
+    },
+    "sleep.start_delay_s": {
+      "type": "number",
+      "label": "@setting.sleep.start_delay_s",
+      "default": 600,
+      "min": 0,
+      "max": 3600,
+      "step": 1,
+      "level": "hidden",
+      "format": "duration"
+    },
+    "redshift.dark_dwell_s": {
+      "type": "number",
+      "label": "@setting.redshift.dark_dwell_s",
+      "default": 10,
+      "min": 0,
+      "max": 300,
+      "step": 1,
+      "level": "hidden",
+      "format": "duration"
+    },
+    "redshift.window_dwell_s": {
+      "type": "number",
+      "label": "@setting.redshift.window_dwell_s",
+      "default": 30,
+      "min": 0,
+      "max": 300,
+      "step": 1,
+      "level": "hidden",
+      "format": "duration"
+    },
+    "redshift.polar_start": {
+      "type": "time",
+      "label": "@setting.redshift.polar_start",
+      "default": "19:00",
+      "level": "hidden"
+    },
+    "redshift.polar_end": {
+      "type": "time",
+      "label": "@setting.redshift.polar_end",
+      "default": "07:00",
+      "level": "hidden"
+    },
+    "theme.fallback_start": {
+      "type": "time",
+      "label": "@setting.theme.fallback_start",
+      "default": "07:00",
+      "level": "hidden"
+    },
+    "theme.fallback_end": {
+      "type": "time",
+      "label": "@setting.theme.fallback_end",
+      "default": "19:00",
+      "level": "hidden"
+    },
+    "display.brightness_max": {
+      "type": "number",
+      "label": "@setting.display.brightness_max",
+      "default": 85,
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "level": "normal",
+      "section": "display"
     },
     "display.orientation": {
       "type": "choice",
       "label": "@setting.display.orientation",
       "default": "auto",
-      "group": "@setting.group.display",
       "choices": [
         {
           "value": "auto",
@@ -94,13 +290,50 @@
           "value": "portrait",
           "label": "@setting.display.orientation.portrait"
         }
+      ],
+      "level": "normal",
+      "section": "display"
+    },
+    "attention.awake_to_ambient_s": {
+      "type": "number",
+      "label": "@setting.attention.awake_to_ambient_s",
+      "default": 120,
+      "min": 30,
+      "max": 600,
+      "step": 10,
+      "level": "normal",
+      "section": "display",
+      "format": "duration",
+      "presets": [
+        30,
+        60,
+        120,
+        300,
+        600
+      ]
+    },
+    "attention.to_asleep_s": {
+      "type": "number",
+      "label": "@setting.attention.to_asleep_s",
+      "default": 180,
+      "min": 60,
+      "max": 1800,
+      "step": 30,
+      "level": "normal",
+      "section": "display",
+      "format": "duration",
+      "presets": [
+        60,
+        180,
+        300,
+        600,
+        1800
       ]
     },
     "motion.clock": {
       "type": "choice",
       "label": "@setting.motion.clock",
       "default": "roll",
-      "group": "@setting.group.display",
       "choices": [
         {
           "value": "none",
@@ -126,23 +359,23 @@
           "value": "zoom",
           "label": "@setting.motion.clock.zoom"
         }
-      ]
+      ],
+      "level": "normal",
+      "section": "display"
     },
-    "display.brightness_max": {
-      "type": "number",
-      "label": "@setting.display.brightness_max",
-      "default": 85,
-      "min": 20,
-      "max": 100,
-      "step": 5,
-      "unit": "%",
-      "group": "@setting.group.display"
+    "location.name": {
+      "type": "choice",
+      "label": "@setting.location.name",
+      "default": "",
+      "source": "place",
+      "allowEmpty": true,
+      "level": "normal",
+      "section": "location"
     },
     "units.system": {
       "type": "choice",
       "label": "@setting.units.system",
       "default": "metric",
-      "group": "@setting.group.units",
       "choices": [
         {
           "value": "metric",
@@ -152,13 +385,14 @@
           "value": "imperial",
           "label": "@setting.units.system.imperial"
         }
-      ]
+      ],
+      "level": "normal",
+      "section": "location"
     },
     "units.wind": {
       "type": "choice",
       "label": "@setting.units.wind",
       "default": "auto",
-      "group": "@setting.group.units",
       "choices": [
         {
           "value": "auto",
@@ -180,172 +414,16 @@
           "value": "kn",
           "label": "@setting.units.wind.kn"
         }
-      ]
-    },
-    "attention.awake_to_ambient_s": {
-      "type": "number",
-      "label": "@setting.attention.awake_to_ambient_s",
-      "default": 120,
-      "min": 30,
-      "max": 600,
-      "step": 10,
-      "unit": "s",
-      "group": "@setting.group.attention",
-      "hidden": true
-    },
-    "attention.to_asleep_s": {
-      "type": "number",
-      "label": "@setting.attention.to_asleep_s",
-      "default": 180,
-      "min": 60,
-      "max": 1800,
-      "step": 30,
-      "unit": "s",
-      "group": "@setting.group.attention",
-      "hidden": true
-    },
-    "attention.engaged_idle_s": {
-      "type": "number",
-      "label": "@setting.attention.engaged_idle_s",
-      "default": 15,
-      "min": 5,
-      "max": 60,
-      "step": 5,
-      "unit": "s",
-      "group": "@setting.group.attention",
-      "hidden": true
-    },
-    "attention.ambient_page_after_s": {
-      "type": "number",
-      "label": "@setting.attention.ambient_page_after_s",
-      "default": 300,
-      "min": 60,
-      "max": 1800,
-      "step": 30,
-      "unit": "s",
-      "group": "@setting.group.attention",
-      "hidden": true
-    },
-    "server.url": {
-      "type": "text",
-      "label": "@setting.server.url",
-      "default": "",
-      "maxLength": 200,
-      "group": "@setting.group.server"
-    },
-    "server.token": {
-      "type": "text",
-      "label": "@setting.server.token",
-      "default": "",
-      "maxLength": 128,
-      "secret": true,
-      "group": "@setting.group.server"
-    },
-    "location.mode": {
-      "type": "choice",
-      "label": "@setting.location.mode",
-      "default": "auto",
-      "group": "@setting.group.location",
-      "choices": [
-        {
-          "value": "auto",
-          "label": "@setting.location.mode.auto"
-        },
-        {
-          "value": "manual",
-          "label": "@setting.location.mode.manual"
-        }
       ],
-      "hidden": true
-    },
-    "location.name": {
-      "type": "choice",
-      "label": "@setting.location.name",
-      "default": "",
-      "source": "place",
-      "allowEmpty": true,
-      "group": "@setting.group.location"
-    },
-    "location.latitude": {
-      "type": "number",
-      "label": "@setting.location.latitude",
-      "default": 0,
-      "min": -90,
-      "max": 90,
-      "step": 0.001,
-      "unit": "°",
-      "group": "@setting.group.location",
-      "hidden": true
-    },
-    "location.longitude": {
-      "type": "number",
-      "label": "@setting.location.longitude",
-      "default": 0,
-      "min": -180,
-      "max": 180,
-      "step": 0.001,
-      "unit": "°",
-      "group": "@setting.group.location",
-      "hidden": true
-    },
-    "location.elevation": {
-      "type": "number",
-      "label": "@setting.location.elevation",
-      "default": 0,
-      "min": -500,
-      "max": 10000,
-      "step": 1,
-      "unit": "m",
-      "group": "@setting.group.location",
-      "hidden": true
-    },
-    "location.timezone": {
-      "type": "choice",
-      "label": "@setting.location.timezone",
-      "default": "",
-      "source": "timezone",
-      "allowEmpty": true,
-      "group": "@setting.group.location",
-      "hidden": true
-    },
-    "location.search_url": {
-      "type": "text",
-      "label": "@setting.location.search_url",
-      "default": "https://geocoding-api.open-meteo.com/v1/search",
-      "maxLength": 250,
-      "group": "@setting.group.location",
-      "hidden": true
-    },
-    "kiosk.lock": {
-      "type": "bool",
-      "label": "@setting.kiosk.lock",
-      "default": true,
-      "group": "@setting.group.kiosk"
-    },
-    "time.ntp_servers": {
-      "type": "text",
-      "label": "@setting.time.ntp_servers",
-      "default": "0.pool.ntp.org, 1.pool.ntp.org, 2.pool.ntp.org, 3.pool.ntp.org",
-      "maxLength": 300,
-      "group": "@setting.group.time",
-      "hidden": true
-    },
-    "time.sync_interval": {
-      "type": "number",
-      "label": "@setting.time.sync_interval",
-      "default": 1,
-      "min": 1,
-      "max": 24,
-      "step": 1,
-      "unit": "h",
-      "group": "@setting.group.time",
-      "hidden": true
+      "level": "normal",
+      "section": "location"
     },
     "tiles.live": {
       "type": "bool",
       "label": "@setting.tiles.live",
       "default": true,
-      "group": "@setting.group.tiles"
+      "level": "normal",
+      "section": "desktop"
     },
     "tiles.interval": {
       "type": "number",
@@ -355,13 +433,13 @@
       "max": 60,
       "step": 1,
       "unit": "s",
-      "group": "@setting.group.tiles"
+      "level": "normal",
+      "section": "desktop"
     },
     "tiles.background": {
       "type": "choice",
       "label": "@setting.tiles.background",
       "default": "indigo",
-      "group": "@setting.group.tiles",
       "choices": [
         {
           "value": "indigo",
@@ -375,19 +453,341 @@
           "value": "wine",
           "label": "@setting.tiles.background.wine"
         }
-      ]
+      ],
+      "level": "normal",
+      "section": "desktop"
     },
-    "media.public_http": {
+    "panel.enabled": {
       "type": "bool",
-      "label": "@setting.media.public_http",
-      "default": false,
-      "group": "@setting.group.media"
+      "label": "@setting.panel.enabled",
+      "default": true,
+      "level": "normal",
+      "section": "desktop"
+    },
+    "nav.back_enabled": {
+      "type": "bool",
+      "label": "@setting.nav.back_enabled",
+      "default": true,
+      "level": "hidden",
+      "section": "desktop"
+    },
+    "nav.up_enabled": {
+      "type": "bool",
+      "label": "@setting.nav.up_enabled",
+      "default": true,
+      "level": "hidden",
+      "section": "desktop"
     },
     "media.keep_awake_video": {
       "type": "bool",
       "label": "@setting.media.keep_awake_video",
       "default": true,
-      "group": "@setting.group.media"
+      "level": "normal",
+      "section": "media"
+    },
+    "cast.enabled": {
+      "type": "bool",
+      "label": "@setting.cast.enabled",
+      "default": false,
+      "warn": "@setting.cast.enabled.warn",
+      "level": "normal",
+      "section": "media"
+    },
+    "cast.airplay": {
+      "type": "bool",
+      "label": "@setting.cast.airplay",
+      "default": false,
+      "warn": "@setting.cast.airplay.warn",
+      "level": "normal",
+      "section": "media"
+    },
+    "cast.airplay_mirror": {
+      "type": "bool",
+      "label": "@setting.cast.airplay_mirror",
+      "default": true,
+      "level": "normal",
+      "section": "media",
+      "depends": {
+        "key": "cast.airplay",
+        "value": true
+      }
+    },
+    "cast.miracast": {
+      "type": "bool",
+      "label": "@setting.cast.miracast",
+      "default": false,
+      "warn": "@setting.cast.miracast.warn",
+      "level": "normal",
+      "section": "media"
+    },
+    "cast.name": {
+      "type": "text",
+      "label": "@setting.cast.name",
+      "default": "ThinkOS",
+      "maxLength": 48,
+      "level": "normal",
+      "section": "media"
+    },
+    "kiosk.lock": {
+      "type": "bool",
+      "label": "@setting.kiosk.lock",
+      "default": true,
+      "level": "normal",
+      "section": "system"
+    },
+    "media.public_http": {
+      "type": "bool",
+      "label": "@setting.media.public_http",
+      "default": false,
+      "warn": "@setting.media.public_http.warn",
+      "level": "normal",
+      "section": "system"
+    },
+    "apps.return_after_s": {
+      "type": "number",
+      "label": "@setting.apps.return_after_s",
+      "default": 900,
+      "min": 0,
+      "max": 7200,
+      "step": 60,
+      "level": "normal",
+      "section": "system",
+      "format": "duration",
+      "presets": [
+        0,
+        300,
+        900,
+        1800,
+        3600
+      ],
+      "zero": "@setting.duration.off"
+    },
+    "attention.engaged_idle_s": {
+      "type": "number",
+      "label": "@setting.attention.engaged_idle_s",
+      "default": 15,
+      "min": 5,
+      "max": 60,
+      "step": 5,
+      "unit": "s",
+      "level": "advanced",
+      "section": "display"
+    },
+    "attention.ambient_page_after_s": {
+      "type": "number",
+      "label": "@setting.attention.ambient_page_after_s",
+      "default": 300,
+      "min": 60,
+      "max": 1800,
+      "step": 30,
+      "unit": "s",
+      "level": "advanced",
+      "section": "display"
+    },
+    "theme.dark_below_lux": {
+      "type": "number",
+      "label": "@setting.theme.dark_below_lux",
+      "default": 50,
+      "min": 10,
+      "max": 200,
+      "step": 5,
+      "unit": "lux",
+      "level": "hidden",
+      "section": "display"
+    },
+    "theme.light_above_lux": {
+      "type": "number",
+      "label": "@setting.theme.light_above_lux",
+      "default": 120,
+      "min": 50,
+      "max": 1000,
+      "step": 10,
+      "unit": "lux",
+      "level": "hidden",
+      "section": "display"
+    },
+    "theme.night_below_lux": {
+      "type": "number",
+      "label": "@setting.theme.night_below_lux",
+      "default": 5,
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "unit": "lux",
+      "level": "hidden",
+      "section": "display"
+    },
+    "theme.night_above_lux": {
+      "type": "number",
+      "label": "@setting.theme.night_above_lux",
+      "default": 15,
+      "min": 5,
+      "max": 50,
+      "step": 1,
+      "unit": "lux",
+      "level": "hidden",
+      "section": "display"
+    },
+    "server.url": {
+      "type": "text",
+      "label": "@setting.server.url",
+      "default": "",
+      "maxLength": 200,
+      "level": "hidden",
+      "section": "system"
+    },
+    "server.token": {
+      "type": "text",
+      "label": "@setting.server.token",
+      "default": "",
+      "maxLength": 128,
+      "secret": true,
+      "level": "hidden",
+      "section": "system"
+    },
+    "location.mode": {
+      "type": "choice",
+      "label": "@setting.location.mode",
+      "default": "auto",
+      "choices": [
+        {
+          "value": "auto",
+          "label": "@setting.location.mode.auto"
+        },
+        {
+          "value": "manual",
+          "label": "@setting.location.mode.manual"
+        }
+      ],
+      "level": "hidden",
+      "section": "location"
+    },
+    "location.latitude": {
+      "type": "number",
+      "label": "@setting.location.latitude",
+      "default": 0,
+      "min": -90,
+      "max": 90,
+      "step": 0.001,
+      "unit": "°",
+      "level": "hidden",
+      "section": "location"
+    },
+    "location.longitude": {
+      "type": "number",
+      "label": "@setting.location.longitude",
+      "default": 0,
+      "min": -180,
+      "max": 180,
+      "step": 0.001,
+      "unit": "°",
+      "level": "hidden",
+      "section": "location"
+    },
+    "location.elevation": {
+      "type": "number",
+      "label": "@setting.location.elevation",
+      "default": 0,
+      "min": -500,
+      "max": 10000,
+      "step": 1,
+      "unit": "m",
+      "level": "hidden",
+      "section": "location"
+    },
+    "location.timezone": {
+      "type": "choice",
+      "label": "@setting.location.timezone",
+      "default": "",
+      "source": "timezone",
+      "allowEmpty": true,
+      "level": "hidden",
+      "section": "location"
+    },
+    "location.search_url": {
+      "type": "text",
+      "label": "@setting.location.search_url",
+      "default": "https://geocoding-api.open-meteo.com/v1/search",
+      "maxLength": 250,
+      "level": "hidden",
+      "section": "location"
+    },
+    "panel.edge_dp": {
+      "type": "number",
+      "label": "@setting.panel.edge_dp",
+      "default": 24,
+      "min": 16,
+      "max": 48,
+      "step": 2,
+      "unit": "dp",
+      "level": "hidden",
+      "section": "desktop"
+    },
+    "panel.idle_s": {
+      "type": "number",
+      "label": "@setting.panel.idle_s",
+      "default": 15,
+      "min": 5,
+      "max": 60,
+      "step": 5,
+      "unit": "s",
+      "level": "hidden",
+      "section": "desktop"
+    },
+    "nav.back_edge_dp": {
+      "type": "number",
+      "label": "@setting.nav.back_edge_dp",
+      "default": 24,
+      "min": 16,
+      "max": 48,
+      "step": 2,
+      "unit": "dp",
+      "level": "hidden",
+      "section": "desktop"
+    },
+    "nav.up_edge_dp": {
+      "type": "number",
+      "label": "@setting.nav.up_edge_dp",
+      "default": 24,
+      "min": 16,
+      "max": 48,
+      "step": 1,
+      "level": "hidden",
+      "section": "desktop"
+    },
+    "apps.android": {
+      "type": "bool",
+      "label": "@setting.apps.android",
+      "default": true,
+      "level": "normal",
+      "section": "desktop"
+    },
+    "apps.hidden": {
+      "type": "text",
+      "label": "@setting.apps.hidden",
+      "default": "",
+      "maxLength": 1024,
+      "level": "hidden",
+      "section": "system"
+    },
+    "time.ntp_servers": {
+      "type": "text",
+      "label": "@setting.time.ntp_servers",
+      "default": "0.pool.ntp.org, 1.pool.ntp.org, 2.pool.ntp.org, 3.pool.ntp.org",
+      "maxLength": 300,
+      "level": "hidden",
+      "section": "system"
+    },
+    "time.sync_interval": {
+      "type": "number",
+      "label": "@setting.time.sync_interval",
+      "default": 1,
+      "min": 1,
+      "max": 24,
+      "step": 1,
+      "unit": "h",
+      "level": "hidden",
+      "section": "system"
     },
     "media.buffer_s": {
       "type": "number",
@@ -397,8 +797,8 @@
       "max": 120,
       "step": 5,
       "unit": "s",
-      "group": "@setting.group.media",
-      "hidden": true
+      "level": "hidden",
+      "section": "media"
     },
     "media.buffer_mb": {
       "type": "number",
@@ -408,46 +808,415 @@
       "max": 96,
       "step": 4,
       "unit": "MB",
-      "group": "@setting.group.media",
+      "level": "hidden",
+      "section": "media"
+    },
+    "update.enabled": {
+      "type": "bool",
+      "label": "@setting.update.enabled",
+      "default": true,
+      "level": "normal",
+      "section": "system"
+    },
+    "update.auto_install": {
+      "type": "bool",
+      "label": "@setting.update.auto_install",
+      "default": true,
+      "level": "normal",
+      "section": "system"
+    },
+    "update.channel": {
+      "type": "choice",
+      "label": "@setting.update.channel",
+      "default": "stable",
+      "choices": [
+        {
+          "value": "stable",
+          "label": "@setting.update.channel.stable"
+        },
+        {
+          "value": "beta",
+          "label": "@setting.update.channel.beta"
+        }
+      ],
+      "level": "advanced",
+      "section": "system"
+    },
+    "update.mirror": {
+      "type": "text",
+      "label": "@setting.update.mirror",
+      "default": "",
+      "level": "advanced",
+      "section": "system",
+      "maxLength": 1024
+    },
+    "update.sources": {
+      "type": "text",
+      "label": "@setting.update.sources",
+      "default": "https://cnb.cool/kiwimoe/ThinkOS/-/releases/download/ota-{channel}/{channel}.json",
+      "hidden": true,
+      "maxLength": 1024
+    },
+    "update.initial_min_s": {
+      "type": "number",
+      "label": "@setting.update.initial_min_s",
+      "default": 600,
+      "min": 1,
+      "max": 86400,
+      "step": 1,
       "hidden": true
     },
-    "cast.enabled": {
+    "update.initial_max_s": {
+      "type": "number",
+      "label": "@setting.update.initial_max_s",
+      "default": 3600,
+      "min": 2,
+      "max": 172800,
+      "step": 1,
+      "hidden": true
+    },
+    "update.check_hours": {
+      "type": "number",
+      "label": "@setting.update.check_hours",
+      "default": 24,
+      "min": 3,
+      "max": 720,
+      "step": 1,
+      "hidden": true
+    },
+    "update.jitter_hours": {
+      "type": "number",
+      "label": "@setting.update.jitter_hours",
+      "default": 2,
+      "min": 0,
+      "max": 2,
+      "step": 1,
+      "hidden": true
+    },
+    "update.retry_min_s": {
+      "type": "number",
+      "label": "@setting.update.retry_min_s",
+      "default": 60,
+      "min": 1,
+      "max": 3600,
+      "step": 1,
+      "hidden": true
+    },
+    "update.retry_max_s": {
+      "type": "number",
+      "label": "@setting.update.retry_max_s",
+      "default": 3600,
+      "min": 2,
+      "max": 86400,
+      "step": 1,
+      "hidden": true
+    },
+    "update.manual_grace_s": {
+      "type": "number",
+      "label": "@setting.update.manual_grace_s",
+      "default": 5,
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "hidden": true
+    },
+    "update.trusted_year": {
+      "type": "number",
+      "label": "@setting.update.trusted_year",
+      "default": 2024,
+      "min": 2024,
+      "max": 2100,
+      "step": 1,
+      "hidden": true
+    },
+    "update.connect_s": {
+      "type": "number",
+      "label": "@setting.update.connect_s",
+      "default": 15,
+      "min": 1,
+      "max": 120,
+      "step": 1,
+      "hidden": true
+    },
+    "update.read_s": {
+      "type": "number",
+      "label": "@setting.update.read_s",
+      "default": 30,
+      "min": 1,
+      "max": 300,
+      "step": 1,
+      "hidden": true
+    },
+    "update.install_hour": {
+      "type": "number",
+      "label": "@setting.update.install_hour",
+      "default": 3,
+      "min": 0,
+      "max": 23,
+      "step": 1,
+      "hidden": true
+    },
+    "update.trial_s": {
+      "type": "number",
+      "label": "@setting.update.trial_s",
+      "default": 600,
+      "min": 600,
+      "max": 3600,
+      "step": 60,
+      "unit": "s",
+      "level": "hidden",
+      "section": "system"
+    },
+    "update.max_attempts": {
+      "type": "number",
+      "label": "@setting.update.max_attempts",
+      "default": 3,
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "level": "hidden",
+      "section": "system"
+    },
+    "update.notice_s": {
+      "type": "number",
+      "label": "@setting.update.notice_s",
+      "default": 86400,
+      "min": 60,
+      "max": 604800,
+      "step": 60,
+      "unit": "s",
+      "level": "hidden",
+      "section": "system"
+    },
+    "update.failure_limit": {
+      "type": "number",
+      "label": "@setting.update.failure_limit",
+      "default": 3,
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "level": "hidden",
+      "section": "system"
+    },
+    "update.install_hours": {
+      "type": "number",
+      "label": "@setting.update.install_hours",
+      "default": 3,
+      "min": 1,
+      "max": 24,
+      "step": 1,
+      "level": "hidden",
+      "section": "system"
+    },
+    "update.touch_grace_s": {
+      "type": "number",
+      "label": "@setting.update.touch_grace_s",
+      "default": 600,
+      "min": 0,
+      "max": 86400,
+      "step": 60,
+      "level": "hidden",
+      "section": "system",
+      "unit": "s"
+    },
+    "update.fallback_wait_s": {
+      "type": "number",
+      "label": "@setting.update.fallback_wait_s",
+      "default": 259200,
+      "min": 0,
+      "max": 2592000,
+      "step": 3600,
+      "level": "hidden",
+      "section": "system",
+      "unit": "s"
+    },
+    "update.fallback_asleep_s": {
+      "type": "number",
+      "label": "@setting.update.fallback_asleep_s",
+      "default": 3600,
+      "min": 0,
+      "max": 86400,
+      "step": 60,
+      "level": "hidden",
+      "section": "system",
+      "unit": "s"
+    },
+    "update.space_factor": {
+      "type": "number",
+      "label": "@setting.update.space_factor",
+      "default": 3,
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "level": "hidden",
+      "section": "system"
+    },
+    "update.install_poll_s": {
+      "type": "number",
+      "label": "@setting.update.install_poll_s",
+      "default": 30,
+      "min": 1,
+      "max": 3600,
+      "step": 1,
+      "level": "hidden",
+      "section": "system",
+      "unit": "s"
+    },
+    "onboarding.initialized": {
       "type": "bool",
-      "label": "@setting.cast.enabled",
+      "label": "@setting.onboarding.initialized",
       "default": false,
-      "help": "@setting.cast.enabled.help",
-      "group": "@setting.group.cast"
+      "hidden": true,
+      "section": "system"
     },
-    "cast.airplay": {
+    "onboarding.done": {
+      "type": "number",
+      "label": "@setting.onboarding.done",
+      "default": 0,
+      "min": 0,
+      "max": 999,
+      "step": 1,
+      "hidden": true,
+      "section": "system"
+    },
+    "onboarding.attempts": {
+      "type": "number",
+      "label": "@setting.onboarding.attempts",
+      "default": 0,
+      "min": 0,
+      "max": 999,
+      "step": 1,
+      "hidden": true,
+      "section": "system"
+    },
+    "onboarding.max_prompts": {
+      "type": "number",
+      "label": "@setting.onboarding.max_prompts",
+      "default": 3,
+      "min": 0,
+      "max": 10,
+      "step": 1,
+      "hidden": true,
+      "section": "system"
+    },
+    "onboarding.idle_s": {
+      "type": "number",
+      "label": "@setting.onboarding.idle_s",
+      "default": 1800,
+      "min": 60,
+      "max": 86400,
+      "step": 60,
+      "hidden": true,
+      "section": "system"
+    },
+    "onboarding.greeting_s": {
+      "type": "number",
+      "label": "@setting.onboarding.greeting_s",
+      "default": 2.4,
+      "min": 1,
+      "max": 10,
+      "step": 0.1,
+      "hidden": true,
+      "section": "system"
+    },
+    "plugins.auto_update": {
+      "type": "choice",
+      "label": "@setting.plugins.auto_update",
+      "default": "official",
+      "choices": [
+        {
+          "value": "off",
+          "label": "@plugins.auto.off"
+        },
+        {
+          "value": "official",
+          "label": "@plugins.auto.official"
+        },
+        {
+          "value": "all",
+          "label": "@plugins.auto.all"
+        }
+      ],
+      "section": "plugins"
+    },
+    "plugins.community": {
       "type": "bool",
-      "label": "@setting.cast.airplay",
+      "label": "@setting.plugins.community",
       "default": false,
-      "help": "@setting.cast.airplay.help",
-      "group": "@setting.group.cast"
+      "section": "plugins"
     },
-    "cast.airplay_mirror": {
-      "type": "bool",
-      "label": "@setting.cast.airplay_mirror",
-      "default": true,
-      "help": "@setting.cast.airplay_mirror.help",
-      "group": "@setting.group.cast"
-    },
-    "cast.miracast": {
-      "type": "bool",
-      "label": "@setting.cast.miracast",
-      "default": false,
-      "help": "@setting.cast.miracast.help",
-      "group": "@setting.group.cast"
-    },
-    "cast.name": {
+    "plugins.mirror": {
       "type": "text",
-      "label": "@setting.cast.name",
-      "default": "ThinkOS",
-      "maxLength": 48,
-      "group": "@setting.group.cast"
+      "label": "@setting.plugins.mirror",
+      "default": "",
+      "maxLength": 1024,
+      "level": "advanced",
+      "section": "plugins"
+    },
+    "plugins.sources": {
+      "type": "text",
+      "label": "@setting.plugins.sources",
+      "default": "",
+      "maxLength": 1024,
+      "hidden": true,
+      "section": "plugins"
+    },
+    "plugins.trial_s": {
+      "type": "number",
+      "label": "@setting.plugins.trial_s",
+      "default": 600,
+      "min": 60,
+      "max": 86400,
+      "step": 60,
+      "hidden": true,
+      "section": "plugins"
+    },
+    "plugins.start_batch_ms": {
+      "type": "number",
+      "label": "@setting.plugins.start_batch_ms",
+      "default": 100,
+      "min": 20,
+      "max": 2000,
+      "step": 20,
+      "hidden": true,
+      "section": "plugins"
+    },
+    "update.module_health_s": {
+      "type": "number",
+      "label": "@setting.update.module_health_s",
+      "default": 900,
+      "min": 60,
+      "max": 86400,
+      "step": 60,
+      "hidden": true,
+      "section": "system"
+    },
+    "update.module_guard_poll_s": {
+      "type": "number",
+      "label": "@setting.update.module_guard_poll_s",
+      "default": 5,
+      "min": 1,
+      "max": 60,
+      "step": 1,
+      "hidden": true,
+      "section": "system"
+    },
+    "plugins.max_installed": {
+      "type": "number",
+      "label": "@setting.plugins.max_installed",
+      "default": 16,
+      "min": 1,
+      "max": 16,
+      "step": 1,
+      "hidden": true,
+      "section": "plugins"
     }
   },
   "constraints": [
+    ["redshift.start", "redshift.end"],
+    ["sleep.start", "sleep.end"],
+    ["redshift.polar_start", "redshift.polar_end"],
+    ["theme.fallback_start", "theme.fallback_end"],
     [
       "theme.dark_below_lux",
       "theme.light_above_lux"
@@ -455,6 +1224,14 @@
     [
       "theme.night_below_lux",
       "theme.night_above_lux"
+    ],
+    [
+      "update.initial_min_s",
+      "update.initial_max_s"
+    ],
+    [
+      "update.retry_min_s",
+      "update.retry_max_s"
     ]
   ]
 }

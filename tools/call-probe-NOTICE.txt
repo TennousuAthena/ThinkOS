@@ -1,0 +1,20 @@
+CALL-0 EXPERIMENT ONLY -- not a selected/default ThinkOS dependency.
+
+Explicit local io.github.webrtc-sdk android/android-prefixed/android-prefixed-stripped
+150.7871.04 test APK: wrapper/build packaging MIT; WebRTC native BSD-3-Clause;
+Shiguredo/LiveKit modifications include Apache-2.0 notices. No product WebRTC
+library choice is made. Test packaging filters other ABIs, preserving the pinned
+armeabi-v7a library and all Java/non-native input bytes.
+
+Primary fixed sources:
+https://github.com/webrtc-sdk/android/tree/1d6a68a74162d3f218f9681d49c6b5eef8f02800
+https://github.com/webrtc-sdk/android/blob/1d6a68a74162d3f218f9681d49c6b5eef8f02800/LICENSE
+https://github.com/webrtc-sdk/android/blob/1d6a68a74162d3f218f9681d49c6b5eef8f02800/Licenses/WEBRTC.md
+https://github.com/webrtc-sdk/webrtc/blob/a545de45259b47dfac5f3635863e47cb601f1bb2/LICENSE
+https://github.com/webrtc-sdk/webrtc/blob/a545de45259b47dfac5f3635863e47cb601f1bb2/NOTICE
+
+The inspected AARs/JARs did not include LICENSE/NOTICE. The repository aggregate
+and fixed default build recipe are known; the exact Maven binary-to-build-run
+binding and its complete matching third-party manifest remain unresolved.
+This experimental notice is not that closure and is not a distribution approval.
+See artifacts/call/CALL-0/libraries-20261105 for the immutable local inspection.

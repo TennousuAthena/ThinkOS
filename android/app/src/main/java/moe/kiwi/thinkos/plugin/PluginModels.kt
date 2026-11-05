@@ -9,6 +9,8 @@ data class PluginPage(
     val priority: Int = 0, val live: Boolean = false,
     /** The `@key` of a translated title, kept so a page that shows its title can follow a language change. */
     val titleKey: String? = null,
+    /** An app's page (ADR-035): entered from the app list or a tile, outside the left-right page sequence. */
+    val app: Boolean = false,
 ) { val key: String get() = "$pluginId.$id" }
 
 data class PluginWidget(val pluginId: String, val id: String, val view: JSONObject, val opens: String? = null,
@@ -27,9 +29,11 @@ data class PluginDiagnostic(val id: String, val version: String, val bytes: Long
     val unresolved: List<String> = emptyList())
 
 internal class NativeLua(private val bridge: (String, Array<Any?>, Int) -> Any?) {
-    data class Step(val taskId: Int, val status: Int, val message: String?, val cpuMicros: Long, val wallMicros: Long) {
+    data class Step(val taskId: Int, val status: Int, val message: String?, val cpuMicros: Long, val wallMicros: Long,
+        val hostCpuMicros: Long, val hostCalls: Int, val slowestHost: String?, val slowestHostMicros: Long, val compileMicros: Long) {
         val failed get() = status >= 2
         val resourceFailure get() = status in 3..5
+        fun timing() = "cpu=${cpuMicros}us wall=${wallMicros}us host=${hostCpuMicros}us calls=$hostCalls max=$slowestHost:${slowestHostMicros}us compile=${compileMicros}us"
     }
     companion object {
         const val DONE = 0
@@ -50,7 +54,7 @@ internal class NativeLua(private val bridge: (String, Array<Any?>, Int) -> Any?)
         check(handle != 0L) { "Lua allocation failed" }
         val step = start(handle, null, null, code, name)
         if (step.status == WAITING) { cancel(handle, step.taskId); error("Async API requires an event handler") }
-        if (step.failed) throw LuaFailure(step)
+        if (step.failed) throw LuaFailure(step, name)
     }
     fun bindEntries() = bind(handle)
     fun dispatch(name: String, args: Array<Any?> = emptyArray()): Step = start(handle, "dispatch", arrayOf(name, *args), null, null)
@@ -60,4 +64,4 @@ internal class NativeLua(private val bridge: (String, Array<Any?>, Int) -> Any?)
     fun bytes(): Long = if (handle == 0L) 0 else memory(handle)
     fun close() { if (handle != 0L) { destroy(handle); handle = 0 } }
 }
-internal class LuaFailure(val step: NativeLua.Step) : IllegalStateException(step.message)
+internal class LuaFailure(val step: NativeLua.Step, val phase: String = "event") : IllegalStateException(step.message)

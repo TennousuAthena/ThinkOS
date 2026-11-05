@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "layouts.json",
-  "description": "Fixed OS render vocabulary. API 1: stacks/focus/form/glance and text/icon/clock. API 2: progress/chart/list/daylight/moon, groups, split/stage, tap and weight. No plugin styles or executable view expressions. API 3: local/asset/HTTP(S) image and carousel with lossless framing and native panning. API 4: tiles grid and tile template; only tile backgrounds allow plugin colors (ADR-025). API 5: fixed Aero desktop with up to three referenced widget windows; all chrome belongs to OS. API 6: widget references inside focus/split/stage slots. API 6: full-bleed tile image. API 6: a tile face may bring its own content component.",
+  "description": "Fixed OS render vocabulary. API 1: stacks/focus/form/glance and text/icon/clock. API 2: progress/chart/list/daylight/moon, groups, split/stage, tap and weight. No plugin styles or executable view expressions. API 3: local/asset/HTTP(S) image and carousel with lossless framing and native panning. API 4: tiles grid and tile template; only tile backgrounds allow plugin colors (ADR-025). API 5: fixed Aero desktop with up to three referenced widget windows; all chrome belongs to OS. API 6: widget references inside focus/split/stage slots. API 6: full-bleed tile image. API 6: a tile face may bring its own content component. API 8: the OS music player view (cover, queue, volume, bar and card styles), tabs, and a marked row in lists.",
   "$defs": {
     "component": {
       "oneOf": [
@@ -43,6 +43,24 @@
         },
         {
           "$ref": "#/$defs/seekbar"
+        },
+        {
+          "$ref": "#/$defs/nowplaying"
+        },
+        {
+          "$ref": "#/$defs/tv"
+        },
+        {
+          "$ref": "#/$defs/tabs"
+        },
+        {
+          "$ref": "#/$defs/slider"
+        },
+        {
+          "$ref": "#/$defs/toggle"
+        },
+        {
+          "$ref": "#/$defs/grid"
         }
       ]
     },
@@ -393,6 +411,28 @@
           "type": "number",
           "minimum": 0,
           "maximum": 100
+        },
+        "nav": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z0-9_]+)*$",
+          "maxLength": 64,
+          "description": "State path to a formNav descriptor. Optional; the OS shows a sidebar at widths of at least 700dp."
+        },
+        "subtitle": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "primary": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "secondary": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "back": {
+          "type": "string",
+          "maxLength": 2048
         }
       }
     },
@@ -417,12 +457,16 @@
           "properties": {
             "body": {
               "$ref": "#/$defs/formComponent"
+            },
+            "hero": {
+              "$ref": "#/$defs/slotContent"
             }
           }
         }
       },
       "x-thinkos-slot-roles": {
-        "body": "content"
+        "body": "content",
+        "hero": "hero"
       }
     },
     "progress": {
@@ -601,8 +645,15 @@
           "type": "number",
           "minimum": 0,
           "maximum": 100
+        },
+        "current": {
+          "type": [
+            "string",
+            "number"
+          ]
         }
-      }
+      },
+      "description": "'current' is the 1-based row to mark as the one in use (the track being played); the list scrolls it into view when it changes."
     },
     "daylight": {
       "title": "SchemaDaylight",
@@ -1327,10 +1378,383 @@
       "x-thinkos-slot-roles": {
         "windows": "aero"
       }
+    },
+    "nowplaying": {
+      "title": "SchemaNowPlaying",
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "nowplaying"
+        },
+        "style": {
+          "enum": [
+            "full",
+            "bar",
+            "card"
+          ]
+        },
+        "idle": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "notice": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "description": "The OS music player view, bound to the media session: cover (the artwork, or a cover drawn from the title when there is none), title, artist, a format line, position bar, transport buttons, volume and, as a page variant, the queue. 'full' fills a page (variant 'queue' shows the queue beside the cover), 'bar' is a one-line mini player, 'card' fits a home card. 'idle' is shown while nothing plays; 'notice' is a line of text (a playback error) under the title. Buttons, the bar and the queue call the player directly; the plugin only provides the media."
+    },
+    "tv": {
+      "title": "SchemaTv",
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "tv"
+        },
+        "channel": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "tap": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+          "maxLength": 64
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "fit": {
+          "enum": [
+            "contain",
+            "cover"
+          ]
+        }
+      },
+      "description": "The OS television view: the cinema picture of 'video' (subtitles, buffering and error cards, brightness and volume by vertical drag) with a live-TV overlay in place of the transport bar. 'channel' is a state path to an object {number, name, group, line, lines, favorite, program:{title,start,end}, next:{title,start}} (times are epoch milliseconds, every field optional); the OS draws the channel banner, the programme now and next with its progress, and buttons for the previous / next channel, the channel list, the next line of the channel and the favourite mark. A button press, or a double tap on the left or right quarter of the picture, sends the 'tap' event with ('tap' value, action) where action is 'prev', 'next', 'list', 'line' or 'favorite'. The plugin only supplies the media and the channel."
+    },
+    "tabs": {
+      "title": "SchemaTabs",
+      "type": "object",
+      "required": [
+        "type",
+        "items"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "tabs"
+        },
+        "items": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "current": {
+          "type": [
+            "string",
+            "number"
+          ]
+        },
+        "tap": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+          "maxLength": 64
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "description": "A row of up to six labelled tabs. 'items' is a state path to an array of strings, 'current' the 1-based selected tab; tapping one sends the 'tap' event with its 1-based index."
+    },
+    "slider": {
+      "title": "SchemaSlider",
+      "type": "object",
+      "required": [
+        "type",
+        "level"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "slider"
+        },
+        "level": {
+          "enum": [
+            "brightness",
+            "volume"
+          ]
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "description": "A slider for one of the device's own levels: the screen brightness (the 'display.brightness_max' setting) or the media volume the volume keys change. The OS draws it and applies the level as the finger moves, without going through Lua. Needs the system.device permission, which only built-in plugins hold."
+    },
+    "toggle": {
+      "title": "SchemaToggle",
+      "type": "object",
+      "required": [
+        "type",
+        "icon",
+        "label",
+        "tap"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "toggle"
+        },
+        "icon": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "on": {
+          "type": [
+            "string",
+            "boolean"
+          ]
+        },
+        "tap": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+          "maxLength": 64
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "description": "A labelled round button with an icon, lit while 'on' is true. Tapping it sends the 'tap' event; the plugin decides what that does. Colours, shape and press feedback belong to the OS."
+    },
+    "gridCell": {
+      "title": "SchemaGridCell",
+      "type": "object",
+      "required": [
+        "title"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "icon": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "image": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 512
+        }
+      }
+    },
+    "grid": {
+      "title": "SchemaGrid",
+      "type": "object",
+      "required": [
+        "type",
+        "items",
+        "item"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "grid"
+        },
+        "items": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "item": {
+          "$ref": "#/$defs/gridCell"
+        },
+        "tap": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+          "maxLength": 64
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "description": "A scrolling grid of icon cells with a title under each. 'items' is a state path to an array; each cell shows 'icon' (a name from the icon vocabulary) or 'image' (an image source, including app:<package> for an installed Android app, which needs system.apps), and 'title'. Tapping a cell sends 'tap' with its name and 1-based index."
+    },
+    "panel": {
+      "title": "SchemaPanelView",
+      "type": "object",
+      "required": [
+        "layout",
+        "slots"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "layout": {
+          "const": "panel"
+        },
+        "slots": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "header": {
+              "$ref": "#/$defs/slotContent"
+            },
+            "quick": {
+              "$ref": "#/$defs/slotContent"
+            },
+            "levels": {
+              "$ref": "#/$defs/slotContent"
+            },
+            "media": {
+              "$ref": "#/$defs/slotContent"
+            },
+            "footer": {
+              "$ref": "#/$defs/slotContent"
+            },
+            "update": {
+              "$ref": "#/$defs/text"
+            }
+          }
+        }
+      },
+      "x-thinkos-slot-roles": {
+        "header": "header",
+        "quick": "row",
+        "levels": "levels",
+        "media": "media",
+        "footer": "footer",
+        "update": "notice"
+      },
+      "description": "The control sheet that slides down from the top edge over whatever page is showing. 'quick' is one row of toggles, 'levels' a stack of sliders, 'media' the media controls (the OS collapses it while nothing is loaded); 'header' and 'footer' are text rows. Only the plugin that holds the panel role and system.device can supply it; the OS owns the gesture, the sheet and its look. API10 adds the optional update text slot: OS-owned two-line result/notes preview, collapsed when empty. Its tap opens the complete native update page."
+    },
+    "formIcon": {
+      "description": "A registered monochrome vector glyph; no arbitrary image, font, path or style.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "enum": [
+        "wifi", "wifi-off", "volume", "volume-off", "brightness", "tv", "radio", "cast", "apps", "settings",
+        "clear-day", "clear-night", "partly-day", "partly-night", "cloud", "fog", "rain", "shower", "snow", "thunder",
+        "sun", "moon", "unknown", "monitor", "map-pin", "house", "sliders-horizontal", "puzzle", "moon-star", "sunset", "bluetooth"
+      ]
+    },
+    "formLink": {
+      "title": "SchemaFormLink",
+      "description": "A link descriptor in the state array named by form.path. It emits form.change(key, true), after confirmation when confirm is present. API10 adds an optional fixed 24dp vector icon.",
+      "type": "object",
+      "required": [
+        "key",
+        "type",
+        "label"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "type": {
+          "const": "link"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "display": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "icon": {
+          "$ref": "#/$defs/formIcon"
+        },
+        "group": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "confirm": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      }
+    },
+    "formPreview": {
+      "description": "OS-computed number descriptor preview. Only brightness is supported; a drag temporarily changes DeviceLevels and cancellation restores the saved value. This is not a manifest setting property or a plugin permission.",
+      "type": "string",
+      "enum": [
+        "brightness"
+      ]
+    },
+    "formNav": {
+      "title": "SchemaFormNav",
+      "type": "object",
+      "description": "State descriptor read by form.nav. form.navigate(id) replaces the selected category; form.layout(wide) reports the OS breakpoint. API10 adds optional registered icons; categories show all icons or none. No style parameters.",
+      "required": [
+        "items"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "title": "SchemaFormNavItem",
+            "type": "object",
+            "required": [
+              "id",
+              "label"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "icon": {
+                "$ref": "#/$defs/formIcon"
+              }
+            }
+          }
+        },
+        "current": {
+          "type": "string",
+          "maxLength": 64
+        }
+      }
     }
   },
   "x-thinkos-api": {
-    "current": 7,
+    "current": 10,
     "componentTypes": {
       "text": 1,
       "icon": 1,
@@ -1345,7 +1769,13 @@
       "carousel": 3,
       "controls": 7,
       "video": 7,
-      "seekbar": 7
+      "seekbar": 7,
+      "nowplaying": 8,
+      "tv": 8,
+      "tabs": 8,
+      "slider": 8,
+      "toggle": 8,
+      "grid": 8
     },
     "layouts": {
       "stacks": 1,
@@ -1354,11 +1784,18 @@
       "split": 2,
       "stage": 2,
       "tiles": 4,
-      "aero": 5
+      "aero": 5,
+      "panel": 8
     },
     "componentProperties": {
       "tap": 2,
-      "weight": 2
+      "weight": 2,
+      "current": 8,
+      "nav": 9,
+      "subtitle": 10,
+      "primary": 10,
+      "secondary": 10,
+      "back": 10
     },
     "componentGroups": 2,
     "templates": {
@@ -1369,7 +1806,9 @@
     "manifestFields": {
       "exports": 6,
       "uses": 6,
-      "calls": 6
+      "calls": 6,
+      "apps": 8,
+      "related": 9
     },
     "widgetFields": {
       "alternates": 6
@@ -1383,6 +1822,87 @@
     },
     "tileFaceFields": {
       "content": 6
+    },
+    "settingFields": {
+      "warn": 9,
+      "placeholder": 9,
+      "level": 9,
+      "depends": 9,
+      "format": 9,
+      "zero": 9,
+      "presets": 9
+    },
+    "settingSources": {
+      "region": 10
+    },
+    "settingTypes": {
+      "time": 10
+    },
+    "formFields": {
+      "link": 1,
+      "confirm": 9,
+      "preview": 9,
+      "nav": 9,
+      "link.icon": 10,
+      "nav.items.icon": 10,
+      "time": 10
+    },
+    "runtimeEvents": {
+      "cast": 9,
+      "form.layout": 9,
+      "form.navigate": 9,
+      "apps": 9,
+      "update": 10,
+      "practice": 10,
+      "plugins": 10,
+      "mode": 10
+    },
+    "mediaEntryFields": {
+      "public_only": 10
+    },
+    "mediaProbeOptions": {
+      "public_only": 10
+    },
+    "runtimeMethods": {
+      "net.resolve": 10,
+      "device.mode": 10,
+      "device.setMode": 10,
+      "settings.about": 9,
+      "apps.list": 9,
+      "apps.open": 9,
+      "update.status": 10,
+      "update.open": 10,
+      "update.check": 10,
+      "update.download": 10,
+      "update.install": 10,
+      "onboarding.open": 10,
+      "onboarding.status": 10,
+      "onboarding.practice": 10,
+      "onboarding.stop": 10,
+      "device.canSetLocale": 10,
+      "device.setLocale": 10,
+      "device.canSetTimeZone": 10,
+      "device.setTimeZone": 10,
+      "tz.zones": 10,
+      "plugins.catalog": 10,
+      "plugins.installed": 10,
+      "plugins.open": 10,
+      "plugins.install": 10,
+      "plugins.update": 10,
+      "plugins.uninstall": 10,
+      "plugins.setAuto": 10
+    },
+    "pageRoles": {
+      "launcher": 9,
+      "onboarding": 10
+    },
+    "permissions": {
+      "system.update": 10,
+      "system.plugins": 10
+    },
+    "layoutSlots": {
+      "panel.update": 10,
+      "form.hero": 10
     }
   }
 }

@@ -1,0 +1,94 @@
+{
+  "layout": "panel",
+  "slots": {
+    "header": {
+      "type": "text",
+      "value": "{{header}}",
+      "style": "title"
+    },
+    "quick": {
+      "children": [
+        {
+          "type": "toggle",
+          "icon": "{{wifi.icon}}",
+          "label": "{{wifi.label}}",
+          "on": "{{wifi.on}}",
+          "tap": "wifi"
+        },
+        {
+          "type": "toggle",
+          "icon": "{{mute.icon}}",
+          "label": "@mute",
+          "on": "{{mute.on}}",
+          "tap": "mute"
+        },
+        {
+          "type": "toggle",
+          "icon": "sunset",
+          "label": "@redshift",
+          "on": "{{redshift.on}}",
+          "tap": "redshift"
+        },
+        {
+          "type": "toggle",
+          "icon": "moon",
+          "label": "@sleep",
+          "on": "{{sleep.on}}",
+          "tap": "sleep"
+        },
+        {
+          "type": "toggle",
+          "icon": "settings",
+          "label": "@settings",
+          "tap": "settings"
+        },
+        {
+          "type": "toggle",
+          "icon": "apps",
+          "label": "@apps",
+          "tap": "apps"
+        }
+      ]
+    },
+    "levels": {
+      "children": [
+        {
+          "type": "slider",
+          "level": "brightness"
+        },
+        {
+          "type": "slider",
+          "level": "volume"
+        }
+      ]
+    },
+    "media": {
+      "children": [
+        {
+          "type": "text",
+          "value": "{{media.title}}",
+          "style": "body"
+        },
+        {
+          "type": "controls",
+          "mode": "queue"
+        },
+        {
+          "type": "seekbar"
+        }
+      ]
+    },
+    "footer": {
+      "type": "text",
+      "value": "{{footer}}",
+      "style": "caption",
+      "tap": "network"
+    },
+    "update": {
+      "type": "text",
+      "value": "{{update}}",
+      "style": "body",
+      "tap": "updates"
+    }
+  }
+}

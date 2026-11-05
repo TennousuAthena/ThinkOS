@@ -40,8 +40,7 @@ local function render()
     status = t("waiting"), stale = true, hourly = emptyArray(), days = emptyArray(), highlight = 0,
     icon = "unknown", mood = "#94a7cb", tileColor = "#475569", tileHumidity = "—", tileWind = "—", tileRain = "—", feelsValue = "—",
     tileWindLabel = t("tile.wind", { unit = t("unit." .. units.wind) }),
-    hourlyTitle = t("hourly", { unit = t("unit." .. units.temperature) }),
-    hourlyRange = "", source = t("source"), licence = t("licence") }
+    hourlyTitle = t("hourly"), source = t("source"), licence = t("licence") }
   local nextRelevance = .3
   if raw then
     local weather, current = raw.weather, raw.weather.current
@@ -58,8 +57,8 @@ local function render()
     state.tileWind = tostring(round(tos.units.wind(current.wind_speed_10m)))
     state.feelsValue = degrees(current.apparent_temperature)
     state.location = same and place.name or raw.place.name
-    state.metrics = t("feels", { value = degrees(current.apparent_temperature) }) .. " · "
-      .. t("humidity", { value = round(current.relative_humidity_2m) }) .. "\n"
+    state.metrics = t("feels", { value = degrees(current.apparent_temperature) }) .. "  "
+      .. t("humidity", { value = round(current.relative_humidity_2m) }) .. "  "
       .. t("wind", { value = round(tos.units.wind(current.wind_speed_10m)),
         unit = t("unit." .. units.wind) })
     for i, timestamp in ipairs(weather.daily.time) do
@@ -69,41 +68,37 @@ local function render()
         -- Daily boundaries use the API's fixed response offset even across DST. Format
         -- that nominal local date in UTC, rather than shifting it again through IANA.
         state.days[#state.days+1] = { title = tos.time.format((timestamp + offset) * 1000, "@weekday", "UTC"),
-          subtitle = t(dailyKey) .. " · " .. t("rain_chance", { value = round(weather.daily.precipitation_probability_max[i]) }),
+          subtitle = t(dailyKey) .. (weather.daily.precipitation_probability_max[i] >= 20 and
+            ("  " .. t("rain_chance", { value = round(weather.daily.precipitation_probability_max[i]) })) or ""),
           trailing = range, icon = dailyIcon }
         if math.floor((timestamp + offset) / 86400) == day then
-          state.summary = state.summary .. " · " .. range
+          state.summary = state.summary .. "  " .. range
           state.tileRain = round(weather.daily.precipitation_probability_max[i]) .. "%"
         end
       end
     end
-    local first, last
     for i, timestamp in ipairs(weather.hourly.time) do
       if timestamp >= hour and #state.hourly < 24 then
         state.hourly[#state.hourly+1] = tos.units.temperature(weather.hourly.temperature_2m[i])
-        first, last = first or timestamp, timestamp
         if timestamp == hour then state.highlight = #state.hourly end
       end
     end
-    -- The chart runs chronologically left-to-right. Isolate each localized time and the
-    -- range so Arabic/Urdu bidi layout cannot reverse its endpoints or AM/PM marker.
-    if first then state.hourlyRange = "\u{2066}\u{2068}" .. tos.time.format(first * 1000, "@time", weather.timezone)
-      .. "\u{2069} → \u{2068}" .. tos.time.format(last * 1000, "@time", weather.timezone) .. "\u{2069}\u{2069}" end
-    if raw.fetchedAt then
-      state.status = t("updated", { time = tos.time.format(raw.fetchedAt, "@time", weather.timezone) })
-      if now and now >= raw.fetchedAt then state.status = state.status .. " · " .. t("age", { count = math.floor((now - raw.fetchedAt) / 60000) }) end
-    else state.status = t("time_unknown") end
-    if not now then state.status = t("time_unknown") end
-    state.stale = failed or not same or expired(now) == true or (now ~= nil and raw.fetchedAt ~= nil and now < raw.fetchedAt)
-    if not same then state.status = t("changing_location", { name = place.name }) .. " · " .. state.status
-    elseif expired(now) then state.status = t("expired") .. " · " .. state.status
-    elseif failed then state.status = t("offline") .. " · " .. state.status end
+    state.stale = failed or not same or expired(now) == true or not now or not raw.fetchedAt
+      or (now ~= nil and raw.fetchedAt ~= nil and now < raw.fetchedAt)
+    state.status = ""
+    if state.stale then
+      state.status = raw.fetchedAt and t("updated", { time = tos.time.format(raw.fetchedAt, "@time", weather.timezone) }) or t("time_unknown")
+      if not now then state.status = t("time_unknown")
+      elseif not same then state.status = t("changing_location") .. "  " .. state.status
+      elseif expired(now) then state.status = t("expired") .. "  " .. state.status
+      elseif failed then state.status = t("offline") .. "  " .. state.status end
+    end
     if precipitation or current.wind_speed_10m >= tos.config.high_wind
       or current.temperature_2m >= tos.config.heat or current.temperature_2m <= tos.config.cold then nextRelevance = .85
     elseif now and (reference + offset) % 86400 >= 21600 and (reference + offset) % 86400 < 32400 then nextRelevance = .5 end
-  elseif failed then state.summary, state.status = t("unavailable"), t("retrying")
+  elseif failed then state.summary, state.status = t("unavailable"), ""
   elseif not now then state.status = t("time_unknown") end
-  state.cardInfo = state.location .. " · " .. state.status
+  state.cardInfo = state.location .. (state.status ~= "" and ("  " .. state.status) or "")
   -- Public contract weather-now/1 (ADR-027): conditions only, never the place.
   state.public = { now = { temperature = state.temperature, icon = state.icon, condition = state.summary, stale = state.stale } }
   -- Avoid writing relevance on the per-minute timestamp updates.

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "updater-status.json",
+  "title": "UpdaterStatusDocument",
+  "description": "Bounded local protocol-1 STATUS response from the authenticated root socket, without the OK prefix. Not a Server API or downloaded trust document.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocol", "keys", "transaction", "id", "phase", "result", "rollback_attempted", "modules"],
+  "properties": {
+    "protocol": {"type": "integer", "const": 1},
+    "keys": {"type": "integer", "minimum": 0, "maximum": 2},
+    "transaction": {"type": "boolean"},
+    "id": {"type": "string", "maxLength": 32, "pattern": "^(?:[a-f0-9]{32})?$"},
+    "phase": {"type": "integer", "minimum": 0, "maximum": 6},
+    "result": {"type": "integer", "minimum": 0, "maximum": 3},
+    "rollback_attempted": {"type": "boolean"},
+    "modules": {
+      "type": "array", "maxItems": 7,
+      "items": {
+        "title": "UpdaterModuleStatus", "type": "object", "additionalProperties": false,
+        "required": ["id", "code", "floor", "staged"],
+        "properties": {
+          "id": {"type": "string", "enum": ["thinkos-updater", "thinkos-cast", "thinkos-immersive", "thinkos-shell", "thinkos-certs", "thinkos-power", "timesync"]},
+          "code": {"type": "integer", "minimum": -1, "maximum": 2147483647},
+          "floor": {"type": "integer", "minimum": 0, "maximum": 2147483647},
+          "staged": {"type": "integer", "minimum": 0, "maximum": 2147483647},
+          "active": {"type": "boolean", "description": "Actual enabled installed component with no pending replacement/remove markers. Missing on an older daemon means unknown, never healthy."}
+        }
+      }
+    },
+    "setup": {
+      "title": "UpdaterSetupCapabilities", "type": "object", "additionalProperties": false,
+      "required": ["timezone", "language", "device_owner"],
+      "properties": {
+        "timezone": {"type": "boolean"},
+        "language": {"type": "boolean"},
+        "device_owner": {"type": "boolean", "const": false}
+      }
+    }
+  }
+}

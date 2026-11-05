@@ -7,6 +7,10 @@
 | `gen_samples.sh [输出目录]` | 用 ffmpeg 合成 12 秒样片矩阵（视频 / 音频 / 字幕 / 歌词 / 封面），输出 `manifest.tsv`，并对每个文件跑 `ffprobe` 校验。幂等，`FORCE=1` 重新生成 |
 | `serve.py` | 测试源站（标准库，多线程）：Range、鉴权、重定向、限速、断流、HLS / DASH 点播、直播、M3U 列表 |
 | `rtsp.sh <样片> [端口]` | 循环播放某个样片的 RTSP 源（VLC 做服务端，见下文“已知限制”） |
+| `icy.py [--port 8891] [--disconnect-once]` | 只绑定127.0.0.1的静音MP3电台，ICY动态曲名、M3U/PLS清单；APP-3驱动用自己的adb reverse访问。测试故障只影响该本地测试台 |
+| `radio_browser.py [--port 8894] [--scenario normal] [--audio-root 本地目录]` | APP-9 的固定本地目录夹具，回环绑定，JSON/M3U、UUID、分页分类和故障响应；不连接公网、不生成或下载媒体 |
+
+`radio_browser.py` 的 scenario 可选 `normal/duplicates/bad-addresses/broken/malformed/oversize/slow/5xx`。`/json/stations/search` 和 `/m3u/stations/search` 支持 limit/offset；`/json/tags` 提供固定多语标签；`/test/requests` 返回最多1000条请求，能核对 User-Agent 与 `/json/url/<uuid>` 是否出现。可选 audio-root 只读取普通文件 `silent.mp3`、`silent.aac`、`segment.ts`（每份≤16MiB），映射到 `/local-audio/`，HLS 清单引用同目录 TS；没提供就404。所有样本必须原先本地已有且静音，脚本不会合成或联网取得。目录 JSON 中的 `stream.example.org` 是解析占位，绝不是可播公网台。目录条目的 `public_only` 必须拒绝回环音频，不能因夹具需要而放宽；本地音频只经既有 M3U/PLS 路径验引擎，目录公网成功链另验。
 
 ## 快速开始
 

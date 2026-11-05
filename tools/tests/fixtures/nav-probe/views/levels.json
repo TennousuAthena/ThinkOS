@@ -1,0 +1,17 @@
+{
+  "layout": "focus",
+  "slots": {
+    "over": {
+      "type": "text",
+      "value": "open another app",
+      "style": "caption",
+      "tap": "plain"
+    },
+    "hero": {
+      "type": "text",
+      "value": "{{text}}",
+      "style": "title",
+      "tap": "deeper"
+    }
+  }
+}

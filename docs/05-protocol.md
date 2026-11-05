@@ -99,9 +99,9 @@ If-None-Match: "<rev>"
 |---|---|
 | `rev` | 单调递增；任何字段变化都会递增 |
 | `config` | **设置文档**（ADR-017）：除 `deck` 之外的顶层键是**系统级设置**（清单与 schema 见 `04-ui-spec.md` §9、`shared/schema/settings/system.json`），`plugins.<id>` 是**页面级设置**（schema 在该插件的 manifest `settings` 里，生效值以 `tos.config` 交给插件）。覆盖 APK 内置默认值；缺省项沿用设备默认值。`deck` 是部署配置（页面顺序、角色、首页两栈），不是设置项 |
-| `plugins` | 设备上**应当安装**的插件全集。不在列表中的已安装插件 → 卸载（APK 内置插件除外，它们回退到出厂版本）。每项含：`digest`（文件清单摘要，见 `06-plugins.md` §2）、`source`（来源：`git` 带 `url` / `path` / `ref` / 锁定的 `commit` / `track`，或 `local`；仅用于显示和排错，**设备不访问它**）、`permissions`（用户已在 Server 上确认的权限）、`files`（逐文件清单，每个文件都是一个 blob） |
+| `plugins` | 本Server管理的插件集合，不是设备全部来源的全集。缺项只撤销该Server管理的副本，不卸载用户从签名registry安装的副本；APK内置版本保留。每项含：`digest`（文件清单摘要，见 `06-plugins.md` §2）、`source`（来源：`git` 带 `url` / `path` / `ref` / 锁定的 `commit` / `track`，或 `local`；仅用于显示和排错，**设备不访问它**）、`permissions`（用户已在 Server 上确认的权限）、`files`（逐文件清单，每个文件都是一个 blob） |
 | `albums` | 照片集；`portrait` / `landscape` 是已按设备尺寸裁好的 JPEG 的 sha256 |
-| `apk` | 可选；仅提示有新版本，安装需人工确认 |
+| `apk` | 可选的管理端版本提示；实际更新由设备按`34` §3–4读取签名目录并校验，Device Owner下可依安静时段策略静默安装。此字段自身不是验签或安装授权 |
 
 ### 3.3 制品下载
 
@@ -120,16 +120,18 @@ GET /api/v1/blobs/{sha256}
 desired 与 actual 比较
   ├─ 插件：`digest` 不同 → 逐文件下载（本地已有同 sha256 的文件直接复用，不重下）→ 校验 sha256 与 size
   │        → 在临时目录拼出 → 校验文件数 / 大小限制、manifest 与视图 schema、`api`、权限
-  │        → 原子切换 → 热加载；多余的插件 → 停止并卸载
+  │        → 原子切换 → 热加载；仅该Server管理且已缺项的副本 → 停止并撤销，不删除registry来源或APK内置版本
   ├─ 照片集：增量下载缺失的图片，删除不再需要的图片（受存储上限约束）
   ├─ 配置：校验后整体替换 Server 下发层，重新计算生效值（§3.5），受影响的插件收到 `config` 事件
-  └─ APK：维护页显示“有新版本”
+  └─ APK：作为管理端版本提示；实际签名更新流程与静默安装门禁见34号文档
 全部完成后 → 回报 actual
 ```
 
 - 对齐失败的单项不影响其它项；失败项在下一轮同步时重试
 - 大文件下载只在 Attention ≤ AMBIENT 时进行
 - 期望状态里 `permissions` 超出 manifest 声明、或声明了系统权限（`system.settings`）的 Git 来源插件：设备拒绝加载并回报
+
+**实现边界（OTA-4核对）**：本节Server期望状态对齐是协议设计；当前没有Server业务入口或来源隔离删除的端到端证据。设备已有的独立registry存储/按来源停用不能冒充本算法已实现。本轮不开发Server，也不据此勾选“不误删registry”的集成验收。
 
 ### 3.5 设置值的同步（ADR-017）
 
@@ -277,7 +279,7 @@ ws://<server>:8765/ws
 
 ## 11. 安全
 
-- 仅限局域网；Server 不应暴露到公网。若需要公网访问，必须 `https/wss` + 每设备 token
-- 制品完整性由“已认证的期望状态文档中的 sha256”保证；V1 可选 git 签名 tag 校验（`git verify-tag`），取代原先计划的插件包签名
-- Git 取回只发生在 Server：设备不访问任何插件仓库地址，`source` 字段只用于显示
+- 仅限局域网；Server 不应暴露到公网。若需要公网访问，必须 `https/wss` + 每设备 token。该限制针对Server管理协议；独立OTA/registry公开镜像无需设备token，公网仅HTTPS，私网镜像可用HTTP，仍必须验签。
+- Server下发路径以已认证期望状态的sha256校验文件；可选Git tag校验仍只在取回端执行。ADR-041的独立OTA/registry路径先用APK内置的独立角色公钥验证目录原始字节，再核对清单与文件摘要；Server提示不能替代签名目录或模块的独立系统根。
+- 设备不运行Git、不访问作者仓库；可从公开镜像或可选Server镜像读取签名registry目录和内容寻址文件。`source`中的作者仓库地址仍只用于显示/排错，不会变成设备的Git或下载入口。
 - 插件的权限由设备按 manifest 强制执行，Server 下发不能绕过

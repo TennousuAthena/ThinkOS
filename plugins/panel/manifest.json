@@ -1,0 +1,23 @@
+{
+  "id": "panel",
+  "name": "@name",
+  "version": "0.1.0",
+  "api": 10,
+  "main": "main.lua",
+  "permissions": [
+    "media",
+    "system.device",
+    "system.apps",
+    "system.update"
+  ],
+  "pages": [
+    {
+      "id": "main",
+      "view": "views/main.json",
+      "title": "@name",
+      "roles": [
+        "panel"
+      ]
+    }
+  ]
+}

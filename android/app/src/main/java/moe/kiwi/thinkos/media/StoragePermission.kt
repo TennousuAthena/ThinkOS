@@ -9,18 +9,30 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
 /** Native Android permission UI, shared by all capability callers without granting plugin powers. */
-class StoragePermission(context: Context, private val launch: (Long) -> Boolean) {
-    private val app = context.applicationContext
-    private val main = Handler(Looper.getMainLooper())
+class StoragePermission internal constructor(
+    private val granted: () -> Boolean,
+    private val launch: (Long) -> Boolean,
+    private val postToMain: (() -> Unit) -> Unit,
+    private val assertMain: () -> Unit,
+) {
+    constructor(context: Context, launch: (Long) -> Boolean) : this(
+        androidGrant(context),
+        launch, androidPost(),
+        { check(Looper.myLooper() == Looper.getMainLooper()) { "Storage permission UI must run on main" } },
+    )
     private val next = AtomicLong()
     private var requestId: Long? = null
+    // One explicit denial applies to all background capability retries in this
+    // runtime. Do not turn the next audio/video scan into another system prompt.
+    // Android's actual grant always wins; no preference or permission is changed.
+    private var denied = false
     private data class Pending(val ticket: Ticket, val complete: (Boolean, String?) -> Unit)
     private val pending = linkedMapOf<Long, Pending>()
 
     inner class Ticket internal constructor(val owner: String, internal val id: Long) : AutoCloseable {
         internal val cancelled = AtomicBoolean(false)
         override fun close() {
-            if (cancelled.compareAndSet(false, true)) main.post { pending.remove(id) }
+            if (cancelled.compareAndSet(false, true)) postToMain { pending.remove(id) }
         }
     }
 
@@ -28,8 +40,13 @@ class StoragePermission(context: Context, private val launch: (Long) -> Boolean)
     fun request(owner: String, complete: (Boolean, String?) -> Unit): Ticket {
         checkMain()
         val ticket = Ticket(owner, next.incrementAndGet())
-        if (app.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+        if (granted()) {
+            denied = false
             complete(true, null)
+            return ticket
+        }
+        if (denied) {
+            complete(false, DENIED)
             return ticket
         }
         pending[ticket.id] = Pending(ticket, complete)
@@ -43,8 +60,10 @@ class StoragePermission(context: Context, private val launch: (Long) -> Boolean)
 
     fun result(id: Long, granted: Boolean) {
         checkMain()
-        val actualGrant = granted && app.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-        resolve(id, actualGrant, if (actualGrant) null else "READ_EXTERNAL_STORAGE permission was denied")
+        if (requestId != id) return
+        val actualGrant = granted && this.granted()
+        denied = !actualGrant // Set before resolving a Lua call that may retry immediately.
+        resolve(id, actualGrant, if (actualGrant) null else DENIED)
     }
 
     /** An Activity cannot leave Lua suspended if it is destroyed while showing the system dialog. */
@@ -62,6 +81,18 @@ class StoragePermission(context: Context, private val launch: (Long) -> Boolean)
     }
 
     private fun checkMain() {
-        check(Looper.myLooper() == Looper.getMainLooper()) { "Storage permission UI must run on main" }
+        assertMain()
+    }
+
+    companion object {
+        private const val DENIED = "READ_EXTERNAL_STORAGE permission was denied"
+        private fun androidGrant(context: Context): () -> Boolean {
+            val app = context.applicationContext
+            return { app.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED }
+        }
+        private fun androidPost(): (() -> Unit) -> Unit {
+            val main = Handler(Looper.getMainLooper())
+            return { task -> main.post { task() }; Unit }
+        }
     }
 }

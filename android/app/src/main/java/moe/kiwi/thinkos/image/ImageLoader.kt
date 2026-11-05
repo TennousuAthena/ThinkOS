@@ -4,6 +4,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.graphics.Canvas
+import android.util.LruCache
 import android.media.ExifInterface
 import android.os.Handler
 import android.os.Looper
@@ -37,6 +39,9 @@ internal class ImageLoader(context: Context, private val owner: (String) -> Imag
     private val cache by lazy { ImageDiskCache(File(app.cacheDir, "images")) }
     private val client by lazy { MediaHttpClient.create() }
     private val main = Handler(Looper.getMainLooper())
+    private val appIcons = object : LruCache<String, Bitmap>(4 * 1024 * 1024) {
+        override fun sizeOf(key: String, value: Bitmap): Int = value.allocationByteCount
+    }
     fun grant(id: String) = owner(id)
 
     fun load(id: String, src: String, width: Int, height: Int, result: (Result<LoadedImage>) -> Unit): Future<*> {
@@ -72,6 +77,19 @@ internal class ImageLoader(context: Context, private val owner: (String) -> Imag
         submit(decode) {
                 require(grant != null && owner(id) === grant) { "Image owner is no longer active" }
                 when (val source = ImageSource.parse(src, grant.permissions)) {
+                    is ImageSource.AppIcon -> {
+                        val manager = app.packageManager
+                        val revision = manager.getPackageInfo(source.packageName, 0).lastUpdateTime
+                        val size = minOf(width, height).coerceIn(1, 256)
+                        val key = "${source.packageName}:$revision:$size"
+                        val bitmap = appIcons.get(key) ?: Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888).also { bitmap ->
+                            val drawable = manager.getApplicationIcon(source.packageName).mutate()
+                            drawable.setBounds(0, 0, size, size)
+                            drawable.draw(Canvas(bitmap))
+                            bitmap.prepareToDraw(); appIcons.put(key, bitmap)
+                        }
+                        deliver(Result.success(LoadedImage(bitmap)))
+                    }
                     is ImageSource.Remote -> {
                         // Cache hits and local files never queue behind a slow/offline HTTP request.
                         val hit = cache.cached(source.url)

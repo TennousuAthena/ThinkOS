@@ -8,10 +8,12 @@ import java.util.*;
 public class NativeLua {
     public static class Step {
         public final int taskId, status;
-        public final String message;
-        public final long cpuMicros, wallMicros;
-        public Step(int id,int status,String message,long cpu,long wall) {
+        public final String message, slowestHost;
+        public final long cpuMicros, wallMicros, hostCpuMicros, slowestHostMicros, compileMicros;
+        public final int hostCalls;
+        public Step(int id,int status,String message,long cpu,long wall,long hostCpu,int calls,String method,long maxCpu,long compile) {
             taskId=id;this.status=status;this.message=message;cpuMicros=cpu;wallMicros=wall;
+            hostCpuMicros=hostCpu;hostCalls=calls;slowestHost=method;slowestHostMicros=maxCpu;compileMicros=compile;
         }
         public String toString(){return status+":"+message+" CPU="+cpuMicros+"us wall="+wallMicros+"us";}
     }
@@ -31,6 +33,8 @@ public class NativeLua {
     private Map<String,Object> config;
     private String bingModule;
     private Object saved;
+    private Object resetReply;
+    private Object[] resetArgs;
     public Object call(String method,Object[] args,int taskId) {
         switch(method) {
             case "config": return config!=null?config:Map.of("city","香港😀","nested",Map.of("x",1L));
@@ -45,6 +49,11 @@ public class NativeLua {
             case "locale": return Map.of("language","zh","region","CN","script","Hans");
             case "i18n.t": return args[0];
             case "module": return bingModule!=null && args[0].equals("sources.bing")?bingModule:"return {answer=42}";
+            case "settings.reset": resetArgs=args;return resetReply;
+            case "device.mode": return "day";
+            case "device.setMode": awaited=taskId;return null;
+            case "update.status": return Map.of("schema",1L,"current_code",1001L,"current_version","0.1.1","phase","available");
+            case "update.open": case "update.check": case "update.download": case "update.install": awaited=taskId;return null;
             case "sleep": case "http.get": case "library.list": awaited=taskId;return null;
             default:return null;
         }
@@ -74,6 +83,21 @@ public class NativeLua {
         lua.run("assert(not pcall(function()tos.config.city='x'end));assert(not pcall(function()rawset(tos.config,'city','x')end));assert(not pcall(function()setmetatable({},{__gc=function()end})end));assert(_host==nil and _await==nil and _json==nil and io==nil and os==nil and debug==nil and package==nil)");
         ok(true,"sealed configuration, finalizers and hidden host functions");
 
+        lua.run("assert(select('#',tos.settings.reset('system','cast.miracast'))==0)");
+        ok(lua.resetArgs.length==2 && "system".equals(lua.resetArgs[0]) && "cast.miracast".equals(lua.resetArgs[1]),
+            "settings reset success preserves no business return and typed scope/key arguments");
+        lua.run("assert(select('#',tos.settings.reset('system'))==0)");
+        ok("system".equals(lua.resetArgs[0]) && (lua.resetArgs.length<2 || lua.resetArgs[1]==null),
+            "whole-scope settings reset preserves its omitted key and no business return");
+        lua.resetReply=Map.of("error",Map.of("code","feature_pending","args",Map.of(),"message","checking"));
+        lua.run("local value,err=tos.settings.reset('system','cast.miracast');assert(value==nil and type(err)=='table' and err.code=='feature_pending' and err.message=='checking' and type(err.args)=='table');assert(select('#',tos.settings.reset('system'))==2)");
+        ok(true,"settings reset unwraps a typed host error into nil,error instead of a success envelope");
+        lua.resetReply=Map.of("value",true,"internal","not a public result");
+        lua.run("assert(select('#',tos.settings.reset('system'))==0)");
+        ok(true,"settings reset never exposes a non-error internal host envelope");
+        lua.resetReply=null;
+
+
         lua.run("assert(('abc123'):match('(%d+)')=='123');assert(('a1b2'):gsub('%d','x')=='axbx');local n=0;for x in ('a1b2'):gmatch('%d')do n=n+1 end;assert(n==2)");
         lua.fail("return string.rep('a',200):match('^a*a*a*a*a*b')",3);
         lua.fail("while true do pcall(function()return string.rep('a',200):gsub('^a*a*a*a*a*b','x')end)end",3);
@@ -81,6 +105,24 @@ public class NativeLua {
         lua.run("tos.on('command',function(name)tos.state.set({command=name})end)");
         Step event=lua.event("command","typed-event");
         ok(event.status==0 && ((Map<?,?>)lua.state).get("command").equals("typed-event"),"cached function dispatch with typed arguments");
+        lua.run("tos.on('update_probe',function()local s=tos.update.status();assert(s.current_code==1001 and s.phase=='available');local ok,err=tos.update.check();assert(ok and not err);local downloaded,why=tos.update.download();assert(downloaded==nil and why=='tap');local opened,problem=tos.update.open();assert(opened and not problem);local installed,failed=tos.update.install();assert(installed and not failed);tos.state.set({updates=true})end)");
+        Step updateCheck=lua.event("update_probe");
+        ok(updateCheck.status==1,"update status crosses typed JNI and check yields without blocking Lua");
+        Step updateDownload=lua.resume(lua.handle,updateCheck.taskId,new Object[]{true,null});
+        ok(updateDownload.status==1,"update check admission resumes and download yields");
+        Step updateOpen=lua.resume(lua.handle,updateCheck.taskId,new Object[]{null,"tap"});
+        ok(updateOpen.status==1,"update download refusal preserves nil/error and native open yields");
+        Step updateInstall=lua.resume(lua.handle,updateCheck.taskId,new Object[]{true,null});
+        ok(updateInstall.status==1,"native update open resumes and install yields through the same bounded await bridge");
+        Step updateDone=lua.resume(lua.handle,updateCheck.taskId,new Object[]{true,null});
+        ok(updateDone.status==0 && Boolean.TRUE.equals(((Map<?,?>)lua.state).get("updates")),"update public wrappers complete through the production coroutine bridge");
+        lua.run("assert(tos.device.mode()=='day');tos.on('mode_probe',function()local ok,err=tos.device.setMode('sleep');assert(ok==nil and err=='touch');local changed,why=tos.device.setMode('redshift');assert(changed==true and why==nil);tos.state.set({modeMethods=true})end)");
+        Step modeCheck=lua.event("mode_probe");
+        ok(modeCheck.status==1 && modeCheck.taskId==lua.awaited,"public mode read is synchronous and manual mutation uses the production await bridge");
+        Step modeRefused=lua.resume(lua.handle,modeCheck.taskId,new Object[]{null,"touch"});
+        ok(modeRefused.status==1,"mode refusal preserves nil/error and a subsequent request yields");
+        Step modeDone=lua.resume(lua.handle,modeCheck.taskId,new Object[]{true,null});
+        ok(modeDone.status==0 && Boolean.TRUE.equals(((Map<?,?>)lua.state).get("modeMethods")),"mode success resumes through typed JNI without a private panel channel");
         lua.run("tos.on('command',function()local response,err=tos.http.get('https://example.test');assert(err==nil and response.body=='done');tos.timer.sleep(.01);tos.state.set({resumed=true})end)");
         Step wait=lua.event("command");
         ok(wait.status==1 && wait.taskId==lua.awaited,"async API yield has a retained task identity");
@@ -117,10 +159,13 @@ public class NativeLua {
         lua.run("assert(tos.time.now()==1704067200000)");
         ok(true,"200ms wall cap and recovery after blocked synchronous host");
         lua.burnMillis=70;
-        lua.run("assert(tos.time.now()==1704067200000)");
-        ok(true,"CPU spent inside one trusted host call is credited to the script (70ms > the 50ms script budget)");
+        Step credited=lua.run("assert(tos.time.now()==1704067200000)");
+        ok(credited.hostCalls==1 && credited.hostCpuMicros>=70000 && credited.slowestHostMicros>=70000 && "time.now".equals(credited.slowestHost),
+            "CPU spent inside one trusted host call is credited and attributed (70ms > the 50ms script budget)");
         lua.burnMillis=12;
-        lua.fail("for i=1,100 do tos.time.now() end",3);
+        Step capped=lua.start(lua.handle,null,null,"for i=1,100 do tos.time.now() end","capped");
+        ok(capped.status==3 && capped.hostCpuMicros>100000 && capped.hostCalls>8 && "time.now".equals(capped.slowestHost),
+            "cumulative host diagnostics include CPU beyond the capped credit");
         lua.burnMillis=0;
         ok(true,"host-call credit is capped, so a loop of host calls still hits the budget");
         lua.run("assert(tos.time.now()==1704067200000)");

@@ -1,0 +1,28 @@
+{
+  "layout": "focus",
+  "slots": {
+    "over": {
+      "type": "tabs",
+      "items": "{{tabs}}",
+      "current": "{{tab}}",
+      "tap": "tab"
+    },
+    "hero": {
+      "type": "list",
+      "items": "{{items}}",
+      "current": "{{current}}",
+      "item": {
+        "icon": "{{.icon}}",
+        "title": "{{.title}}",
+        "subtitle": "{{.subtitle}}",
+        "trailing": "{{.trailing}}"
+      },
+      "tap": "play"
+    },
+    "under": {
+      "type": "text",
+      "value": "{{footer}}",
+      "style": "caption"
+    }
+  }
+}

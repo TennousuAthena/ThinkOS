@@ -1,12 +1,51 @@
 {
   "id": "cast",
   "name": "@name",
-  "version": "0.1.0",
-  "api": 7,
+  "version": "0.2.0",
+  "api": 9,
   "main": "main.lua",
-  "permissions": ["media"],
+  "permissions": [
+    "media"
+  ],
   "pages": [
-    { "id": "video", "title": "@page.video", "view": "views/video.json", "live": true },
-    { "id": "audio", "title": "@page.audio", "view": "views/audio.json", "live": true }
+    {
+      "id": "home",
+      "title": "@page.home",
+      "view": "views/home.json"
+    },
+    {
+      "id": "video",
+      "title": "@page.video",
+      "view": "views/video.json",
+      "live": true
+    },
+    {
+      "id": "audio",
+      "title": "@page.audio",
+      "view": "views/audio.json",
+      "live": true
+    }
+  ],
+  "apps": [
+    {
+      "id": "cast",
+      "page": "home",
+      "title": "@app.cast",
+      "icon": "cast"
+    }
+  ],
+  "widgets": [
+    {
+      "id": "tile",
+      "view": "views/tile.json",
+      "opens": "home"
+    }
+  ],
+  "related": [
+    "cast.enabled",
+    "cast.airplay",
+    "cast.airplay_mirror",
+    "cast.miracast",
+    "cast.name"
   ]
 }

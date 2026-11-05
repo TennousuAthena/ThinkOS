@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "debug-keys.json",
+  "title": "UpdateDebugKeyDocument",
+  "type": "object",
+  "required": [
+    "schema",
+    "test"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "type": "integer",
+      "const": 1
+    },
+    "test": {
+      "$ref": "keys.json#/$defs/key"
+    }
+  },
+  "description": "Additional public test key; load only from debug source-set assets, never in release."
+}

@@ -9,6 +9,10 @@ import time
 import sys
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from app_network_block import AppNetworkBlock
+sys.path.insert(0,str(Path(__file__).resolve().parent))
+from device_recovery import capture, restore
+from media_device import Device
+from ui_walkthrough import broadcast_json
 
 
 def main():
@@ -31,12 +35,18 @@ def main():
 
     wifi = adb('shell', 'settings', 'get', 'global', 'wifi_on').decode().strip()
     network=AppNetworkBlock(args.serial) if args.wireless_offline else None
+    device = Device(args.serial)
+    assert any('moe.kiwi.thinkos/' in line for line in device.shell('dumpsys', 'activity', 'activities').splitlines() if 'mResumedActivity' in line)
+    ui = broadcast_json(device, 'ui_state')
+    journal = capture(device, ui)
+    print('Private recovery journal: '+str(journal), flush=True)
+    # Freeze a known starting page only in process state, after capturing the original data.
+    adb('shell', 'am', 'start', '-W', '-n', 'moe.kiwi.thinkos/.MainActivity')
     try:
         debug('hold_attention')
         debug('lux')
         debug('orientation', '--ei', 'value', '10')
-        adb('reverse', '--remove', 'tcp:8769', check=False)
-        adb('shell', 'cmd', 'package', 'set-home-activity', 'org.lineageos.trebuchet/com.android.launcher3.searchlauncher.SearchLauncher')
+        debug('page', '--es', 'value', 'home.main')
         if network:
             network.start()
             (args.output/'network-block.txt').write_text(network.evidence())
@@ -78,18 +88,17 @@ def main():
         if network:network.stop()
         if wifi != '0':
             adb('shell', 'svc', 'wifi', 'enable', check=False)
-        adb('shell', 'cmd', 'package', 'set-home-activity', 'moe.kiwi.thinkos/.MainActivity', check=False)
-        adb('shell', 'am', 'start', '-n', 'moe.kiwi.thinkos/.MainActivity', check=False)
-        debug('hold_attention')
-        debug('lux')
-        debug('orientation', '--ei', 'value', '10')
         restored = {
             'wifi': adb('shell', 'settings', 'get', 'global', 'wifi_on').decode().strip(),
             'rotation': adb('shell', 'settings', 'get', 'system', 'accelerometer_rotation').decode().strip(),
             'home': adb('shell', 'cmd', 'package', 'resolve-activity', '--brief', '-a', 'android.intent.action.MAIN', '-c', 'android.intent.category.HOME').decode().strip(),
             'development_overrides': adb('shell', 'run-as', 'moe.kiwi.thinkos', 'ls', 'files/dev-plugins').decode().strip(),
         }
+        try: restored.update(restore(journal, device))
+        except Exception as error:
+            restored['recovery_error'] = str(error); restored['private_recovery_journal'] = str(journal)
         (args.output / 'restored.json').write_text(json.dumps(restored, indent=2) + '\n')
+        assert not restored.get('recovery_error'), restored.get('recovery_error')
 
 
 if __name__ == '__main__':

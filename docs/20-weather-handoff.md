@@ -7,7 +7,8 @@
 
 - `weather.now`：首页天气卡片，点击进入 `weather.detail`。
 - `weather.detail`：实时温度、体感、湿度、风速、地点与更新时间，24 小时温度曲线、可滚动的 5 日预报。
-- 10 个 Canvas 天气图标：`clear-day`、`clear-night`、`partly-day`、`partly-night`、`cloud`、`fog`、`rain`、`shower`、`snow`、`thunder`。未知 WMO 代码使用明确占位。
+- 10 个天气图标：`clear-day`、`clear-night`、`partly-day`、`partly-night`、`cloud`、`fog`、`rain`、`shower`、`snow`、`thunder`。未知 WMO 代码使用明确占位（`unknown`，一个带问号的圆）。
+  > **2026-11-02 更新**：最初是 Canvas 手画的零件（太阳、射线、云、雨滴……）拼成，再预渲染成帧表播动画；现在全部换成取自 Iconfont 的 Lucide 矢量图标（`assets/README.md`），一个名字一条路径，按显示的实际大小直接画，不再从位图缩小，帧表（`WeatherAtlas`）随之删除。对应：clear-day→sun、clear-night→moon、partly-day→cloud-sun、partly-night→cloud-moon、cloud→cloudy、fog→cloud-fog、rain→cloud-rain、shower→cloud-rain-wind、snow→cloud-snow、thunder→cloud-lightning、unknown→circle-question-mark。**动画的变化**：太阳整体来回摆 ±9°（圆形的太阳整体转动就只有射线在动，和原来一样）、带云的图标左右轻飘 ±2/128 的图标宽度，保留；原来雨滴、雪花的逐粒下落和多云里太阳射线的单独摆动没有了，因为现在一个图标是一整条路径，拆不开。月相图标（`moon-phase-*`）按亮面比例画，不是固定图形，仍由代码绘制。
 - Open-Meteo 直连、完整数据校验、原始数据持久缓存、失败重试、断网显示旧数据、恢复联网后自动更新。
 - 温度与风速单位跟随系统设置 `units.system` / `units.wind`（`tos.units`），本地换算。单位和语言变化不产生请求。`heat` / `cold` / `high_wind` 阈值固定按 °C、km/h 填写。
 - 11 种语言、阿拉伯语 RTL、横竖屏、LIGHT / DARK / NIGHT，自动生成的插件设置页。

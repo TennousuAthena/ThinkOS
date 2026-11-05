@@ -1,0 +1,6 @@
+id=thinkos-certs
+name=ThinkOS System CA Certificates
+version=v2026.10.20
+versionCode=20261020
+author=ThinkOS
+description=Mozilla/curl system CA roots for Android 8.1; excludes server distrust-after roots. Reboot after manual installation.

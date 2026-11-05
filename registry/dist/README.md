@@ -1,0 +1,1 @@
+Local layout template only. tools/registry.py build creates registry/index.json, registry/files/<digest>.json and immutable blobs. The owner-host sign command adds adjacent index and tag-ledger signatures. This template contains no formal key or published catalog.

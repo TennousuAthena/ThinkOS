@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "pending.json",
+  "description": "Private install transaction, never a network API. Only fixed app-private filenames are used; no paths, URLs or keys. Every install/rollback revalidates the actual APK. Main-process attempts persist before native runtime startup.",
+  "title": "UpdatePending",
+  "type": "object",
+  "required": [
+    "schema",
+    "transaction_id",
+    "phase",
+    "channel",
+    "catalog_digest",
+    "seq",
+    "from",
+    "to",
+    "mode",
+    "attempts",
+    "max_attempts",
+    "health_ms",
+    "notice_ms",
+    "failure_limit",
+    "created",
+    "notes"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "type": "integer",
+      "const": 1
+    },
+    "transaction_id": {
+      "type": "string",
+      "minLength": 32,
+      "maxLength": 32,
+      "pattern": "^[a-f0-9]{32}$"
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "PREPARED",
+        "INSTALLING",
+        "TRIAL",
+        "ROLLING_BACK"
+      ]
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "stable",
+        "beta"
+      ]
+    },
+    "catalog_digest": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "seq": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9223372036854775807,
+      "format": "int64"
+    },
+    "from": {
+      "$ref": "#/$defs/apk"
+    },
+    "to": {
+      "$ref": "#/$defs/apk"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "automatic"
+      ]
+    },
+    "attempts": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "max_attempts": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "health_ms": {
+      "type": "integer",
+      "minimum": 600000,
+      "maximum": 3600000,
+      "format": "int64"
+    },
+    "notice_ms": {
+      "type": "integer",
+      "minimum": 60000,
+      "maximum": 604800000,
+      "format": "int64"
+    },
+    "failure_limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "created": {
+      "$ref": "#/$defs/time"
+    },
+    "notes": {
+      "$ref": "catalog.json#/$defs/release/properties/notes"
+    },
+    "session_id": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2147483647
+    },
+    "rollback_session_id": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2147483647
+    },
+    "trial_id": {
+      "type": "string",
+      "minLength": 32,
+      "maxLength": 32,
+      "pattern": "^[a-f0-9]{32}$"
+    },
+    "trial_started": {
+      "$ref": "#/$defs/time"
+    }
+  },
+  "$defs": {
+    "apk": {
+      "title": "UpdateApkIdentity",
+      "type": "object",
+      "required": [
+        "version",
+        "code",
+        "sha256",
+        "size",
+        "signer"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "$ref": "catalog.json#/$defs/release/properties/version"
+        },
+        "code": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "sha256": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 67108864,
+          "format": "int64"
+        },
+        "signer": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "time": {
+      "title": "UpdateInstallTime",
+      "type": "object",
+      "required": [
+        "elapsed"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "elapsed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807,
+          "format": "int64"
+        },
+        "boot": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807,
+          "format": "int64"
+        },
+        "wall": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807,
+          "format": "int64"
+        }
+      }
+    }
+  }
+}

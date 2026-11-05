@@ -59,8 +59,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--serial', default=os.environ.get('ANDROID_SERIAL', 'HUA0BWUT'))
     parser.add_argument('--samples', type=Path, default=Path('/tmp/thinkos-media-samples'))
+    parser.add_argument('--keep-muted', action='store_true', help='Require media volume0 and omit nonzero session-volume/mute changes')
     args = parser.parse_args()
     device = Device(args.serial)
+    if args.keep_muted:
+        assert re.search(r'volume is 0\b', device.shell('media', 'volume', '--stream', 3, '--get'))
     device.start_log()
     device.adb('reverse', 'tcp:%d' % PORT, 'tcp:%d' % PORT)
     origin = Origin(args.samples)
@@ -69,6 +72,8 @@ def main():
     original = read_app_file(args.serial, SETTINGS)
 
     def check(name, ok, detail=''):
+        if args.keep_muted:
+            assert re.search(r'volume is 0\b', device.shell('media', 'volume', '--stream', 3, '--get'))
         results.append(ok)
         print(('PASS ' if ok else 'FAIL ') + name + ('  ' + str(detail) if detail != '' else ''), flush=True)
 
@@ -159,15 +164,18 @@ def main():
         check('Seek moves the playhead', moved >= '0:00:07', moved)
         check('a seek past the end is refused with 711', soap(base, control[AVT], AVT, 'Seek', Unit='REL_TIME', Target='5:00:00')[0] == 500)
         soap(base, control[AVT], AVT, 'Play', Speed=1)
-        status, _ = soap(base, control[RCS], RCS, 'SetVolume', Channel='Master', DesiredVolume=30)
-        volume = soap(base, control[RCS], RCS, 'GetVolume', Channel='Master')[1]['CurrentVolume']
-        check('the volume is set and read back on the 0-100 scale', status == 200 and volume == '30', volume)
-        engine_volume = (device.state() or {}).get('volume')
-        check('the engine volume follows', engine_volume is not None and abs(engine_volume - 0.3) < 0.02, engine_volume)
-        soap(base, control[RCS], RCS, 'SetMute', Channel='Master', DesiredMute=1)
-        muted = (device.state() or {}).get('volume')
-        check('mute silences and reads back', soap(base, control[RCS], RCS, 'GetMute', Channel='Master')[1]['CurrentMute'] == '1' and muted is not None and muted < 0.01, muted)
-        soap(base, control[RCS], RCS, 'SetMute', Channel='Master', DesiredMute=0)
+        if args.keep_muted:
+            print('SKIP three session-volume/mute checks (--keep-muted; media volume stays0)', flush=True)
+        else:
+            status, _ = soap(base, control[RCS], RCS, 'SetVolume', Channel='Master', DesiredVolume=30)
+            volume = soap(base, control[RCS], RCS, 'GetVolume', Channel='Master')[1]['CurrentVolume']
+            check('the volume is set and read back on the 0-100 scale', status == 200 and volume == '30', volume)
+            engine_volume = (device.state() or {}).get('volume')
+            check('the engine volume follows', engine_volume is not None and abs(engine_volume - 0.3) < 0.02, engine_volume)
+            soap(base, control[RCS], RCS, 'SetMute', Channel='Master', DesiredMute=1)
+            muted = (device.state() or {}).get('volume')
+            check('mute silences and reads back', soap(base, control[RCS], RCS, 'GetMute', Channel='Master')[1]['CurrentMute'] == '1' and muted is not None and muted < 0.01, muted)
+            soap(base, control[RCS], RCS, 'SetMute', Channel='Master', DesiredMute=0)
 
         # --- what must be refused -----------------------------------------------------------------------------
         for bad in ('file:///sdcard/Movies/x.mp4', 'content://media/external/video/1', 'rtsp://192.168.1.9/live', 'http://user:secret@tv.test/a.mp4'):

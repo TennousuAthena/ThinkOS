@@ -13,7 +13,7 @@ class PlaceSearchTest {
         val place = PlaceSearch.parse("""{"results":[{"name":"海淀区","latitude":39.96,"longitude":116.3,
           "elevation":48,"timezone":"Asia/Shanghai","admin1":"北京市","admin2":"北京市","admin3":"海淀区","country":"中国"}]}""").single()
         assertEquals("海淀区", place.location.name)
-        assertEquals("北京市 · 中国", place.detail)
+        assertEquals("北京市, 中国", place.detail)
         assertEquals("Asia/Shanghai", place.formValue()["timezone"])
         assertEquals("manual", place.formValue()["mode"])
         assertEquals(39.96, place.formValue()["latitude"])

@@ -1,5 +1,15 @@
 {
   "name": "Трансляция",
   "page.video": "Видео с трансляции",
-  "page.audio": "Трансляция"
+  "page.audio": "Трансляция",
+  "app.cast": "Трансляция",
+  "page.home": "Трансляция",
+  "home.headline": "Трансляция на {name}",
+  "hint.dlna": "Видеоприложения, Windows",
+  "hint.airplay": "iPhone, iPad и Mac",
+  "hint.miracast": "Телефоны Android, Windows",
+  "state.on": "Вкл.",
+  "state.off": "Выкл.",
+  "footer.offline": "Нет подключения Wi-Fi",
+  "state.module": "Нужен модуль"
 }

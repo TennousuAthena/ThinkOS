@@ -2,18 +2,9 @@
   "template": "glance",
   "children": [
     {
-      "type": "text",
-      "value": "@name",
-      "style": "caption"
-    },
-    {
-      "type": "text",
-      "value": "{{nowTitle}}",
-      "style": "title"
-    },
-    {
-      "type": "controls",
-      "mode": "queue"
+      "type": "nowplaying",
+      "style": "card",
+      "idle": "{{nowTitle}}"
     }
   ],
   "relevance": "{{relevance}}"

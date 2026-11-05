@@ -11,13 +11,14 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'shared' / 'gen'))
-from schema_tools import ValidationError, validate_manifest, validate_view, validate
+from schema_tools import ValidationError, validate_manifest, validate_view, validate, validate_system_settings, SYSTEM_SETTINGS
 
 MAX_FILE_BYTES = 1024 * 1024
 MAX_PACKAGE_BYTES = 8 * 1024 * 1024
 MAX_FILES = 128
 MAX_JSON_SCRIPT_BYTES = 256 * 1024
 MAX_INDEX_BYTES = 64 * 1024
+LEGAL_FILES = {'LICENSE', 'LICENSE.txt', 'LICENSE.md', 'COPYING', 'NOTICE', 'NOTICE.txt'}
 
 
 def safe_relative(value):
@@ -43,9 +44,11 @@ def read_json(path):
 
 def allowed_file(relative):
     path = PurePosixPath(relative)
+    if relative == 'store.json' or path.parts[0] == 'store':
+        return False
     if any(part.startswith('.') for part in path.parts):
         return False
-    return (relative == 'manifest.json' or path.suffix == '.lua' or
+    return (relative == 'manifest.json' or relative in LEGAL_FILES or path.suffix == '.lua' or
             (path.parts[0] in ('views', 'i18n') and len(path.parts) > 1 and path.suffix == '.json') or
             (path.parts[0] == 'assets' and len(path.parts) > 1 and path.suffix.lower() in ('.png', '.jpg', '.jpeg', '.webp', '.ogg', '.wav')))
 
@@ -103,7 +106,7 @@ def check_public_links(manifests):
                 print(f'warning: {manifest["id"]}: calls: {target} is not a public command', file=sys.stderr)
 
 
-MEDIA_COMPONENTS = {'controls', 'video', 'seekbar'}
+MEDIA_COMPONENTS = {'controls', 'video', 'seekbar', 'nowplaying', 'tv'}
 
 
 def uses_media_components(value):
@@ -117,10 +120,27 @@ def uses_media_components(value):
 def check_media_permission(manifest, entry_id, view):
     # The OS draws these against the media session; without the grant the renderer would have nothing to attach to.
     if uses_media_components(view) and 'media' not in manifest.get('permissions', []):
-        raise ValidationError(f'{entry_id}: controls, video and seekbar need the media permission')
+        raise ValidationError(f'{entry_id}: controls, video, seekbar and nowplaying need the media permission')
+
+
+def uses_device_views(value):
+    # A slider moves the device's own levels, and the panel layout is the control sheet: both are for the plugin that holds system.device.
+    if isinstance(value, dict):
+        return value.get('type') == 'slider' or value.get('layout') == 'panel' or any(uses_device_views(item) for item in value.values())
+    if isinstance(value, list):
+        return any(uses_device_views(item) for item in value)
+    return False
+
+
+def check_device_permission(manifest, entry_id, view, roles=None):
+    if uses_device_views(view) and 'system.device' not in manifest.get('permissions', []):
+        raise ValidationError(f'{entry_id}: slider and the panel layout need the system.device permission')
+    if roles is not None and ('panel' in roles) != (view.get('layout') == 'panel'):
+        raise ValidationError(f'{entry_id}: the panel role and the panel layout go together')
 
 
 def validate_plugin(source):
+    validate_system_settings(SYSTEM_SETTINGS)
     if Path(source).is_symlink():
         raise ValidationError('plugin root cannot be a symlink')
     source = Path(source).resolve()
@@ -174,6 +194,7 @@ def validate_plugin(source):
             view = read_json(source / entry['view'])
             validate_view(view, manifest['api'])
             check_media_permission(manifest, entry['id'], view)
+            check_device_permission(manifest, entry['id'], view, entry.get('roles', []) if category == 'pages' else None)
             if view.get('layout') == 'tiles':
                 sizes = [item['size'] for item in view['slots']['tiles']]
                 dropped = tile_drops(sizes, 8, 6) & tile_drops(sizes, 6, 8)
@@ -192,6 +213,7 @@ def validate_plugin(source):
                 other = read_json(source / alternate)
                 validate_view(other, manifest['api'])
                 check_media_permission(manifest, entry['id'], other)
+                check_device_permission(manifest, entry['id'], other)
                 if other.get('template') != template:
                     raise ValidationError(f'widget {entry["id"]}: alternate {template} has a different template')
                 check_use_bindings(manifest, entry['id'], other)
@@ -254,12 +276,12 @@ def package_plugin(source, output):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--plugin', action='append', type=Path,
-                        help='Plugin source directory; repeat to package multiple. Defaults to built-in home, clock, weather, gallery, tiles, aero, player, cast and settings.')
+                        help='Plugin source directory; repeat to package multiple. Defaults to the fifteen built-in plugins, including welcome and hub.')
     parser.add_argument('--output', type=Path, default=ROOT / 'android/app/src/main/assets/plugins',
                         help='Output directory for <id>/ files and index.json.')
     parser.add_argument('--validate-only', action='store_true', help='Validate without writing directories.')
     args = parser.parse_args()
-    sources = args.plugin or [ROOT / 'plugins/home', ROOT / 'plugins/clock', ROOT / 'plugins/weather', ROOT / 'plugins/gallery', ROOT / 'plugins/tiles', ROOT / 'plugins/aero', ROOT / 'plugins/player', ROOT / 'plugins/cast', ROOT / 'plugins/settings']
+    sources = args.plugin or [ROOT / 'plugins/home', ROOT / 'plugins/clock', ROOT / 'plugins/weather', ROOT / 'plugins/gallery', ROOT / 'plugins/tiles', ROOT / 'plugins/aero', ROOT / 'plugins/player', ROOT / 'plugins/iptv', ROOT / 'plugins/cast', ROOT / 'plugins/panel', ROOT / 'plugins/settings', ROOT / 'plugins/apps', ROOT / 'plugins/radio', ROOT / 'plugins/welcome', ROOT / 'plugins/hub']
     try:
         manifests = [validate_plugin(source)[0] for source in sources]
         ids = [manifest['id'] for manifest in manifests]

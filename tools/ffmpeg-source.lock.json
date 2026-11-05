@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "tag": "v1.9.0+1",
+  "epoch": 1766993163,
+  "root": "thinkos-ffmpeg-source-v1.9.0+1",
+  "repositories": [
+    {
+      "path": "",
+      "url": "https://github.com/jellyfin/jellyfin-androidx-media.git",
+      "commit": "af9ee4e26b2045e3ea6f2ebf4a18ac8ebfeae396"
+    },
+    {
+      "path": "media",
+      "url": "https://github.com/androidx/media.git",
+      "commit": "7cc1056f840ce226598d3b990d4a6f7cd17e2831",
+      "branch": "release"
+    },
+    {
+      "path": "ffmpeg",
+      "url": "https://git.ffmpeg.org/ffmpeg.git",
+      "fetch_url": "https://github.com/FFmpeg/FFmpeg.git",
+      "commit": "37c90f55d8b6c3948c79449b04755527b4ae1351",
+      "branch": "release/6.0"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "redshift": "Redshift",
+  "sleep": "Sleep",
+  "mode.failed": "Could not change mode",
+  "name": "Control panel",
+  "mute": "Mute",
+  "settings": "Settings",
+  "wifi.label": "Wi-Fi",
+  "network.footer": "Network settings",
+  "apps": "Apps"
+}

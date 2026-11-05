@@ -1,0 +1,10 @@
+{
+  "layout": "focus",
+  "slots": {
+    "hero": {
+      "type": "text",
+      "value": "plain",
+      "style": "title"
+    }
+  }
+}

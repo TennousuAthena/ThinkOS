@@ -1,5 +1,7 @@
 # 19 · 新机刷机与设置（Agent 全自动手册）
 
+> 新入口：面向所有者的 [安装指南](installation-guide.md) 与 [金镜像/批量指南](golden-image-guide.md)。`tools/provision.py install|batch` 默认只生成计划；显式 `--apply-app` 也只执行已验证正式 APK、所选语言授权、白名单与启动。EDL、清数据、Device Owner、持久模块和重启始终由所有者操作。本页历史命令只在对应的新机初始化授权下适用，当前开发/调试授权不等于刷机授权。末尾部署改用实际已签发行产物及 GPL 安装信息，不能把开发 debug 包作为正式交付。
+
 > 目标：用户拿来一台**全新（或变砖/要重置）的 ThinkSmart View CD-18781Y**，只需做少数物理动作并给出 Wi-Fi 信息，其余由 Agent 按本文自动完成，最终得到与 `02-device.md` §2 一致的设备，并装好 ThinkOS。
 >
 > 状态标记：✅ = 已在上一台设备上实测；⚠️ = 依据 Android/Magisk 通用行为推导，**未在本机实测**，执行时必须按「验证」步骤确认，失败就停下记录，不要硬试。
@@ -120,8 +122,8 @@ edl reset
 ```bash
 for i in $(seq 1 60); do adb devices | grep -q -w device && break; sleep 5; done
 adb devices
-adb shell getprop ro.build.fingerprint   # 期望含 lineage_starfire-userdebug 8.1.0
-adb shell getprop ro.product.cpu.abilist # 期望只有 armeabi-v7a,armeabi
+adb shell getprop ro.lineage.version    # 期望 15.1-20240531-UNOFFICIAL-starfire
+adb shell getprop ro.product.cpu.abilist # 必须有 armeabi-v7a，只允许可选的 armeabi 兼容别名，无 arm64/x86
 ```
 
 ## 5. 阶段 C：Magisk 与模块
@@ -233,12 +235,11 @@ adb shell cat /data/local/tmp/time-sync.log  # 应有 "got from ..." 与 "done"
 
 ## 7. 阶段 E：安装 ThinkOS
 
-```bash
-cd /Users/takuenn/Workspace/mobileApp/ThinkOS
-tools/deploy.sh          # assembleDebug + install -r + set-home-activity + 启动（JDK 17/21 自动选择）
-```
+正式交付先由所有者按`tools/OWNER-RELEASE.md`准备真实发行目录，核对最终`release-preparation.json`、实际APK与证书摘要及对应源码。正常新机使用正式release；不能仅凭`app-release.apk`文件名认定已正式签名，也不能把缺少签名配置时回退的debug证书当作正式证书。
 
-`deploy.sh` 默认序列号 `HUA0BWUT`。**新机序列号不同**，务必先 `adb devices` 取得序列号，再 `ANDROID_SERIAL=<新序列号> tools/deploy.sh`。如桌面上只有一台设备，也可用该变量避免误装到别的设备。
+按[安装指南](installation-guide.md) §3提供实际APK、更新器签名产物、公钥和完整摘要，先生成`tools/provision.py install --dry-run`计划。只有显式`--apply-app`才执行其中已验证正式APK的应用阶段；它不刷机、清数据、设置Device Owner、持久装模块或重启。首次更新器与模块外守卫由所有者分别按`system/thinkos-updater/README.md`及`system/thinkos-updater/guard/README.md`部署；本轮更新器/守卫只在备用机验收，禁止安装到HUA0BWUT。
+
+仅工程调试才用`ANDROID_SERIAL=<实际设备序列号> tools/deploy.sh`构建安装debug；如需与正式版互相覆盖，必须由所有者预先配置同一正式证书。该命令不能代替正式发布准备或新机整体验收，也不扩大本页§0的初始化授权。
 
 后台保活（`07-build-deploy.md` §6）：
 
@@ -252,8 +253,8 @@ adb -s <序列号> shell dumpsys deviceidle whitelist +moe.kiwi.thinkos
 
 | # | 检查 | 命令 / 期望 |
 |---|---|---|
-| 1 | 系统版本 | `getprop ro.build.fingerprint` 含 `lineage_starfire-userdebug 8.1.0` |
-| 2 | ABI | `getprop ro.product.cpu.abilist` 只有 `armeabi-v7a,armeabi` |
+| 1 | 系统版本 | `getprop ro.lineage.version` 等于 `15.1-20240531-UNOFFICIAL-starfire`；官方fingerprint仍可能保留，不用它判断Lineage |
+| 2 | ABI | `getprop ro.product.cpu.abilist` 必须含armeabi-v7a，其余只允许armeabi兼容别名；HUA0BWUT当前只返回armeabi-v7a |
 | 3 | root | `su -c id` → `uid=0(root)` |
 | 4 | 模块 | `/data/adb/modules` 含 `busybox-ndk`、`timesync`、`zygisk_vector` |
 | 5 | 常亮 | `stay_on_while_plugged_in=7`，`screen_off_timeout=2147483647` |
@@ -286,7 +287,7 @@ adb -s <序列号> shell dumpsys deviceidle whitelist +moe.kiwi.thinkos
 → 用户再进 EDL → edl w boot magisk_patched.img → edl reset §4.3
 → 等 adb → 装 Magisk APK，确认 root §5.1
 → 开 Zygisk，装 busybox / timesync / vector，重启 §5.2
-→ settings 固化 + 连 Wi-Fi §6 → deploy.sh 装 ThinkOS §7 → 验收 §8
+→ settings 固化 + 连 Wi-Fi §6 → 审核正式发行产物，按安装指南完成应用阶段及人工模块步骤 §7 → 验收 §8
 ```
 
 用户在全程只需要：接线、两次按键进 EDL（可能加一次进 recovery）、提供 Wi-Fi 密码。

@@ -6,10 +6,16 @@ from pathlib import Path
 import re
 import shlex
 import subprocess
+import sys
 import time
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "tools"))
+from device_hierarchy import dump_hierarchy, visible_nodes
+from device_recovery import capture, restore
+from media_device import Device
+from ui_walkthrough import broadcast_json
 PACKAGE = "moe.kiwi.thinkos"
 
 
@@ -38,20 +44,21 @@ def main():
             values += [kind, "value", str(value)]
         shell(*values)
 
+    shell("am", "start", "-W", "-n", PACKAGE + "/.MainActivity")
     pid = shell("pidof", PACKAGE).decode().strip()
     assert pid
 
     def state():
-        debug("state")
-        log = adb("logcat", "-d", "--pid=" + pid, "-s", "ThinkOS:V").decode()
-        text = log.split("DEBUG state=")[-1]
-        return {key: re.search(key + r"=([\w.]+)", text).group(1)
-                for key in ("page", "attention", "theme", "orientation")}
+        raw = shell("am", "broadcast", "-n", PACKAGE + "/.DebugReceiver", "--es", "command", "benchmark_state").decode()
+        match = re.search(r'data="([^"]*)"', raw)
+        assert match, "No benchmark state: " + raw
+        values = match.group(1).split('|')
+        return dict(zip(("page", "attention", "theme", "orientation"), values[:4]))
 
     def tree():
         path = "/sdcard/thinkos-settings-session.xml"
         try:
-            shell("uiautomator", "dump", path)
+            dump_hierarchy(args.serial, path)
             data = shell("cat", path, check=False)
             if not data:
                 raise AssertionError("Native UI tree is not ready")
@@ -62,7 +69,7 @@ def main():
 
     def find(text=None, class_name=None, scroll=False):
         for _ in range(9 if scroll else 1):
-            found = next((n for n in tree().iter("node")
+            found = next((n for n in visible_nodes(tree())
                           if (text is None or n.get("text") == text)
                           and (class_name is None or n.get("class") == class_name)), None)
             if found is not None:
@@ -92,21 +99,35 @@ def main():
         raise AssertionError("Page did not become " + page)
 
     def open_settings():
+        shell("input", "keyevent", "KEYCODE_HOME")
+        wait_page("home.main")
         # The home page's outer gutter belongs to home, which has no settings of its own.
         shell("input", "swipe", 1270, 380, 1270, 380, 900)
         touched = time.monotonic()
         wait_page("settings.form")
-        find(text="系统设置")
+        find(text="显示")
         return touched
 
     def open_editor():
         open_settings()
-        tap(find(text="Server 地址（留空 = 自动发现）", scroll=True))
+        # Exercise a real vertical drag across a number row before leaving its category.
+        tap(find(text="显示"))
+        label = find(text="最大亮度", scroll=True)
+        a,b,c,d = map(int, re.findall(r'-?\d+', label.get('bounds')))
+        shell("input", "swipe", (a+c)//2, (b+d)//2, (a+c)//2, min(730, (b+d)//2+180), 450)
+        if not any(n.get('selected') == 'true' and n.get('text') == '显示' for n in tree().iter('node')):
+            shell("input", "keyevent", "KEYCODE_BACK")
+        tap(find(text="插件"))
+        player = json.loads((ROOT / "plugins/player/i18n/zh-Hans.json").read_text())
+        tap(find(text=player["name"], scroll=True))
+        tap(find(text=player["setting.playlist_url"], scroll=True))
         find(class_name="android.widget.EditText")
 
     def horizontal_slider():
-        label_text = "低于此亮度切换为深色"
+        tap(find(text="显示"))
+        label_text = "最大亮度"
         label = find(text=label_text)
+        tap(label)
         _, top, _, bottom = map(int, re.findall(r"\d+", label.get("bounds")))
         controls = []
         for n in tree().iter("node"):
@@ -117,12 +138,11 @@ def main():
         minus = next(bounds for text, bounds in controls if text == "−")
         plus = next(bounds for text, bounds in controls if text == "+")
         schema = json.loads((ROOT / "shared/schema/settings/system.json").read_text())["fields"]
-        key = "theme.dark_below_lux"
+        key = "display.brightness_max"
         field = schema[key]
         original = before_values.get("system", {}).get(key, field["default"])
-        high = before_values.get("system", {}).get("theme.light_above_lux", schema["theme.light_above_lux"]["default"])
-        target = original + field["step"] if original + field["step"] < high else original - field["step"]
-        assert field["min"] <= target <= field["max"] and target < high
+        target = original + field["step"] if original + field["step"] <= field["max"] else original - field["step"]
+        assert field["min"] <= target <= field["max"]
         inset = (minus[2]-minus[0]) / 48 * 14
         left, right = minus[2]+inset, plus[0]-inset
 
@@ -139,28 +159,31 @@ def main():
         stored = json.loads(adb("exec-out", "run-as", PACKAGE, "cat", "files/settings/local.json"))
         check(stored.get("system", {}).get(key) == target,
               "a horizontal slider gesture commits the chosen step on release")
-        if key in before_values.get("system", {}):
-            drag(original)
-        else:
-            reset = next(n for n in tree().iter("node") if n.get("content-desc", "").startswith(label_text + " · 已在本机修改"))
-            tap(reset)
-            time.sleep(.4)
+        drag(original)
         restored = json.loads(adb("exec-out", "run-as", PACKAGE, "cat", "files/settings/local.json"))
         assert restored == before_values
 
     before = adb("exec-out", "run-as", PACKAGE, "cat", "files/settings/local.json", check=False)
     before_values = json.loads(before) if before else {}
     assert not shell("run-as", PACKAGE, "ls", "files/dev-plugins").strip()
+    device = Device(args.serial)
+    assert PACKAGE+'/' in device.shell('dumpsys', 'activity', 'activities').split('mResumedActivity')[-1]
+    journal = capture(device, broadcast_json(device, 'ui_state'))
+    print('Private recovery journal: '+str(journal), flush=True)
     try:
+        shell("am", "start", "-W", "-n", PACKAGE + "/.MainActivity")
+        pid = shell("pidof", PACKAGE).decode().strip()
         shell("input", "keyevent", 3)
         debug("orientation", 0, "--ei")
         debug("lux", 20, "--ef")
-        debug("hold_attention")
+        debug("theme", "DARK")
+        debug("hold_attention", "ENGAGED")
         debug("presence", "false", "--ez")
-        for _ in range(3):
-            if state()["page"] == "home.main":
-                break
-            shell("input", "swipe", 1100, 400, 150, 400, 450)
+        debug("page", "home.main")
+        # The fixture must start with a fresh real touch: merely dropping an old
+        # attention hold can immediately return to the sleep clock.
+        shell("input", "tap", 1270, 380)
+        debug("hold_attention")
         wait_page("home.main")
 
         if not args.editor_only:
@@ -228,37 +251,22 @@ def main():
         shell("input", "keyevent", 3)
         debug("hold_attention")
         debug("lux")
+        debug("theme")
         debug("orientation", 10, "--ei")
         after = adb("exec-out", "run-as", PACKAGE, "cat", "files/settings/local.json", check=False)
         after_values = json.loads(after) if after else {}
         report["settingsUnchanged"] = after_values == before_values
         (args.output / "logcat.txt").write_bytes(adb("logcat", "-d", "--pid=" + pid, "-s", "ThinkOS:V", "AndroidRuntime:E"))
-        if not report["settingsUnchanged"]:
-            # Restore only numeric fields this scrolling test could touch, preserving other scopes.
-            numbers = {key for key, field in json.loads((ROOT / "shared/schema/settings/system.json").read_text())["fields"].items()
-                       if field["type"] == "number"}
-            changed = {(scope, key) for scope in before_values.keys() | after_values.keys()
-                       for key in before_values.get(scope, {}).keys() | after_values.get(scope, {}).keys()
-                       if before_values.get(scope, {}).get(key) != after_values.get(scope, {}).get(key)}
-            report["changedSettings"] = sorted(scope + "." + key for scope, key in changed)
-            if all(scope == "system" and key in numbers for scope, key in changed):
-                shell("cmd", "package", "set-home-activity", "org.lineageos.trebuchet/com.android.launcher3.searchlauncher.SearchLauncher")
-                shell("am", "force-stop", PACKAGE)
-                latest = json.loads(adb("exec-out", "run-as", PACKAGE, "cat", "files/settings/local.json"))
-                for scope, key in changed:
-                    if key in before_values.get(scope, {}):
-                        latest.setdefault(scope, {})[key] = before_values[scope][key]
-                    else:
-                        latest.get(scope, {}).pop(key, None)
-                encoded = json.dumps(latest, ensure_ascii=False, separators=(",", ":")).encode()
-                shell("run-as", PACKAGE, "sh", "-c", "cat > files/settings/local.json.ui-restore", data=encoded)
-                shell("run-as", PACKAGE, "mv", "files/settings/local.json.ui-restore", "files/settings/local.json")
-                shell("run-as", PACKAGE, "rm", "-f", "files/settings/local.json.bak")
-                shell("cmd", "package", "set-home-activity", PACKAGE + "/.MainActivity")
-                shell("am", "start", "-n", PACKAGE + "/.MainActivity")
-                report["settingsRestored"] = json.loads(adb("exec-out", "run-as", PACKAGE, "cat", "files/settings/local.json")) == before_values
+        try:
+            report.update(restore(journal, device))
+            raw = adb("exec-out", "run-as", PACKAGE, "cat", "files/settings/local.json", check=False)
+            report["settingsRestored"] = (json.loads(raw) if raw else {}) == before_values
+        except Exception as error:
+            report['recovery_error'] = str(error)
+            report['private_recovery_journal'] = str(journal)
         (args.output / "results.json").write_text(json.dumps(report, ensure_ascii=False, indent=2)+"\n")
         assert report["settingsUnchanged"]
+        assert not report.get('recovery_error'), report.get('recovery_error')
     assert report["complete"], report["issues"]
 
 

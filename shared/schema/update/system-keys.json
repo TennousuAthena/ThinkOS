@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "system-keys.json",
+  "title": "UpdateSystemKeyDocument",
+  "description": "APK-owned system-module roots only. Exactly the independent active/backup P-256 roots also compiled into the privileged updater; no debug, downloaded or fallback keys.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "active", "backup"],
+  "properties": {
+    "schema": {"type": "integer", "const": 1},
+    "active": {"$ref": "keys.json#/$defs/key"},
+    "backup": {"$ref": "keys.json#/$defs/key"}
+  }
+}

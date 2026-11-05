@@ -1,0 +1,10 @@
+{
+  "template": "tile",
+  "color": "#008A00",
+  "faces": [
+    {
+      "icon": "radio",
+      "label": "@name"
+    }
+  ]
+}

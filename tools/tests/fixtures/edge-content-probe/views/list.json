@@ -1,0 +1,7 @@
+{
+  "layout": "focus",
+  "slots": {
+    "hero": {"type": "list", "items": "rows", "item": {"title": "{{.title}}"}, "tap": "row"},
+    "under": {"type": "text", "value": "{{selected}}", "style": "caption"}
+  }
+}

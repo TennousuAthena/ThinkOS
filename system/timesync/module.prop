@@ -1,0 +1,6 @@
+id=timesync
+name=Boot Time Sync
+version=v1.0
+versionCode=1
+author=takuenn
+description=开机后从 HTTP Date 头校准系统时间。本机无 RTC 电池，断电后时间会退回 2008 年，导致所有 HTTPS 证书校验失败（浏览器打不开任何网页）。

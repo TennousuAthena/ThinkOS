@@ -25,28 +25,35 @@ import java.util.Locale
 import kotlin.math.abs
 
 /**
- * `controls`, `video` and `seekbar`: OS-drawn views bound to the media session. Their buttons call the player
- * directly; Lua provides the media and never handles these clicks (ADR-022, ADR-030).
+ * `controls`, `video`, `seekbar`, `nowplaying` and `tv`: OS-drawn views bound to the media session. Their buttons call the player
+ * directly; Lua provides the media and never handles these clicks (ADR-022, ADR-030, ADR-036).
  */
-object MediaComponents {
+internal object MediaComponents {
     fun create(context: Context, pluginId: String, declaration: JSONObject, engine: MediaEngine,
-               capabilityCheck: (String, String) -> Boolean, levels: DeviceLevels): RenderComponent? {
+               capabilityCheck: (String, String) -> Boolean, levels: DeviceLevels, covers: CoverLoader,
+               emit: (String, List<Any?>) -> Unit = { _, _ -> }): RenderComponent? {
         val allowed = { capabilityCheck(pluginId, "media") }
         if (!allowed()) return null
         return when (declaration.optString("type")) {
             "controls" -> Controls(context, engine, declaration.optString("mode", "queue"), allowed)
             "video" -> Video(context, declaration.optString("fit", "contain"), engine, allowed, levels)
+            "tv" -> {
+                val tap = declaration.optString("tap")
+                Video(context, declaration.optString("fit", "contain"), engine, allowed, levels,
+                    TvOverlay(context, declaration.optString("channel")) { action -> if (allowed() && tap.isNotBlank()) emit("tap", listOf(tap, action)) })
+            }
             "seekbar" -> Seekbar(context, engine, allowed)
+            "nowplaying" -> NowPlayingView(context, pluginId, declaration, engine, allowed, levels, covers)
             else -> null
         }
     }
 
     private const val SKIP_MILLIS = 10_000L
 
-    private fun isPlaying(status: String?) = status == "playing" || status == "buffering" || status == "reconnecting"
+    internal fun isPlaying(status: String?) = status == "playing" || status == "buffering" || status == "reconnecting"
 
     /** What a transport button does. Skipping on a live stream goes back to its live edge. */
-    private fun act(engine: MediaEngine, kind: MediaButton.Kind, live: Boolean) {
+    internal fun act(engine: MediaEngine, kind: MediaButton.Kind, live: Boolean) {
         when (kind) {
             MediaButton.Kind.PREVIOUS -> engine.prev()
             MediaButton.Kind.NEXT -> engine.next()
@@ -57,7 +64,7 @@ object MediaComponents {
         }
     }
 
-    private fun describe(context: Context, kind: MediaButton.Kind, playing: Boolean, live: Boolean) = context.getString(when (kind) {
+    internal fun describe(context: Context, kind: MediaButton.Kind, playing: Boolean, live: Boolean) = context.getString(when (kind) {
         MediaButton.Kind.PREVIOUS -> R.string.media_previous
         MediaButton.Kind.NEXT -> R.string.media_next
         MediaButton.Kind.PLAY -> if (playing) R.string.media_pause else R.string.media_play
@@ -65,6 +72,8 @@ object MediaComponents {
         MediaButton.Kind.FORWARD -> if (live) R.string.media_go_live else R.string.media_forward
         MediaButton.Kind.AUDIO -> R.string.media_audio
         MediaButton.Kind.TEXT -> R.string.media_subtitles
+        MediaButton.Kind.SHUFFLE -> R.string.media_shuffle
+        MediaButton.Kind.REPEAT -> R.string.media_repeat_all
     })
 
     private class Controls(private val context: Context, private val engine: MediaEngine, mode: String,
@@ -138,7 +147,9 @@ object MediaComponents {
      * someone is touching the screen and fades away on its own. The plugin supplies the media and nothing else.
      */
     private class Video(private val context: Context, private val fit: String, private val engine: MediaEngine,
-                        private val allowed: () -> Boolean, private val levels: DeviceLevels) : RenderComponent {
+                        private val allowed: () -> Boolean, private val levels: DeviceLevels,
+                        /** Set for the `tv` component: live television, whose overlay is the channel's and not the film's (ADR-038). */
+                        private val tv: TvOverlay? = null) : RenderComponent {
         private val dp = context.resources.displayMetrics.density
         private val handler = Handler(Looper.getMainLooper())
         private val visible = Rect()
@@ -178,7 +189,7 @@ object MediaComponents {
         private val cues = CueView(context).apply { visibility = View.INVISIBLE }
         private val sink: (List<CharSequence>) -> Unit = cues::setCues
         private val title = TextView(context).apply {
-            setTextColor(Color.WHITE); textSize = 18f; maxLines = 1; ellipsize = android.text.TextUtils.TruncateAt.END
+            setTextColor(Color.WHITE); textSize = TextScale.BODY; maxLines = 1; ellipsize = android.text.TextUtils.TruncateAt.END
             setPadding((24 * dp).toInt(), (20 * dp).toInt(), (24 * dp).toInt(), (28 * dp).toInt())
             background = fade(GradientDrawable.Orientation.TOP_BOTTOM)
         }
@@ -192,7 +203,7 @@ object MediaComponents {
         private val overlay = FrameLayout(context).apply { alpha = 0f; visibility = View.INVISIBLE }
         private val spinner = SpinnerView(context)
         private val message = TextView(context).apply {
-            setTextColor(Color.WHITE); textSize = 17f; gravity = Gravity.CENTER
+            setTextColor(Color.WHITE); textSize = TextScale.BODY; gravity = Gravity.CENTER
             setPadding((18 * dp).toInt(), (10 * dp).toInt(), (18 * dp).toInt(), (10 * dp).toInt())
             background = GradientDrawable().apply { setColor(0xb3000000.toInt()); cornerRadius = 12 * dp }
             visibility = View.GONE
@@ -211,7 +222,7 @@ object MediaComponents {
         private val forwardFlash = FlashView(context, forwardNote)
 
         private fun noteView() = TextView(context).apply {
-            setTextColor(Color.WHITE); textSize = 20f; gravity = Gravity.CENTER
+            setTextColor(Color.WHITE); textSize = TextScale.BODY; gravity = Gravity.CENTER
             typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)
             setPadding((22 * dp).toInt(), (14 * dp).toInt(), (22 * dp).toInt(), (14 * dp).toInt())
         }
@@ -224,15 +235,24 @@ object MediaComponents {
             root.setBackgroundColor(Color.BLACK)
             root.addView(texture, ViewGroup.LayoutParams(-1, -1))
             root.addView(cues, ViewGroup.LayoutParams(-1, -1))
-            overlay.addView(title, FrameLayout.LayoutParams(-1, -2, Gravity.TOP))
-            val size = (60 * dp).toInt()
-            for (kind in listOf(MediaButton.Kind.AUDIO, MediaButton.Kind.PREVIOUS, MediaButton.Kind.BACK, MediaButton.Kind.PLAY,
-                MediaButton.Kind.FORWARD, MediaButton.Kind.NEXT, MediaButton.Kind.TEXT)) {
+            overlay.addView(tv?.banner ?: title, FrameLayout.LayoutParams(-1, -2, Gravity.TOP))
+            val size = ((if (tv == null) 60 else 52) * dp).toInt()
+            // Television has no film to wind: the arrows are the channel's neighbours, and the pills of the channel sit between them.
+            val kinds = if (tv == null) listOf(MediaButton.Kind.AUDIO, MediaButton.Kind.PREVIOUS, MediaButton.Kind.BACK, MediaButton.Kind.PLAY,
+                MediaButton.Kind.FORWARD, MediaButton.Kind.NEXT, MediaButton.Kind.TEXT)
+                else listOf(MediaButton.Kind.AUDIO, MediaButton.Kind.PREVIOUS, MediaButton.Kind.NEXT, MediaButton.Kind.TEXT)
+            for (kind in kinds) {
                 val button = MediaButton(context, kind) { press(kind) }.apply { color = Color.WHITE }
                 buttons[kind] = button
                 row.addView(button, LinearLayout.LayoutParams(size, size))
             }
-            panel.addView(seekbar, LinearLayout.LayoutParams(-1, -2))
+            if (tv == null) panel.addView(seekbar, LinearLayout.LayoutParams(-1, -2)) else {
+                panel.addView(tv.info, LinearLayout.LayoutParams(-1, -2))
+                val before = row.indexOfChild(buttons[MediaButton.Kind.NEXT])
+                tv.pills.forEachIndexed { i, pill ->
+                    row.addView(pill, before + i, LinearLayout.LayoutParams(-2, (40 * dp).toInt()).apply { marginStart = (5 * dp).toInt(); marginEnd = (5 * dp).toInt() })
+                }
+            }
             panel.addView(row, LinearLayout.LayoutParams(-1, -2))
             overlay.addView(panel, FrameLayout.LayoutParams(-1, -2, Gravity.BOTTOM))
             root.addView(overlay, ViewGroup.LayoutParams(-1, -1))
@@ -262,6 +282,7 @@ object MediaComponents {
             when (kind) {
                 MediaButton.Kind.AUDIO -> cycleAudio()
                 MediaButton.Kind.TEXT -> cycleText()
+                MediaButton.Kind.PREVIOUS, MediaButton.Kind.NEXT -> if (tv != null) tv.send(if (kind == MediaButton.Kind.NEXT) "next" else "prev") else act(engine, kind, live)
                 else -> act(engine, kind, live)
             }
         }
@@ -315,12 +336,13 @@ object MediaComponents {
             seekable = next?.optBoolean("seekable", false) == true
             playing = isPlaying(next?.optString("status"))
             seekbar.bind(next)
+            tv?.bind(snapshot)
             title.text = next?.optString("title").orEmpty()
             val seekable = next?.optBoolean("seekable", false) == true
             val count = next?.optInt("count", 0) ?: 0
             buttons[MediaButton.Kind.PLAY]?.playing = playing
-            buttons[MediaButton.Kind.PREVIOUS]?.visibility = if (count > 1) View.VISIBLE else View.GONE
-            buttons[MediaButton.Kind.NEXT]?.visibility = if (count > 1) View.VISIBLE else View.GONE
+            buttons[MediaButton.Kind.PREVIOUS]?.visibility = if (count > 1 || tv != null) View.VISIBLE else View.GONE
+            buttons[MediaButton.Kind.NEXT]?.visibility = if (count > 1 || tv != null) View.VISIBLE else View.GONE
             buttons[MediaButton.Kind.BACK]?.visibility = if (seekable) View.VISIBLE else View.GONE
             buttons[MediaButton.Kind.FORWARD]?.visibility = if (seekable) View.VISIBLE else View.GONE
             val audio = tracks("audioTracks")
@@ -365,12 +387,14 @@ object MediaComponents {
             val shown = allowed() && current?.optString("kind") == "video"
             val statusName = current?.optString("status").orEmpty()
             val error = current?.optJSONObject("error")
+            // A television channel can have nothing to play at all (every line is down): the plugin says so in its notice.
+            val notice = tv?.notice?.takeIf { it.isNotEmpty() && allowed() }
             val text: String? = when {
-                !shown -> null
+                !shown -> notice
                 statusName == "error" && error != null -> errorText(error)
-                statusName == "reconnecting" -> context.getString(R.string.media_reconnecting, (current?.optInt("retry", 1) ?: 1).toString())
+                statusName == "reconnecting" -> context.getString(R.string.media_reconnecting)
                 toast != null -> toast
-                else -> null
+                else -> notice
             }
             // A mirror with nothing new to show is not loading: no turning wheel over a still screen.
             val busy = shown && !mirror && (statusName == "buffering" || statusName == "reconnecting")
@@ -385,7 +409,8 @@ object MediaComponents {
             val current = media
             val statusName = current?.optString("status").orEmpty()
             val isVideo = allowed() && current?.optString("kind") == "video"
-            val show = isVideo && !mirror && VideoGestures.controlsShown(attention, hidden, statusName)
+            // The channel list must stay reachable when nothing plays, so television shows its controls with no picture too.
+            val show = (isVideo || tv != null && allowed()) && !mirror && VideoGestures.controlsShown(attention, hidden, statusName)
             if (show == overlayShown) return
             overlayShown = show
             overlay.animate().cancel()
@@ -399,7 +424,7 @@ object MediaComponents {
             cues.animate().translationY(if (show) -(panel.height.coerceAtLeast((130 * dp).toInt())).toFloat() else 0f).setDuration(200).start()
         }
 
-        override fun colors(value: Palette) { seekbar.accent = value.accent }
+        override fun colors(value: Palette) { seekbar.accent = value.accent; tv?.colors(value) }
         override fun active(value: Boolean) {
             if (!value) {
                 disconnect()
@@ -416,6 +441,7 @@ object MediaComponents {
                 hidden = !overlayShown
             } else if (attention != Attention.ENGAGED) { hidden = false; shownBeforeRise = null }
             this.attention = attention
+            if (overlayShown) tv?.tick()
             applyOverlay()
             connectIfVisible()
         }
@@ -424,7 +450,7 @@ object MediaComponents {
         // The stage tells the picture about every touch that is not a control's: where a finger went down, a tap, a vertical
         // drag. Horizontal swipes (leave the page), a long press (settings) and the seek bar stay with the stage.
 
-        private fun gesturesOn() = allowed() && media?.optString("kind") == "video"
+        private fun gesturesOn() = allowed() && (tv != null || media?.optString("kind") == "video")
 
         override fun touchDown(x: Float, y: Float) {
             if (!gesturesOn()) return
@@ -465,6 +491,13 @@ object MediaComponents {
         }
 
         private fun skip(direction: Int) {
+            if (tv != null) {
+                // The outer quarters of the picture are the neighbouring channels; the plugin knows which they are.
+                tv.send(if (direction < 0) "prev" else "next")
+                if (direction < 0) { rewindNote.text = context.getString(R.string.media_tv_previous); rewindFlash.flash(800) }
+                else { forwardNote.text = context.getString(R.string.media_tv_next); forwardFlash.flash(800) }
+                return
+            }
             if (live && direction > 0) {
                 act(engine, MediaButton.Kind.FORWARD, true)                  // a live stream cannot go ahead of itself: back to its edge
                 forwardNote.text = context.getString(R.string.media_live)
@@ -509,7 +542,7 @@ object MediaComponents {
         }
 
         override fun capturesHorizontalAt(x: Float, y: Float): Boolean {
-            if (!overlayShown || !seekbar.seekable) return false
+            if (tv != null || !overlayShown || !seekbar.seekable) return false
             val left = overlay.left + panel.left + seekbar.left
             val top = overlay.top + panel.top + seekbar.top
             return x >= left && x < left + seekbar.width && y >= top && y < top + seekbar.height
@@ -519,7 +552,14 @@ object MediaComponents {
             texture.contentDescription = context.getString(R.string.media_video)
             seekbar.liveLabel = context.getString(R.string.media_live)
             seekbar.contentDescription = context.getString(R.string.media_seek)
-            buttons.forEach { (kind, button) -> button.contentDescription = describe(context, kind, playing, live) }
+            buttons.forEach { (kind, button) ->
+                button.contentDescription = when {
+                    tv != null && kind == MediaButton.Kind.PREVIOUS -> context.getString(R.string.media_tv_previous)
+                    tv != null && kind == MediaButton.Kind.NEXT -> context.getString(R.string.media_tv_next)
+                    else -> describe(context, kind, playing, live)
+                }
+            }
+            tv?.localeChanged()
         }
 
         private fun updateTransform() {

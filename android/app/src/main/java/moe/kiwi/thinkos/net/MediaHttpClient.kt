@@ -1,7 +1,6 @@
 package moe.kiwi.thinkos.net
 
 import okhttp3.Dns
-import okhttp3.HttpUrl
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -12,11 +11,12 @@ import java.net.Proxy
 import java.net.URI
 import java.util.concurrent.TimeUnit
 
-/** The media HTTP stack obeys the same cleartext/private-address gate as [PluginHttp]. */
+/** Ordinary media follows [PluginHttp]'s LAN gate; publicOnly can only narrow it to public HTTPS. */
 internal object MediaHttpClient {
-    /** [allowPublicCleartext] is the system `media.public_http` setting, read on every connection. */
-    fun create(resolver: Dns = Dns.SYSTEM, allowPublicCleartext: () -> Boolean = { false }): OkHttpClient {
-        val dns = RequestDns(resolver, allowPublicCleartext)
+    /** [allowPublicCleartext] is read on every connection and cannot widen [publicOnly].
+     * Each call constructs its own connection pool and dispatcher. */
+    fun create(resolver: Dns = Dns.SYSTEM, publicOnly: Boolean = false, allowPublicCleartext: () -> Boolean = { false }): OkHttpClient {
+        val dns = RequestDns(resolver, publicOnly, allowPublicCleartext)
         return OkHttpClient.Builder()
             .dns(dns)
             // A configured device proxy must not bypass our actual-origin socket-address check.
@@ -25,17 +25,21 @@ internal object MediaHttpClient {
             .followSslRedirects(false)
             .connectTimeout(3, TimeUnit.SECONDS)
             .readTimeout(15, TimeUnit.SECONDS)
-            .addInterceptor(Redirects(dns))
+            .addInterceptor(Redirects(dns, publicOnly))
             .addNetworkInterceptor { chain ->
                 val request = chain.request()
-                validateConnected(request.url.toUri(), chain.connection()?.socket()?.inetAddress, allowPublicCleartext)
+                validateConnected(request.url.toUri(), chain.connection()?.socket()?.inetAddress, publicOnly, allowPublicCleartext)
                 chain.proceed(request)
             }
             .build()
     }
 
-    internal fun validateConnected(uri: URI, address: InetAddress?, allowPublic: () -> Boolean = { false }) {
+    internal fun validateConnected(uri: URI, address: InetAddress?, publicOnly: Boolean = false, allowPublic: () -> Boolean = { false }) {
         ioPolicy {
+            if (publicOnly) {
+                PublicNetworkPolicy.validate(uri)
+                PublicNetworkPolicy.requirePublic(listOfNotNull(address))
+            }
             LocalNetworkPolicy.validate(uri)
             if (uri.scheme == "http") {
                 require(address != null) { "Cleartext connection has no resolved address" }
@@ -48,12 +52,13 @@ internal object MediaHttpClient {
     private val PORTABLE_ON_REDIRECT = setOf("host", "user-agent", "accept", "accept-encoding", "accept-language", "range", "if-range",
         "referer", "origin", "connection", "content-length", "content-type")
 
-    internal fun redirect(request: Request, response: Response, number: Int): Request? {
+    internal fun redirect(request: Request, response: Response, number: Int, publicOnly: Boolean = false): Request? {
         if (response.code !in setOf(301, 302, 303, 307, 308)) return null
         if (number >= 3) throw IOException("Too many redirects")
         val location = response.header("Location") ?: throw IOException("Redirect missing Location")
         val next = request.url.resolve(location) ?: throw IOException("Invalid redirect URL")
         ioPolicy {
+            if (publicOnly) PublicNetworkPolicy.validate(next.toUri())
             LocalNetworkPolicy.validate(next.toUri())
             require(!(request.url.isHttps && !next.isHttps)) { "HTTPS downgrade rejected" }
         }
@@ -68,45 +73,12 @@ internal object MediaHttpClient {
         return builder.build()
     }
 
-    /**
-     * A DNS answer is scoped to a single request and pinned for its connection attempt. Automatic
-     * redirects are disabled: each hop gets a new scheme-aware scope and address validation.
-     * Connection reuse still goes through the network interceptor's actual peer-address gate.
-     */
-    internal class RequestDns(private val resolver: Dns, private val allowPublic: () -> Boolean = { false }) : Dns {
-        private data class Scope(val host: String, val cleartext: Boolean, var addresses: List<InetAddress>? = null)
-        private val current = ThreadLocal<Scope?>()
-
-        fun <T> forRequest(url: HttpUrl, block: () -> T): T {
-            ioPolicy { LocalNetworkPolicy.validate(url.toUri()) }
-            val previous = current.get()
-            current.set(Scope(url.host, !url.isHttps))
-            return try {
-                // Validate every address before OkHttp can open a cleartext socket, even if a
-                // pooled connection means OkHttp itself would skip DNS this time.
-                if (!url.isHttps) lookup(url.host)
-                block()
-            } finally {
-                if (previous == null) current.remove() else current.set(previous)
-            }
-        }
-
-        override fun lookup(hostname: String): List<InetAddress> {
-            val scope = current.get()?.takeIf { it.host.equals(hostname, ignoreCase = true) }
-            scope?.addresses?.let { return it }
-            val addresses = resolver.lookup(hostname)
-            if (scope?.cleartext == true && !allowPublic()) ioPolicy { LocalNetworkPolicy.requirePrivate(addresses.toTypedArray()) }
-            if (scope != null) scope.addresses = addresses.toList()
-            return addresses
-        }
-    }
-
-    private class Redirects(private val dns: RequestDns) : Interceptor {
+    private class Redirects(private val dns: RequestDns, private val publicOnly: Boolean) : Interceptor {
         override fun intercept(chain: Interceptor.Chain): Response {
             var request = chain.request()
             for (number in 0..3) {
                 val response = dns.forRequest(request.url) { chain.proceed(request) }
-                val next = try { redirect(request, response, number) } catch (error: Exception) {
+                val next = try { redirect(request, response, number, publicOnly) } catch (error: Exception) {
                     response.close()
                     throw error
                 }

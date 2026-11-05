@@ -28,9 +28,49 @@ def main():
         parts.append('type '+schema['title']+' struct {\n'+'\n'.join(fields)+'\n}\n')
     vocabulary = SCHEMAS['layouts.json']['x-thinkos-api']
     parts.append('const PluginAPI = ' + str(vocabulary['current']) + '\n')
-    for key in ('componentTypes', 'layouts', 'componentProperties', 'templates'):
+    for key in ('componentTypes', 'layouts', 'componentProperties', 'templates', 'pageRoles', 'permissions', 'layoutSlots', 'formFields', 'settingTypes'):
         entries = ', '.join('"' + name + '": ' + str(api) for name, api in vocabulary[key].items())
         parts.append('var render' + key[:1].upper() + key[1:] + ' = map[string]int{' + entries + '}\n')
+    icons = ', '.join('"' + name + '": true' for name in SCHEMAS['layouts.json']['$defs']['formIcon']['enum'])
+    parts.append('var renderFormIcons = map[string]bool{' + icons + '}\n')
+    parts.append('''// ValidateSettingTime accepts only API10 HH:mm values in five-minute steps.
+func ValidateSettingTime(value string, api int) error {
+    if api < renderSettingTypes["time"] || api > PluginAPI { return fmt.Errorf("time requires a newer plugin API") }
+    if len(value) != 5 || value[2] != ':' || value[0] < '0' || value[0] > '2' || value[1] < '0' || value[1] > '9' || value[3] < '0' || value[3] > '5' || (value[4] != '0' && value[4] != '5') || (value[0] == '2' && value[1] > '3') { return fmt.Errorf("time must be HH:mm in five-minute steps") }
+    return nil
+}
+''')
+    parts.append('''// ValidateFormIcon applies the fixed descriptor vocabulary and API gate, not image paths or style parameters.
+func ValidateFormIcon(name string, api int, navigation bool) error {
+    key := "link.icon"
+    if navigation { key = "nav.items.icon" }
+    if api < 1 || api > PluginAPI || api < renderFormFields[key] { return fmt.Errorf("form icon requires a newer plugin API") }
+    if !renderFormIcons[name] { return fmt.Errorf("unknown form vector icon") }
+    return nil
+}
+''')
+    parts.append('''// ValidatePageRoles follows manifest schema validation; actual system grants belong to the device.
+func ValidatePageRoles(roles []string, permissions []string, api int) error {
+    if api < 1 || api > PluginAPI { return fmt.Errorf("unsupported plugin API %d", api) }
+    for _, permission := range permissions {
+        if minimum := renderPermissions[permission]; minimum > api { return fmt.Errorf("permission requires a newer plugin API") }
+    }
+    for _, role := range roles {
+        if minimum := renderPageRoles[role]; minimum > api { return fmt.Errorf("page role requires a newer plugin API") }
+        if role == "launcher" {
+            allowed := false
+            for _, permission := range permissions { if permission == "system.apps" { allowed = true } }
+            if !allowed { return fmt.Errorf("the launcher role needs the system.apps permission") }
+        }
+        if role == "onboarding" || role == "settings" {
+            allowed := false
+            for _, permission := range permissions { if permission == "system.settings" { allowed = true } }
+            if !allowed { return fmt.Errorf("the settings/onboarding role needs the system.settings permission") }
+        }
+    }
+    return nil
+}
+''')
     parts.append('''// ValidateRenderAPI gates the fixed render vocabulary after schema validation.
 // The version table is generated from layouts.json, the same source used by Android and Python.
 func ValidateRenderAPI(value any, api int) error {
@@ -66,6 +106,12 @@ func ValidateRenderAPI(value any, api int) error {
                     }
                 }
             }
+            if slots, present := node["slots"].(map[string]any); present {
+                layout, _ := node["layout"].(string)
+                for slot := range slots {
+                    if minimum := renderLayoutSlots[layout+"."+slot]; minimum > api { return fmt.Errorf("layout slot requires a newer plugin API") }
+                }
+            }
             rawKind, component := node["type"]
             if component {
                 kind, ok := rawKind.(string)
@@ -88,4 +134,7 @@ func ValidateRenderAPI(value any, api int) error {
     OUT.parent.mkdir(parents=True,exist_ok=True)
     OUT.write_text('\n'.join(parts))
     print(OUT.relative_to(ROOT))
+    from update_contracts import generate_go
+    generate_go()
+    generate_go(ROOT / 'shared/schema/registry', 'registry_generated.go')
 if __name__=='__main__': main()

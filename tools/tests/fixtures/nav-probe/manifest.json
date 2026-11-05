@@ -1,0 +1,45 @@
+{
+  "id": "nav-probe",
+  "name": "Navigation probe",
+  "version": "1.0.0",
+  "api": 8,
+  "main": "main.lua",
+  "permissions": [],
+  "pages": [
+    {
+      "id": "levels",
+      "title": "Levels",
+      "view": "views/levels.json"
+    },
+    {
+      "id": "silent",
+      "title": "Silent",
+      "view": "views/silent.json"
+    },
+    {
+      "id": "plain",
+      "title": "Plain",
+      "view": "views/plain.json"
+    }
+  ],
+  "apps": [
+    {
+      "id": "levels",
+      "page": "levels",
+      "title": "Levels",
+      "icon": "list"
+    },
+    {
+      "id": "silent",
+      "page": "silent",
+      "title": "Silent",
+      "icon": "list"
+    },
+    {
+      "id": "plain",
+      "page": "plain",
+      "title": "Plain",
+      "icon": "list"
+    }
+  ]
+}

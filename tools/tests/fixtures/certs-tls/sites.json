@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "retrieved_on": "2026-11-04",
+  "source_url": "https://ccadb.my.salesforce-sites.com/mozilla/IncludedCACertificateReportPEMCSV",
+  "source_sha256": "b7f15275f9624f76252ec2de55ba168cec92467c0c1a32fdb6fc732e2eedd046",
+  "fields": [
+    "Common Name or Certificate Name",
+    "SHA-256 Fingerprint",
+    "Test Website - Valid"
+  ],
+  "sites": [
+    {
+      "id": "isrg-x1",
+      "root": "ISRG Root X1",
+      "root_sha256": "96bcec06264976f37460779acf28c5a7cfe8a3c0aae11a8ffcee05c0bddf08c6",
+      "url": "https://valid.x1.test-certs.letsencrypt.org/",
+      "absent_in_original_store": false
+    },
+    {
+      "id": "isrg-x2",
+      "root": "ISRG Root X2",
+      "root_sha256": "69729b8e15a86efc177a57afb7171dfc64add28c2fca8cf1507e34453ccb1470",
+      "url": "https://valid.x2.test-certs.letsencrypt.org/",
+      "absent_in_original_store": true
+    },
+    {
+      "id": "gts-r4",
+      "root": "GTS Root R4",
+      "root_sha256": "349dfa4058c5e263123b398ae795573c4e1313c83fe68f93556cd5e8031b3c7d",
+      "url": "https://good.gtsr4.demosite.pki.goog/",
+      "absent_in_original_store": true
+    }
+  ]
+}

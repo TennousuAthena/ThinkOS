@@ -552,3 +552,7 @@ plugins/gallery/
 | 性能基线 | `13-pre-m1-hardening.md`、`20-weather-handoff.md` §6 |
 
 **当前接手顺序**：先读本文开头的实际接口与验证记录 → `06-plugins.md` §4.1.1 / §6.6 → `plugins/gallery/` 与 `image/`、`ImageComponents.kt` → `artifacts/gallery/verified/`。本轮本地能力已实现；不要再次按历史 G0 从头接线。接上游服务、共享目录或媒体播放器需要单独任务。
+
+### 相册目录（UI-03）
+
+`local_dir` 留空时使用应用的外部私有目录 `Pictures/`（设备上为 `/sdcard/Android/data/moe.kiwi.thinkos/files/Pictures/`，完整路径由 `MediaLibrary` 解析），不需要共享存储权限；改成共享存储目录时沿用 OS 的存储授权流程。界面输入框只显示“默认目录”，不在设置行重复说明。

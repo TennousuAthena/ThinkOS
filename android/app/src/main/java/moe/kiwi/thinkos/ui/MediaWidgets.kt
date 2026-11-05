@@ -40,12 +40,18 @@ internal object MediaTime {
 
 /** One transport button, drawn with paths so it needs no icon assets and scales with its box. */
 internal class MediaButton(context: Context, val kind: Kind, private val action: () -> Unit) : View(context) {
-    enum class Kind { PREVIOUS, NEXT, PLAY, BACK, FORWARD, AUDIO, TEXT }
+    enum class Kind { PREVIOUS, NEXT, PLAY, BACK, FORWARD, AUDIO, TEXT, SHUFFLE, REPEAT }
 
     var playing = false
         set(value) { if (field != value) { field = value; invalidate() } }
-    /** AUDIO and TEXT: whether a non-default track is selected. */
+    /** AUDIO and TEXT: whether a non-default track is selected. SHUFFLE and REPEAT: whether the mode is on. */
     var marked = false
+        set(value) { if (field != value) { field = value; invalidate() } }
+    /** REPEAT: the mode is "one" rather than "all". */
+    var repeatOne = false
+        set(value) { if (field != value) { field = value; invalidate() } }
+    /** A solid disc behind the glyph (the player's main play button); 0 draws none. */
+    var disc = 0
         set(value) { if (field != value) { field = value; invalidate() } }
     var color = Color.WHITE
         set(value) { field = value; invalidate() }
@@ -65,10 +71,16 @@ internal class MediaButton(context: Context, val kind: Kind, private val action:
     }
 
     override fun onDraw(canvas: Canvas) {
-        paint.color = color
-        paint.alpha = if (isPressed) 150 else 255
         val cx = width / 2f
         val cy = height / 2f
+        if (disc != 0) {
+            paint.style = Paint.Style.FILL
+            paint.color = disc
+            paint.alpha = if (isPressed) 190 else 255
+            canvas.drawCircle(cx, cy, min(width, height) / 2f, paint)
+        }
+        paint.color = color
+        paint.alpha = if (isPressed) 150 else 255
         val size = min(width, height) * .20f
         when (kind) {
             Kind.PLAY -> {
@@ -88,6 +100,53 @@ internal class MediaButton(context: Context, val kind: Kind, private val action:
             Kind.BACK, Kind.FORWARD -> skip(canvas, cx, cy, size * 1.25f, if (kind == Kind.BACK) -1 else 1)
             Kind.AUDIO -> speaker(canvas, cx, cy, size)
             Kind.TEXT -> captions(canvas, cx, cy, size)
+            Kind.SHUFFLE -> shuffle(canvas, cx, cy, size * 1.1f)
+            Kind.REPEAT -> repeat(canvas, cx, cy, size * 1.1f)
+        }
+        if (marked && (kind == Kind.SHUFFLE || kind == Kind.REPEAT)) {
+            paint.style = Paint.Style.FILL
+            canvas.drawCircle(cx, cy + size * 2.15f, size * .2f, paint)
+        }
+    }
+
+    private fun arrowHead(canvas: Canvas, x: Float, y: Float, size: Float, sign: Int) {
+        paint.style = Paint.Style.FILL
+        path.rewind()
+        path.moveTo(x + sign * size, y)
+        path.lineTo(x, y - size * .8f)
+        path.lineTo(x, y + size * .8f)
+        path.close()
+        canvas.drawPath(path, paint)
+    }
+
+    /** Two lines that cross in the middle, each ending in an arrow. */
+    private fun shuffle(canvas: Canvas, cx: Float, cy: Float, s: Float) {
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = Stroke.ICON * dp
+        path.rewind()
+        path.moveTo(cx - s, cy - s * .55f); path.lineTo(cx - s * .25f, cy - s * .55f); path.lineTo(cx + s * .35f, cy + s * .55f); path.lineTo(cx + s * .6f, cy + s * .55f)
+        path.moveTo(cx - s, cy + s * .55f); path.lineTo(cx - s * .25f, cy + s * .55f); path.lineTo(cx + s * .35f, cy - s * .55f); path.lineTo(cx + s * .6f, cy - s * .55f)
+        canvas.drawPath(path, paint)
+        arrowHead(canvas, cx + s * .6f, cy + s * .55f, s * .42f, 1)
+        arrowHead(canvas, cx + s * .6f, cy - s * .55f, s * .42f, 1)
+    }
+
+    /** Two rounded lines chasing each other, an arrow at the end of each; "one" has a 1 in the middle. */
+    private fun repeat(canvas: Canvas, cx: Float, cy: Float, s: Float) {
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = Stroke.ICON * dp
+        paint.pathEffect = android.graphics.CornerPathEffect(s * .35f)
+        path.rewind()
+        path.moveTo(cx - s * .9f, cy + s * .15f); path.lineTo(cx - s * .9f, cy - s * .55f); path.lineTo(cx + s * .45f, cy - s * .55f)
+        path.moveTo(cx + s * .9f, cy - s * .15f); path.lineTo(cx + s * .9f, cy + s * .55f); path.lineTo(cx - s * .45f, cy + s * .55f)
+        canvas.drawPath(path, paint)
+        paint.pathEffect = null
+        arrowHead(canvas, cx + s * .45f, cy - s * .55f, s * .42f, 1)
+        arrowHead(canvas, cx - s * .45f, cy + s * .55f, s * .42f, -1)
+        if (repeatOne) {
+            paint.style = Paint.Style.FILL
+            paint.textSize = s * 1.0f
+            canvas.drawText("1", cx, cy + paint.textSize * .34f, paint)
         }
     }
 
@@ -105,7 +164,7 @@ internal class MediaButton(context: Context, val kind: Kind, private val action:
         canvas.save()
         if (sign < 0) canvas.scale(-1f, 1f, cx, cy)
         paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 2f * dp
+        paint.strokeWidth = Stroke.ICON * dp
         oval.set(cx - radius, cy - radius, cx + radius, cy + radius)
         // Clockwise from 3 o'clock to 60° before it: the gap sits at the top right, where the head points on.
         val start = 0f
@@ -143,7 +202,7 @@ internal class MediaButton(context: Context, val kind: Kind, private val action:
         path.close()
         canvas.drawPath(path, paint)
         paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 2f * dp
+        paint.strokeWidth = Stroke.ICON * dp
         oval.set(cx - size * .1f, cy - size * .6f, cx + size * .7f, cy + size * .6f)
         canvas.drawArc(oval, -50f, 100f, false, paint)
         oval.set(cx - size * .1f, cy - size * 1.0f, cx + size * 1.15f, cy + size * 1.0f)
@@ -153,7 +212,7 @@ internal class MediaButton(context: Context, val kind: Kind, private val action:
 
     private fun captions(canvas: Canvas, cx: Float, cy: Float, size: Float) {
         paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 2f * dp
+        paint.strokeWidth = Stroke.ICON * dp
         oval.set(cx - size * 1.3f, cy - size * .9f, cx + size * 1.3f, cy + size * .9f)
         canvas.drawRoundRect(oval, size * .3f, size * .3f, paint)
         paint.style = Paint.Style.FILL
@@ -179,7 +238,7 @@ internal class MediaButton(context: Context, val kind: Kind, private val action:
 internal class MediaSeekBar(context: Context, private val engine: MediaEngine, private val allowed: () -> Boolean) : View(context) {
     private val dp = resources.displayMetrics.density
     private val track = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val text = Paint(Paint.ANTI_ALIAS_FLAG).apply { textSize = 13f * dp; typeface = Typeface.create("sans-serif", Typeface.NORMAL); fontFeatureSettings = "tnum" }
+    private val text = Paint(Paint.ANTI_ALIAS_FLAG).apply { textSize = TextScale.CAPTION * resources.displayMetrics.scaledDensity; typeface = Typeface.create("sans-serif", Typeface.NORMAL); fontFeatureSettings = "tnum" }
     private val rect = RectF()
     private var duration = 0L
     private var live = false
@@ -233,7 +292,11 @@ internal class MediaSeekBar(context: Context, private val engine: MediaEngine, p
     }
 
     private fun left() = sideWidth
-    private fun right() = (width - sideWidth).coerceAtLeast(sideWidth + 1)
+    private fun right(): Float {
+        val remaining = text.measureText("-" + MediaTime.format(maxOf(duration, liveOffset)))
+        val labelWidth = maxOf(remaining, if (live) text.measureText(liveLabel) else 0f)
+        return (width - maxOf(sideWidth, labelWidth + 12f * dp)).coerceAtLeast(sideWidth + 1)
+    }
 
     override fun onDraw(canvas: Canvas) {
         val playhead = engine.positionNow()
@@ -376,7 +439,7 @@ internal class SpinnerView(context: Context) : View(context) {
     init { setLayerType(LAYER_TYPE_HARDWARE, null) }
 
     override fun onDraw(canvas: Canvas) {
-        paint.strokeWidth = 3f * dp
+        paint.strokeWidth = Stroke.ICON * dp
         val inset = paint.strokeWidth
         oval.set(inset, inset, width - inset, height - inset)
         canvas.drawArc(oval, 0f, 270f, false, paint)
@@ -402,9 +465,9 @@ internal class SpinnerView(context: Context) : View(context) {
 /** A vertical meter at the side of the picture (brightness or volume) while a finger drags; it fades away by itself. */
 internal class LevelCard(context: Context) : LinearLayout(context) {
     private val dp = resources.displayMetrics.density
-    private val label = TextView(context).apply { setTextColor(Color.WHITE); textSize = 14f; gravity = Gravity.CENTER }
+    private val label = TextView(context).apply { setTextColor(Color.WHITE); textSize = TextScale.CAPTION; gravity = Gravity.CENTER }
     private val value = TextView(context).apply {
-        setTextColor(Color.WHITE); textSize = 16f; gravity = Gravity.CENTER; typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+        setTextColor(Color.WHITE); textSize = TextScale.BODY; gravity = Gravity.CENTER; typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
     }
     private val meter = object : View(context) {
         var level = 0f

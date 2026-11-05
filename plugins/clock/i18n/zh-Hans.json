@@ -1,7 +1,6 @@
 {
   "name": "时钟",
   "title": "时钟",
-  "now": "此刻",
   "waiting": "等待校时",
   "calendar": "日历",
   "group.display": "显示",

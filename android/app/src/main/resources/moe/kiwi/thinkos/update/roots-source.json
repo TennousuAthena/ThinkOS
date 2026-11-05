@@ -1,0 +1,75 @@
+{
+  "license": "MPL-2.0",
+  "source_url": "https://curl.se/ca/cacert-2026-10-20.pem",
+  "source_sha256": "796f1389bfea13c0ed78f663b765baaff54a508e5483786bd6ece73c5e3e3cbe",
+  "license_url": "https://www.mozilla.org/en-US/MPL/2.0/",
+  "license_source_url": "https://www.mozilla.org/media/MPL/2.0/index.815ca599c9df.txt",
+  "retrieved": "2026-11-03",
+  "selection": "Subset of Mozilla TLS trust anchors; no intermediate or leaf certificates. Each selected PEM retained in full.",
+  "certificates": [
+    {
+      "name": "USERTrust RSA Certification Authority",
+      "der_sha256": "e793c9b02fd8aa13e21c31228accb08119643b749c898964b1746d46c3d4cbd2"
+    },
+    {
+      "name": "USERTrust ECC Certification Authority",
+      "der_sha256": "4ff460d54b9c86dabfbcfc5712e0400d2bed3fbc4d4fbdaa86e06adcd2a9ad7a"
+    },
+    {
+      "name": "Sectigo Public Server Authentication Root R46",
+      "der_sha256": "7bb647a62aeeac88bf257aa522d01ffea395e0ab45c73f93f65654ec38f25a06"
+    },
+    {
+      "name": "Sectigo Public Server Authentication Root E46",
+      "der_sha256": "c90f26f0fb1b4018b22227519b5ca2b53e2ca5b3be5cf18efe1bef47380c5383"
+    },
+    {
+      "name": "ISRG Root X1",
+      "der_sha256": "96bcec06264976f37460779acf28c5a7cfe8a3c0aae11a8ffcee05c0bddf08c6"
+    },
+    {
+      "name": "ISRG Root X2",
+      "der_sha256": "69729b8e15a86efc177a57afb7171dfc64add28c2fca8cf1507e34453ccb1470"
+    },
+    {
+      "name": "Certainly Root R1",
+      "der_sha256": "77b82cd8644c4305f7acc5cb156b45675004033d51c60c6202a8e0c33467d3a0"
+    },
+    {
+      "name": "Certainly Root E1",
+      "der_sha256": "b4585f22e4ac756a4e8612a1361c5d9d031a93fd84febb778fa3068b0fc42dc2"
+    },
+    {
+      "name": "Starfield Root Certificate Authority - G2",
+      "der_sha256": "2ce1cb0bf9d2f9e102993fbe215152c3b2dd0cabde1c68e5319b839154dbb7f5"
+    },
+    {
+      "name": "GlobalSign Root CA - R3",
+      "der_sha256": "cbb522d7b7f127ad6a0113865bdf1cd4102e7d0759af635a7cf4720dc963c53b"
+    },
+    {
+      "name": "GlobalSign Root R46",
+      "der_sha256": "4fa3126d8d3a11d1c4855a4f807cbad6cf919d3a5a88b03bea2c6372d93c40c9"
+    },
+    {
+      "name": "GlobalSign Root E46",
+      "der_sha256": "cbb9c44d84b8043e1050ea31a69f514955d7bfd2e2c6b49301019ad61d9f5058"
+    },
+    {
+      "name": "DigiCert Global Root G2",
+      "der_sha256": "cb3ccbb76031e5e0138f8dd39a23f9de47ffc35e43c1144cea27d46a5ab1cb5f"
+    },
+    {
+      "name": "DigiCert Global Root G3",
+      "der_sha256": "31ad6648f8104138c738f39ea4320133393e3a18cc02296ef97c2ac9ef6731d0"
+    },
+    {
+      "name": "DigiCert TLS RSA4096 Root G5",
+      "der_sha256": "371a00dc0533b3721a7eeb40e8419e70799d2b0a0f2c1d80693165f7cec4ad75"
+    },
+    {
+      "name": "DigiCert TLS ECC P384 Root G5",
+      "der_sha256": "018e13f0772532cf809bd1b17281867283fc48c6e13be9c69812854a490c1b05"
+    }
+  ]
+}

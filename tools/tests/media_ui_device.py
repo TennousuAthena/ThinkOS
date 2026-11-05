@@ -54,6 +54,16 @@ def main():
 
     def centre(box): return (box[0] + box[2]) // 2, (box[1] + box[3]) // 2
 
+    def screen():
+        path = '/sdcard/thinkos-media-ui-size.xml'
+        dump_hierarchy(args.serial, path)
+        try:
+            root = ET.fromstring(device.shell('cat', path)).find('node')
+            left, top, right, bottom = map(int, re.findall(r'\d+', root.get('bounds')))
+            return right - left, bottom - top
+        finally:
+            device.shell('rm', '-f', path)
+
     def strings():
         """The control labels in the device's own language, read from the same resources the app uses."""
         tag = (device.shell('getprop', 'persist.sys.locale').strip() or device.shell('getprop', 'ro.product.locale').strip() or 'en-US')
@@ -83,113 +93,126 @@ def main():
     def raise_controls():
         """A tap on the picture shows the controls or puts them away: tap only when they are not up."""
         if SEEK in nodes(): return
-        device.tap(640, 300)
+        device.tap(screen_width // 2, screen_height // 3)
         settle()
 
-    device.prepare_display()
-    device.debug('hold_attention')                      # no forced level: the real attention policy runs
-    device.open_page('player.video')
-    time.sleep(1)
-    device.load('%s/files/%s' % (BASE, MOVIE_720), kind='video', repeat='one')
-    time.sleep(2.5)
-
-    # --- overlay -----------------------------------------------------------------------------------------
-    check('overlay is hidden while nobody touches the screen', SEEK not in nodes())
-    device.tap(640, 300)
-    settle()
-    found = nodes()
-    check('a touch raises the overlay (seek bar and transport buttons)', {SEEK, PAUSE, BACK, FORWARD} <= set(found), sorted(found))
-    bar = found.get(SEEK)
-    if bar:
-        y = (bar[1] + bar[3]) // 2
-        width = bar[2] - bar[0]
-        device.shell('input', 'swipe', bar[0] + int(width * .15), y, bar[0] + int(width * .85), y, 450)
-        time.sleep(0.4)           # the drag ends at 85% of a 12 s clip: do not wait long enough for repeat-one to wrap it round
-        now = state()
-        check('dragging the seek bar seeks and does not turn the page', page()[0] == 'player.video' and now.get('position', 0) >= 6500,
-              {'page': page()[:2], 'position': now.get('position')})
-        device.tap(bar[0] + int(width * .25), y)
-        settle()
-        position = state().get('position', 0)
-        check('tapping the seek bar jumps to that point', 1500 <= position <= 5500, position)
-
-    # --- transport ---------------------------------------------------------------------------------------
-    found = nodes()
-    if PAUSE in found:
-        device.tap(*centre(found[PAUSE]))
-        settle()
-        check('Pause button pauses', state().get('status') == 'paused', state().get('status'))
-        found = nodes()
-        if PLAY in found:
-            device.tap(*centre(found[PLAY]))
-            settle()
-            check('Play button resumes', state().get('status') == 'playing', state().get('status'))
-        else: check('Play button appears while paused', False, sorted(found))
-    else: check('Pause button is reachable', False, sorted(found))
-    found = nodes()
-    if FORWARD in found:
-        before = state().get('position', 0)
-        device.tap(*centre(found[FORWARD]))
-        settle()
-        after = state().get('position', 0)
-        check('forward 10 s moves the playhead (repeat-one wraps a 12 s clip)', after != before, (before, after))
-
-    # --- audio and subtitle tracks -----------------------------------------------------------------------
-    device.load('%s/files/video-2audio-embedded-sub.mkv' % BASE, kind='video', repeat='one')
-    time.sleep(3)
-    raise_controls()
-    first = state()
-    check('two audio tracks and one subtitle track are listed', len(first.get('audioTracks', [])) == 2 and len(first.get('textTracks', [])) == 1,
-          {'audio': [t['language'] for t in first.get('audioTracks', [])], 'text': len(first.get('textTracks', []))})
-    found = nodes()
-    check('the track buttons appear only when there is a choice', AUDIO in found and SUBTITLES in found, sorted(found))
-    if AUDIO in found:
-        device.tap(*centre(found[AUDIO]))
-        settle()
-        now = state()
-        check('the audio button switches to the next track', [t['selected'] for t in now['audioTracks']] == [False, True], now['audioTracks'])
-        device.tap(*centre(nodes()[AUDIO]))
-        settle()
-        check('and wraps around to the first', [t['selected'] for t in state()['audioTracks']] == [True, False])
-    if SUBTITLES in nodes():
-        device.tap(*centre(nodes()[SUBTITLES]))
-        settle()
-        check('the subtitle button turns the embedded track on', state()['textTracks'][0]['selected'] is True, state()['textTracks'])
-        device.tap(*centre(nodes()[SUBTITLES]))
-        settle()
-        check('and off again', state()['textTracks'][0]['selected'] is False)
-
-    # --- the overlay goes away on its own ---------------------------------------------------------------
-    time.sleep(17)
-    check('overlay fades out after the engaged period', SEEK not in nodes())
-
-    # --- OS gestures stay with the OS --------------------------------------------------------------------
-    device.shell('input', 'swipe', 640, 300, 640, 300, 900)   # a long press
-    time.sleep(1.5)
-    check('long press on the picture still opens settings', page()[0].startswith('settings'), page()[:2])
-    device.open_page('player.video')
-    time.sleep(1.2)
-    device.load('%s/files/%s' % (BASE, MOVIE_720), kind='video', repeat='one')
-    time.sleep(1.5)
-    mark = device.log_mark()
-    device.shell('input', 'swipe', 1000, 300, 200, 300, 300)
-    time.sleep(1.5)
-    check('a horizontal swipe on the picture leaves the video page', page()[0] != 'player.video',
-          (page()[:2], [line[-80:] for line in device.log_since(mark) if 'page=' in line or 'DEBUG page' in line]))
-
-    # --- attention ---------------------------------------------------------------------------------------
-    if args.attention:
+    try:
+        device.prepare_display()
+        # Releasing an attention hold is not a touch. Start the real policy's inactivity clock
+        # before releasing it, otherwise a device left idle by an earlier test immediately sleeps.
+        screen_width, screen_height = screen()
+        device.tap(screen_width - 5, screen_height // 2)
+        device.debug('hold_attention')                      # no forced level: the real attention policy runs
         device.open_page('player.video')
-        device.load('%s/files/%s' % (BASE, MOVIE_720), kind='video', repeat='all')
-        time.sleep(200)   # longer than the 120 s AWAKE -> AMBIENT setting
-        check('video playing keeps the display awake', page()[1] in ('AWAKE', 'ENGAGED'), page()[:2])
-        device.debug('media_pause')
-        time.sleep(200)
-        check('paused video lets the display ease down again', page()[1] in ('AMBIENT', 'ASLEEP'), page()[:2])
+        time.sleep(1)
+        device.load('%s/files/%s' % (BASE, MOVIE_720), kind='video', repeat='one')
+        time.sleep(2.5)
 
-    device.debug('media_stop')
-    origin.stop()
-    device.stop_log()
+        # --- overlay -----------------------------------------------------------------------------------------
+        check('overlay is hidden while nobody touches the screen', SEEK not in nodes())
+        device.tap(screen_width // 2, screen_height // 3)
+        settle()
+        found = nodes()
+        check('a touch raises the overlay (seek bar and transport buttons)', {SEEK, PAUSE, BACK, FORWARD} <= set(found), sorted(found))
+        bar = found.get(SEEK)
+        if bar:
+            y = (bar[1] + bar[3]) // 2
+            width = bar[2] - bar[0]
+            device.shell('input', 'swipe', bar[0] + int(width * .15), y, bar[0] + int(width * .85), y, 450)
+            time.sleep(0.4)           # the drag ends at 85% of a 12 s clip: do not wait long enough for repeat-one to wrap it round
+            now = state()
+            check('dragging the seek bar seeks and does not turn the page', page()[0] == 'player.video' and now.get('position', 0) >= 6500,
+                  {'page': page()[:2], 'position': now.get('position')})
+            device.tap(bar[0] + int(width * .25), y)
+            settle()
+            position = state().get('position', 0)
+            check('tapping the seek bar jumps to that point', 1500 <= position <= 5500, position)
+
+        # --- transport ---------------------------------------------------------------------------------------
+        found = nodes()
+        if PAUSE in found:
+            device.tap(*centre(found[PAUSE]))
+            settle()
+            check('Pause button pauses', state().get('status') == 'paused', state().get('status'))
+            found = nodes()
+            if PLAY in found:
+                device.tap(*centre(found[PLAY]))
+                settle()
+                check('Play button resumes', state().get('status') == 'playing', state().get('status'))
+            else: check('Play button appears while paused', False, sorted(found))
+        else: check('Pause button is reachable', False, sorted(found))
+        found = nodes()
+        if FORWARD in found:
+            before = state().get('position', 0)
+            device.tap(*centre(found[FORWARD]))
+            settle()
+            after = state().get('position', 0)
+            check('forward 10 s moves the playhead (repeat-one wraps a 12 s clip)', after != before, (before, after))
+
+        # --- audio and subtitle tracks -----------------------------------------------------------------------
+        device.load('%s/files/video-2audio-embedded-sub.mkv' % BASE, kind='video', repeat='one')
+        time.sleep(3)
+        raise_controls()
+        first = state()
+        check('two audio tracks and one subtitle track are listed', len(first.get('audioTracks', [])) == 2 and len(first.get('textTracks', [])) == 1,
+              {'audio': [t['language'] for t in first.get('audioTracks', [])], 'text': len(first.get('textTracks', []))})
+        found = nodes()
+        check('the track buttons appear only when there is a choice', AUDIO in found and SUBTITLES in found, sorted(found))
+        if AUDIO in found:
+            device.tap(*centre(found[AUDIO]))
+            settle()
+            now = state()
+            check('the audio button switches to the next track', [t['selected'] for t in now['audioTracks']] == [False, True], now['audioTracks'])
+            device.tap(*centre(nodes()[AUDIO]))
+            settle()
+            check('and wraps around to the first', [t['selected'] for t in state()['audioTracks']] == [True, False])
+        if SUBTITLES in nodes():
+            device.tap(*centre(nodes()[SUBTITLES]))
+            settle()
+            check('the subtitle button turns the embedded track on', state()['textTracks'][0]['selected'] is True, state()['textTracks'])
+            device.tap(*centre(nodes()[SUBTITLES]))
+            settle()
+            check('and off again', state()['textTracks'][0]['selected'] is False)
+
+        # --- the overlay goes away on its own ---------------------------------------------------------------
+        time.sleep(17)
+        check('overlay fades out after the engaged period', SEEK not in nodes())
+
+        # --- OS gestures stay with the OS --------------------------------------------------------------------
+        device.shell('input', 'swipe', screen_width // 2, screen_height // 3, screen_width // 2, screen_height // 3, 900)
+        time.sleep(1.5)
+        check('long press on the picture still opens settings', page()[0].startswith('settings'), page()[:2])
+        device.open_page('player.video')
+        time.sleep(1.2)
+        device.load('%s/files/%s' % (BASE, MOVIE_720), kind='video', repeat='one')
+        time.sleep(1.5)
+        mark = device.log_mark()
+        # A film is an app-like screen (ADR-040): a sideways swipe on the picture is the picture's own and no longer leaves the page.
+        device.shell('input', 'swipe', int(screen_width * .8), screen_height // 3, int(screen_width * .2), screen_height // 3, 300)
+        time.sleep(1.5)
+        check('a horizontal swipe on the picture stays on the video page', page()[0] == 'player.video',
+              (page()[:2], [line[-80:] for line in device.log_since(mark) if 'page=' in line or 'DEBUG page' in line]))
+        device.shell('input', 'keyevent', 'KEYCODE_BACK')
+        time.sleep(1.5)
+        check('Back leaves the video page', page()[0] != 'player.video', page()[:2])
+
+        # --- attention ---------------------------------------------------------------------------------------
+        if args.attention:
+            device.open_page('player.video')
+            device.load('%s/files/%s' % (BASE, MOVIE_720), kind='video', repeat='all')
+            time.sleep(200)   # longer than the 120 s AWAKE -> AMBIENT setting
+            check('video playing keeps the display awake', page()[1] in ('AWAKE', 'ENGAGED'), page()[:2])
+            device.debug('media_pause')
+            time.sleep(200)
+            check('paused video lets the display ease down again', page()[1] in ('AMBIENT', 'ASLEEP'), page()[:2])
+
+    finally:
+        device.debug('media_stop')
+        device.debug('hold_attention')
+        device.debug('theme')
+        device.debug('lux')
+        origin.stop()
+        device.stop_log()
     failed = results.count(False)
     print('\n%d checks, %d failed' % (len(results), failed))
     return 1 if failed else 0

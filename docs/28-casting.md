@@ -1,6 +1,6 @@
 # 28 · 投屏接收（DLNA / AirPlay / Miracast）：计划与验证记录
 
-> 2026-11-01（2026-11-02 更新）。ADR-031（草案）、ADR-033（系统层模块）、ADR-034（项目以 GPLv3 分发）。状态：**DLNA（C2）、AirPlay 视频推送（C3）、Miracast 投屏（C4）、AirPlay 屏幕镜像与声音（C5）都已实现，并在真机上用“脚本扮演的发送端”通过自动检查（34 / 37 / 27 / 45 项）；真实发送端中，macOS 与 iPhone Air（最新 iOS）的 AirPlay 屏幕镜像已连上并有画面（2026-11-02，延迟与声音没有量化核对）；华为手机的 Miracast、Windows、AirPlay 视频推送、各视频 App 的 DLNA 还没测**；C1 里的确认页与 `tos.cast` 还没做。
+> 2026-11-01（2026-11-02 更新）。ADR-031（草案）、ADR-033（系统层模块）、ADR-034 / ADR-043（源码 MIT，完整版 APK 按 GPLv3 发布）。状态：**DLNA（C2）、AirPlay 视频推送（C3）、Miracast 投屏（C4）、AirPlay 屏幕镜像与声音（C5）都已实现，并在真机上用“脚本扮演的发送端”通过自动检查（34 / 37 / 27 / 45 项）；真实发送端中，macOS 与 iPhone Air（最新 iOS）的 AirPlay 屏幕镜像已连上并有画面（2026-11-02，延迟与声音没有量化核对）；华为手机的 Miracast、Windows、AirPlay 视频推送、各视频 App 的 DLNA 还没测**；C1 里的确认页与 `tos.cast` 事件还没做。2026-11-02 起有等待页 `cast.home`（应用，`33-apps-and-back.md`）和只读的 `tos.cast.status()`。
 > 2026-11-01 更正：§8 ② 以前记的延迟数字偏小约 0.5 秒（测试源的读取预热没有算进去），已按补测结果改正，见 §8 ②。
 > 先读：`AGENTS.md` → `08-decisions.md` ADR-015 / ADR-022 / ADR-030 → `27-streaming.md` → 本文。
 
@@ -69,7 +69,7 @@ QCA9379（`ath10k_sdio`）、LineageOS 15.1 userdebug、`android.hardware.wifi.d
 |---|---|---|
 | 1 | 镜像也走我们的引擎，带延迟关口，不行再退回直连解码 | 按建议执行；C0 ② 验证 |
 | 2 | Miracast 权限：运行时 `su`（原项目做法），或系统层模块 | **已定（用户，2026-11-01）**：ThinkOS 不只是一个应用，也是一套对安卓的整体改动，系统层代码放进本仓库的 `system/`（ADR-033）。具体做法是 Magisk 模块 `thinkos-cast` 里的 root 守护进程：应用自己不 `su`。这台设备上 `CONFIGURE_WIFI_DISPLAY` 是 signature 级、应用没有平台签名，所以“用模块授予权限”走不通，只能由守护进程代为设置 |
-| 3 | AirPlay 镜像与 FairPlay（GPLv3）：自用可接受，分发要么不做要么换实现 | **已定（用户，2026-11-01）**：“开源之后我会以 GPLv3 的许可分发”（ADR-034）。`playfair` 按其 GPLv3 原样纳入（`android/app/src/main/cpp/playfair/`，来源与许可证见该目录的 `ORIGIN.md`），C5 开做 |
+| 3 | AirPlay 镜像与 FairPlay（GPLv3）：自用可接受，分发要么不做要么换实现 | **已定（用户，2026-11-01）**：“开源之后我会以 GPLv3 的许可分发”（ADR-034）。`playfair` 按其 GPLv3 原样纳入（`android/app/src/main/cpp/playfair/`，来源与许可证见该目录的 `ORIGIN.md`），C5 开做。2026-11-03 修订：项目自己的代码改为 MIT，完整版 APK 仍按 GPLv3 发布（ADR-043），`playfair` 的用法不变 |
 | 4 | 公网明文 HTTP：沿用 `media.public_http`，不另设投屏开关 | 按建议执行 |
 | 5 | 默认策略：总开关默认关；新发送端首次连接需屏幕确认；投屏到来接管并可打断本地播放 | 按建议执行 |
 | 6 | 范围：先 DLNA + AirPlay 视频推送，Miracast 看 C0 | 按建议执行 |
@@ -162,6 +162,8 @@ QCA9379（`ath10k_sdio`）、LineageOS 15.1 userdebug、`android.hardware.wifi.d
 
 
 ## 10. C4 Miracast：实现与验证（2026-11-01）
+
+**当前会话复验（2026-11-05，0.1.27）：**主包/匹配测试包已实际安装；在boot_count29、不重启条件下，生产入口采用`/data/local/tmp`临时root wfdd，等待页Miracast显示“开”。脚本化Source的M1–M7/PLAY、真实RTP/MirrorSource/MediaEngine灰色视频1280×720、静音AAC轨道与TEARDOWN释放共11项通过，截图已目视；仅Miracast开且DLNA/AirPlay关时，同一cast.home随自有临时wfdd停止/原二进制重启自动显示缺少/开、无需重进，6项通过。接收专项原9文件字节、刷新专项三开关语义/其他8文件字节及UI/管理/五流0保持。没有持久安装或真实手机/Windows发现、配对/建组、共享屏幕或可听音频验收；不把接收层脚本化成功扩大为真实发送端通过，也不覆盖下方2026-11-01历史结果。证据 `../artifacts/cast/CAST-1/0.1.27/qualification.json`。
 
 **能做什么**：设备以无线显示器（WFD Sink）的身份出现，安卓手机与 Windows 电脑可以把整块屏幕共享上来；画面与声音进 OS 的媒体会话（owner `cast:miracast`），用 `cast.video` 页面显示，没有控制条（共享屏幕无法暂停、快进），亮度与音量手势保留；离开该页面会结束共享，对方会收到 TEARDOWN。
 
@@ -263,7 +265,7 @@ ThinkOS 不只是一个安卓应用，也是一套对安卓的整体改动：需
 
 **能做什么**：iPhone、iPad、Mac 把整个屏幕和声音共享上来，在 `cast.video` 页面上以实时的“镜像”显示（owner `cast:airplay`，`mirror` 为真：没有控制条、不能暂停或跳转，亮度与音量手势保留；离开页面结束共享，设备断开发送端的控制连接，发送端就停止镜像）。画面与声音和 Miracast 走同一条路：重新封装成 MPEG-TS，进引擎的 `MirrorSource`，低延迟档加追赶再生。
 
-**FairPlay**：镜像要求接收端用 FairPlay 握手拿到解密密钥。`playfair`（逆向苹果得来，GPLv3）按原样放在 `android/app/src/main/cpp/playfair/`，来自 RPiPlay 的固定提交 `64d0341e`，同目录的 `ORIGIN.md` 写明来源与许可证；`fairplay_jni.c` 是我们自己的胶水（握手两步的固定回答表也来自 RPiPlay）。项目以 GPLv3 分发（ADR-034），所以没有构建开关。
+**FairPlay**：镜像要求接收端用 FairPlay 握手拿到解密密钥。`playfair`（逆向苹果得来，GPLv3）按原样放在 `android/app/src/main/cpp/playfair/`，来自 RPiPlay 的固定提交 `64d0341e`，同目录的 `ORIGIN.md` 写明来源与许可证；`fairplay_jni.c` 是我们自己的胶水（握手两步的固定回答表也来自 RPiPlay）。完整版 APK 按 GPLv3 发布（ADR-043），默认包含该库。`-Pthinkos.fairplay=false` 不编译此库，`CastHost` 据库是否可用决定镜像通告；AirPlay 视频推送保留。再加 `-Pthinkos.ffmpeg=false` 可同时省略 FFmpeg 扩展，见 `07-build-deploy.md` §2。
 
 **协议流程**（`android/.../cast/airplay/`）：`GET /info`（Apple TV 的身份，1280×720 的显示器）→ `/pair-setup`、`/pair-verify` → `/fp-setup` 两步 → RTSP `SETUP`（带 FairPlay 包起来的密钥 `ekey`、`eiv`、发送端的 `timingPort`）→ `SETUP`（视频流 type 110、音频流 type 96）→ `RECORD` → 数据。
 
@@ -309,4 +311,12 @@ ThinkOS 不只是一个安卓应用，也是一套对安卓的整体改动：需
 - **音频只支持 AAC-LC 与 AAC-ELD**。ALAC（macOS 的系统声音，`ct=2`）和 Apple Music 的缓冲音频（type 103，参考实现里也没有放通）没有做，设备在 SETUP 的回答里省略这些流。
 - 画面与声音没有用 RTP 与 NTP 的同步包精确对齐（见上）。
 - 第一次连接的屏幕确认：没做，开关打开就是唯一的许可。
+
+## 16. 设备身份（2026-11-03）
+
+DLNA的UUID和AirPlay的deviceid现在从ThinkOS自己的32字节随机种子派生，文件为`files/cast/identity-seed`，首次开启DLNA或AirPlay时在投屏工作线程创建，只允许文件所有者读写。CastIdentity先写同目录临时文件并sync，再rename发布；读取有界，长度不对会重新生成，存储失败不使用通用固定身份。主机测试已通过；实际投屏回归与设备持久化验证见`36`的WEL-4结果。
+
+不再读取系统ANDROID_ID；身份不放进引导、Lua或用户设置，跳过引导也能正常生成。AirPlay的Ed25519配对密钥仍在独立的`files/cast/airplay-identity`，不和发现身份共用。升级后开发机的DLNA UUID和AirPlay deviceid会变一次，发送端会当作新设备；投屏默认关、尚未发布，此迁移已在任务清单接受。
+
+WEL-5制作金镜像前必须清除参考机的ThinkOS数据，确保镜像没有files/cast目录及种子；普通重启保留种子。若把已经生成的种子也克隆过去，仍会重复身份。原先克隆系统ANDROID_ID会导致冲突的判断是机制推断，尚未用两台实体机核对；本实现通过每台首次使用生成私有种子避免依赖这一判断。真实清数据/刷机/重启验收归人工，不在现有开发机上擅自执行。
 

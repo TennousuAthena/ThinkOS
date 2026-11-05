@@ -2,7 +2,10 @@
     <application>
         <activity android:name=".NotificationPreviewActivity" android:exported="true"
             android:permission="android.permission.DUMP" android:excludeFromRecents="true" />
+        <activity android:name=".OnboardingPreviewActivity" android:exported="true"
+            android:permission="android.permission.DUMP" android:excludeFromRecents="true" />
         <!-- USB shell diagnostics only; absent from release builds. -->
         <receiver android:name=".DebugReceiver" android:exported="true" android:permission="android.permission.DUMP" />
+        <receiver android:name=".InstallProbeReceiver" android:exported="false" />
     </application>
 </manifest>

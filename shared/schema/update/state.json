@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "state.json",
+  "title": "UpdateStateDocument",
+  "description": "Private workflow checkpoint. References only an authenticated catalog digest/sequence; paths and keys are not persisted here. READY must be revalidated from the signed cache and actual APK on recovery. Installation transaction authority remains pending.json/UpdateGuard.",
+  "type": "object",
+  "required": ["schema", "channel", "phase", "downloaded", "size"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"type": "integer", "const": 1},
+    "channel": {"type": "string", "enum": ["stable", "beta"]},
+    "phase": {"type": "string", "enum": ["IDLE", "AVAILABLE", "DOWNLOADING", "READY", "INSTALLING", "FAILED"]},
+    "downloaded": {"type": "integer", "format": "int64", "minimum": 0, "maximum": 67108864},
+    "size": {"type": "integer", "format": "int64", "minimum": 0, "maximum": 67108864},
+    "seq": {"type": "integer", "format": "int64", "minimum": 0, "maximum": 9223372036854775807},
+    "catalog_digest": {"type": "string", "minLength": 64, "maxLength": 64, "pattern": "^[a-f0-9]{64}$"},
+    "error": {"type": "string", "enum": ["network", "metadata", "storage", "package", "interrupted", "unavailable", "keys"]},
+    "ready_elapsed": {"type": "integer", "format": "int64", "minimum": 0, "maximum": 9223372036854775807},
+    "ready_boot": {"type": "integer", "format": "int64", "minimum": 0, "maximum": 9223372036854775807},
+    "ready_wall": {"type": "integer", "format": "int64", "minimum": 0, "maximum": 9223372036854775807}
+  }
+}

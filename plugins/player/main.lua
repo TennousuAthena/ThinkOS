@@ -54,7 +54,7 @@ end
 local function row(name, item)
   if name == "music" or name == "video" then
     local title, artist = library.describe(item)
-    return {icon = name == "music" and "music" or "play", title = m3u.clip(m3u.clean(title), 120),
+    return {title = m3u.clip(m3u.clean(title), 120),
       subtitle = m3u.clip(m3u.clean(artist ~= "" and artist or (item.album or "")), 120), trailing = library.duration(item.duration)}
   elseif name == "recent" then
     local resume = library.resumeAt(item)
@@ -62,7 +62,7 @@ local function row(name, item)
     return {icon = item.kind == "audio" and "music" or "play", title = m3u.clip(m3u.clean(item.title or ""), 120),
       subtitle = m3u.clip(m3u.clean(item.artist and item.artist ~= "" and item.artist or placeOf(item.url)), 120), trailing = trailing}
   end
-  return {icon = "list", title = m3u.clip(m3u.clean(item.title or ""), 120), subtitle = m3u.clip(m3u.clean(item.group or hostOf(item.url)), 120), trailing = ""}
+  return {title = m3u.clip(m3u.clean(item.title or ""), 120), subtitle = m3u.clip(m3u.clean(item.group or hostOf(item.url)), 120), trailing = ""}
 end
 
 local function emptyNotice(name)
@@ -80,14 +80,32 @@ local function variantIndex()
   return 1
 end
 
+local function tabLabels()
+  local labels = empty()
+  for i, name in ipairs(ORDER) do labels[i] = tos.i18n.t("variant." .. name) end
+  return labels
+end
+
+-- Which row of the list on screen is the track that is playing (0 when it is not in this list, or nothing plays).
+local lastCurrent = 0
+local function playingRow()
+  local status = tos.state.get("media.status")
+  if not (status == "playing" or status == "buffering" or status == "paused" or status == "reconnecting") then return 0 end
+  local entry = queue[tos.state.get("media.index") or 0]
+  if not entry then return 0 end
+  for i, item in ipairs(lists[variant]) do
+    if item.url == entry.url then return i end
+  end
+  return 0
+end
+
 local function render()
   local rows = empty()
   for i, item in ipairs(lists[variant]) do rows[i] = row(variant, item) end
-  -- The list is chosen by tapping the title; a notice, when there is one, takes the place of the hint about that.
-  local nextName = ORDER[variantIndex() % #ORDER + 1]
-  local notice = notices.play or emptyNotice(variant)
+  -- The footer is where the player's own words go: why a list is empty, why playback failed. The list itself is chosen by the tabs.
+  lastCurrent = playingRow()
   tos.state.set(tos.json.encode({items = rows, playNotice = notices.play or "", heading = tos.i18n.t("variant." .. variant),
-    footer = notice ~= "" and notice or tos.i18n.t("hint.cycle", {next = tos.i18n.t("variant." .. nextName)}), count = tostring(#rows)}))
+    footer = notices.play or emptyNotice(variant), count = tostring(#rows), tabs = tabLabels(), tab = variantIndex(), current = lastCurrent}))
 end
 
 -- The home card: what is playing, and how much the stack should want to show it (published for the OS; see 20-weather-handoff).
@@ -104,6 +122,15 @@ local function renderNow()
   if text == shown.text and relevance == shown.relevance then return end
   shown.text, shown.relevance = text, relevance
   tos.state.set(tos.json.encode({nowTitle = text, relevance = relevance}))
+end
+
+-- Playback moves on without this plugin (the next track, a stop, another plugin's session): keep the marked row right.
+local function refreshCurrent()
+  local row = playingRow()
+  if row ~= lastCurrent then
+    lastCurrent = row
+    tos.state.set(tos.json.encode({current = row}))
+  end
 end
 
 local function refreshLists()
@@ -319,7 +346,7 @@ tos.on("start", function()
   refreshLists()
   render()
   renderNow()
-  tos.timer.every(2, renderNow)
+  tos.timer.every(2, function() renderNow(); refreshCurrent() end)
   -- Nothing heavy while the OS is still bringing the clock up: the scan and the playlist wait a moment.
   tos.timer.after(1, scan)
   if tos.config.playlist_url ~= "" then tos.timer.after(3, function() fetchPlaylist(tos.config.playlist_url) end) end
@@ -353,6 +380,15 @@ tos.on("page.leave", function(page)
 end)
 
 tos.on("tap", function(name, index)
+  if name == "tab" then
+    local target = type(index) == "number" and ORDER[index]
+    if target and target ~= variant then
+      variant = target
+      tos.store.set("variant", variant)
+      render()
+    end
+    return
+  end
   if name == "cycle" then
     variant = ORDER[variantIndex() % #ORDER + 1]
     tos.store.set("variant", variant)

@@ -81,6 +81,15 @@ test("unit, language and minute changes only render; relevance remains stable", 
   local previous=e.state.relevance;e.state.relevance=nil;e.minute();e.emit("locale")
   assert(#e.requests==count and e.state.relevance==nil and previous==.3)
 end)
+test("fresh weather has no status or minute-old text; only meaningful precipitation appears", function()
+  local e=new();e.next()()
+  assert(e.state.status == "" and e.state.cardInfo == e.place.name)
+  local metrics, card, summary = e.state.metrics, e.state.cardInfo, e.state.summary
+  e.now=e.now+60000;e.minute()
+  assert(e.state.status == "" and e.state.cardInfo == card and e.state.metrics == metrics and e.state.summary == summary)
+  assert(not e.state.metrics:find("\n",1,true))
+  assert(e.state.hourlyRange == nil)
+end)
 test("cache starts offline immediately; timestamp and raw Celsius survive", function()
   local e=new();e.next()();local cache=e.writes[1]
   e=new({cache=cache});assert(#e.requests==0 and e.state.temperature=="23°")
@@ -163,7 +172,7 @@ test("fractional time zones select local current hour and nominal local date", f
   e.response=function()return {status=200,body=json.encode(b)}end;e.next()()
   assert(#e.state.hourly==24 and e.state.highlight==1)
   assert(e.state.days[1].title=="@weekday:"..tostring((b.daily.time[1]+b.utc_offset_seconds)*1000))
-  assert(e.state.hourlyRange:sub(1,6)=="\u{2066}\u{2068}" and e.state.hourlyRange:sub(-6)=="\u{2069}\u{2069}")
+  assert(e.state.hourlyRange == nil) -- no redundant time range below the chart
 end)
 test("daily date labels retain fixed API boundaries across a DST transition", function()
   local e=new();local b=clone(sample);b.timezone="America/New_York";b.utc_offset_seconds=-14400

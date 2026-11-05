@@ -1,0 +1,25 @@
+{
+  "layout": "focus",
+  "slots": {
+    "over": {
+      "type": "text",
+      "value": "@name",
+      "style": "title"
+    },
+    "hero": {
+      "type": "grid",
+      "items": "{{apps}}",
+      "item": {
+        "title": "{{.title}}",
+        "icon": "{{.icon}}",
+        "image": "{{.image}}"
+      },
+      "tap": "open"
+    },
+    "under": {
+      "type": "text",
+      "value": "{{notice}}",
+      "style": "caption"
+    }
+  }
+}

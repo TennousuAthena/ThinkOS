@@ -2,14 +2,15 @@
   "layout": "focus",
   "slots": {
     "over": {
-      "type": "text",
-      "style": "title",
-      "value": "{{heading}}",
-      "tap": "cycle"
+      "type": "tabs",
+      "items": "{{tabs}}",
+      "current": "{{tab}}",
+      "tap": "tab"
     },
     "hero": {
       "type": "list",
       "items": "{{items}}",
+      "current": "{{current}}",
       "item": {
         "icon": "{{.icon}}",
         "title": "{{.title}}",
@@ -19,9 +20,9 @@
       "tap": "play"
     },
     "under": {
-      "type": "text",
-      "style": "caption",
-      "value": "{{footer}}"
+      "type": "nowplaying",
+      "style": "bar",
+      "idle": "{{footer}}"
     }
   }
 }

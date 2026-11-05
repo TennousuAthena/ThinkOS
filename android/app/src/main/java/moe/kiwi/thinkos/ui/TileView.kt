@@ -72,10 +72,10 @@ internal class TileView(
             fontFeatureSettings = "tnum"
         }
 
-    private val value = text(56f)
-    private val label = text(12f)
-    private val detail = text(13f).apply { typeface = Typeface.create("sans-serif-light", Typeface.NORMAL) }
-    private val badge = text(14f, true).apply { gravity = Gravity.END or Gravity.CENTER_VERTICAL }
+    private val value = text(TextScale.DISPLAY)
+    private val label = text(TextScale.CAPTION)
+    private val detail = text(TextScale.CAPTION).apply { typeface = Typeface.create("sans-serif-light", Typeface.NORMAL) }
+    private val badge = text(TextScale.CAPTION, true).apply { gravity = Gravity.END or Gravity.CENTER_VERTICAL }
     private val positions = mutableMapOf<View, RenderGeometry.Box>()
     private val face =
         object : ViewGroup(context) {
@@ -312,31 +312,22 @@ internal class TileView(
     private fun styleTexts() {
         if (showingPicture) {
             value.setAutoSizeTextTypeWithDefaults(TextView.AUTO_SIZE_TEXT_TYPE_NONE)
-            value.textSize = if (size == "large") 17f else 15f
+            value.textSize = TextScale.BODY
             value.maxLines = 2
             value.typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
-            detail.textSize = 11f
+            detail.textSize = TextScale.CAPTION
             detail.maxLines = 2
         } else {
-            val (low, high) =
-                when (size) {
-                    "small" -> 12 to 24
-                    "medium" -> 12 to 56
-                    "wide" -> 12 to 60
-                    else -> 12 to 72
-                }
             value.maxLines = 1
             value.typeface = Typeface.create("sans-serif-light", Typeface.NORMAL)
-            value.setAutoSizeTextTypeUniformWithConfiguration(
-                low,
-                high,
-                1,
+            value.setAutoSizeTextTypeUniformWithPresetSizes(
+                TextScale.presets(if (size == "small") TextScale.TITLE else TextScale.DISPLAY),
                 android.util.TypedValue.COMPLEX_UNIT_SP,
             )
-            detail.textSize = 13f
+            detail.textSize = TextScale.CAPTION
             detail.maxLines = 1
         }
-        label.textSize = if (size == "small") 10f else if (size == "medium") 12f else 13f
+        label.textSize = TextScale.CAPTION
     }
 
     fun bind(id: String, paths: Set<String>, force: Boolean = false) {
@@ -412,7 +403,7 @@ internal class TileView(
             listOf(label.text, value.text, detail.text)
                 .filter { it.isNotBlank() }
                 .distinct()
-                .joinToString(" · ")
+                .joinToString("  ")
         if (contentDescription?.toString() != description) contentDescription = description
     }
 

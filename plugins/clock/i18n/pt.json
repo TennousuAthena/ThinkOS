@@ -1,7 +1,6 @@
 {
   "name": "Relógio",
   "title": "Relógio",
-  "now": "Agora",
   "waiting": "Aguardando sincronização da hora",
   "calendar": "Calendário",
   "group.display": "Exibição",

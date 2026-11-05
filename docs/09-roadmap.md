@@ -67,7 +67,7 @@
 - [ ] 系统设置：主题固定为深色后，遮光 / 强光不再切换 LIGHT / DARK；方向锁定立即生效；改注意力计时后下一次计时按新值（原生设置页、调试亮度/无人输入与实际背光已验证，见 `17-ui-validation.md`；实体光照/旋转待人工确认）
 - [ ] 非法值被拒绝并给出原因（超范围、跨字段冲突）；插件不能直接写设置（步进边界与跨字段回弹 UI 已验证，见 `17-ui-validation.md`；完整权限验收仍待补齐）
 - [x] 禁用 `settings` 插件后长按进入原生救援菜单，“重置设置”清除设备上的修改（真实摘要隔离、横竖屏及恢复插件九项真机检查通过，见 `17-ui-validation.md`）
-- [ ] 构建产物和设备上都没有 `.tpk`；目录形态的热更新不重启应用（PID 不变），坏版本保留旧版，死循环插件仍被预算终止
+- [x] 构建产物和设备上都没有 `.tpk`；目录形态的热更新不重启应用（PID 不变），坏版本保留旧版，死循环插件仍被预算终止（目录验收原始结果见 `artifacts/directory-validation/installer/results.json`；2026-11-03 APK 复核见 `artifacts/base/BASE-03/apk.json`）
 - [ ] 现有 JVM / 原生 / 插件测试通过；相同场景的 AWAKE / AMBIENT CPU 相对 `13-pre-m1-hardening.md` 的基线增长 ≤ 20%（超过必须调查）
 
 ## M1 · 内容插件
@@ -80,7 +80,10 @@
 - `tiles`：API 4 固定磁贴网格与 tile 模板（ADR-028 起为 8×6 / 6×8 的 Metro 开始屏：固定背景、标题栏、白字、按下倾斜与入场动画、`tos.tile.animate`），插件自定义底色、自动黑白前景、动态翻面、长按所属插件设置，clock/weather/gallery 的磁贴和纯声明示例页；T0–T6 / A1–A9 已通过，两轮各 600 秒；验收见 `24-tiles-validation.md`
 - `aero`：API 5 原生 Aero 桌面，固定玻璃窗口、任务栏与开始菜单，公开引用时钟/天气/照片；不含 WebView 或实时模糊，设计与来源见 `25-windows-design.md`；独立 600 秒稳定性检查通过
 - 公开数据：API 6 `exports`/`uses`/`calls`、`tos.data`、`tos.command`，槽位引用 widget 与 `alternates`；`gallery.daily`、`weather.now` 已公开，设计与验收见 `26-public-data.md`
-- `player`：已实现（ADR-030，API 7）：本地音乐 / 视频、串流地址、M3U 播放列表、最近播放与续播，HLS / DASH / RTSP 与影院视图，实时活动接管；验收见 `27-streaming.md`。Navidrome、歌词、频谱（ExoPlayer + `TeeAudioProcessor`）仍未做，见 `22-player-plan.md`
+- `player`：已实现（ADR-030，API 7）：本地音乐 / 视频、串流地址、M3U 播放列表、最近播放与续播，HLS / DASH / RTSP 与影院视图，实时活动接管；验收见 `27-streaming.md`。音乐界面（封面、队列、音量、资料库迷你条、首页卡片）见 `30-player-ui.md`（ADR-036，API 8，真机未验证）。Navidrome、歌词、频谱（ExoPlayer + `TeeAudioProcessor`）仍未做，见 `22-player-plan.md`
+- `iptv`：已实现（ADR-038，API 8）：最多四个频道列表（M3U / JSON，列表源可扩展）、同一频道合并多条线路、后台自动测试并暂时停用失效线路、播前先看一眼、节目单（XMLTV 或每频道 JSON）；直播页由 OS 的 `tv` 组件画（频道横幅、节目与进度、上一台 / 下一台 / 频道列表 / 线路 / 收藏）。Lua 48 项与设备整条流程 `tools/tests/iptv_device.py` 通过；设计与验收见 `31-iptv.md`。预置 iptv-api 的公开列表（321 个频道、768 条线路，设备上点播通过），央视频道有节目单（央视网自己的接口，`guides/cntv.lua`），卫视和地方台没有（`31-iptv.md` §10）。回看、录制、台标没做
+- 应用与返回（ADR-040，API 8）：已实现。应用（`apps[]`）全屏、不在翻页序列里，用最左缘右滑或 Back 键退出；返回栈 `NavStack`；`tos.back.intercept` 与 `back` 事件；打开应用时的“翻转并启动”动画；`player.library`、`iptv.channels`、新的 `cast.home` 是第一批应用，从 `tiles.apps` 磁贴页进入。JVM 与 `tools/tests/nav_back_device.py`（26 项）通过；**性能没测**。设计与验证见 `33-apps-and-back.md`。安卓应用网格（`grid`、`tos.apps.*`）和手动/自动返回已有功能证据（APP-5、APP-7）；ADR-045底边上滑、launcher角色与模块1.1的进度见`37-android-apps-and-up-gesture.md`。性能按所有者要求在功能实现后统一验收。
+- 广播（APP-3，2026-11-03）：`radio`已实现M3U/PLS、收藏、ICY曲名、返回后台播放和断线重连，不内置电台；播放与操作栏使用唯一MediaEngine。真机19项功能通过，301秒含190秒本地源站故障并恢复；九项原生Lua覆盖解析/异常输入/并发/重试。语言和界面证据见`artifacts/app/APP-3/report.md`，小时级长稳与性能未验。
 - `notify`：本地通知展示（两种形态），M2 接入手机通知中转
 - 掉帧自动降级
 
@@ -141,6 +144,26 @@
 - [ ] 连续运行 72 小时不重启、不 OOM
 - [ ] 人为 kill 进程后 30s 内自动恢复
 - [ ] 断网 10 分钟后恢复网络，同步与实时通道自动恢复
+
+## OTA、插件仓库与新用户引导（策划中，未开工）
+
+设计、分阶段和完整验收见 `34-ota-and-plugin-registry.md`（ADR-041）、`35-onboarding.md`（ADR-042）。这三件事是公开发布的前提，不依赖 M2：设备直接从公开镜像更新，Server 以后只是局域网镜像。
+
+**交付**
+- OTA：签名目录、可续传可换源的下载、APK 免提示安装与回滚；系统设置“自动安装更新”（默认开，只在安静时段安装）
+- 系统模块 OTA：root 守护进程 `thinkos-updater`（第一次人工安装，独立验签，带启动守卫），覆盖 `thinkos-cast`、`thinkos-immersive`、`timesync` 和它自己
+- 插件仓库：`thinkos-registry`（PR、CI 校验、签名目录、内容寻址文件）；设备上的插件中心 `hub`；安装前原生确认框；堵上角色抢占
+- 新用户引导：内置插件 `welcome`，顺序仿照苹果（你好、语言、地区、Wi-Fi、数据与隐私、设备管理、软件更新、位置、外观、手势、欢迎），可跳过；手势练习；选地区时经系统模块定下系统时区
+- 公开发布：ADR-043 清单（发布完整版 APK 的同时公开完整源码）、正式证书、面向普通人的装机指南和脚本
+
+**验收（摘要）**
+- [ ] 开着“自动安装更新”，不碰设备，安静时段自动装完 APK 和模块，没有任何弹窗；Device Owner、Lock Task、默认桌面、设置和插件状态都还在
+- [ ] 下载中拔网、杀进程、断电后续传；坏签名、旧版本、错哈希全部拒绝；视频和投屏中不下载、不安装；时钟度量不回归
+- [ ] 新版启动即崩：自动回到旧版；坏模块让系统起不来：下次开机恢复
+- [ ] 模拟被攻破的应用对更新器发任意内容，装不了未签名的东西
+- [ ] 从目录装一个第三方插件：确认框显示来源和权限；断网、关 Server 后照常运行；声明 `home` 或 `settings` 角色的被拒绝
+- [ ] 全新状态断网走完引导；每步可跳过；插件崩溃直接进首页；老设备升级不出现
+- [ ] 外部账号从零走通：装机、引导、OTA、提交插件
 
 ## 里程碑之外（V1+）
 

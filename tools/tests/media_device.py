@@ -1,6 +1,7 @@
 """Shared helpers for the media device tests: adb, the DebugReceiver and the engine's `media_state` dump."""
 import json
 import os
+import re
 from pathlib import Path
 import shlex
 import subprocess
@@ -51,8 +52,9 @@ class Device:
         self.shell('input', 'tap', int(x), int(y))
 
     # -- logcat ----------------------------------------------------------------------------------------
-    def start_log(self):
-        self.adb('logcat', '-c', check=False)   # best effort: logd sometimes refuses; the reader only looks at new lines anyway
+    def start_log(self, clear=True):
+        if clear:
+            self.adb('logcat', '-c', check=False)   # Existing callers retain their isolated-log behavior.
         self._logcat = subprocess.Popen(self.base + ['logcat', '-v', 'epoch', '-s', 'ThinkOS:V', 'AndroidRuntime:E'],
                                         stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, errors='replace')
         threading.Thread(target=self._read, daemon=True).start()
@@ -94,7 +96,13 @@ class Device:
     def state(self, timeout=6):
         """Ask the app to dump the engine snapshot and return it as a dict (None if nothing arrived)."""
         mark = self.log_mark()
-        self.debug('media_state')
+        result = self.debug('media_state')
+        # Current debug builds also return their snapshot as the ordered-broadcast
+        # result. This remains available when a noisy decoder drops a log record;
+        # retain the log fallback for older installed APKs.
+        match = re.search(r'data="(\{.*\})"', result)
+        if match:
+            return json.loads(match.group(1))
         until = time.monotonic() + timeout
         while time.monotonic() < until:
             for line in self.log_since(mark):

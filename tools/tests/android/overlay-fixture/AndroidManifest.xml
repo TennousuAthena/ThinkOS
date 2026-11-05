@@ -1,0 +1,7 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="moe.kiwi.thinkos.overlayfixture">
+    <uses-sdk android:minSdkVersion="27" android:targetSdkVersion="27" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <application android:label="ThinkOS overlay fixture" android:allowBackup="false" android:theme="@android:style/Theme.Material.NoActionBar">
+        <receiver android:name=".OverlayReceiver" android:exported="true" android:permission="android.permission.DUMP" />
+    </application>
+</manifest>

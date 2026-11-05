@@ -1,5 +1,15 @@
 {
   "name": "कास्ट",
   "page.video": "कास्ट वीडियो",
-  "page.audio": "कास्ट प्ले"
+  "page.audio": "कास्ट प्ले",
+  "app.cast": "कास्ट",
+  "page.home": "कास्ट",
+  "home.headline": "{name} पर कास्ट करें",
+  "hint.dlna": "वीडियो ऐप, Windows",
+  "hint.airplay": "iPhone, iPad और Mac",
+  "hint.miracast": "Android फ़ोन, Windows",
+  "state.on": "चालू",
+  "state.off": "बंद",
+  "footer.offline": "Wi-Fi कनेक्ट नहीं है",
+  "state.module": "सिस्टम मॉड्यूल चाहिए"
 }

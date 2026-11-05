@@ -29,6 +29,9 @@
     },
     {
       "$ref": "layouts.json#/$defs/aero"
+    },
+    {
+      "$ref": "layouts.json#/$defs/panel"
     }
   ]
 }

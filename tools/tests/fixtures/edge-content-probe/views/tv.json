@@ -1,0 +1,4 @@
+{
+  "layout": "stage",
+  "slots": {"stage": {"type": "tv", "channel": "channel", "tap": "tv"}}
+}

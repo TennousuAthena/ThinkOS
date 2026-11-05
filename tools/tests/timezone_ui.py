@@ -20,6 +20,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools"))
 from device_app_files import read_app_file
+from device_hierarchy import dump_hierarchy, visible_nodes
 from package_plugins import package_plugin
 from plugin_push import publish_directory, remove_plugin
 
@@ -74,10 +75,10 @@ def main():
             time.sleep(.2)
         raise AssertionError(message)
 
-    def snapshot(name="last-ui"):
+    def snapshot(name="last-ui", compressed=False):
         path = "/sdcard/thinkos-timezone-ui.xml"
         try:
-            shell("uiautomator", "dump", "--compressed", path)
+            dump_hierarchy(args.serial, path, compressed=compressed)
             raw = shell("cat", path)
             (args.output / (name + ".xml")).write_bytes(raw)
             return ET.fromstring(raw)
@@ -86,7 +87,7 @@ def main():
 
     def find(text=None, contains=None, description=None, class_name=None):
         for _ in range(3):
-            node = next((n for n in snapshot().iter("node") if
+            node = next((n for n in visible_nodes(snapshot(compressed=True)) if
                          (text is None or n.get("text") == text) and
                          (contains is None or contains in n.get("text", "")) and
                          (description is None or n.get("content-desc") == description) and
@@ -99,7 +100,11 @@ def main():
 
     def tap(node):
         a, b, c, d = box(node)
-        shell("input", "tap", (a+c)//2, (b+d)//2)
+        x = (a+c)//2
+        # The ROM's reverse-landscape nav strip can cover the first 78px during
+        # automation. Use the still-visible inside of the target, not that strip.
+        if x < 100: x = a + (c-a)*4//5
+        shell("input", "tap", x, (b+d)//2)
         time.sleep(.2)
 
     def shot(name):
@@ -125,34 +130,13 @@ def main():
         find(text="亚洲")
 
     def set_theme(theme):
-        shell("input", "keyevent", 3)
+        # This test targets the native picker. Global long-press routing and
+        # persistent theme controls are covered by NAV and system_settings_ui.
+        shell("input", "keyevent", 4)
+        shell("input", "keyevent", 4)
         debug("orientation", 0, "--ei")
-        wait_for(lambda: "orientation=LANDSCAPE" in state(), "landscape layout is not ready")
-        for _ in range(6):
-            if "page=home.main," in state(): break
-            shell("input", "swipe", 1100, 400, 150, 400, 450)
-            time.sleep(.3)
-        else: raise AssertionError("Home page is not reachable for theme selection")
-        tree = snapshot()
-        root = next(n for n in tree.iter("node") if n.get("package") == PACKAGE)
-        width = box(root)[2]
-        leaves = [box(n) for n in tree.iter("node") if n.get("package") == PACKAGE and not len(n)]
-        left = [r for r in leaves if (r[0]+r[2])/2 < width/2]
-        right = [r for r in leaves if (r[0]+r[2])/2 >= width/2]
-        assert left and right, "Home stack content is not ready"
-        x = (max(r[2] for r in left)+min(r[0] for r in right))//2
-        y = (box(root)[1]+box(root)[3])//2
-        shell("input", "swipe", x, y, x, y, 900)
-        if saved().get("system", {}).get("theme.night", True): tap(find(text="红色夜间模式"))
-        wait_for(lambda: saved().get("system", {}).get("theme.night") is False, "night mode did not turn off")
-        time.sleep(2.5)
-        if saved().get("system", {}).get("theme.mode") != theme.lower():
-            tap(find(text="主题"))
-            tap(find(text="始终浅色" if theme == "LIGHT" else "始终深色"))
-        wait_for(lambda: saved().get("system", {}).get("theme.mode") == theme.lower()
-                 and saved().get("system", {}).get("theme.night") is False, "theme selection did not persist")
-        navigate()
-        shell("input", "swipe", 600, 380, 600, 380, 900)
+        debug("theme", theme)
+        debug("settings", PROBE)
         find(text="时区UI样例")
         open_required()
         wait_for(lambda: "theme=" + theme in state(), "selected theme did not take effect")
@@ -211,7 +195,7 @@ def main():
         debug("lux", 20, "--ef")
         set_theme("DARK")
         check(not any(n.get("text") == "无" for n in snapshot().iter("node")), "a required timezone does not offer an empty selection")
-        check(not any(n.get("text") == "时区UI样例" for n in snapshot().iter("node")),
+        check(not any(n.get("text") == "时区UI样例" for n in snapshot(compressed=True).iter("node")),
               "the picker hides the covered form from accessibility navigation")
         for name, orientation, theme in (("landscape-dark", 0, "DARK"), ("portrait-dark", 1, "DARK"),
                                          ("portrait-light", 1, "LIGHT"), ("landscape-light", 0, "LIGHT")):
@@ -259,6 +243,7 @@ def main():
         check(report["keyboardClosedAfterPick"],
               "selecting a search result returns to the form and dismisses the keyboard")
         open_required()
+        time.sleep(3.5)  # Let the transient immersive navigation strip hide after dismissing the IME.
         tap(find(description="必选时区", text="‹"))
         find(text="时区UI样例")
         check(saved().get(PROBE, {}).get("required") == "Asia/Kathmandu", "picker back returns without changing the selected timezone")

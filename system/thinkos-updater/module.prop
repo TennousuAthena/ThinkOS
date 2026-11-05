@@ -1,0 +1,6 @@
+id=thinkos-updater
+name=ThinkOS Updater
+version=v1.0
+versionCode=1
+author=ThinkOS
+description=Root-side verification and transactional installation of signed ThinkOS system components

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Weather UI/theme/RTL/settings/offline regression. Restores exact user settings and Wi-Fi."""
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
 import re
 import shlex
-import shutil
 import struct
 import subprocess
 import sys
@@ -19,12 +19,14 @@ sys.path.insert(0, str(ROOT / 'tools'))
 from app_network_block import AppNetworkBlock
 from device_app_files import read_app_file
 from device_hierarchy import dump_hierarchy
+from device_recovery import capture, restore
+from media_device import Device
+from ui_walkthrough import broadcast_json
 from package_plugins import package_plugin
 from plugin_push import publish_directory, remove_plugin
 
 APP = 'moe.kiwi.thinkos'
 HOME = APP + '/.MainActivity'
-LAUNCHER = 'org.lineageos.trebuchet/com.android.launcher3.searchlauncher.SearchLauncher'
 
 
 def main():
@@ -39,6 +41,7 @@ def main():
     args.output.mkdir(parents=True, exist_ok=True)
     base = ['adb', '-s', args.serial]
     report = {'complete': False, 'passed': [], 'screens': {}, 'matrixSkipped': args.skip_matrix}
+    report['apkSha256'] = hashlib.sha256((ROOT/'android/app/build/outputs/apk/debug/app-debug.apk').read_bytes()).hexdigest()
     labels = json.loads((ROOT / 'shared/i18n/system/zh-Hans.json').read_text())
     weather = json.loads((ROOT / 'plugins/weather/i18n/zh-Hans.json').read_text())
     done = json.loads((ROOT / 'plugins/settings/i18n/zh-Hans.json').read_text())['done']
@@ -107,9 +110,9 @@ def main():
         report['screens'][name] = [width,height]
         if inspect:
             nodes = list(tree(name).iter('node'))
-            # A virtualized list may have a partially visible final row. Lead and headings must fit.
-            required = [n for n in nodes if n.get('text', '').startswith('Open-Meteo.com')
-                        or n.get('text') in (weather['daily'], 'المحسوسة')]
+            # UI-05 removed the redundant daily heading; the mandatory attribution remains.
+            # A virtualized forecast may have a partially visible final row.
+            required = [n for n in nodes if n.get('text', '').startswith('Open-Meteo.com')]
             assert required, 'Weather content is not ready'
             for node in required:
                 a,b,c,d = box(node);assert 0<=a<c<=width and 0<=b<d<=height, node.attrib
@@ -131,9 +134,9 @@ def main():
     def open_system():
         debug('locale', 'zh-CN');orient();navigate('home.main')
         shell('input', 'swipe', 640, 400, 640, 400, 900)
-        find(labels['setting_system_name'])
+        find(done)
         if not any(n.get('text')==labels['setting_theme_mode'] for n in tree().iter('node')):
-            tap(find(labels['setting_system_name']))
+            tap(find(labels['setting_section_display']))
         find(labels['setting_theme_mode'])
     def ensure_night(enabled):
         label = labels['setting_theme_night'];root = tree()
@@ -146,7 +149,7 @@ def main():
         orient();navigate('home.main' if from_card else 'weather.detail')
         x = 950 if from_card else 250
         shell('input', 'swipe', x, 400, x, 400, 900)
-        find(weather['name']);tap(find(labels['setting_system_name']));find(labels['setting_units_system'])
+        find(weather['name']);find(labels['setting_units_system'])
     def choose_unit(unit):
         # Units are a system setting now (ADR-032): '°F' means the imperial system, '°C' the metric one.
         system = 'imperial' if unit == 'f' else 'metric'
@@ -159,11 +162,14 @@ def main():
     assert not shell('run-as', APP, 'ls', 'files/dev-plugins').strip(), 'Preserve existing development overrides'
     original = {path: read_app_file(args.serial,path) for path in paths}
     wifi = shell('settings', 'get', 'global', 'wifi_on').strip()
-    backup = Path(tempfile.mkdtemp(prefix='thinkos-weather-settings-'))
-    for path,raw in original.items():
-        if raw is not None:
-            target=backup/Path(path).name;target.write_bytes(raw);os.chmod(target,0o600)
+    device = Device(args.serial)
+    assert APP+'/' in device.shell('dumpsys', 'activity', 'activities').split('mResumedActivity')[-1]
+    journal = capture(device, broadcast_json(device, 'ui_state'))
+    print('Private recovery journal: '+str(journal), flush=True)
+    report['originalWifiOn'] = wifi.decode()
+    (args.output/'recovery.json').write_text(json.dumps({'private_journal':str(journal), 'original_wifi_on':wifi.decode()})+'\n')
     try:
+        shell('am', 'start', '-W', '-n', HOME)
         debug('hold_attention', 'AWAKE')
         initial_pid=pid();report['uiPid']=initial_pid
         open_system();ensure_night(True)
@@ -221,7 +227,7 @@ def main():
             network.start();(args.output/'network-block.txt').write_text(network.evidence())
         else:
             shell('svc','wifi','disable');wait(lambda:shell('settings','get','global','wifi_on').strip()==b'0','Wi-Fi remained enabled')
-        shell('cmd','package','set-home-activity',LAUNCHER);shell('am','force-stop',APP)
+        shell('am','force-stop',APP)
         cold=[]
         for attempt in range(3):
             if attempt: shell('am','force-stop',APP)
@@ -229,25 +235,25 @@ def main():
             (args.output/('offline-am-start-'+str(attempt)+'.txt')).write_text(launch)
             total=int(re.search(r'TotalTime: (\d+)',launch).group(1))
             wait(lambda: 'id=weather' in state(), 'weather cache not ready',seconds=3)
-            ready=round((time.monotonic()-began)*1000)
-            if network:
-                # Use the device's clock; wireless ADB transport is not startup work.
-                until=time.monotonic()+4
-                while time.monotonic()<until:
-                    lines=adb('logcat','-d','-t','200','-s','ActivityManager:I').decode().splitlines()
-                    displayed=max((i for i,line in enumerate(lines) if 'Displayed '+APP+'/.MainActivity:' in line),default=-1)
-                    found=[re.search(r'Fully drawn moe\.kiwi\.thinkos/\.MainActivity: \+(?:(\d+)s)?(\d+)ms',line) for line in lines[displayed+1:]]
-                    match=next((m for m in found if m),None)
-                    if match:ready=int(match[1] or 0)*1000+int(match[2]);break
-                    time.sleep(.1)
+            host_observed=round((time.monotonic()-began)*1000)
+            # USB also incurs host log queries; always use Android's reportFullyDrawn clock.
+            ready=None;until=time.monotonic()+4
+            while time.monotonic()<until:
+                lines=adb('logcat','-d','-t','200','-s','ActivityManager:I').decode().splitlines()
+                displayed=max((i for i,line in enumerate(lines) if 'Displayed '+APP+'/.MainActivity:' in line),default=-1)
+                found=[re.search(r'Fully drawn moe\.kiwi\.thinkos/\.MainActivity: \+(?:(\d+)s)?(\d+)ms',line) for line in lines[displayed+1:]]
+                match=next((m for m in found if m),None)
+                if match:ready=int(match[1] or 0)*1000+int(match[2]);break
+                time.sleep(.1)
+            (args.output/('offline-activity-timings-'+str(attempt)+'.txt')).write_text('\n'.join(lines)+'\n')
+            assert ready is not None, 'Android did not report a fully drawn duration'
             assert total<3000 and ready<3000,(total,ready)
             assert 'plugin CPU budget exceeded' not in logs(), 'Offline cached start exhausted its budget'
-            cold.append({'activityMs':total,'contentMs':ready})
+            cold.append({'activityMs':total,'contentMs':ready,'hostObservedMs':host_observed})
         find(expected);shot('offline-fahrenheit-cache')
         assert saved()['system']['units.system']=='imperial'
         report['offlineColdStart']={'attempts':cold,'wifiDisabled':network is None,'appNetworkBlocked':network is not None,'server':'none'}
         passed('three offline cold starts display cached Fahrenheit weather within 3 seconds without budget errors')
-        shell('cmd','package','set-home-activity',HOME)
         weather_settings(False);shot('detail-settings');choose_unit('c')
         navigate('weather.detail');shot('detail-celsius')
         passed('long press on detail opens the same persisted unit settings')
@@ -297,20 +303,13 @@ def main():
         try:
             (args.output/'logcat.txt').write_text(logs())
             remove_plugin('weather-icons',args.serial)
-            debug('theme');shell('cmd','package','set-home-activity',LAUNCHER);shell('am','force-stop',APP)
-            for path,raw in original.items():
-                if raw is None:shell('run-as',APP,'rm','-f',path,path+'.bak')
-                else:
-                    shell('run-as',APP,'sh','-c','cat > '+shlex.quote(path+'.weather-restore'),data=raw)
-                    shell('run-as',APP,'mv',path+'.weather-restore',path);shell('run-as',APP,'rm','-f',path+'.bak')
             shell('svc','wifi','enable' if wifi!=b'0' else 'disable')
-            shell('cmd','package','set-home-activity',HOME);shell('am','start','-n',HOME)
+            report.update(restore(journal, device))
             report['settingsRestored']=all(read_app_file(args.serial,path)==raw for path,raw in original.items())
             report['wifiRestored']=shell('settings','get','global','wifi_on').strip()==wifi
-            if report['settingsRestored'] and report['wifiRestored']:shutil.rmtree(backup)
-            else:report['backupDirectory']=str(backup)
+            if not report['settingsRestored'] or not report['wifiRestored']:report['private_recovery_journal']=str(journal)
         except Exception as error:
-            report['restoreFailure']=str(error);report['backupDirectory']=str(backup)
+            report['restoreFailure']=str(error);report['private_recovery_journal']=str(journal)
         (args.output/'results.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
         assert report.get('settingsRestored') and report.get('wifiRestored'),'Weather test did not restore original settings'
 

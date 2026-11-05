@@ -6,6 +6,7 @@
 
 static uint64_t started;
 static size_t peak;
+static const char *test_label = "player";
 static void *tracking_alloc(void *ud, void *p, size_t old, size_t next) {
     void *result = limited_alloc(ud, p, old, next);
     Runtime *r = ud;
@@ -35,7 +36,7 @@ static int test_end(lua_State *L) {
     double cpu = (cpu_nanos() - started) / 1e6;
     if (cpu > worst) worst = cpu;
     assert(!r->exhausted && cpu < 50 && peak < 4 * 1024 * 1024);
-    printf("PASS player %s (%.3f ms longest slice, %zu bytes retained, %zu bytes peak)\n", luaL_checkstring(L, 1), worst, r->used, peak);
+    printf("PASS %s %s (%.3f ms longest slice, %zu bytes retained, %zu bytes peak)\n", test_label, luaL_checkstring(L, 1), worst, r->used, peak);
     return 0;
 }
 static void source(lua_State *L, const char *global, const char *path) {
@@ -45,13 +46,19 @@ static void source(lua_State *L, const char *global, const char *path) {
     fclose(file); lua_pushlstring(L, data, size); lua_setglobal(L, global); free(data);
 }
 int main(int argc, char **argv) {
-    assert(argc == 7);
+    assert(argc == 7 || argc == 8 || argc == 11);
+    if (argc >= 8) test_label = argv[7];
     Runtime *r = calloc(1, sizeof(*r));
     r->L = lua_newstate(tracking_alloc, r); assert(r->L);
     *(Runtime **)lua_getextraspace(r->L) = r;
     lua_pushcfunction(r->L, initialize); assert(lua_pcall(r->L, 0, 0, 0) == LUA_OK);
     const char *names[] = {"main_source", "m3u_source", "library_source", "manifest_json", "strings_json"};
     for (int i = 0; i < 5; i++) source(r->L, names[i], argv[i + 2]);
+    if (argc == 11) {
+        source(r->L, "radio_browser_source", argv[8]);
+        source(r->L, "radio_categories_source", argv[9]);
+        source(r->L, "radio_health_source", argv[10]);
+    }
     lua_pushcfunction(r->L, test_begin); lua_setglobal(r->L, "test_begin");
     lua_pushcfunction(r->L, test_end); lua_setglobal(r->L, "test_end");
     lua_pushcfunction(r->L, test_slice); lua_setglobal(r->L, "test_slice");

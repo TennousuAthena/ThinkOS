@@ -70,13 +70,14 @@ APK 根索引 `assets/plugins/index.json` 为 `{plugins:[上述完整索引…]}
 |---|---|---|
 | `id` | 是 | 全局唯一，小写字母数字与 `-`；也是页面/卡片/指令的命名空间 |
 | `name` / `version` | 是 | 显示名 / 语义化版本。用 Git 分发时，`version` 必须等于 git tag 去掉前缀 `v` 后的值（§12.2） |
-| `api` | 是 | 需要的运行时 API 版本（当前支持 `1`–`7`）；高于设备支持的版本时不会被安装 |
+| `api` | 是 | 需要的运行时 API 版本（当前支持 `1`–`9`）；高于设备支持的版本时不会被安装 |
 | `icon` | 否 | 包内相对路径 |
 | `main` | 否 | 入口 Lua 文件；省略即纯声明插件 |
 | `permissions` | 否 | 见 §6.3；未声明即拒绝 |
 | `settings` | 否 | 本插件的设置项（页面级设置），格式见 §11.1；取代 M0 的 `config` |
-| `pages[]` | 否 | `id`、`view`、`title`、建议的 `roles`（`home`/`ambient`/`sleep`；`settings` 仅限持有 `system.settings` 权限的插件）、焦点 `priority`、`variants`、`live`（可作为实时活动全屏接管） |
+| `pages[]` | 否 | `id`、`view`、`title`、建议的 `roles`（`home`/`ambient`/`sleep`；`settings` 仅限持有 `system.settings` 权限的插件）、API9 `launcher` 要实际授予的 `system.apps`（仅出厂副本）；`panel` 要 `system.device`，焦点 `priority`、`variants`、`live`（可作为实时活动全屏接管） |
 | `widgets[]` | 否 | `id`、`view`、`opens`（点击打开本插件的哪个页面）；API 6 可选 `alternates`（按模板提供其他呈现，§6.8.5） |
+| `apps[]` | 否 | API 8：应用（ADR-040，§6.11）。`id`、`page`（本插件的一个页面，**不能带 `roles`**）、`title`、可选 `icon`、`listed`（默认 true；false 表示它是应用但不进应用列表）。最多 8 个 |
 | `commands[]` | 否 | `id`；可选 `phrases`（语音固定短语）、`gesture`（`wave`/`left`/`right`/`fist`，冲突以配置为准）；API 6 可选 `public`、`cooldown`（§6.8.4） |
 | `exports` / `uses` / `calls` | 否 | API 6：公开的数据、读取的公开数据、调用的公开指令，见 §6.8 |
 | `sources` | 否 | 纯声明插件的数据来源，见 §5 |
@@ -85,7 +86,7 @@ APK 根索引 `assets/plugins/index.json` 为 `{plugins:[上述完整索引…]}
 
 ## 4. 声明式视图
 
-视图只描述**内容与语义**，不描述像素或自定义动画；ADR-025 仅开放 tile 磁贴底色 color，其它颜色仍由 OS 决定。排版、横竖屏、主题、夜间模式、动画都由设备完成。
+视图只描述**内容与语义**，不描述像素或自定义动画；ADR-025 仅开放 tile 磁贴底色 color，其它颜色仍由 OS 决定。排版、横竖屏、主题、红移、动画都由设备完成。
 
 ### 4.1 渲染词汇
 
@@ -93,13 +94,13 @@ APK 根索引 `assets/plugins/index.json` 为 `{plugins:[上述完整索引…]}
 |---|---|
 | 页面版式 `layout` | API 1：`stacks` / `focus` / 设置专用 `form`（§11.3）；API 2：`split` / `stage`；API 4：`tiles`；API 5：`aero`；API 6：`focus` / `split` / `stage` 的槽位可放 `{"widget":"<plugin>.<id>"}` |
 | 卡片模板 `template` | API 1：`glance`；API 4：`tile`；M1 媒体与列表模板待实现 |
-| 组件 `type` | API 1：`text` / `icon` / `clock`，`form` 只用于设置版式；API 2：`progress` / `chart` / `list` / `daylight` / `moon`；API 3：`image` / `carousel`；API 7：`video` / `controls` / `seekbar`（需 `media` 权限，§6.10） |
+| 组件 `type` | API 1：`text` / `icon` / `clock`，`form` 只用于设置版式；API 2：`progress` / `chart` / `list` / `daylight` / `moon`；API 3：`image` / `carousel`；API 7：`video` / `controls` / `seekbar`（需 `media` 权限，§6.10）；API 8：`nowplaying`（需 `media` 权限）/ `tabs`，`list` 可带 `current`（§4.1.2） |
 | `clock.style` | `digital` / `analog` / `solar` / `world` / `float` |
 | `text.style` | `display` / `title` / `body` / `caption` |
 
 各版式、模板有哪些槽位以 `shared/schema/plugin/` 为准。需要新的版式或组件属于「设备端功能迭代」：先在 APK 实现、提升 `api` 版本，插件才能使用。
 
-设备同时接受 API 1–7。使用 API 2 词汇、组件组、`tap` 或 `weight` 的插件至少声明 `"api": 2`；图片组件至少声明 `"api": 3`；安装器与打包器都检查，不会让 API 1 插件静默使用新版词汇。版本表来自 `layouts.json` 的 `x-thinkos-api`，并生成到 Kotlin / Go。
+设备同时接受 API 1–10。API 10 增加 `system.update` 与更新状态/操作/原生恢复页入口，不增加渲染组件。API 9 增加设置的 `warn` / `placeholder` 和表单 link 的确认文本；旧 `help` 保持兼容。使用 API 2 词汇、组件组、`tap` 或 `weight` 的插件至少声明 `"api": 2`；图片组件至少声明 `"api": 3`；安装器与打包器都检查，不会让 API 1 插件静默使用新版词汇。版本表来自 `layouts.json` 的 `x-thinkos-api`，并生成到 Kotlin / Go。
 
 API 2 的固定组件与内容字段：
 
@@ -107,9 +108,11 @@ API 2 的固定组件与内容字段：
 |---|---|
 | `progress` | `value` / `max`（默认 1，可绑定）；`style` 为 `bar` / `ring`，非法范围显示空轨道 |
 | `chart` | `values` 为数值数组或 `"{{路径}}"`，最多 168 点；`style` 为 `line` / `bar` / `area`；`min` / `max` / `highlight` 可绑定，高亮索引从 1 开始；缺值保留间隔，不连线跨过缺值 |
-| `list` | `items: "{{数组路径}}"`，`item` 行模板可含 `icon/title/subtitle/trailing/progress/max`；使用原生列表复用行视图，支持滚动 |
+| `list` | `items: "{{数组路径}}"`，`item`含icon/title/subtitle/trailing/progress/max；原生列表复用行并滚动 |
 | `daylight` | `path` 指向 `tos.astro.sun()` 的派生状态；复用日光表盘，不自行读取位置 |
 | `moon` | `path` 指向 `tos.astro.moon()` 或其 `phase`；显示月相及照亮比例；`hemisphere` 为 `north/south` 或状态绑定，南半球水平镜像 |
+
+API8的`grid`契约现有原生渲染器：`items`指向状态数组，`item`只有`icon`、`image`、`title`，`tap`给出事件名和从1开始的单元序号。OS按可用宽度每96dp分一列，至少3列；图标56dp，单行名称14sp、省略、RTL镜像，单元复用并滚动。图片通过所属插件的正常图片权限加载，`app:<包名>`需要实际授予的`system.apps`。不开放列数、字号、间距等外观字段。尚未发布的API9 list行`image/group`已撤回，所有API均拒绝这两个list字段（ADR-045）。
 
 用户后续已授权相册与通用图片接口，并明确要求微软每日一图。API 3 开放 `image` / `carousel` 与 `tos.library.list`，支持本地、包内和 HTTP(S) 图片；gallery 默认设备直连 Bing，不依赖 Server。`video` / `controls` / `seekbar` 与 `tos.media.*` 在 API 7 开放（§6.10，ADR-030）；`live` 页面（实时活动）不在横向翻页序列里，只能由插件接管进入，左右滑动回到接管前的页面。
 
@@ -138,6 +141,8 @@ API 6 可选 `image`（完整的 `image` 组件声明）：`src` 非空时图片
 small 只显示 icon（无 icon 时 value）与角标；medium 显示 icon/value/label；wide 左侧 icon/value/label，右侧 content 或 detail；large 上部 content，下部 icon/value/label/detail。content 仅接受 clock/progress/chart/daylight/moon（仅 wide/large 显示）。tile 在 stacks 中按 large 显示；glance 在 tiles 中为空占位。点击 opens，长按进入卡片所属插件设置。页面 active 且 AWAKE/ENGAGED 时逐张翻面，同一时间最多一张，受系统 tiles.live/tiles.interval 控制；减少动画直接换面。离线沿用本地状态。所有 value/detail 均为空时不翻面，首面的图标仍可作为静态入口；没有图标则回退 label。
 
 新增图标 music/photo/bell/settings/home/folder/list/star/heart/message/play/battery。
+
+API 8 再加 `wifi` / `wifi-off` / `volume` / `volume-off` / `brightness` / `tv` / `radio` / `cast` / `apps`，同时 `settings` 换成同一套里的齿轮。这些图标不是自己画的，取自 Iconfont 上的 Lucide（描边 2px、圆头端点，和 `04-ui-spec.md` 的图标规范一致），是矢量图，按显示的实际大小直接画；来源、许可证和增加图标的办法见 `assets/README.md`、`THIRD_PARTY_NOTICES.md`。天气图标（`clear-day` … `thunder`、`sun`、`moon`、`unknown`）同样换成这一套，名字不变；太阳摆动、云飘的动画保留，雨雪粒子的下落没有了（`20-weather-handoff.md`）。仍由代码绘制的只剩 `calendar` / `clock` / `music` / `photo` / `bell` / `home` / `folder` / `list` / `star` / `heart` / `message` / `play` / `battery` 和月相 `moon-phase-*`。
 
 ### 4.1.1 API 3：图片与轮播
 
@@ -171,6 +176,32 @@ HTTP(S) 图片需要所属插件声明 `network` 权限。OS 使用通用 `Media
   "caption":"{{config.caption}}"
 }}}
 ```
+
+### 4.1.2 API 8：音乐播放器视图
+
+OS 画的音乐界面，插件只提供媒体（`tos.media.*`）和几段文字（ADR-036，设计与验证见 `30-player-ui.md`）。
+
+| 组件 | 字段 |
+|---|---|
+| `nowplaying` | `style`：`full`（整页，默认）/ `bar`（一行迷你播放器）/ `card`（首页卡片）；`idle`（没有会话时显示的文字，可绑定）；`notice`（标题下的一行提示，例如播放错误，可绑定）；`weight`。**需要 `media` 权限** |
+| `tabs` | `items`：字符串数组的状态路径（最多 6 项）；`current`：1 起的选中项（可绑定）；`tap`：点击时以 `(name, index)` 发给插件，`index` 从 1 开始 |
+| `list.current` | 1 起的行号（可绑定），高亮该行（例如正在播放的曲目），变化时滚动到可见 |
+
+`nowplaying` 的封面（有图用图，没有就按曲名画一张）、取色、格式行、位置条、随机 / 上一首 / 播放 / 下一首 / 循环按钮、系统音量条和队列都由 OS 绘制，按钮直接操作播放器，不经过 Lua。页面可以声明变体 `cover`（默认）和 `queue`，上下滑切换；轻点封面暂停或继续；封面以外的空白仍然由 OS 用来翻页和切变体。没有 `media` 权限的插件使用它会被安装器和打包器拒绝。
+
+### 4.1.3 API 8：电视视图
+
+OS 画的电视界面，插件只提供媒体（`tos.media.*`）和当前频道的描述（ADR-038，设计与验证见 `31-iptv.md`）。
+
+| 组件 | 字段 |
+|---|---|
+| `tv` | `channel`：状态路径，指向频道对象（见下，可绑定，例如 `{{tv}}`）；`tap`：按钮与手势发给插件的事件名；`fit`：`contain` / `cover`；`weight`。**需要 `media` 权限** |
+
+频道对象的字段都可省略，类型不对的当作没有：`number`（台号）、`name`、`group`、`line` / `lines`（现在第几条线路、共几条；多于一条时出现线路按钮）、`favorite`、`notice`（画面上的一行提示，例如“这个频道的线路现在都不能用”）、`program`（`{title, start, end}`，正在播的节目，时间为 epoch 毫秒）、`next`（`{title, start}`，下一档）。
+
+`tv` 是影院视图 `video`（画面、字幕、缓冲与错误提示、竖拖调亮度与音量）加一层直播界面：顶部是台号、频道名与分组，底部是正在播的节目与进度条、下一档，一排按钮——上一台、下一台、频道列表、线路、收藏。进度条由 OS 按墙钟走，插件不需要每秒刷新。没有节目单、没有多条线路时，对应部分不出现。**没有进度条、没有快进快退**：直播没有可拖动的位置。
+
+按钮和手势只发一个事件：`tos.on("tap", function(name, action) ... end)`，`name` 是 `tap` 字段的值，`action` 是 `"prev"`、`"next"`、`"list"`、`"line"`、`"favorite"` 之一。画面左、右四分之一处双击等同 `prev` / `next`（中间双击仍是暂停与继续的手势，在直播里没有作用）。换台后插件重新 `tos.media.load`；OS 不替插件决定下一台是谁。没有媒体会话时轻点画面也能唤出控件，所以频道都不能播时仍能打开频道页。
 
 ### 4.2 绑定语法
 
@@ -247,9 +278,9 @@ HTTP(S) 图片需要所属插件声明 `network` 权限。OS 使用通用 `Media
 
 每个事件处理函数都在协程里执行：标为「挂起」的 API 写起来是同步的，实际不阻塞任何线程。
 
-`tos.http` 与 `tos.timer.sleep` 只能在运行时管理的事件/定时器根协程里调用，不能在自行 `coroutine.create` 的子协程或模块顶层调用。挂起保留局部变量；IO 完成恢复同一协程，同时其它插件/定时器继续执行。热替换或停止后，旧协程和迟到结果会取消。`start` 可以挂起，新版启动完成后才替换旧版；`stop` 中应只做同步清理，不启动新 IO。
+`tos.http`、`tos.net.resolve` 与 `tos.timer.sleep` 只能在运行时管理的事件/定时器根协程里调用，不能在自行 `coroutine.create` 的子协程或模块顶层调用。挂起保留局部变量；IO 完成恢复同一协程，同时其它插件/定时器继续执行。热替换或停止后，旧协程和迟到结果会取消。`start` 可以挂起，新版启动完成后才替换旧版；`stop` 中应只做同步清理，不启动新 IO。
 
-当前实现范围：下表的 state/config/store/timer/http/json/time/page/log 已实现；alert/audio/chime/album/server 与声明式 sources 仍按 M1/M2 推进；`tos.settings` 属 M0.5。
+当前实现范围：下表的 state/config/store/timer/http/net/json/time/page/log 已实现；alert/audio/chime/album/server 与声明式 sources 仍按 M1/M2 推进；`tos.settings` 属 M0.5。
 
 ### 6.1 生命周期与事件
 
@@ -260,11 +291,15 @@ tos.on("config", function(cfg) ... end)         -- 设置值变化（含 Server 
 tos.on("units", function() ... end)             -- 系统单位设置（units.*）变化；重新取 tos.units.get() 并重绘，无需权限
 tos.on("page.enter", function(page, variant, params) ... end)  -- params：打开页面时附带的参数（设置页用 {scope=…}）
 tos.on("page.leave", function(page) ... end)
+tos.on("back", function(page) ... end)          -- API 8：用户按了返回，而本插件用 tos.back.intercept(true) 声明过要先听到（§6.11）
 tos.on("variant", function(page, variant) ... end)
 tos.on("command", function(name, args, source, caller) ... end)   -- source: tap / gesture / voice / remote / plugin；caller 仅 plugin 时有值
 tos.on("form.change", function(key, value) ... end)       -- 仅 form 版式页面：用户操作了某个控件（§11.3）
 tos.on("attention", function(level) ... end)    -- ASLEEP / AMBIENT / AWAKE / ENGAGED
 tos.on("theme", function(theme) ... end)        -- LIGHT / DARK / NIGHT（一般不需要）
+tos.on("mode", function(mode) ... end)          -- API 10，无权限要求：day / redshift / sleep
+tos.on("update", function() ... end)           -- API 10，需实际授予 system.update：重新读 tos.update.status()
+tos.on("cast", function() ... end)             -- API 9，需 media：接收开关或局域网地址变化，重新取 tos.cast.status()
 tos.on("presence", function(present) ... end)   -- 需 presence 权限
 tos.on("gesture", function(name) ... end)       -- 需 presence 权限
 tos.on("media.session", function(info) ... end)  -- 仅媒体会话所有者收到（API 7，§6.10）：{reason="replaced"|"stopped", owner}
@@ -286,11 +321,18 @@ tos.on("data", function(alias) ... end)         -- API 6：声明的公开数据
 | `tos.settings.get(scope)` | `system.settings` | 否 | 取某范围的字段描述与当前值：`{name, fields=[{key,type,label,…,value,default,overridden}]}` |
 | `tos.settings.set(scope, key, value)` | `system.settings` | 否 | 校验并写入设备上的修改；成功立即生效，失败返回 `nil, err` |
 | `tos.settings.setMany(scope, values)` | `system.settings` | 否 | 同一范围内原子校验并提交多个键；任一字段或跨字段约束失败则全不写，用于地点选择等复合输入 |
-| `tos.settings.reset(scope, key?)` | `system.settings` | 否 | 清除设备上的修改，回到 Server 下发值或默认值；省略 `key` 即整个范围 |
+| `tos.settings.reset(scope, key?)` | `system.settings` | 否 | 清除设备上的修改，回到 Server 下发值或默认值；省略 `key` 即整个范围；成功无返回值，失败返回 `nil, err` |
+| `tos.settings.about()` | `system.settings` | 否 | API 9：打开原生关于与许可证页；只授予内置的设置管理员，法律文本随 APK 离线提供 |
+| `tos.device.mode()` | — | 否 | API 10：只读当前模式 `day` / `redshift` / `sleep`；变化时收到 `mode(value)` |
+| `tos.device.setMode(value)` | `system.device` | 是 | API 10：仅实际获权的出厂设备控制插件可在5秒内真实原生点按后手动切换；值同上，返回 `true` 或 `nil, err`。保持策略读系统 `mode.manual_hold`（`next` / `forever`），不接收持续时间或自动参数 |
+| `tos.update.status()` | `system.update` | 否 | API 10：有界只读状态，契约 `shared/schema/update/status.json`；不含路径、下载地址、钥匙或签名 |
+| `tos.update.open()` | `system.update` | 是 | API 10：打开原生更新恢复页；真实界面点按后最多5秒，前台 Activity 才能打开 |
+| `tos.update.check()` / `download()` / `install()` | `system.update` | 是 | API 10：点按后最多5秒；返回受理成功 `true` 或 `nil, err`，完成看 `update` 事件与状态，不阻塞 Lua 线程。安装只接收本机已验签并就绪的 APK，不接收路径或地址；媒体/投屏/外部前台会阻止安装 |
 | `tos.store.get(key)` / `set(key, v)` | — | 否 | 持久化 KV，每插件 256KiB；立即更新内存，最后一次修改 2s 后合并原子落盘，停止时提交。进程突然退出可能丢失尚未提交的修改 |
 | `tos.timer.after(s, fn)` / `every(s, fn)` / `cancel(id)` | — | 否 | 定时器；`every(60, fn, {align=true})` 对齐到整分钟 |
 | `tos.timer.sleep(s)` | — | 是 | 等待 0.001–3600 秒，不阻塞共享插件线程 |
 | `tos.http.get(url, opts)` / `post(url, body, opts)` | `network` | 是 | 返回 `res`（`status`、`headers`、`body`）或 `nil, err`；连接/读超时各 3s，请求/响应 ≤1MiB；`opts.headers` 设置请求头 |
+| `tos.net.resolve(host)` | `network` | 是 | API 10：系统 DNS 发现，返回最多8项 `{address, name?}` 或 `nil, err`；IPv4/IPv6数值地址去重。`name` 为小写、无尾点的合法DNS名，canonical PTR须再经系统正向解析确认包含原地址，否则省略。只收≤253字节ASCII DNS主机名，拒URL、端口、控制字符和数值/歧义IP字面量。排队、A/AAAA、PTR及正向确认整体≤3s，失败为脱敏的 `dns invalid host` / `dns unavailable` / `dns timeout` / `dns busy`。不返回URL、不发HTTP，DNS结果不作为连接授权，HTTP(S)仍须按原网络规则和默认证书/主机名校验 |
 | `tos.json.decode(s)` / `encode(t)` | — | 否 | C 侧 yyjson；深度 ≤24、文本 ≤1MiB；JSON null 为 `tos.json.null`，保留解码所得空数组/空对象类型及 int64；循环表与非 JSON 值报错 |
 | `tos.time.now()` | — | 否 | 可信时间（毫秒）；时间未校准时返回 `nil` |
 | `tos.time.format(ms, fmt, tz?)` | — | 否 | 命名格式遵从系统语言与 12/24 小时制；可选 IANA 时区，省略取系统时区；`ms=nil` 显示占位 |
@@ -301,10 +343,13 @@ tos.on("data", function(alias) ... end)         -- API 6：声明的公开数据
 | `tos.location.get()` | `location` | 否 | 系统配置位置 `{name,latitude,longitude,elevation,timezone,source}`；来源明确区分时区推定和手动输入，见 ADR-021 |
 | `tos.astro.sun(ms, place?)` / `tos.astro.moon(ms, place?)` | `location` | 是 | 独立计算线程返回本地天文数据，见 §6.5；省略地点取系统位置。取消/移除插件时不投递迟到结果 |
 | `tos.astro.seasons(year)` | — | 否 | 当年二分二至的 UTC 毫秒时间戳，支持 1950–2050 |
-| `tos.page.focus(page, {live=bool})` / `release(page)` | — | 否 | 请求切到本插件页面，由 DeckRouter 仲裁；`live` 需页面声明 `live` |
+| `tos.page.focus(page, {live=bool})` / `release(page)` | — | 否 | 请求切到本插件页面，由 DeckRouter 仲裁；`live` 需页面声明 `live`。API 8：`live` 压一个接管层，应用页压一个应用层，普通页是翻页序列里的一步；`release` 关掉本插件自己的接管层或应用层（§6.11） |
+| `tos.back.intercept(on)` | — | 否 | API 8：声明“返回先给我”；`page.leave` 时自动作废；2 秒不理会 `back` 就被越过（§6.11） |
+| `tos.cast.status()` | `media` | 否 | API 8：只读 `{name, dlna, airplay, mirror, miracast, miracastModule?, ip?}`：设备名、各接收开关、Miracast 系统模块是否应答、当前的局域网地址；`cast` 插件的等待页用 |
 | `tos.alert{…}`（待实现） | `alert` | — | 本轮仅测试 debug 模拟通知界面，未接插件 API |
 | `tos.library.list(opts)` | `library` | 是 | 枚举本地媒体，返回 `{items,truncated,scanned,directory}` 或 `nil,err`；见 §6.6 |
 | `tos.media.load(items, opts)` 及 `play` / `pause` / `toggle` / `next` / `prev` / `seek` / `volume` / `stop` / `shuffle` / `repeat` / `jump` / `live` / `audioTrack` / `textTrack` | `media`（远程另需 `network`，本地另需 `library`） | 是 | 音视频会话与流媒体（HLS / DASH / RTSP / 渐进式 HTTP / 本地），返回 `state, err`，见 §6.10 |
+| `tos.media.probe(url, opts?)` | `media` + `network` | 是 | 测一个地址像不像流（不碰当前会话），返回 `{ok, status, kind, millis, error?}` 或 `nil, err`，见 §6.10 |
 | `tos.chime(name)`（计划） | `alert` | — | 内置提示音，尚未实现 |
 | `tos.server.call(name, args)`（M2） | `server` | 是 | 可选 Server 服务，尚未实现 |
 | `tos.server.subscribe(topic, fn)`（M2） | `server` | — | 可选 Server 推送，尚未实现 |
@@ -317,7 +362,7 @@ tos.on("data", function(alias) ... end)         -- API 6：声明的公开数据
 
 | 权限 | 授予的能力 |
 |---|---|
-| `network` | `tos.http`、`sources.http` |
+| `network` | `tos.http`、`tos.net.resolve`、`sources.http` |
 | `alert` | 预留通知与提示音权限，当前宿主 API 尚未接入 |
 | `media` | OS 音视频播放及媒体会话控制（原 `audio` 权限名已移除） |
 | `library` | 本地媒体目录与文件元数据枚举（原 `photos` 权限名已移除） |
@@ -325,6 +370,15 @@ tos.on("data", function(alias) ... end)         -- API 6：声明的公开数据
 | `presence` | `presence`、`gesture` 事件 |
 | `server` | `tos.server.*` |
 | `system.settings` | `tos.settings.*`；可声明 `settings` 角色页面。**系统权限**：只授予 APK 内置的出厂版本，Git 来源的包声明它会被 Server 和设备双方拒绝（§12.6） |
+| `system.device` | 出厂设备控制能力；API10手动 `tos.device.setMode` 还需同VM在5秒内的实际OS点按或原生布尔 `form.change`，执行前复核。`tos.device.mode()` 与 `mode` 事件不需要此权限 |
+| `system.update` | API10的更新只读状态、事件、原生恢复页及check/download/install操作；仅APK摘要匹配的出厂副本，操作还需5秒内真实点按，安装受实际候选/事务/媒体与前台门禁约束 |
+| `system.plugins` | API10的catalog/installed、open/install/update/uninstall/setAuto及plugins事件；仅APK摘要匹配的出厂副本。catalog/installed为读取，其余操作需5秒内真实点按；安装及新增权限由OS原生确认 |
+
+`system.update` 只授予 APK 中摘要匹配的出厂副本，声明权限不等于实际授予。更新事件同样按 API 和实际权限过滤。操作信用来自 OS 的 `tap` 或原生 link/toggle 的布尔 `form.change`；计时器、指令、页面/布局事件、异步表单结果不能产生点按时间，Lua 也不能传入时间。信用跟随VM实例并在终止时清除；主线程排队后重新核对，检查/下载/安装控制器在实际执行前再次核对。`install()`已接入受控安装器，`can_install`依据已验签候选、未决事务与运行期门禁计算，不接受Lua传入路径/地址。没有正式公钥、可用来源或就绪候选时仍不可安装；接口存在不代表正式OTA已验收。
+
+`system.plugins`同样只按实际出厂摘要授予，开发/下载副本只声明该权限也不能获得任何管理接口或事件。目录下载、验签与安装归原生registry，Lua只调用`tos.plugins.*`，不通过`tos.http`取得安装目录或包；首次安装及权限增加必须经过OS确认。实际基础安装和越权拒绝见`artifacts/registry/REG-2/0.1.8/`，完整生命周期/恶意样本仍按REG-2b验收。
+
+模式接口沿用API10，不提升API号。`device.mode` 和 `mode(value)` 的值固定为小写 `day/redshift/sleep`，普通插件只有读取与订阅能力；`device.setMode` 不接受大写、时间戳或时长。控制面板通过此公开接口显示Wi-Fi、静音、红移、睡眠、设置、应用六个quick，OS排成3列×2行；红移图标 `sunset`、睡眠图标 `moon`，关闭回 `day`，布局没有插件参数。
 
 ### 6.4 预算
 
@@ -365,7 +419,7 @@ end
 
 扫描在 PluginIO 执行，结果由 OS 编成 JSON 文本跨 JNI，C 侧解码后仍返回相同的 Lua 表。大清单可用 `tos.state.set(tos.json.encode{photos=photos})` 提交，避免数千次逐字段 JNI 往返；编码文本与表补丁采用相同的 config 隔离、原子合并和 256KiB 上限。Lua 挂起后回到原插件线程恢复；停止/替换插件时取消，迟到结果丢弃。硬预算：≤512 项、≤8192 个目录条目、递归深度≤16、文本≤1MiB；命中预算 `truncated=true`。`scanned` 包括被跳过的条目；`directory` 是最终授权的绝对目录。
 
-OS 在枚举和最终打开文件时都重新授权；不允许应用内部配置目录、其它 App 私有目录或逃逸符号链接。当前 manifest 没有 `READ_EXTERNAL_STORAGE`，仅使用应用私有外部目录，**共享目录会返回错误**，不弹权限窗、不修改 Device Owner。未来单独接共享授权流程；`library` 插件权限本身不等于 Android 的存储读取授权。
+OS 在枚举和最终打开文件时都重新授权；不允许应用内部配置目录、其它 App 私有目录或逃逸符号链接。应用私有外部目录不需要共享读取授权；共享目录需要 manifest 中的 `READ_EXTERNAL_STORAGE`。依 ADR-030，Device Owner 启动时可静默授予，否则首次访问弹 Android 权限窗；同一运行期明确拒绝后，后续后台扫描返回 `nil, err`，不反复弹窗，Android 设置里实际授予后可继续读取。不申请写权限、不修改 Device Owner；`library` 插件权限本身不等于 Android 的存储读取授权。
 
 开发送图（不需要 Server）：
 
@@ -502,12 +556,15 @@ OS 持有一个音视频会话和一个队列（≤512 项）；同一时间只�
 | `mime` | 可选提示：`audio/*`、`video/*`，或 `application/x-mpegURL`、`application/vnd.apple.mpegurl`、`application/dash+xml` |
 | `headers` | 至多 8 个请求头，仅 HTTP(S)。除 `User-Agent`、`Referer`、`Accept`、`Accept-Language`、`Origin` 以外的头（包括 `Authorization`、`Cookie`，以及 `X-Api-Key` 之类自定义令牌）只发给该项 URL 的同源地址：分片、密钥、字幕在别的主机上也不会带过去，跨源重定向也会丢掉；`User-Agent` 会替换默认的 `ThinkOS/1`。`Host`、`Range`、`Content-Length`、`Connection`、`Transfer-Encoding`、`Accept-Encoding`、`If-*`、`Content-Type` 等由 HTTP 栈自己管，不可设置 |
 | `subtitles` | 旁路字幕 `{url, mime?, lang?, label?}`，至多 16 条，SubRip / WebVTT / TTML / SSA（按后缀推断 MIME） |
+| `public_only` | API 10，可选 bool，默认 `false`。`true` 只允许公网 HTTPS 媒体；所有 DNS 结果与实际连接地址都须是公网单播，混合公私 DNS 一律拒绝。重定向、HLS / DASH 子清单、分片、密钥和字幕沿用同一限制，拒绝本地文件、content、RTSP 与 HTTP；`media.public_http` 也不能放宽。使用独立连接池，不复用普通媒体的连接或源工厂 |
 
 一个队列最多 512 项，其中 HLS / DASH 项最多 16 个：播放器会同时准备队列里所有的项，每个 HLS / DASH 项在准备时就去取自己的清单，所以几百个频道的列表要**逐个点播**，不要整张列表排进队列。本地文件和渐进式 HTTP 是按需打开的，可以排满。
 
 `opts`：`index`（从 1 开始）、`shuffle`、`repeat`（`off` / `one` / `all`）、`autoplay`（默认 `true`）、`volume`（0…1，播放器增益）、`start`（毫秒；0 表示默认位置，直播流为直播点）。成功返回 `media` 状态表；失败返回 `nil, err`，已有队列不受影响。
 
 **控制**（都返回 `state, err`；任何有 `media` 权限的插件都能控制当前会话，不论它是不是所有者——例如语音指令插件要能暂停别人在放的音乐。只有 `load` 会换掉所有者，并通知旧所有者 `media.session`）：`play`、`pause`、`toggle`、`next`、`prev`、`seek(ms)`、`volume(v)`、`stop`、`shuffle(bool)`、`repeat(mode)`（`repeat` 是 Lua 关键字，也可用 `repeatMode`）、`jump(index)`、`live()`（回到直播点）、`audioTrack(index)`、`textTrack(index)`（0 为关闭字幕；序号对应状态里 `audioTracks` / `textTracks`）。屏幕上的控件由 OS 直接调用播放器，不经过 Lua。
+
+逻辑睡眠会暂停现有播放并拒绝新的播放/投屏请求，退出后不自动续播。系统音量1–5的归零与恢复由OS及私有恢复记录处理，插件不能读取记录或绕过门禁。当前睡眠画面仍为 `NIGHT`、亮度不低于3%；黑屏与偷看须等MODE0人工验证，`device.mode() == "sleep"` 只证明逻辑模式，不能证明屏幕全黑。当前能力与待验范围见 `45-modes.md` §6、§12。
 
 **状态 `media`**（保留键，只读，需 `media` 权限；视图可绑定 `{{media.title}}`，Lua 可用 `tos.state.get("media.position")`；`tos.state.set` 写 `media` 会被拒绝）。位置约每秒更新一次，进度条自己读播放头，不依赖它。
 
@@ -528,13 +585,48 @@ OS 持有一个音视频会话和一个队列（≤512 项）；同一时间只�
 
 **事件**（只发给会话所有者）：`media.session {reason = "replaced" / "stopped", owner}`、`media.track {index, reason}`、`media.error {code, name, category, message, codec, status?, index}`、`media.warning {code, name, codec}`、`queue.end {index, count}`。`media.error.category`：`network`（含超时、DNS、重定向循环）、`http`（`status` 是 HTTP 或 RTSP 的应答码）、`notfound`、`permission`、`policy`（明文 HTTP 被拒）、`format`（容器/编码不支持，`codec` 给出 MIME）、`decoder`、`audio`、`other`。
 
+**`tos.media.probe(url, opts?)`**（API 8，ADR-038）→ `result, err`：问一个地址像不像一路流，不占用也不改动当前会话。走与播放同一套网络规则（私网明文、`media.public_http`、三次重定向、不降级，所以 `tos.http` 拒绝的公网明文地址它能测），只读开头的 16 KiB，整个测试 ≤12 秒；同时最多两个测试在做。`opts.headers` 同 `load` 的 `headers`。HLS 列表会顺着第一个子列表和第一个分片再各问一次（死频道常常还能拿到列表）。`result`：`ok`（地址像流）、`status`（HTTP 状态，没有应答为 0）、`kind`（`hls` / `stream` / `html` 状态 200 的网页 / `list` 频道列表而不是流 / `empty`）、`millis`、失败时的 `error`：`http`（状态不是 2xx）、`format`（200 但不是流）、`timeout`、`dns`、`tls`、`network`、`policy`（网络规则不让连）、`unsupported`（rtsp 等不能测的地址）。`policy` 和 `unsupported` 说的是“测不了”，不是“线路坏了”。
+
 **网络规则**（沿用 ADR-022，并补充）：明文 HTTP 与 RTSP 只允许私网、环回、链路本地地址，DNS 与实际连接地址都校验；公网明文要用户在系统设置打开 `media.public_http`（默认关，只作用于媒体通道，不影响 `tos.http`）；最多 3 次重定向，HTTPS→HTTP 一律拒绝，跨源重定向丢弃 `Authorization` / `Cookie`。RTSP 固定走 TCP 交织（RTP 与控制共用一条经过校验的连接），不支持只提供 UDP 的服务端。
+
+API 10 的 `tos.media.probe(url, {headers=..., public_only=true})` 使用与队列条目相同的公网限制；`public_only` 必须是 bool，显式 `false` 保持普通媒体规则。策略阻断返回 `ok=false, error="policy"`，包括初始地址、重定向及 HLS 子资源；它表示不能测，不应当作坏台暂停。`load` 的初始策略阻断返回 `nil, "policy"`，播放时子资源的策略阻断发 `media.error.category="policy"`，不自动重试。公网地址门禁保守排除特殊用途、文档、转换与保留网段，不把“非 RFC1918”当成公网。
+
+`public_only` 的动态 DASH 使用 ThinkOS 已校时的 OS 时钟作为 direct UTC timing，不启动播放器自己的 SNTP/UDP 授时，也不另开清单指定的授时连接。静态 DASH 和未声明该字段的普通媒体保持原行为。此字段约束媒体及字幕请求；`art` 是独立图片能力，第三方目录不得把未验证的 favicon/封面地址交给它。
 
 **自动恢复**：超时、连接失败、HTTP 408 / 429 / 5xx、RTSP 5xx 视为临时故障，按 1 / 2 / 4 / 8 / 15 / 15 秒退避重试六次，期间 `status = "reconnecting"`，网络恢复时立即重试；之后给出 `error`。401、403、404、策略拒绝、格式或解码错误不重试。直播被对端断开会重连；掉出直播窗口会自动回到直播点；缓冲 30 秒没有任何增长视为卡死，重连后仍不行则报错。
 
-**组件**（API 7，需 `media` 权限，安装时检查）：`video`（`fit`：`contain` / `cover`）是 OS 画的影院视图：画面、字幕、缓冲与错误提示，触摸时浮出标题、进度条、上一首 / ±10 秒 / 播放暂停 / 下一首、音轨与字幕按钮，无操作一段时间后淡出（跟随 `attention.engaged_idle_s`，默认 15 秒）；`controls`（`mode`：`queue` 上一首·播放·下一首，`seek` ±10 秒，`play` 仅播放暂停）；`seekbar` 可点按、拖动，拖动不会被翻页手势抢走。视频播放时显示屏至少保持 AWAKE（系统设置 `media.keep_awake_video`，默认开）。
+**组件**（API 7，需 `media` 权限，安装时检查；API 8 的 `nowplaying`、`tv` 同理，见 §4.1.2、§4.1.3）：`video`（`fit`：`contain` / `cover`）是 OS 画的影院视图：画面、字幕、缓冲与错误提示，触摸时浮出标题、进度条、上一首 / ±10 秒 / 播放暂停 / 下一首、音轨与字幕按钮，无操作一段时间后淡出（跟随 `attention.engaged_idle_s`，默认 15 秒）；`controls`（`mode`：`queue` 上一首·播放·下一首，`seek` ±10 秒，`play` 仅播放暂停）；`seekbar` 可点按、拖动，拖动不会被翻页手势抢走。视频播放时显示屏至少保持 AWAKE（系统设置 `media.keep_awake_video`，默认开）。
 
 系统设置（ADR-017）：`media.public_http`、`media.keep_awake_video`，以及隐藏项 `media.buffer_s`（默认 30，10…120）、`media.buffer_mb`（默认 48，8…96），后两项只对下一次 `load` 起作用。
+
+### 6.11 应用与返回（API 8，ADR-040）
+
+**应用**是 `apps[]` 里的一项，指向本插件自己的一个页面。它全屏，不在左右翻页序列里，页面上没有翻页指示点；OS 不用左右滑去翻页，左右滑属于页面自己的内容。进入：自己的磁贴或卡片 `opens`、`tos.page.focus`；退出：**返回**（屏幕最左缘向右滑，或 Back 键）、Home 键，或 `tos.page.release`。应用页退出的是栈，不是页面：从应用里再打开别的应用、被接管、进设置，都是再压一层，返回一层一层退（`33-apps-and-back.md` §3）。
+
+- **启动动画**：从磁贴打开应用是“翻转并启动”（所有磁贴绕左边缘翻走，应用页翻进来），返回时倒着放。样式、时长、顺序归 OS，插件只能打开或关闭应用（ADR-028）。
+- **`tos.back.intercept(true)`**：应用有自己的层级（频道页里打开了一个分组）时，声明返回先给它。用户返回时它收到 `back` 事件（参数是页面 `id`），这时它自己决定：上一层、关一个弹窗，回到根层就 `tos.back.intercept(false)` 把返回交还系统。拦截是声明式的，OS 当场决定，不等 Lua 回答；`page.leave`（包括被别的层盖住）会让它作废，回到前台的 `page.enter` 里要重新声明。不需要权限，只对栈顶那一层所属的插件有效。
+- **不会被困住**：收到 `back` 后 2 秒内插件没有做任何 `tos.*` 动作（只读取不算），下一次返回直接退出并收回拦截。
+- **页面角色**：应用页不能带 `roles`（`home` / `ambient` / `sleep` / `settings` / `panel` / `launcher`），安装与打包时检查。
+- **返回的顺序**：操作栏 → 页面上的原生弹层 → 声明了拦截的应用 → 弹栈。翻页序列里 Back 键不起作用，最左缘右滑仍是翻页。
+- 系统设置：`nav.back_enabled`（默认开）、`nav.back_edge_dp`（隐藏项，16–48，默认 24）。
+
+API9的tos.apps.list()和tos.apps.open(id)需要system.apps，只授予APK出厂副本。list异步返回[{id,kind,title,icon,image}]，ThinkOS id为插件.页面、kind为page；安卓id为android:包名、kind为android，只取有桌面入口的应用，去掉ThinkOS自身及apps.hidden，受apps.android控制。listed:false不进列表，仍可按声明id打开。open异步返回成功值或错误，不接收Intent。保留目标 `tos.apps.open("launcher")` 按 `launcher` 角色打开应用磁贴页并清空返回栈，可关闭设置页；它不出现在list结果中，也不受apps.android开关影响。`launcher` 角色在API9登记，必须声明system.apps，目录发布还会校验出厂副本的实际授权。apps事件报告目录/包/开关变化，受相同权限和API门槛约束。
+
+ADR-046把物理底缘手势改为home首页；公开launcher目标和操作栏应用按钮仍打开应用磁贴页。外部Back由系统模块的固定系统回调实现，不给插件增加按键/触摸注入能力；所有导航仍由OS和NavStack管理。
+
+image源app:包名只在OS取图标、解码、缓存，需要实际授予的system.apps。第三方声明此权限也不会取得图标；Lua拿不到像素或文件字节。list行图片使用页面所属插件的图片权限，不能通过一段状态文字取得其他插件权限。
+
+### 6.12 新手引导（API 10，ADR-042）
+
+内置 `welcome` 用 Lua 决定步骤，用 `tos.store` 保存进度。`onboarding` 页面角色需要真实获授的 `system.settings`，开发副本仅声明权限不能取得角色。引导在独立导航层中运行，Home和物理底缘上滑仍会退出，保留已做的设置与进度。
+
+- `tos.onboarding.status()` 返回流程 `version`、`active`、`updater` 与问候轮换秒数。当前没有更新器，`updater=false`。
+- `tos.onboarding.open("restart" | "resume")` 需要内置设置管理员及真实点按信用。前者重新开始，后者只补跳过的步骤；首次启动的自动续跑由 OS 负责。
+- `tos.onboarding.practice(name, text)` 和 `stop()` 只对当前可见的内置引导角色页有效。名称固定为 `swipe`、`variant`、`panel`、`back`、`home`、`long-press`；完成后发 `practice(name)`。错误动作不推进；Home完成报告后仍退出，不会吞掉全局出口。维护手势始终保留。
+- `tos.tz.zones(region)` 只读返回地区的 `{id, city, country, time}` 数组。`tos.device.canSetLocale()` / `setLocale(tag)` 仅使用已持有的系统权限，不自行授权。无权限时由插件打开安卓语言页。当前 `canSetTimeZone()` / `setTimeZone(id)` 返回不可用，时区使用安卓日期页，不能把应用显示的时区冒充系统修改。
+- `tos.device.openAndroid` 目标扩为 `wifi`、`settings`、`locale`、`date`、`accessibility`，仍不接收任意 Intent。
+
+`form` 的可选字符串 `subtitle`、`primary`、`secondary`、`back` 启用单列引导布局，`tap` 指定操作名称；主次按钮和返回发 `tap(name, "primary" | "secondary" | "back")`。无这些字段的设置表单保持原样。可选 `hero` 槽用于不超过72sp的时间等内容，空内容自动收起；`source: "region"` 是离线可搜索地区选择器。设置通过声明的 `uses` 读取 `welcome.setup` 公开进度，显示“完成设置”，不读取私有存储。
 
 ## 7. 完整实现：天气插件
 
@@ -595,10 +687,15 @@ interval = "15"
 | `settings` | `form`（`form`，角色 settings，不在翻页序列里） | — | 有 | `system.settings`（系统插件，固定安装，见 §11.3） |
 | `weather` | `detail`（24 小时 + 5 日） | `now` | `refresh` | `network` / `location` |
 | `gallery` | 相册轮播 | 预览卡片 | 默认直连 Bing 每日一图，可选本地或合并；离线缓存 | `library` / `network` |
-| `player` | `library`（音乐 / 视频 / 最近 / 网络流，点标题切换）、`audio`（正在播放）、`video`（影院）；后两页是 `live` 页面，由播放接管 | — | `toggle` / `next` / `prev` | `media` / `library` / `network`；设置：音乐与视频目录、串流地址、播放列表地址、续播 |
+| `player` | `library`（音乐 / 视频 / 最近 / 网络流，点标题切换；**应用 `media`**）、`audio`（正在播放）、`video`（影院）；后两页是 `live` 页面，由播放接管 | `now`、`tile`（应用磁贴） | `toggle` / `next` / `prev` | `media` / `library` / `network`；设置：音乐与视频目录、串流地址、播放列表地址、续播 |
+| `iptv` | `channels`（频道列表，分收藏 / 最近 / 全部 / 分组；**应用 `tv`**，打开分组时返回先回分组列表）、`live`（`tv` 组件，`live` 页面，由播放接管） | `tile`（应用磁贴） | 有（列表源、合并、线路测试、节目单） | `media` / `network`；设置：四个频道列表地址、节目单地址与时区、自动测试开关、测试间隔、暂停时长、复测间隔；设计与验收见 `31-iptv.md` |
+| `cast` | `home`（等待页，**应用 `cast`**：设备名、三种接收的开关状态和怎么投）、`video` / `audio`（`live` 页面，由投屏接管） | `tile`（应用磁贴） | 有（等待页数据；离开接管页时暂停或结束投屏） | `media`；用 `tos.cast.status()` 读状态，开关在系统设置 |
+| `tiles` | main（开始屏）、apps（播放器/电视/投屏/完整应用列表磁贴；开始屏48格已满，另起一页） | — | 无（纯声明） | — |
+| `apps` | main（安卓应用网格，自身是应用，不进翻页序列） | tile | 有 | system.apps；页面只列安卓App，关联apps.android；公开list接口仍返回两类应用 |
+| `radio` | `stations`（电台/收藏，应用）、`now`（focus + 原生nowplaying，live） | tile | 有（M3U/PLS、收藏、断线重试） | media / network；默认无电台；列表/直接地址/名称/重试间隔走插件设置，播放继续使用唯一MediaEngine，ICY曲名进入公共media.title |
 | `notify`（仅 UI 预览） | debug 模拟预览 | — | 未接收或轮询消息 | HTTP 监听按用户要求暂缓 |
 
-自带插件和第三方插件走**完全相同**的接口（`settings` 只是多了一个系统权限）。如果某个自带功能用这套接口做不出来，说明运行时缺能力，应该补运行时，而不是给它开后门。
+自带插件和第三方插件走相同的公开tos接口，能力由实际授予的权限控制；现阶段system.*只授予对应APK出厂副本，不开私有通道。新能力按契约扩展，不给自带插件绕过运行时的入口。
 
 ## 11. 设置（ADR-017）
 
@@ -608,7 +705,7 @@ interval = "15"
 
 | 级别 | 谁声明 | `scope` | 例子 |
 |---|---|---|---|
-| 系统级 | OS 自己：`shared/schema/settings/system.json`，清单见 `04-ui-spec.md` §9 | `system` | 主题模式、夜间模式、方向锁定、亮度上限、变暗时间、Server 地址 |
+| 系统级 | OS 自己：`shared/schema/settings/system.json`，清单见 `04-ui-spec.md` §9 | `system` | 主题、红移、睡眠、方向锁定、亮度上限、变暗时间、Server 地址 |
 | 页面级 | 插件 manifest 的 `settings` | 插件 id | 天气温度单位、时钟秒数、相册的轮播间隔 |
 
 页面级设置**以插件为单位**：长按某个页面，打开的是它所属插件的设置；长按首页栈里的某张卡片，打开的是该卡片所属插件的设置——所谓“组件级设置”就是所属插件的设置。首页两个栈里放什么、页面的先后顺序不是设置项，属于部署配置（§8）。页面的**变体**（上下滑切换的表盘、相簿等）也不是设置项，保持现有的 DeckRouter 记录方式。
@@ -628,16 +725,37 @@ interval = "15"
 | `type` | 专有字段 | 设备上的控件 |
 |---|---|---|
 | `bool` | — | 开关 |
+| `time` | — | API10：`HH:mm` 字符串，24小时制、5分钟一档；原生时刻编辑，取消不提交，确定只提交一次 |
 | `choice` | `choices`：`[{value,label}]`（用数组而不是对象，因为 JSON 对象没有顺序） | 单选列表 |
-| `number` | `min`、`max`、`step`、`unit?` | 滑块 + 步进按钮 |
+| `number` | `min`、`max`、`step`、`unit?`、`format?`、`zero?`、`presets?` | 点击展开；有档位时内联单选，其余为滑块 + 步进按钮；与单选共用一个展开项 |
 | `text` | `maxLength?`（≤ 1024）、`secret?`（设备上显示为 ••••，不进日志、不随回报上传） | 显示当前值；点击编辑（见 §11.3） |
 
-公共字段：`label`（必填，先用单一语种字符串）、`default`（必填，类型必须与 `type` 匹配）、`help?`（一行说明）、`group?`（分组标题）。
+公共字段：`label`（必填，先用单一语种字符串）、`default`（必填，类型必须与 `type` 匹配）、`group?`（分组标题）。
 
+API 10 的 `choice` 可用 `source: "region"` 复用离线地区选择器，值仍是ISO两字母字符串（写入规范为大写）。`allowEmpty: true` 增加“所有地区”，提交空串；省略时不允许空选项。普通设置与引导共用原生搜索/返回行为，不开放外观参数、网络请求或插件私有通道。已有合法地区字符串和本地/下发覆盖层继续使用，不做存储迁移或删除；旧原始值不会因显示而回写。`timezone`、`place` 保持原API兼容。
+
+API 9 的显示声明：
+
+- `level` 为 `normal`（默认）、`advanced` 或 `hidden`。旧布尔 `hidden` 继续接受；`true` 等于 `level: "hidden"`，`false` 等于默认层级，不能和 `level` 同时声明。隐藏只影响界面，原值仍校验、持久保存并可下发
+- `depends` 为 `{ "key": "enabled", "value": true }` 或 `{ "key": "source", "in": ["bing", "all"] }`；只能引用同一范围的字段，值须符合目标字段的声明。也可写 `{ "key": "source_1", "not": "" }` 表示不等于空串；三种运算互斥，数字按数值相等，布尔与数字不相等。不存在的目标、无效条件值、自环或循环在安装时拒绝。`SettingsDescriber` 按当前生效值判断整条依赖链；祖先条件不成立时后续行一起收起，不删除值；隐藏层级本身不改变条件结果，Lua 不解释条件
+- `number.format: "duration"` 的值和上下限都是非负秒数。整小时、整分钟分别显示本地化的小时、分钟，其余显示秒；`zero` 可用本地化引用指定 0 的文字，要求范围包含 0。`presets` 是 2–64 个不重复、在范围内的数值，决定内联选项；它不是值的白名单，不在档位中的合法下发值仍显示和保存
+- manifest 顶层 `related` 是最多 32 个不重复的系统键，按声明顺序显示在插件设置最前面。键必须存在、非隐藏、非 `secret`；高级字段也可关联。此声明不授予插件读写系统设置的能力，不进入该插件的 `tos.config`
+- 只有系统声明接受 `section`，它必须引用 `system.json` 顶层 `sections: [{id,label,icon?}]` 中唯一的分类 id；数组决定分类顺序。API10的可选 `icon` 只引用 `layouts.json` 中 `formIcon` 的已登记矢量名。`section` 和 `sections` 不属于插件外观扩展
+
+`tos.settings.get` 的每个范围描述都包含全局系统分类 `sections` 和本范围已本地化的 `fields`，设置页不必为侧栏再读取一次完整系统描述。分类标签在system范围解析；它不附带未关联的系统值。每行带 `key`、实际 `scope`、`level`，系统行可带 `section`；相关行的 `scope` 是 `system`。数字档位返回 `presets: [{value,label}]`，其中 `value` 保持数值，`label` 按 `format` 生成。隐私值继续脱敏，依赖不成立的行不返回。读取描述、写入和重置仍要求出厂 `settings` 管理员权限。
+
+OS 可为数字描述加入 `preview: "brightness"`（API 9），只用于注册的系统亮度字段。原生表单按该标记通过 DeviceLevels 临时预览，松手仍经 form.change 提交，取消或离页恢复保存值；预览不会写设置或经过 Lua。manifest 不能声明 preview，伪造状态标记也不会取得设备权限。
+
+`form`组件可选`nav: "nav"`（API9），值是状态路径，指向`{items:[{id,label,icon?}],current:id}`，最多32类，无样式参数。API10的 `icon` 只引用固定矢量词汇；分类图标全有或全无，以24dp和16dp文字间距显示，选中时用强调文字色，不改变行高。OS在可用宽度≥700dp时显示两栏，以`form.layout(wide)`报告断点、`form.navigate(id)`报告分类选择；不提供nav的旧表单保持单列。设置插件用选择替换当前分类，高级/插件页仍入栈；旋转保持当前分类及层级，RTL由OS镜像。
+
+- `warn?` 只用于 bool：有风险的开关打开后才显示一句。`placeholder?` 只用于 text：仅在编辑框 hint 显示，设置行不显示。内置插件和系统字段不使用 `help`；旧第三方的 `help?` 继续解析显示，兼容 API 1–8（ADR-044）
 - key：`[a-z][a-z0-9_]*`；每个插件最多 32 项。系统级 key 用点号表示分组，对应 `config` 里的嵌套对象（如 `theme.mode` ↔ `{"theme":{"mode":…}}`，与 `05-protocol.md` §3.2 一致）
 - 值不合法（超出范围、不在 `choices` 里、类型不符）一律拒绝写入并给出原因；系统级允许跨字段约束（如 `theme.night_below_lux < theme.night_above_lux`）
+- 系统 `constraints` 中两个 `time` 字段表示开始与结束不得相同，允许同日或跨午夜的两种顺序；两个 `number` 仍表示前者必须小于后者。模式旧键 `theme.night` 保留为隐藏兼容读写，按 `local` / `server` 各层消费旧布尔值为 `redshift.trigger`（关→`off`，开→`sun`，同层合法新值优先）；兼容读取由新键派生，不再存第二份模式值
 - 插件升级后：新增的 key 取默认值；已删除的 key 的值保留不用；校验不再通过的值回落到默认值。卸载插件时设置值保留，重装后恢复，只有“重置设置”才清除
 - 视图里可用 `{{config.<key>}}` 绑定；脚本通过 `tos.config` 读取
+
+`form.path` 指向的字段描述数组也可包含 `link` 行（契约见 `layouts.json` 的 `formLink`）：`{key, type: "link", label, display?, group?, confirm?, icon?}`。API10的可选 `icon` 与侧栏使用同一固定矢量词汇和尺寸，不接受路径、颜色、字体或样式。它显示换页箭头，激活后发 `form.change(key, true)`；有 `confirm` 时先显示原生确认框，取消不发事件。设置插件只给根分类链接图标，不给插件自有设置页加图标。设置值仍由 OS 描述，不由内容插件伪造写入权限。
 
 ### 11.2 取值与叠加
 
@@ -671,8 +789,8 @@ interval = "15"
 
 槽位名以 `layouts.json` 为准，实现时登记。`form` 属于新增版式，须在 api 1 发布前合入词汇表；之后新增词汇必须提升 `api`。
 
-- **入口**：长按任意页面（单指按住约 0.6 秒、移动小于拖动阈值）→ DeckRouter 打开 `settings` 角色页面，`params.scope` 为被长按元素所属插件的 id；该插件没有设置项时直接打开系统设置。设置页底部有“系统设置 / 其它插件”入口
-- **退出**：点“完成”、30 秒无操作、或按 Home 键 → 回到打开前的页面和变体。设置页打开期间 DeckRouter 暂停按注意力档位切换角色页面
+- **入口**：长按页面或卡片→设置角色页，`params.scope`为所属插件。自有字段或`related`任一非空就有设置页，磁贴/投屏可直达各自关联项；没有设置页时进系统分类。系统根页按`sections`列分类，插件分类动态列出插件；分类/插件页按`level`分常用与高级，Back逐层返回。插件页关联系统键按点号路由到`system`，其它键写当前插件。系统分类的关于/安卓入口分别调用公共`tos.settings.about()` / `tos.device.openAndroid("settings")`，权限仍只授予出厂版本
+- **退出**：完成/Home/30秒无操作退出设置会话；Back先关闭原生选择器或展开项，再退分类/高级/插件的内部栈，根页Back退出。内部栈由NAV-02的`tos.back.intercept`和`back`事件维护。页面恢复默认只重置当前显示字段，关联字段按实际范围、地点按六键处理；其它分类/层级与因依赖收起的值保留
 - **文本输入**：设备上不方便打字。`text` 项在设备上先作为只读行显示，点击后是否能直接输入取决于设备有没有可用的输入法（`02-device.md` 未记录，待实测），设计上不依赖它；长文本（Navidrome 地址、账号）建议在 Server 上填，由 Server 用同一份 schema 生成表单并下发
 - **回退**：`settings` 插件被禁用、崩溃或处于安全模式时，长按自动改为打开**原生救援菜单**。救援菜单即现有 `MainActivity` 维护对话框，也是唯一保留的原生设置界面，条目：退出安全模式、恢复出厂插件、重置设置、打开系统设置、查看诊断；隐藏的“左上区域双指长按 5 秒”入口保持不变。修插件的工具不能依赖插件
 - **系统插件**：`settings` 固定安装、不能卸载；因为它持有系统权限，现阶段只接受 APK 内置版本，更新随 APK 走
@@ -757,3 +875,16 @@ dir = "plugins/clock"            # 本地目录，保留原来的“放进目录
 - Server 只取回和校验，**不执行**仓库里的任何东西
 - 版本固定在 commit 上；下发的文件由期望状态里的 sha256 保证完整性
 - 后续可选：用 `git verify-tag` 校验签名 tag（V1），取代原先计划的插件包签名
+
+
+### 12.8 社区自动发现约定（REG-3，API不变）
+
+将公开GitHub仓库加topic `thinkos-plugin` 后，CI可自动裸读并校验，无需逐项目
+人工注册才能进入community未签名目录。默认仅支持仓库根的 `manifest.json`、
+`store.json`、原始许可证和 `v<manifest.version>` tag，id跨版本稳定；不猜子目录。
+已登记monorepo的path/tag_prefix沿原登记流程。不得占用内置或其它来源id；同批
+同id歧义全部拒绝。公开fork、归档项目同样走校验，不额外按这些标志排除。topic不授予官方档位，community设备默认隐藏。
+
+所有者仅对最后批次本机签名和发布；移动tag、权限增加、角色/system权限限制和
+设备原生安装确认沿现规则。发现缺页/不完整/限流时不会拿部分结果生成新目录，
+也不因搜索遗漏删除旧插件。作者约定与工具命令见 [registry/README.md](../registry/README.md)。

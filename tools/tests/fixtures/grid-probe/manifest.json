@@ -1,0 +1,10 @@
+{
+  "id": "grid-probe",
+  "name": "Grid probe",
+  "version": "1.0.0",
+  "api": 8,
+  "main": "main.lua",
+  "permissions": [],
+  "pages": [{ "id": "main", "title": "Grid", "view": "views/main.json" }],
+  "apps": [{ "id": "grid", "page": "main", "title": "Grid", "icon": "apps", "listed": false }]
+}

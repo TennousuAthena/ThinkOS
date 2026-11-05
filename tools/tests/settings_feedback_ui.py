@@ -15,10 +15,10 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools"))
 from package_plugins import package_plugin
 from plugin_push import publish_directory, remove_plugin
+from device_hierarchy import dump_hierarchy, visible_nodes
 
 PACKAGE = "moe.kiwi.thinkos"
 PROBE = "feedback-ui-probe"
-LOW_LABEL = "低于此亮度切换为深色"
 
 
 def main():
@@ -49,20 +49,23 @@ def main():
         raw = adb("exec-out", "run-as", PACKAGE, "cat", "files/settings/local.json", check=False)
         return json.loads(raw) if raw else {}
 
+    shell("am", "start", "-W", "-n", PACKAGE + "/.MainActivity")
     pid = shell("pidof", PACKAGE).decode().strip()
     assert pid and not shell("run-as", PACKAGE, "ls", "files/dev-plugins").strip()
     before = saved()
     manifest = json.loads((ROOT / "tools/tests/fixtures" / PROBE / "manifest.json").read_text())
 
     def state():
-        debug("state")
-        text = adb("logcat", "-d", "--pid=" + pid, "-s", "ThinkOS:V").decode().split("DEBUG state=")[-1]
-        return {key: re.search(key + r"=([\w.-]+)", text).group(1) for key in ("page", "theme")}
+        raw = shell("am", "broadcast", "-n", PACKAGE + "/.DebugReceiver", "--es", "command", "benchmark_state").decode()
+        match = re.search(r'data="([^"]*)"', raw)
+        assert match, "No benchmark state: " + raw
+        values = match.group(1).split('|')
+        return {"page": values[0], "theme": values[2]}
 
     def snapshot(name=None):
         path = "/sdcard/thinkos-feedback-ui.xml"
         try:
-            shell("uiautomator", "dump", "--compressed", path)
+            dump_hierarchy(args.serial, path)
             data = shell("cat", path)
             (args.output / ((name or "last-ui") + ".xml")).write_bytes(data)
             return ET.fromstring(data)
@@ -79,7 +82,7 @@ def main():
 
     def find(text):
         for _ in range(5):
-            node = next((n for n in snapshot().iter("node") if n.get("text") == text), None)
+            node = next((n for n in visible_nodes(snapshot()) if n.get("text") == text), None)
             if node is not None:
                 return node
             shell("input", "swipe", 650, 685, 650, 210, 400)
@@ -120,37 +123,24 @@ def main():
         check(geometry and descriptions and len(found) == len(manifest["settings"]),
               name + ": help is visible below labels, does not overlap and is included in accessibility descriptions")
 
-    def invalid_slider():
-        label = find(LOW_LABEL)
-        tree = snapshot()
-        bottom = box(label)[3]
-        controls = [(n.get("text"), box(n)) for n in tree.iter("node")
-                    if n.get("text") in ("−", "+") and bottom <= box(n)[1] < bottom + 150]
-        minus = next(bounds for text, bounds in controls if text == "−")
-        plus = next(bounds for text, bounds in controls if text == "+")
-        fields = json.loads((ROOT / "shared/schema/settings/system.json").read_text())["fields"]
-        low = fields["theme.dark_below_lux"]
-        current = before.get("system", {}).get("theme.dark_below_lux", low["default"])
-        high = before.get("system", {}).get("theme.light_above_lux", fields["theme.light_above_lux"]["default"])
-        assert current < high <= low["max"], "Need a conflict reachable through this slider"
-        inset = (minus[2]-minus[0])/48*14
-        left, right = minus[2]+inset, plus[0]-inset
-        x = left+(right-left)*(current-low["min"])/(low["max"]-low["min"])
-        y = (minus[1]+minus[3])//2
-        shell("input", "swipe", round(x), y, round(right), y, 400)
+    def refused_edit():
+        # Sensor tuning stays hidden. A shell-only debug hook sends an invalid
+        # editor result through the actual settings plugin, store and error timer.
+        find("最大亮度")
+        shell("am", "broadcast", "-n", PACKAGE + "/.DebugReceiver", "--es", "command", "form_change",
+              "--es", "key", "display.brightness_max", "--es", "value_json", "101")
         touched = time.monotonic()
-        time.sleep(.15)
-        shot("error-visible")
         early = snapshot("error-visible")
-        warning = next((n for n in early.iter("node") if n.get("text", "").startswith("必须小于")), None)
+        warning = next((n for n in early.iter("node") if n.get("text", "").startswith("不能大于")), None)
         check(warning is not None and saved().get("system", {}) == before.get("system", {}),
-              "a conflicting threshold is refused, rolls back and shows a translated explanation")
+              "an invalid editor result is refused without saving and shows a translated error")
         report["warningText"] = warning.get("text") if warning is not None else None
+        shot("error-visible")
         time.sleep(max(0, touched+4-time.monotonic()))
         late = snapshot("error-after-wait")
         report["warningAbsentObservationSeconds"] = round(time.monotonic()-touched, 2)
         shot("error-after-wait")
-        check(not any(n.get("text", "").startswith("必须小于") for n in late.iter("node")),
+        check(not any(n.get("text", "").startswith("不能大于") for n in late.iter("node")),
               "the refused-edit explanation disappears after its display interval")
 
     try:
@@ -161,8 +151,9 @@ def main():
         debug("orientation", 0, "--ei")
         debug("hold_attention", "AWAKE")
         debug("lux", 20, "--ef")
+        debug("theme")
         deadline = time.monotonic()+16
-        while state()["theme"] != "DARK" and time.monotonic() < deadline:
+        while (state()["theme"] != "DARK" or not state()["page"]) and time.monotonic() < deadline:
             time.sleep(.5)
         assert state()["theme"] == "DARK"
         navigate(PROBE + ".main")
@@ -180,7 +171,7 @@ def main():
         check(True, "native step controls clamp at the declared maximum")
         tap(find("系统设置"))
         find("系统设置")
-        invalid_slider()
+        refused_edit()
         check(pid == shell("pidof", PACKAGE).decode().strip(), "feedback checks do not restart the application")
         report["complete"] = not report["issues"]
     except Exception as error:

@@ -1,5 +1,15 @@
 {
   "name": "Diffusion",
   "page.video": "Vidéo diffusée",
-  "page.audio": "Diffusion"
+  "page.audio": "Diffusion",
+  "app.cast": "Diffusion",
+  "page.home": "Diffusion",
+  "home.headline": "Diffuser sur {name}",
+  "hint.dlna": "Apps vidéo, Windows",
+  "hint.airplay": "iPhone, iPad et Mac",
+  "hint.miracast": "Téléphones Android, Windows",
+  "state.on": "Activé",
+  "state.off": "Désactivé",
+  "footer.offline": "Wi-Fi déconnecté",
+  "state.module": "Module requis"
 }

@@ -123,6 +123,12 @@ class ClockView(context: Context, private val declaration: JSONObject, private v
             now = wall
             val synced = wall >= SYNCED_AFTER
             val home = Zones.home()
+            // The dial reads ZoneClock.fields(now); formatting digital cells here only delays its boundary frame.
+            if (clockStyle == "analog") {
+                contentDescription = if (synced) ZoneFormat.format("@time", wall, home) else "--:--"
+                invalidate()
+                return
+            }
             val next = if (synced) Parts(
                 ZoneFormat.format(layout.hour, wall, home), ZoneFormat.format(layout.minute, wall, home),
                 layout.second?.let { ZoneFormat.format(it, wall, home) }, layout.period?.let { ZoneFormat.format(it, wall, home) },
@@ -367,8 +373,8 @@ class ClockView(context: Context, private val declaration: JSONObject, private v
                 else -> context.getString(R.string.day_today)
             }
             val detail = buildString {
-                append(dayLabel).append(" · ").append(ZoneFormat.offsetLabel(type.offset))
-                if (type.dst) append(" · ").append(context.getString(R.string.form_tz_dst))
+                append(dayLabel).append("  ").append(ZoneFormat.offsetLabel(type.offset))
+                if (type.dst) append("  ").append(context.getString(R.string.form_tz_dst))
             }
             val room = cellW * .92f
             text(canvas, ZoneFormat.format("@time", now, clock, locale), cx, top + .70f * cellH, min(28f * density, cellW * .16f), palette.primary, room)

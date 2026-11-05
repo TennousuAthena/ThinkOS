@@ -1,5 +1,7 @@
 # 07 · 构建、安装与 Kiosk 接管
 
+版本名由android/gradle.properties中的thinkos.version提供，Gradle统一计算versionCode=major×1000000+minor×1000+patch；当前0.1.1为1001。构建夹具可用-Pthinkos.version覆盖，正式发布仍受所有者钥匙/证书迁移与发布流程约束。
+
 ## 1. 环境要求
 
 | 项 | 要求 |
@@ -29,6 +31,18 @@ export JAVA_HOME="$(/usr/libexec/java_home -v 17)"
 ./gradlew assembleDebug
 # 产物：app/build/outputs/apk/debug/app-debug.apk
 ```
+
+默认构建包含 FFmpeg 音频解码与 FairPlay，完整版 APK 按 GPLv3 发布（ADR-043）。两项可分别省略；同时关闭时不编译 FairPlay，也不打包 FFmpeg 扩展：
+
+```bash
+./gradlew -Pthinkos.fairplay=false -Pthinkos.ffmpeg=false assembleDebug
+```
+
+此时 APK 中没有 `libthinkos_playfair.so` 和 `libffmpegJNI.so`。AirPlay 视频推送仍可用，屏幕镜像不对外宣告；平台无法解码的音频显示解码错误。`BuildConfig.DISTRIBUTION_GPL` 由这两个构建选项共同决定，供关于页选择声明。
+
+`syncLegal` 每次构建把根目录 `LICENSE`、`LICENSE-GPL-3.0.md`、`LICENSE-APACHE-2.0.txt`、`LICENSE-MPL-2.0.txt`、`THIRD_PARTY_NOTICES.md` 原样复制到 `assets/legal/`。MPL-2.0用于Mozilla根证书数据：OTA的16张子集，以及thinkos-certs系统模块的117张；加载/生成代码仍为MIT。关于页为原生离线页面，入口是维护菜单的“许可证”和内置设置的“关于本机”；即使插件无法运行，维护入口仍可读这些文本。版权行取自 `LICENSE` 第三行，源码地址来自构建元数据 `SOURCE_CODE_URL`。法律全文以原生纯文本显示，不随语言翻译；Markdown源文件只在显示层去格式化，表格转条目、链接保留地址，原始打包字节不改。
+
+完整版发布前执行 `tools/archive_ffmpeg_source.sh`。精确提交保存在 `tools/ffmpeg-source.lock.json`，只在主机读取源码，缓存位于 `~/Library/Caches/ThinkOS/ffmpeg-source/`；已有缓存时可用 `--offline`。输出在 `artifacts/lic/LIC-04/`：完整上游源码 tar.gz、SHA-256、子模块清单、GPLv3 原文和 `release-attachments.json`。构建脚本、AndroidX `decoder_ffmpeg` 和 FFmpeg `configure` 都包含在包内，文件时间、用户/组和 gzip 头统一，不含 `.git`。不执行上游脚本，不改变 APK 依赖或 ABI；发布必须把清单里的附件和 ThinkOS 对应版本完整源码一起提供。该命令只准备本地附件，不推送、不建 Release。
 
 **ABI 检查（每次加依赖后都要做）**
 
@@ -155,7 +169,7 @@ release 构建没有这个入口；设备已 root，可作为未验证的兜底�
 
 注意：
 
-- `adb install -r` 会清掉“默认桌面”偏好，每次安装后要重新执行 `adb shell cmd package set-home-activity moe.kiwi.thinkos/.MainActivity`（`tools/deploy.sh` 已包含）。否则退出锁定时系统会把原厂桌面（Trebuchet）提到前台。
+- 既有Device Owner下，`KioskPolicy`会登记ThinkOS的持久HOME偏好，且只替换自己的旧规则，避免重复积累。2026-11-04的静默升级及release/debug双向覆盖后，实际Home键和只读平台规则核对均通过；见`artifacts/update/OTA-0/release/`。没有Device Owner时仍可由人工或`tools/deploy.sh`设置普通默认桌面。
 - 退出锁定（`kiosk.lock` 关闭）后，应用会自己把 `MainActivity` 拉回前台；锁屏在 Device Owner 下始终保持关闭，不随 `kiosk.lock` 变化。
 
 ⚠️ 设置 device owner 要求设备上**没有已登录账号**。若设置失败，先确认这一点。
@@ -220,8 +234,16 @@ adb shell am broadcast -n moe.kiwi.thinkos/.DebugReceiver --es command maintenan
 ## 8. 发布
 
 - 调试阶段用 `assembleDebug` + `adb install -r`
-- 稳定后 `assembleRelease`（本地签名 keystore 自建，不要提交到仓库）
-- 版本号规则：`0.<里程碑>.<构建号>`，例如 `0.1.3` 表示 W1 的第 3 次构建
+- 稳定后 `assembleRelease`（正式签名keystore由所有者创建和保管，不要提交到仓库）
+- 版本名来自`android/gradle.properties`的`thinkos.version`，`versionCode = 主×1000000 + 次×1000 + 修订`；例如`0.1.3`对应`1003`。自更新预检已经从0.1.1单调升到0.1.3，不再沿用固定的`versionCode=2`。
+
+签名配置为未跟踪的`android/keystore.properties`，必须包含`storeFile`、`storePassword`、`keyAlias`、`keyPassword`。`storeFile`可用所有者保管的绝对路径，相对路径则相对于`android/`。debug和release都使用该配置；文件缺失时明确警告并回退到同一本机debug证书，文件存在但不是普通文件、字段不完整或keystore不可读时失败。不要把正式钥匙、口令、配置文件放进Git或日志。当前没有正式钥匙文件，也没有执行证书迁移；API27不能靠覆盖安装更换证书，迁移仍由人工按OTA-1完成。
+
+`tools/tests/release_smoke.py --apk <release.apk> --restore-debug-apk <同版debug.apk> --output <目录>`只用普通ADB安装、am/dumpsys/logcat、Home键和截图验证，不依赖私有数据或调试接收器，也不执行性能测试。它结束时覆盖回给定的同版debug包，不卸载、不清数据。`artifacts/update/OTA-0/release/`记录了0.1.3非debuggable构建在HUA0BWUT上的16项检查；这是本地debug证书下的功能验收，正式签名构建仍须单独验证。
+
+正式发行准备由所有者按`tools/OWNER-RELEASE.md`执行`tools/release.sh prepare`：以已审阅提交、正式签名配置及匹配公钥为输入，在仓库外新目录准备APK、所选模块及其原始签名清单、对应源码与摘要。工具只做本地准备，成功状态为`prepared`、`published=false`；不会创建tag、推送、发Release或安装模块。正式钥匙、来源和证书迁移尚未完成，不能把现有debug证书的release冒烟当作正式链路通过。
+
+新机的正常交付使用该流程产出的正式release；同正式证书的debug仅供已授权工程调试，不作为公开发行包。实际安装参数和GPL安装信息见`installation-guide.md`及`19-provisioning-for-agent.md` §7；更新器首次部署、模块外守卫和重启仍归人工，本轮模块故障验收只在备用机、不在HUA0BWUT。
 
 ## 9. M0 开发检查
 

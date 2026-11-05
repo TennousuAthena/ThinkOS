@@ -1,5 +1,15 @@
 {
   "name": "কাস্ট",
   "page.video": "কাস্ট ভিডিও",
-  "page.audio": "কাস্ট"
+  "page.audio": "কাস্ট",
+  "app.cast": "কাস্ট",
+  "page.home": "কাস্ট",
+  "home.headline": "{name}-এ কাস্ট করুন",
+  "hint.dlna": "ভিডিও অ্যাপ, Windows",
+  "hint.airplay": "iPhone, iPad ও Mac",
+  "hint.miracast": "Android ফোন, Windows",
+  "state.on": "চালু",
+  "state.off": "বন্ধ",
+  "footer.offline": "Wi-Fi সংযুক্ত নয়",
+  "state.module": "সিস্টেম মডিউল লাগবে"
 }

@@ -7,10 +7,16 @@ import re
 import shlex
 import struct
 import subprocess
+import sys
 import time
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "tools"))
+from device_hierarchy import dump_hierarchy, visible_nodes
+from device_recovery import capture, restore
+from media_device import Device
+from ui_walkthrough import broadcast_json
 PACKAGE = "moe.kiwi.thinkos"
 OWNED = {
     "theme.mode", "theme.night", "display.orientation", "attention.awake_to_ambient_s",
@@ -27,6 +33,7 @@ def main():
     base = ["adb", "-s", args.serial]
     fields = json.loads((ROOT / "shared/schema/settings/system.json").read_text())["fields"]
     texts = json.loads((ROOT / "shared/i18n/system/zh-Hans.json").read_text())
+    settings_texts = json.loads((ROOT / "plugins/settings/i18n/zh-Hans.json").read_text())
     report = {"complete": False, "passed": [], "issues": [], "controlled_inputs": "debug lux and presence; normal attention timing"}
     viewport = [1280, 800]
 
@@ -58,6 +65,11 @@ def main():
     def label(key):
         return translated(fields[key]["label"])
 
+    recovery_device = Device(args.serial)
+    assert shell("getprop", "persist.sys.locale").decode().strip().startswith("zh")
+    journal = capture(recovery_device, broadcast_json(recovery_device, 'ui_state'))
+    print('Private recovery journal: '+str(journal), flush=True)
+    shell("am", "start", "-W", "-n", PACKAGE + "/.MainActivity")
     pid = shell("pidof", PACKAGE).decode().strip()
     assert pid and not shell("run-as", PACKAGE, "ls", "files/dev-plugins").strip()
     assert shell("getprop", "persist.sys.locale").decode().strip().startswith("zh")
@@ -65,10 +77,10 @@ def main():
     touched = set()
 
     def state():
-        debug("state")
-        data = adb("logcat", "-d", "--pid=" + pid, "-s", "ThinkOS:V").decode().split("DEBUG state=")[-1]
-        return {key: re.search(key + r"=([\w.-]+)", data).group(1)
-                for key in ("page", "attention", "theme", "orientation", "safeMode")}
+        raw = shell("am", "broadcast", "-n", PACKAGE + "/.DebugReceiver", "--es", "command", "benchmark_state").decode()
+        match = re.search(r'data="([^"]*)"', raw)
+        assert match, "No benchmark state: " + raw
+        return dict(zip(("page", "attention", "theme", "orientation"), match.group(1).split('|')[:4]))
 
     def wait_state(key, value, seconds=6):
         deadline = time.monotonic()+seconds
@@ -81,7 +93,7 @@ def main():
     def snapshot():
         path = "/sdcard/thinkos-system-settings-ui.xml"
         try:
-            shell("uiautomator", "dump", "--compressed", path)
+            dump_hierarchy(args.serial, path)
             data = shell("cat", path)
             (args.output / "last-ui.xml").write_bytes(data)
             return ET.fromstring(data)
@@ -102,7 +114,7 @@ def main():
             for choice in field.get("choices", []):
                 order[translated(choice["label"])] = i
         for _ in range(14):
-            nodes = list(snapshot().iter("node"))
+            nodes = list(visible_nodes(snapshot()))
             node = next((n for n in nodes if n.get("text") == text), None)
             if node is not None:
                 return node
@@ -134,12 +146,14 @@ def main():
         raise AssertionError("UI edit did not persist: " + key)
 
     def set_bool(key, value):
+        open_system(key)
         touched.add(key)
         if effective(key) != value:
             tap(find(label(key)))
         wait_saved(key, value)
 
     def set_choice(key, value):
+        open_system(key)
         touched.add(key)
         if effective(key) != value:
             tap(find(label(key)))
@@ -148,8 +162,19 @@ def main():
         wait_saved(key, value)
 
     def set_number(key, value):
+        open_system(key)
         touched.add(key)
         field = fields[key]
+        if field.get("presets"):
+            expected = {30: "30 秒", 60: "1 分钟"}[value]
+            if effective(key) != value:
+                tap(find(label(key)))
+                tap(find(expected))
+            wait_saved(key, value)
+            find(expected)
+            report.setdefault("nativeTimingChoices", []).append({"key": key, "value": value, "display": expected})
+            return
+        tap(find(label(key)))
         for _ in range(4):
             row = find(label(key))
             bottom = box(row)[3]
@@ -171,16 +196,22 @@ def main():
         shell("input", "swipe", round(x1), y, round(x2), y, 650)
         wait_saved(key, value)
 
-    def open_system():
-        wait_state("page", "home.main")
-        w, h = viewport
-        shell("input", "swipe", w-5, h//2, w-5, h//2, 900)
+    def open_system(key=None):
+        # Entry ownership and long presses have their own regression. Keep this
+        # control check valid when NIGHT policy shows the sleep clock underneath.
+        shell("input", "keyevent", "KEYCODE_HOME")
+        debug("settings", "system")
         wait_state("page", "settings.form")
-        find(texts["setting_system_name"])
+        find(texts["setting_section_display"])
+        if key is not None:
+            field = fields[key]
+            tap(find(texts["setting_section_" + field["section"]]))
+            if field.get("level") == "advanced": tap(find(settings_texts["advanced"]))
 
     def close_system():
         tap(find("完成"))
-        wait_state("page", "home.main")
+        shell("input", "keyevent", "KEYCODE_HOME")
+        if state()["theme"] != "NIGHT": wait_state("page", "home.main")
 
     def stable_dark(lux, name):
         debug("lux", lux, "--ef")
@@ -214,11 +245,10 @@ def main():
         debug("hold_attention", "AWAKE")
         debug("orientation", 0, "--ei")
         wait_state("orientation", "LANDSCAPE")
-        for _ in range(3):
-            if state()["page"] == "home.main":
-                break
-            shell("input", "swipe", 1100, 400, 150, 400, 450)
-        wait_state("page", "home.main")
+        deadline = time.monotonic() + 8
+        while not state()["page"] and time.monotonic() < deadline:
+            time.sleep(.2)
+        assert state()["page"], "The local page catalog did not load"
         # Make disabling night observable, with normal ENGAGED behavior while settings is open.
         open_system()
         set_choice("theme.mode", "dark")
@@ -294,28 +324,14 @@ def main():
         raise
     finally:
         (args.output / "logcat.txt").write_bytes(adb("logcat", "-d", "--pid=" + pid, "-s", "ThinkOS:V", "AndroidRuntime:E"))
-        shell("cmd", "package", "set-home-activity", "org.lineageos.trebuchet/com.android.launcher3.searchlauncher.SearchLauncher")
-        shell("am", "force-stop", PACKAGE)
-        restored = saved()
-        system = restored.setdefault("system", {})
-        for key in touched:
-            assert key in OWNED
-            if key in before.get("system", {}):
-                system[key] = before["system"][key]
-            else:
-                system.pop(key, None)
-        if not system and "system" not in before:
-            restored.pop("system", None)
-        encoded = json.dumps(restored, ensure_ascii=False, separators=(",", ":")).encode()
-        shell("run-as", PACKAGE, "sh", "-c", "cat > files/settings/local.json.ui-restore", data=encoded)
-        shell("run-as", PACKAGE, "mv", "files/settings/local.json.ui-restore", "files/settings/local.json")
-        shell("run-as", PACKAGE, "rm", "-f", "files/settings/local.json.bak")
-        shell("cmd", "package", "set-home-activity", PACKAGE + "/.MainActivity")
-        shell("am", "start", "-n", PACKAGE + "/.MainActivity")
+        try: report.update(restore(journal, recovery_device))
+        except Exception as error:
+            report['recovery_error'] = str(error); report['private_recovery_journal'] = str(journal)
         report["settingsRestored"] = saved() == before
         report["restoredKeys"] = sorted(touched)
         (args.output / "results.json").write_text(json.dumps(report, ensure_ascii=False, indent=2)+"\n")
         assert report["settingsRestored"]
+        assert not report.get('recovery_error'), report.get('recovery_error')
     assert report["complete"], report["issues"]
 
 

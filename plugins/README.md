@@ -23,7 +23,10 @@ plugins/<id>/
 | `tiles` | API 6 纯声明的开始屏：10 张磁贴，引用时钟、天气与相册的 tile |
 | `aero` | API 5 纯声明原生 Aero 桌面，引用 clock.desktop、weather.now、gallery.preview |
 | `player` | API 7 媒体库与播放：本地音乐 / 视频、串流地址、M3U 播放列表、最近播放与续播；播放页与影院页由 OS 绘制（HLS / DASH / RTSP / 渐进式 HTTP，ADR-030），设计与验收见 `../docs/27-streaming.md` |
+| `iptv` | API 8 电视直播：最多四个频道列表（M3U / JSON，列表源可扩展）、同一频道合并多条线路、自动测试并暂时停用失效线路、节目单（XMLTV 或每频道 JSON）；直播页由 OS 的 `tv` 组件绘制（ADR-038），设计与验收见 `../docs/31-iptv.md` |
 | `settings` | 原生设置页 |
+| `apps` | 安卓应用网格，只列有桌面入口的安卓App；system.apps只给出厂副本；提供绿色apps.tile，公开接口仍返回两类应用 |
+| `radio` | 广播：M3U / PLS 电台列表、直接地址、收藏、后台播放和断线重连；不内置电台。曲名、播放和控制由OS的MediaEngine/nowplaying/controls提供，仅使用公开tos接口，APP-3设备验收见任务清单 |
 
 `gallery` 公开 `gallery.daily`，`weather` 公开 `weather.now`，其他插件声明后可直接绑定（API 6，见 `../docs/06-plugins.md` §6.8）。
 | `notify` | 待实现 |

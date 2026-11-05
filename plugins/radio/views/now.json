@@ -1,0 +1,22 @@
+{
+  "layout": "focus",
+  "slots": {
+    "over": {
+      "type": "text",
+      "value": "{{station}}",
+      "style": "body"
+    },
+    "hero": {
+      "type": "nowplaying",
+      "style": "full",
+      "idle": "@name",
+      "notice": "{{notice}}"
+    },
+    "under": {
+      "type": "text",
+      "value": "{{favoriteLabel}}",
+      "style": "body",
+      "tap": "favorite"
+    }
+  }
+}

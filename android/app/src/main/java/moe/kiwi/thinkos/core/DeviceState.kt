@@ -8,7 +8,10 @@ enum class Theme { LIGHT, DARK, NIGHT }
 enum class Link { UNPAIRED, OFFLINE, ONLINE }
 enum class Orientation { LANDSCAPE, PORTRAIT }
 data class OverlayState(val message: String? = null)
-data class DeckState(val page: String = "", val variant: String = "digital", val direction: Int = 0, val vertical: Boolean = false)
+/** How the screen gets from one page to the next. [LAUNCH] and [RETURN] are the flip that opens an app and closes it again. */
+enum class Transition { SLIDE, LAUNCH, RETURN, RISE }
+data class DeckState(val page: String = "", val variant: String = "digital", val direction: Int = 0, val vertical: Boolean = false,
+    val transition: Transition = Transition.SLIDE)
 data class DeviceState(
     val attention: Attention = Attention.AWAKE,
     val deck: DeckState = DeckState(),
@@ -16,7 +19,9 @@ data class DeviceState(
     val link: Link = Link.UNPAIRED,
     val theme: Theme = Theme.DARK,
     val orientation: Orientation = Orientation.LANDSCAPE,
-    val safeMode: Boolean = false
+    val safeMode: Boolean = false,
+    /** Independent of attention.ASLEEP; MODE-3 owns the later sleep screen/audio effects. */
+    val mode: Mode = Mode.DAY,
 )
 
 /** Mutations belong to the main thread; neither reducers nor collectors do disk/network I/O. */
@@ -56,7 +61,7 @@ class AttentionPolicy(private val started: Long, private val timings: () -> Atte
     }
 }
 
-/** Lux limits and the user's choice of mode. `mode` is auto (ambient light), sun (sunrise and sunset), light or dark; night is separate. */
+/** DAY-theme limits. Legacy night fields remain source-compatible; ModeController alone owns NIGHT. */
 data class ThemeThresholds(
     val mode: String = "auto",
     val nightEnabled: Boolean = true,
@@ -66,15 +71,21 @@ data class ThemeThresholds(
     val nightAbove: Float = 15f,
 )
 
-/** A sampled value must stay past its threshold for the whole dwell period. */
+/** Production injects schema values through ModeRuntime; defaults retain the legacy pure-policy API. */
+data class ThemeTimings(val dwellMillis: Long = 30_000, val minimumSwitchMillis: Long = 120_000) {
+    init { require(dwellMillis >= 0 && minimumSwitchMillis >= 0) }
+}
+
+/** DAY's LIGHT/DARK policy only. REDSHIFT/SLEEP are projected to NIGHT by SensorController. */
 class ThemePolicy(
     initial: Theme = Theme.DARK,
     /** True between sunrise and sunset at the configured place, null while that is unknown (untrusted clock). */
     private val daylight: () -> Boolean? = { null },
+    private val timings: () -> ThemeTimings = { ThemeTimings() },
     private val thresholds: () -> ThemeThresholds = { ThemeThresholds() },
 ) {
-    var theme = initial; private set
-    private var candidate = initial
+    var theme = initial.takeUnless { it == Theme.NIGHT } ?: Theme.DARK; private set
+    private var candidate = theme
     private var candidateSince = 0L
     private var lastDaySwitch = Long.MIN_VALUE
 
@@ -91,25 +102,21 @@ class ThemePolicy(
         val pin = pinned()
         val sun = if (pin == null) bySun() else null
         val fixed = pin ?: sun
-        val night = limits.nightEnabled && if (theme == Theme.NIGHT) lux <= limits.nightAbove else lux < limits.nightBelow
         val target = when {
-            night -> Theme.NIGHT
             fixed != null -> fixed
-            theme == Theme.NIGHT -> Theme.DARK
             theme == Theme.LIGHT && lux < limits.darkBelow -> Theme.DARK
             theme == Theme.DARK && lux > limits.lightAbove -> Theme.LIGHT
             else -> theme
         }
         if (candidate != target) { candidate = target; candidateSince = now }
-        val nightChange = target == Theme.NIGHT || theme == Theme.NIGHT
         // A user's explicit choice and the Sun's schedule apply at once: neither is a noisy sensor reading, and a
         // touching hand cannot shadow them. Only light-driven changes need to dwell.
-        val explicit = (theme == Theme.NIGHT && !limits.nightEnabled) ||
-            ((pin != null && target == pin || sun != null && target == sun) && theme != Theme.NIGHT && target != Theme.NIGHT)
-        val dwell = if (explicit) 0L else if (nightChange) 10_000L else 30_000L
-        val intervalOk = explicit || nightChange || lastDaySwitch == Long.MIN_VALUE || now - lastDaySwitch >= 120_000L
+        val explicit = fixed != null
+        val limitsTime = timings()
+        val dwell = if (explicit) 0L else limitsTime.dwellMillis
+        val intervalOk = explicit || lastDaySwitch == Long.MIN_VALUE || now - lastDaySwitch >= limitsTime.minimumSwitchMillis
         if (target != theme && now - candidateSince >= dwell && (!engaged || explicit) && intervalOk) {
-            if (!nightChange && !explicit) lastDaySwitch = now
+            if (!explicit) lastDaySwitch = now
             theme = target
             candidateSince = now
         }

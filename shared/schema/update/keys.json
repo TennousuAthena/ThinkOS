@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "keys.json",
+  "title": "UpdateKeyDocument",
+  "type": "object",
+  "required": [
+    "schema",
+    "channel",
+    "registry"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "type": "integer",
+      "const": 1
+    },
+    "channel": {
+      "$ref": "#/$defs/pair"
+    },
+    "registry": {
+      "$ref": "#/$defs/pair"
+    }
+  },
+  "$defs": {
+    "key": {
+      "title": "UpdatePublicKey",
+      "type": "object",
+      "required": [
+        "id",
+        "algorithm",
+        "spki"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9._-]{0,63}$"
+        },
+        "algorithm": {
+          "type": "string",
+          "const": "SHA256withECDSA"
+        },
+        "spki": {
+          "type": "string",
+          "minLength": 16,
+          "maxLength": 512,
+          "pattern": "^[A-Za-z0-9+/]+={0,2}$"
+        }
+      }
+    },
+    "pair": {
+      "title": "UpdateKeyPair",
+      "type": "object",
+      "required": [
+        "active",
+        "backup"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "active": {
+          "$ref": "#/$defs/key"
+        },
+        "backup": {
+          "$ref": "#/$defs/key"
+        }
+      }
+    }
+  },
+  "description": "APK-only trust roots. Public keys are canonical Base64 DER SubjectPublicKeyInfo for P-256. Four IDs and keys must be distinct. Signatures are ASN.1 DER SHA256withECDSA, not JOSE raw r||s."
+}

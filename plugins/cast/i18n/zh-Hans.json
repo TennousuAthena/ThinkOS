@@ -1,5 +1,15 @@
 {
   "name": "投屏",
   "page.video": "投屏视频",
-  "page.audio": "投屏播放"
+  "page.audio": "投屏播放",
+  "app.cast": "投屏",
+  "page.home": "投屏",
+  "home.headline": "投屏到 {name}",
+  "hint.dlna": "视频 App、Windows",
+  "hint.airplay": "iPhone、iPad 和 Mac",
+  "hint.miracast": "安卓手机、Windows",
+  "state.on": "开",
+  "state.off": "关",
+  "footer.offline": "未连接 Wi-Fi",
+  "state.module": "缺少系统模块"
 }

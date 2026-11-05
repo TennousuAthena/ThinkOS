@@ -48,11 +48,10 @@ def check(tables):
         for key, text in table.items():
             if key in english and set(PLACEHOLDER.findall(text)) != set(PLACEHOLDER.findall(english[key])):
                 problems.append(f'{name}: placeholders of {key} differ from English')
+            if any(int(index) < 1 for index in PLACEHOLDER.findall(text)):
+                problems.append(f'{name}: placeholders of {key} start at 1')
             if not text.strip():
                 problems.append(f'{name}: empty text for {key}')
-            # System UI takes no brackets; the sunrise/sunset theme label is the one exception.
-            if key != 'setting_theme_mode_sun' and re.search(r'[()（）]', text):
-                problems.append(f'{name}: brackets in {key}')
     return problems
 
 
@@ -62,6 +61,9 @@ def android_text(text):
     text = PLACEHOLDER.sub(lambda m: f'%{m.group(1)}$s', text)
     text = (text.replace('\\', '\\\\').replace("'", "\\'").replace('"', '\\"')
             .replace('&', '&amp;').replace('<', '&lt;').replace('\n', '\\n'))
+    # aapt collapses literal whitespace, including ADR-044's two-space separator.
+    # Escape after backslashes so the compiled resource retains each space.
+    text = re.sub(r' {2,}', lambda match: r'\u0020' * len(match.group()), text)
     if text.startswith(('@', '?')):
         text = '\\' + text
     return text
@@ -86,7 +88,13 @@ def main():
     if problems:
         sys.exit('system strings are inconsistent:\n  ' + '\n  '.join(problems))
     if args.check:
-        print(f'{len(tables)} tables x {len(tables["en"])} keys are consistent')
+        stale = [str(RES / directory / 'strings.xml') for name, directories in TARGETS.items()
+                 for directory in directories
+                 if not (RES / directory / 'strings.xml').exists()
+                 or (RES / directory / 'strings.xml').read_text(encoding='utf-8') != render(tables[name])]
+        if stale:
+            sys.exit('generated strings are stale; run tools/gen_android_strings.py:\n  ' + '\n  '.join(stale))
+        print(f'{len(tables)} tables x {len(tables["en"])} keys and generated resources are consistent')
         return
     for name, directories in TARGETS.items():
         for directory in directories:

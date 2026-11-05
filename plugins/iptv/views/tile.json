@@ -1,0 +1,10 @@
+{
+  "template": "tile",
+  "color": "#0063B1",
+  "faces": [
+    {
+      "icon": "tv",
+      "label": "@app.tv"
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "install-history.json",
+  "description": "Private bounded install outcomes and failure ledger. A transaction failure is counted once even after interruption. Startup reconciliation handles committed history before deleting pending/previous bytes.",
+  "title": "UpdateInstallHistory",
+  "type": "object",
+  "required": [
+    "schema",
+    "failures"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "type": "integer",
+      "const": 1
+    },
+    "failures": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "title": "UpdateInstallFailure",
+        "type": "object",
+        "required": [
+          "code",
+          "version",
+          "count",
+          "blocked",
+          "last_transaction",
+          "reason"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "version": {
+            "$ref": "catalog.json#/$defs/release/properties/version"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "blocked": {
+            "type": "boolean"
+          },
+          "last_transaction": {
+            "type": "string",
+            "minLength": 32,
+            "maxLength": 32,
+            "pattern": "^[a-f0-9]{32}$"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "install",
+              "interrupted",
+              "package",
+              "crash_loop",
+              "rollback_failed"
+            ]
+          }
+        }
+      }
+    },
+    "result": {
+      "title": "UpdateInstallResult",
+      "type": "object",
+      "required": [
+        "transaction_id",
+        "kind",
+        "code",
+        "version",
+        "recorded",
+        "notice_ms",
+        "notes",
+        "needs_recovery_clear"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "transaction_id": {
+          "type": "string",
+          "minLength": 32,
+          "maxLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "updated",
+            "rolled_back",
+            "install_failed",
+            "rollback_failed"
+          ]
+        },
+        "code": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "version": {
+          "$ref": "catalog.json#/$defs/release/properties/version"
+        },
+        "recorded": {
+          "$ref": "pending.json#/$defs/time"
+        },
+        "notice_ms": {
+          "type": "integer",
+          "minimum": 60000,
+          "maximum": 604800000,
+          "format": "int64"
+        },
+        "notes": {
+          "$ref": "catalog.json#/$defs/release/properties/notes"
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "install",
+            "interrupted",
+            "package",
+            "crash_loop",
+            "rollback_failed"
+          ]
+        },
+        "needs_recovery_clear": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

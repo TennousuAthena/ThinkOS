@@ -1,0 +1,8 @@
+{
+  "layout": "focus",
+  "slots": {
+    "over": {"type": "text", "value": "@accessibility", "style": "caption", "tap": "hello.accessibility"},
+    "hero": {"type": "text", "value": "{{greeting}}", "style": "display", "tap": "hello.next"},
+    "under": {"type": "text", "value": "@skipSetup", "style": "caption", "tap": "hello.skip"}
+  }
+}
