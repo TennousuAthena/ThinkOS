@@ -39,6 +39,14 @@ object Zones {
 
     fun install(db: TzDatabase?) { database = db }
 
+    /**
+     * The zone of the place a person chose (a manual place that carries one). ThinkOS then shows the time there even where Android's own
+     * zone cannot be changed from here (no system module); where it can, the app sets that too and the two agree. Null follows the device.
+     */
+    @Volatile private var place: String? = null
+
+    fun followPlace(id: String?) { place = id?.takeIf { it.isNotBlank() } }
+
     /** Always returns a usable clock; unknown ids resolve to the device's own zone. */
     fun clock(id: String?): ZoneClock {
         val db = database
@@ -51,8 +59,19 @@ object Zones {
         return home()
     }
 
-    /** The device's own zone (what the ROM's settings say), evaluated with the bundled rules when possible. */
+    /** Where the clocks say it is: the chosen place's zone if there is one, else the device's own. */
     fun home(): ZoneClock {
+        val db = database
+        place?.let { id ->
+            val canonical = db?.canonical(id)
+            val rules = canonical?.let(db::rules)
+            if (canonical != null && rules != null) return ZoneClock(canonical, rules, null)
+        }
+        return device()
+    }
+
+    /** The device's own zone (what the ROM's settings say), evaluated with the bundled rules when possible. */
+    fun device(): ZoneClock {
         val system = TimeZone.getDefault()
         val db = database
         val canonical = db?.canonical(system.id)

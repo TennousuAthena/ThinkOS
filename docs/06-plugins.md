@@ -625,7 +625,7 @@ image源app:包名只在OS取图标、解码、缓存，需要实际授予的sys
 - `tos.onboarding.status()` 返回流程 `version`、`active`、`updater` 与问候轮换秒数。当前没有更新器，`updater=false`。
 - `tos.onboarding.open("restart" | "resume")` 需要内置设置管理员及真实点按信用。前者重新开始，后者只补跳过的步骤；首次启动的自动续跑由 OS 负责。
 - `tos.onboarding.practice(name, text)` 和 `stop()` 只对当前可见的内置引导角色页有效。名称固定为 `swipe`、`variant`、`panel`、`back`、`home`、`long-press`；完成后发 `practice(name)`。错误动作不推进；Home完成报告后仍退出，不会吞掉全局出口。维护手势始终保留。
-- `tos.tz.zones(region)` 只读返回地区的 `{id, city, country, time}` 数组。`tos.device.canSetLocale()` / `setLocale(tag)` 仅使用已持有的系统权限，不自行授权。无权限时由插件打开安卓语言页。当前 `canSetTimeZone()` / `setTimeZone(id)` 返回不可用，时区使用安卓日期页，不能把应用显示的时区冒充系统修改。
+- `tos.tz.zones(region)` 只读返回地区的 `{id, city, country, time}` 数组。`tos.device.canSetLocale()` / `setLocale(tag)` 仅使用已持有的系统权限，不自行授权。无权限时由插件打开安卓语言页。`canSetTimeZone()` / `setTimeZone(id)` 在装了 `thinkos-updater` 模块（它代为改系统时区，`SET_TIMEZONE`）时可用，没有模块返回 `false`，这时时区用安卓日期页，不能把应用显示的时区冒充系统修改。`tos.tz.home()` 返回 ThinkOS 时钟用的时区：手动地点带时区时是该地点的时区（2026-11-06 起），否则是安卓的系统时区；改系统时区仍只有 `setTimeZone`。
 - `tos.device.openAndroid` 目标扩为 `wifi`、`settings`、`locale`、`date`、`accessibility`，仍不接收任意 Intent。
 
 `form` 的可选字符串 `subtitle`、`primary`、`secondary`、`back` 启用单列引导布局，`tap` 指定操作名称；主次按钮和返回发 `tap(name, "primary" | "secondary" | "back")`。无这些字段的设置表单保持原样。可选 `hero` 槽用于不超过72sp的时间等内容，空内容自动收起；`source: "region"` 是离线可搜索地区选择器。设置通过声明的 `uses` 读取 `welcome.setup` 公开进度，显示“完成设置”，不读取私有存储。

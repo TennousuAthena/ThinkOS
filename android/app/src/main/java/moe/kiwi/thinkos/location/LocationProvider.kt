@@ -32,7 +32,7 @@ data class DeviceLocation(
  */
 class LocationProvider(
     private val settings: SettingsStore,
-    private val homeZone: () -> String = { Zones.home().id },
+    private val homeZone: () -> String = { Zones.device().id },
     private val zoneInfo: (String) -> ZoneInfo? = { Zones.database?.info(it) },
     private val cityName: (String, Locale) -> String = ZoneNames::city,
 ) {

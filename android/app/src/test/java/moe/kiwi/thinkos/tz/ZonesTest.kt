@@ -14,6 +14,29 @@ class ZonesTest {
     private fun offsetHours(zone: String, instant: Long) = database.rules(zone)!!.offsetAt(instant) / 3600.0
 
     @Test
+    fun theHomeZoneFollowsAChosenPlaceAndGoesBackToTheDeviceWhenCleared() {
+        Zones.install(database)
+        val device = Zones.device().id
+        assertEquals(device, Zones.home().id)
+        try {
+            Zones.followPlace("Asia/Tokyo")
+            assertEquals("Asia/Tokyo", Zones.home().id)
+            assertEquals("the device's own zone stays what the ROM says", device, Zones.device().id)
+            assertEquals(9.0, Zones.home().offsetMillis(utc(2026, 7, 1) * 1000) / 3_600_000.0, 0.0)
+            Zones.followPlace("Asia/Calcutta")           // an alias resolves to its canonical zone
+            assertEquals("Asia/Kolkata", Zones.home().id)
+            Zones.followPlace("Mars/Olympus_Mons")       // unknown: the device's own zone
+            assertEquals(device, Zones.home().id)
+            Zones.followPlace("")
+            assertEquals(device, Zones.home().id)
+            Zones.followPlace(null)
+            assertEquals(device, Zones.home().id)
+        } finally {
+            Zones.followPlace(null)
+        }
+    }
+
+    @Test
     fun databaseIsRecentAndComplete() {
         assertTrue("tzdata ${database.version}", database.version >= "2026a")
         assertTrue(database.zones.size > 400)

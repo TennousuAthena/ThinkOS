@@ -337,6 +337,8 @@ size=88123
 
 **系统层守卫**（有更新器时）：
 
+2026-11-06 守卫随 OTA、脚本也能更新：外置守卫分成 `current` / `previous` 两份，启动脚本很小、带版本行，按 `current`、`previous`、旧单文件的顺序选用，起不来或立刻崩溃就换下一份。首次安装模块时，模块安装器把守卫、策略和两个启动脚本放好（启动脚本只升不降）；之后每次 `thinkos-updater` 自更新通过健康期，运行中的更新器把自己的文件轮换成新的 `current`。所以守卫不再是只能手工换的东西，也不会被坏模块弄没。详见 `system/thinkos-updater/guard/README.md`。主机测试：updater 49 项、守卫脚本 16 项。**没验证：**真机的坏更新器启动、首次安装的真实 Magisk 安装器环境（`customize.sh` 在主机上用桩函数测过）。
+
 2026-11-04 守卫源码检查点（尚未统一验收或持久安装）：稳定恢复程序的两个固定入口为 `--guard-early`、`--guard-watch`，程序与两个启动脚本放在模块之外，具体产物路径与人工安装边界见 `system/thinkos-updater/guard/README.md`。默认15分钟健康窗口和5秒观察间隔从系统设置 schema 生成 root 私有 policy；缺失或损坏时停止自动动作。独立 guard 记录上一 boot_id、真实 boot_completed、冻结的健康窗口、早期恢复声明及一次自动恢复/重启预算。daemon 与稳定守卫共享 root 文件锁，操作前重载 journal；内部 `GUARD_ROLLBACK <32hex事务id>` 只接受内核 peer UID0，并重新验证当前事务、deadline和预算，不能由应用借普通 socket 权限触发。稳定副本可以在新版模块 daemon 不可用时执行同一受限恢复流程。此检查点不代表应用已经把系统模块事务的 HEALTHY 与自己的首帧/健康守卫接通，也没有进行真实坏模块/断电/重启演练。
 
 | 情况 | 谁发现 | 怎么办 |

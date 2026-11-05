@@ -236,7 +236,9 @@ class RuntimeHost(private val context: Context) : PluginRuntime.Callbacks {
         plugins.mediaState(media.snapshot())
         updates.onMedia(media.snapshot())
         MotionPrefs.clock = system.clockMotion
+        syncPlaceZone()
         settings.addListener { scope, keys ->
+            if (scope == SettingsStore.SYSTEM && keys.any { it == SystemSettings.Keys.LOCATION_MODE || it == SystemSettings.Keys.LOCATION_TIMEZONE }) syncPlaceZone()
             if (scope == SettingsStore.SYSTEM && keys.any { key ->
                     key.startsWith("redshift.") || key.startsWith("sleep.") || key.startsWith("mode.") ||
                         key.startsWith("theme.") || key.startsWith("location.")
@@ -260,6 +262,12 @@ class RuntimeHost(private val context: Context) : PluginRuntime.Callbacks {
         "landscape" -> moe.kiwi.thinkos.core.DeviceOrientation.LANDSCAPE
         "portrait" -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
         else -> ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR
+    }
+    /** A manual place that carries a time zone is where the device is: the clocks follow it (docs/04 §10). */
+    private fun syncPlaceZone() {
+        val manual = settings.get(SettingsStore.SYSTEM, SystemSettings.Keys.LOCATION_MODE) == "manual"
+        val zone = settings.get(SettingsStore.SYSTEM, SystemSettings.Keys.LOCATION_TIMEZONE) as? String
+        moe.kiwi.thinkos.tz.Zones.followPlace(if (manual) zone else null)
     }
     private fun applyOrientationSetting() { notifyObservers<DisplayObserver> { it.onOrientationRequest(orientationCode()) } }
 

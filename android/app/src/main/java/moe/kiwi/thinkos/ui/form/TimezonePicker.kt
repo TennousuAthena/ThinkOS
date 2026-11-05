@@ -53,7 +53,7 @@ internal class TimezonePicker(
     private val locale: Locale = Locale.getDefault()
     private var palette = Palette.DARK
     private var selected = ""
-    private var area = ZoneNames.area(Zones.home().id)
+    private var area = ZoneNames.area(Zones.device().id)
     private var query = ""
     private var visible = emptyList<Entry>()
     private var initialised = false

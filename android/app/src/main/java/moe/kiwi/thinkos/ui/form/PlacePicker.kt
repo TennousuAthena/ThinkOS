@@ -101,7 +101,7 @@ internal class PlacePicker(
             val label: String
             val selected: Boolean
             if (position == 0) {
-                label = context.getString(R.string.setting_location_mode_auto) + "\n" + ZoneNames.city(Zones.home().id, locale)
+                label = context.getString(R.string.setting_location_mode_auto) + "\n" + ZoneNames.city(Zones.device().id, locale)
                 selected = current.optString("source") == "timezone"
             } else {
                 val entry = results[position - 1]
