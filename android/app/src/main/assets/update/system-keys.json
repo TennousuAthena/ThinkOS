@@ -1,0 +1,13 @@
+{
+  "active": {
+    "algorithm": "SHA256withECDSA",
+    "id": "system-active",
+    "spki": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAER5Abg4TANp/kTTEKMRmubN8vCDMB/ob3S19W/HAcCxgafBbj7eEmMKsZArDIY77AlJ0Z5R9p/L1N5t24IBy0Vg=="
+  },
+  "backup": {
+    "algorithm": "SHA256withECDSA",
+    "id": "system-backup",
+    "spki": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEVZRSN7EJThRfE3+1zb9E3sgoxXdgUf03rAuA3BVGdEc1kyqHOTHAluBEi6Q595VkH1fTQ88aj1It46lla8RtKQ=="
+  },
+  "schema": 1
+}

@@ -1,0 +1,27 @@
+{
+  "channel": {
+    "active": {
+      "algorithm": "SHA256withECDSA",
+      "id": "channel-active",
+      "spki": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEh8s47a3RkW7Nyfi1ZQCLQa7MpgFUdo0ZwHEEsbo5UTrM12XAY42PnTxxDWT456VL74VfKBHgeytqRBASdruBlQ=="
+    },
+    "backup": {
+      "algorithm": "SHA256withECDSA",
+      "id": "channel-backup",
+      "spki": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhWRlLIZ8laTSD5nWzdRETi2a4H5EYA6kOXtXTcgHBjkwmr0EiMoU1UMwYy6A2vQjOtm/2Fhyb6iImTvwuNMCFw=="
+    }
+  },
+  "registry": {
+    "active": {
+      "algorithm": "SHA256withECDSA",
+      "id": "registry-active",
+      "spki": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEv1lJ9qS5HNLXTZp/7Yof+c9qg8OXrAQ7Q42H9wbr964/D4Ue9KMsRCanALo8aRx6ELBmLLbr/jhzDgRJUjr3QA=="
+    },
+    "backup": {
+      "algorithm": "SHA256withECDSA",
+      "id": "registry-backup",
+      "spki": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEbnKhP1VOltz7a36DGcFELDhJH7rm+F4r7/aGjDfxVVy3zngInczY1iIHbNTOasjl2yWeOl7ybmFoDUjSebfmVA=="
+    }
+  },
+  "schema": 1
+}
