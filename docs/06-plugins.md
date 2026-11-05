@@ -323,6 +323,7 @@ tos.on("data", function(alias) ... end)         -- API 6：声明的公开数据
 | `tos.settings.setMany(scope, values)` | `system.settings` | 否 | 同一范围内原子校验并提交多个键；任一字段或跨字段约束失败则全不写，用于地点选择等复合输入 |
 | `tos.settings.reset(scope, key?)` | `system.settings` | 否 | 清除设备上的修改，回到 Server 下发值或默认值；省略 `key` 即整个范围；成功无返回值，失败返回 `nil, err` |
 | `tos.settings.open(scope, section?)` | `system.settings` | 否 | 打开设置页，只能响应一次点按（5 秒内）。`scope` 为 `"system"` 或插件 id；可选 `section` 是系统范围的分类 id（如 `"mode"`），对插件范围无效，不认识的分类回到分类列表。`section` 是 2026-11-06 加的兼容扩展，API 版本不变 |
+| `tos.device.canPowerOff()` / `powerOff()` | `system.device` | 是 | 电源守护模块 `thinkos-power`（`docs/40`）在时，`canPowerOff()` 返回 `true`；`powerOff()` 请求一次干净关机：先灭背光、刷盘、转只读，再关机。只在真实点按（5 秒内）之后有效，没有模块或没有点按时返回 `false`。API10 的兼容扩展（2026-11-06）。设置“系统”分类里的“关机”行用它，原生确认框先问 |
 | `tos.settings.about()` | `system.settings` | 否 | API 9：打开原生关于与许可证页；只授予内置的设置管理员，法律文本随 APK 离线提供 |
 | `tos.device.mode()` | — | 否 | API 10：只读当前模式 `day` / `redshift` / `sleep`；变化时收到 `mode(value)` |
 | `tos.device.setMode(value)` | `system.device` | 是 | API 10：仅实际获权的出厂设备控制插件可在5秒内真实原生点按后手动切换；值同上，返回 `true` 或 `nil, err`。保持策略读系统 `mode.manual_hold`（`next` / `forever`），不接收持续时间或自动参数 |

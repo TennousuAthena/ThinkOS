@@ -80,9 +80,12 @@ local function go(node)
   render()
 end
 
-local function link(fields, key, label, icon)
-  fields[#fields + 1] = { key = key, type = "link", label = label, display = "", icon = icon }
+local function link(fields, key, label, icon, confirm)
+  fields[#fields + 1] = { key = key, type = "link", label = label, display = "", icon = icon, confirm = confirm }
 end
+
+-- Whether the power guard module answers. Asked once when the page opens: a render must not wait on a socket.
+local powerOff = false
 
 local function excerpt(text)
   local flat = (type(text) == "string" and text or ""):gsub("%s+", " ")
@@ -179,6 +182,8 @@ render = function()
       link(fields, "action:hub", t("hub"))
       link(fields, "action:android", t("android"))
       link(fields, "action:onboarding", t("onboarding.restart"))
+      -- With the power guard module a clean power off exists; the native dialog asks first.
+      if powerOff then link(fields, "action:poweroff", t("poweroff"), nil, t("poweroff.confirm")) end
     elseif node.scope ~= "system" then
       link(fields, "scope:system", t("system"))
     end
@@ -217,6 +222,7 @@ local function resetField(field)
 end
 
 tos.on("page.enter", function(page, variant, params)
+  powerOff = tos.device.canPowerOff() == true
   if params and params.scope then
     path = { { scope = params.scope } }; lastSection = nil
     -- A caller can name one category of the system page (the control sheet's held buttons); render falls back to the root for an unknown one.
@@ -264,6 +270,7 @@ tos.on("form.change", function(key, value)
   if key == "action:updates" or key == "action:components" then tos.update.open(); return end
   if key == "action:hub" then tos.apps.open("hub.main"); return end
   if key == "action:android" then tos.device.openAndroid("settings"); return end
+  if key == "action:poweroff" then tos.device.powerOff(); return end
   if key == "reset:page" then
     -- A category or advanced page resets only its own rows. Related system values use their
     -- real scope; the place editor also clears its compound values through the public API.

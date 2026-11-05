@@ -28,5 +28,7 @@
   "components.installed": "इंस्टॉल: {count}",
   "components.unknown": "संस्करण अज्ञात",
   "error.time": "5 मिनट के अंतराल में समय चुनें",
-  "error.time_window": "शुरू और अंत अलग होने चाहिए"
+  "error.time_window": "शुरू और अंत अलग होने चाहिए",
+  "poweroff": "बंद करें",
+  "poweroff.confirm": "अभी बंद करें?"
 }

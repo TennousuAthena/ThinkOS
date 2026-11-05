@@ -28,5 +28,7 @@
   "components.installed": "Установлено: {count}",
   "components.unknown": "Версия неизвестна",
   "error.time": "Выберите время с шагом 5 минут",
-  "error.time_window": "Начало и конец должны различаться"
+  "error.time_window": "Начало и конец должны различаться",
+  "poweroff": "Выключить",
+  "poweroff.confirm": "Выключить сейчас?"
 }

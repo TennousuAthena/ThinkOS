@@ -77,6 +77,8 @@ tos.device={
   setLocale=function(tag) assert(type(tag)=="string"); return await("device.setLocale",tag) end,
   canSetTimeZone=function() return await("device.canSetTimeZone") end,
   setTimeZone=function(id) assert(type(id)=="string"); return await("device.setTimeZone",id) end,
+  canPowerOff=function() return await("device.canPowerOff") end,
+  powerOff=function() return await("device.powerOff") end,
 }
 tos.onboarding={
   status=function() return host("onboarding.status") end,

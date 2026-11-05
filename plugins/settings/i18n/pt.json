@@ -28,5 +28,7 @@
   "components.installed": "Instalados: {count}",
   "components.unknown": "Versão desconhecida",
   "error.time": "Escolha uma hora em intervalos de 5 minutos",
-  "error.time_window": "O início e o fim devem ser diferentes"
+  "error.time_window": "O início e o fim devem ser diferentes",
+  "poweroff": "Desligar",
+  "poweroff.confirm": "Desligar agora?"
 }

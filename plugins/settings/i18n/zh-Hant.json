@@ -28,5 +28,7 @@
   "components.installed": "已裝 {count} 項",
   "components.unknown": "版本未知",
   "error.time": "時刻需按 5 分鐘一檔",
-  "error.time_window": "開始和結束不能相同"
+  "error.time_window": "開始和結束不能相同",
+  "poweroff": "關機",
+  "poweroff.confirm": "現在關機？"
 }

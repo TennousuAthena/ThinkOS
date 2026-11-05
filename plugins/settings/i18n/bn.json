@@ -28,5 +28,7 @@
   "components.installed": "ইনস্টল: {count}",
   "components.unknown": "সংস্করণ অজানা",
   "error.time": "৫ মিনিটের ব্যবধানে সময় বেছে নিন",
-  "error.time_window": "শুরু ও শেষের সময় আলাদা হতে হবে"
+  "error.time_window": "শুরু ও শেষের সময় আলাদা হতে হবে",
+  "poweroff": "বন্ধ করুন",
+  "poweroff.confirm": "এখনই বন্ধ করবেন?"
 }

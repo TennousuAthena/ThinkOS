@@ -2,6 +2,7 @@
 """powerd on this machine: the decision logic by replaying sample files, the whole path against fake sysfs files.
    python3 system/test/test_power.py   (builds with system/build-power.sh --host first)"""
 import os
+import socket
 import subprocess
 import tempfile
 import threading
@@ -208,6 +209,91 @@ class WholePath(unittest.TestCase):
         time.sleep(0.1)
         self.assertEqual(self.board.read('sysrq'), 'uo')
         self.assertEqual(self.board.read('marker'), '')
+
+    def socket_path(self):
+        return os.path.join(self.board.dir, 'power.sock')
+
+    def socket_args(self, *extra):
+        return ('--socket', self.socket_path(), '--allow-uid', str(os.getuid()), *extra)
+
+    def say(self, line, wait=2.0):
+        """One request on the command socket; returns the reply line, or '' if the other side hung up."""
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
+            s.settimeout(wait)
+            for _ in range(100):
+                try:
+                    s.connect(self.socket_path())
+                    break
+                except (FileNotFoundError, ConnectionRefusedError):
+                    time.sleep(0.02)
+            s.sendall(line)
+            try:
+                return s.recv(256).decode().strip()
+            except socket.timeout:
+                return 'TIMEOUT'
+
+    def test_the_app_can_ask_for_a_clean_power_off(self):
+        p = self.start('--no-sync', *self.socket_args())
+        self.assertEqual(self.say(b'HELLO\n'), 'OK thinkos-power 2')
+        self.assertEqual(self.say(b'STATUS\n'), 'OK {"protocol":1,"poweroff":true}')
+        self.assertEqual(self.say(b'POWEROFF\n'), 'OK')
+        self.assertTrue(p.wait_for('manual-poweroff'))
+        time.sleep(0.8)  # the fake /data stays read-write, so powerd waits half a second for it
+        # The same steps as a real power failure: lights off, read-only, then off. No voltage had to drop.
+        self.assertEqual(self.board.read('led'), '0')
+        self.assertEqual(self.board.read('sysrq'), 'uo')
+        self.assertEqual(self.board.read('marker'), '')
+
+    def test_a_dry_run_answers_but_changes_nothing(self):
+        p = self.start('--dry-run', *self.socket_args())
+        self.assertEqual(self.say(b'POWEROFF\n'), 'OK')
+        self.assertTrue(p.wait_for('manual-poweroff'))
+        time.sleep(0.3)
+        self.assertEqual(self.board.read('sysrq'), '')
+        self.assertEqual(self.board.read('led'), '')
+
+    def test_only_root_and_the_app_uid_may_use_the_socket(self):
+        if os.getuid() == 0:
+            self.skipTest('root is always allowed')
+        p = self.start('--no-sync', '--socket', self.socket_path(), '--allow-uid', str(os.getuid() + 1))
+        self.assertEqual(self.say(b'POWEROFF\n'), 'ERR denied')
+        self.assertEqual(self.say(b'HELLO\n'), 'ERR denied')
+        time.sleep(0.3)
+        self.assertNotIn('manual-poweroff', p.events)
+        self.assertEqual(self.board.read('sysrq'), '')
+
+    def test_the_app_uid_comes_from_packages_list(self):
+        if os.getuid() == 0:
+            self.skipTest('root is always allowed')
+        packages = os.path.join(self.board.dir, 'packages.list')
+        open(packages, 'w').write('other.app 10001 0 /d default none 0 0\nmoe.kiwi.thinkos %d 0 /d default none 0 0\n' % os.getuid())
+        self.start('--no-sync', '--socket', self.socket_path(), '--packages', packages)
+        self.assertEqual(self.say(b'HELLO\n'), 'OK thinkos-power 2')
+        open(packages, 'w').write('moe.kiwi.thinkos %d 0 /d default none 0 0\n' % (os.getuid() + 1))
+        self.assertEqual(self.say(b'HELLO\n'), 'ERR denied')
+
+    def test_garbage_unknown_and_oversized_requests_do_nothing(self):
+        p = self.start('--no-sync', *self.socket_args())
+        self.assertEqual(self.say(b'REBOOT\n'), 'ERR unknown')
+        self.assertEqual(self.say(b'poweroff\n'), 'ERR unknown')
+        self.assertEqual(self.say(b'POWEROFF now\n'), 'ERR unknown')
+        self.assertEqual(self.say(b'A' * 200, wait=0.5), '')  # no newline within 64 bytes: dropped
+        self.assertEqual(self.say(b'\n'), 'ERR unknown')
+        time.sleep(0.3)
+        self.assertNotIn('manual-poweroff', p.events)
+        self.assertEqual(self.board.read('sysrq'), '')
+
+    def test_a_silent_client_cannot_stall_the_protection(self):
+        p = self.start('--no-sync', *self.socket_args())
+        idle = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        idle.connect(self.socket_path())  # connects and says nothing
+        try:
+            started = time.time()
+            self.board.set(3_700_000)
+            self.assertTrue(p.wait_for('tripped', timeout=2))
+            self.assertLess(time.time() - started, 1.0)
+        finally:
+            idle.close()
 
     def test_it_was_only_a_dip(self):
         p = self.start('--no-sync', '--recover-ms', '100')

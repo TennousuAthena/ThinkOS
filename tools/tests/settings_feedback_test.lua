@@ -6,6 +6,7 @@ local state
 local intercepted = false
 tos = {
   data = { get = function() return {pending=false,skipped={}} end },
+  device = { canPowerOff = function() return false end },
   onboarding = { open = function() end },
   apps = { open = function() return true end },
   back = { intercept = function(on) intercepted = on end },

@@ -258,6 +258,7 @@ class PluginRuntime(
     private val installedApps = moe.kiwi.thinkos.apps.InstalledApps(app) { event(null, "apps") }
     private val deviceLocale = moe.kiwi.thinkos.device.DeviceLocale(app)
     private val updater = moe.kiwi.thinkos.update.UpdaterClient()
+    private val power = moe.kiwi.thinkos.device.PowerClient()
     // A module is activated by a reboot; probe it once per application process.
     // Repeated setup rendering must not block the plugin thread on missing IPC.
     private val setupCapabilities by lazy { registryScope.async { updater.status().getOrNull()?.setup } }
@@ -273,7 +274,7 @@ class PluginRuntime(
         val registryCalls = RegistryCalls()
         listOf("plugins.catalog", "plugins.installed", "plugins.open", "plugins.install", "plugins.update", "plugins.uninstall", "plugins.setAuto").forEach { put(it, registryCalls) }
         val capability2 = DeviceCalls()
-        listOf("device.get", "device.mode", "device.setMode", "device.wifi", "device.mute", "device.openAndroid", "device.canSetLocale", "device.setLocale", "device.canSetTimeZone", "device.setTimeZone", "cast.status", "panel.close").forEach { put(it, capability2) }
+        listOf("device.get", "device.mode", "device.setMode", "device.wifi", "device.mute", "device.openAndroid", "device.canSetLocale", "device.setLocale", "device.canSetTimeZone", "device.setTimeZone", "device.canPowerOff", "device.powerOff", "cast.status", "panel.close").forEach { put(it, capability2) }
         val onboarding = OnboardingCalls()
         listOf("onboarding.status", "onboarding.open", "onboarding.practice", "onboarding.stop").forEach { put(it, onboarding) }
         val capability3 = NavigationCalls()
@@ -998,6 +999,26 @@ class PluginRuntime(
                                     moe.kiwi.thinkos.device.SystemTimeZone.set(updater, value, tap!!)
                             }
                             task.finish(result)
+                        } catch (_: kotlinx.coroutines.CancellationException) { task.cancel(true) }
+                        catch (_: Exception) { task.finish(false) }
+                    }
+                    task.onCancel { job.cancel() }
+                    null
+                }
+                "device.canPowerOff", "device.powerOff" -> {
+                    requireSystem(instance, "system.device")
+                    require(bundle.manifest.getInt("api") >= 10) { "power off requires API 10" }
+                    require(args.isEmpty())
+                    require(taskId != 0 && instance.awaits.size < 8 && (active.values + pending.values).sumOf { it.awaits.size } < 32)
+                    // Like every change of the device, a power off answers a real touch: the credit is checked here and
+                    // again after the exchange has started, never taken from Lua.
+                    val tap = instance.onboardingTapElapsed
+                    val task = CapabilityAwait({ !closed && instance.mediaLive.get() }) { values -> worker.post { resume(instance, taskId, values) } }
+                    instance.awaits[taskId] = task
+                    val job = registryScope.launch {
+                        try {
+                            fun fresh() = PluginUpdatePolicy.fresh(tap, SystemClock.elapsedRealtime(), TAP_ANSWER_MILLIS)
+                            task.finish(if (method == "device.canPowerOff") power.available() else fresh() && power.powerOff())
                         } catch (_: kotlinx.coroutines.CancellationException) { task.cancel(true) }
                         catch (_: Exception) { task.finish(false) }
                     }

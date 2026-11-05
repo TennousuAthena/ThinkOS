@@ -28,5 +28,7 @@
   "components.installed": "المثبت: {count}",
   "components.unknown": "الإصدار غير معروف",
   "error.time": "اختر وقتاً بفاصل 5 دقائق",
-  "error.time_window": "يجب أن يختلف وقت البدء عن النهاية"
+  "error.time_window": "يجب أن يختلف وقت البدء عن النهاية",
+  "poweroff": "إيقاف التشغيل",
+  "poweroff.confirm": "إيقاف التشغيل الآن؟"
 }

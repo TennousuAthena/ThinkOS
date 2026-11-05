@@ -28,5 +28,7 @@
   "components.installed": "Installed: {count}",
   "components.unknown": "Version unknown",
   "error.time": "Choose a time in 5-minute steps",
-  "error.time_window": "Start and end must differ"
+  "error.time_window": "Start and end must differ",
+  "poweroff": "Power off",
+  "poweroff.confirm": "Power off now?"
 }

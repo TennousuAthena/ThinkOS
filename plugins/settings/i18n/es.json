@@ -28,5 +28,7 @@
   "components.installed": "Instalados: {count}",
   "components.unknown": "Versión desconocida",
   "error.time": "Elige una hora en pasos de 5 minutos",
-  "error.time_window": "El inicio y el fin deben ser distintos"
+  "error.time_window": "El inicio y el fin deben ser distintos",
+  "poweroff": "Apagar",
+  "poweroff.confirm": "¿Apagar ahora?"
 }

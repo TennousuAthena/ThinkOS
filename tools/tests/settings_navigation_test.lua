@@ -3,6 +3,7 @@ assert(_VERSION == "Lua 5.4")
 local handlers, state, intercepted, resets, writes, opened = {}, nil, false, {}, {}, {}
 local setupData={pending=false,skipped={}}
 local canSetZone, zonesSet = false, {}
+local powerGuard, powerOffCalls = false, 0
 local updateStatus={silent_install=true}
 local sections = {
   {id="display",label="Display",icon="monitor"}, {id="location",label="Location",icon="map-pin"},
@@ -54,7 +55,8 @@ tos={
   i18n={t=function(key,params) return key=="components.installed" and key..":"..params.count or key end},
   timer={after=function() return 1 end,cancel=function() end},
   device={openAndroid=function(target) opened[#opened+1]=target end,
-    canSetTimeZone=function() return canSetZone end, setTimeZone=function(zone) zonesSet[#zonesSet+1]=zone; return true end},
+    canSetTimeZone=function() return canSetZone end, setTimeZone=function(zone) zonesSet[#zonesSet+1]=zone; return true end,
+    canPowerOff=function() return powerGuard end, powerOff=function() powerOffCalls=powerOffCalls+1; return true end},
   update={status=function() return updateStatus end, open=function() opened[#opened+1]="updates"; return true end},
   settings={
     get=get,
@@ -234,3 +236,17 @@ assert(has("action:onboarding"))
 emit("form.change","action:onboarding",true)
 assert(opened[#opened]=="onboarding:restart")
 pass("public skipped-step data controls Finish setup; system restart uses the public onboarding capability")
+
+assert(not has("action:poweroff"),"without the power guard module there is no power off row")
+powerGuard=true
+emit("page.enter","form","",{scope="system"})
+emit("form.change","section:system",true)
+assert(has("action:poweroff") and has("action:poweroff").confirm=="poweroff.confirm","the row asks before it acts")
+assert(powerOffCalls==0,"showing the row never powers anything off")
+emit("form.change","action:poweroff",true)
+assert(powerOffCalls==1)
+powerGuard=false
+emit("page.enter","form","",{scope="system"})
+emit("form.change","section:system",true)
+assert(not has("action:poweroff"),"the row follows whether the module answers")
+pass("the power off row appears only with the power guard module, asks first, and only the confirmed action powers off")

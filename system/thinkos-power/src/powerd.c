@@ -18,6 +18,10 @@
  * 为什么不在应用里做：要写 /proc/sysrq-trigger，要 root；而且应用崩了、卡了，保护也得在。
  * 为什么不用 BCL（内核自带的低电压监视）：它的低阈值最高 3.2 V，离 4.0 V 太远，到那时留给收尾的时间所剩无几。
  *
+ * 手动关机：应用在设置里有一个“关机”（要确认）。它连抽象 socket @thinkos-power 发一行 POWEROFF，本进程先做触发时的
+ *   那套收尾（灭背光、sync、转只读），再关机，之后断电是干净的。只认 root 和 ThinkOS 应用的 uid（读 packages.list），
+ *   每行最多 64 字节，20 毫秒内读完，不然丢掉；采样循环不被它拖慢。命令：HELLO、STATUS、POWEROFF。
+ *
  * 其它：
  *   --probe       只记录电压，每行 “毫秒 µV 读取耗时µs”，不做任何动作。拔电实验用它量衰减曲线与撑多久。
  *   --replay F    不碰设备，从文件 F 按行读样本（µV 整数，x 表示读失败），虚拟时钟每行走一个 interval。主机测试用。
@@ -32,15 +36,19 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <dirent.h>
+#include <poll.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stddef.h>
 #include <sys/mman.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/un.h>
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
@@ -52,7 +60,8 @@
 #include <android/log.h>
 #endif
 
-#define VERSION "1"
+#define VERSION "2"
+#define APP_PACKAGE "moe.kiwi.thinkos"
 #define MAX_LEDS 4
 #define ARM_SAMPLES 10
 
@@ -73,6 +82,9 @@ static struct {
     int duration_s;
     int dry, probe, no_sync, trace;
     const char *replay;
+    const char *socket_name;     /* 以 / 开头是文件 socket（主机测试），否则抽象 socket；NULL = 不开 */
+    const char *packages;        /* 读 ThinkOS 应用 uid 的地方 */
+    int allow_uid;               /* >= 0 时代替读 packages.list（主机测试） */
 } cfg = {
     NULL, "/proc/sysrq-trigger", "/proc/mounts", "/data", "/sys/power/wake_lock", NULL, NULL,
     {NULL}, 0,
@@ -83,6 +95,7 @@ static struct {
     0,
     0, 0, 0, 0,
     NULL,
+    "thinkos-power", "/data/system/packages.list", -1,
 };
 
 static const char *const default_leds[] = {
@@ -96,6 +109,8 @@ static volatile sig_atomic_t stop_flag;
 static int sysrq_fd = -1, vph_fd = -1, wake_fd = -1;
 static int led_fd[MAX_LEDS];
 static FILE *replay_fp;
+static int socket_fd = -1;
+static int manual_off_started;
 
 static int64_t now_us(void)
 {
@@ -399,6 +414,162 @@ static void do_poweroff(void)
     }
 }
 
+/* ---- 手动关机：命令 socket ---- */
+
+/* Linux and Android in production; the host build (macOS) only needs the same behaviour for the tests. */
+static int make_socket(void)
+{
+#ifdef __linux__
+    return socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC | SOCK_NONBLOCK, 0);
+#else
+    int fd = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (fd >= 0) { fcntl(fd, F_SETFD, FD_CLOEXEC); fcntl(fd, F_SETFL, O_NONBLOCK); }
+    return fd;
+#endif
+}
+
+static int accept_client(int fd)
+{
+#ifdef __linux__
+    return accept4(fd, NULL, NULL, SOCK_CLOEXEC | SOCK_NONBLOCK);
+#else
+    int client = accept(fd, NULL, NULL);
+    if (client >= 0) { fcntl(client, F_SETFD, FD_CLOEXEC); fcntl(client, F_SETFL, O_NONBLOCK); }
+    return client;
+#endif
+}
+
+static int peer_uid(int fd, unsigned *uid)
+{
+#ifdef __linux__
+    struct ucred cred;
+    socklen_t size = sizeof cred;
+    if (getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &cred, &size)) return -1;
+    *uid = cred.uid;
+    return 0;
+#else
+    uid_t u;
+    gid_t g;
+    if (getpeereid(fd, &u, &g)) return -1;
+    *uid = u;
+    return 0;
+#endif
+}
+
+static int open_command_socket(void)
+{
+    if (!cfg.socket_name || !cfg.socket_name[0] || cfg.replay || cfg.probe) return 0;
+    struct sockaddr_un addr;
+    memset(&addr, 0, sizeof addr);
+    addr.sun_family = AF_UNIX;
+    socklen_t length;
+    if (cfg.socket_name[0] == '/') {
+        if (strlen(cfg.socket_name) >= sizeof addr.sun_path) return -1;
+        strcpy(addr.sun_path, cfg.socket_name);
+        unlink(cfg.socket_name);
+        length = sizeof addr;
+    } else {
+        size_t n = strlen(cfg.socket_name);
+        if (n + 1 > sizeof addr.sun_path) return -1;
+        memcpy(addr.sun_path + 1, cfg.socket_name, n);
+        length = (socklen_t)(offsetof(struct sockaddr_un, sun_path) + 1 + n);
+    }
+    int fd = make_socket();
+    if (fd < 0) return -1;
+    if (bind(fd, (struct sockaddr *)&addr, length) || listen(fd, 4)) {
+        close(fd);
+        return -1;
+    }
+    if (cfg.socket_name[0] == '/') chmod(cfg.socket_name, 0600);
+    socket_fd = fd;
+    return 0;
+}
+
+/* ThinkOS 应用的 uid：packages.list 的行是 "包名 uid debuggable dataDir seinfo gids"。 */
+static int app_uid(void)
+{
+    if (cfg.allow_uid >= 0) return cfg.allow_uid;
+    FILE *f = fopen(cfg.packages, "r");
+    if (!f) return -1;
+    char line[512];
+    int uid = -1;
+    size_t n = strlen(APP_PACKAGE);
+    while (fgets(line, sizeof line, f)) {
+        if (!strncmp(line, APP_PACKAGE " ", n + 1)) {
+            long v = strtol(line + n + 1, NULL, 10);
+            if (v > 0 && v < 1000000) uid = (int)v;
+            break;
+        }
+    }
+    fclose(f);
+    return uid;
+}
+
+static int peer_allowed(int fd)
+{
+    unsigned uid;
+    if (peer_uid(fd, &uid)) return 0;
+    if (uid == 0) return 1;
+    int app = app_uid();
+    return app > 0 && (int)uid == app;
+}
+
+static void reply(int fd, const char *text)
+{
+    ssize_t r = write(fd, text, strlen(text));
+    (void)r;
+}
+
+/* 先做触发时那套收尾（灭背光、sync、只读），再关机。之后拔线时 eMMC 是闲的。 */
+static void manual_poweroff(void)
+{
+    event("manual-poweroff");
+    say("power off requested by the app");
+    trip_sequence();
+    do_poweroff();
+}
+
+/* 每个采样周期调用一次：接受连接，20 毫秒内读完一行，答复。不阻塞采样。 */
+static void service_socket(void)
+{
+    if (socket_fd < 0 || manual_off_started) return;
+    for (int served = 0; served < 4; served++) {
+        int fd = accept_client(socket_fd);
+        if (fd < 0) return;
+        char line[64];
+        size_t used = 0;
+        struct timespec t0;
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+        while (used < sizeof line - 1) {
+            struct timespec t1;
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            long waited = (t1.tv_sec - t0.tv_sec) * 1000 + (t1.tv_nsec - t0.tv_nsec) / 1000000;
+            if (waited >= 20) break;
+            struct pollfd p = {fd, POLLIN, 0};
+            if (poll(&p, 1, (int)(20 - waited)) <= 0) break;
+            ssize_t r = read(fd, line + used, sizeof line - 1 - used);
+            if (r <= 0) break;
+            used += (size_t)r;
+            if (memchr(line, '\n', used)) break;
+        }
+        line[used] = 0;
+        char *end = memchr(line, '\n', used);
+        if (!end) { close(fd); continue; }
+        *end = 0;
+        if (!peer_allowed(fd)) reply(fd, "ERR denied\n");
+        else if (!strcmp(line, "HELLO")) reply(fd, "OK thinkos-power " VERSION "\n");
+        else if (!strcmp(line, "STATUS")) reply(fd, "OK {\"protocol\":1,\"poweroff\":true}\n");
+        else if (!strcmp(line, "POWEROFF")) {
+            manual_off_started = 1;
+            reply(fd, "OK\n");
+            close(fd);
+            manual_poweroff();
+            return;
+        } else reply(fd, "ERR unknown\n");
+        close(fd);
+    }
+}
+
 /* ---- 两种主循环 ---- */
 
 static int cmp_int(const void *a, const void *b)
@@ -440,6 +611,7 @@ static int run_guard(void)
                 break;
             }
             if (r > 0) samples[n++] = uv;
+            service_socket();
             sleep_us((int64_t)cfg.interval_ms * 1000);
         }
         if (stop_flag || ended) return 0;
@@ -453,7 +625,7 @@ static int run_guard(void)
         say("not armed: rail reads %d uV, expected at least %d uV", median, cfg.trip_uv + cfg.margin_uv);
         event("refused uv=%d", median);
         if (replay_fp) return 0;
-        for (int i = 0; i < 60 && !stop_flag; i++) sleep(1);
+        for (int i = 0; i < 60 && !stop_flag; i++) { service_socket(); sleep(1); }
         if (stop_flag) return 0;
     }
 
@@ -475,6 +647,7 @@ static int run_guard(void)
             event("poweroff uv=%d", r > 0 ? uv : 0);
             do_poweroff();
         }
+        service_socket();
         sleep_us((int64_t)cfg.interval_ms * 1000 - (now_us() - t));
     }
     return 0;
@@ -501,6 +674,7 @@ static void usage(void)
             "         [--debounce N] [--recover-ms N] [--hold-ms N] [--duration S] [--no-sync] [--trace]\n"
             "         [--vph FILE] [--sysrq FILE] [--mounts FILE] [--watch DIR] [--led FILE]...\n"
             "         [--reboot-cmd CMD] [--poweroff-cmd CMD] [--wakelock FILE]\n"
+            "         [--socket NAME|/PATH] [--packages FILE] [--allow-uid N] [--no-socket]\n"
             "  powerd --probe [--interval-ms N] [--duration S] [--vph FILE]\n"
             "  powerd --replay FILE ...\n");
 }
@@ -514,6 +688,7 @@ int main(int argc, char **argv)
         else if (!strcmp(a, "--dry-run")) cfg.dry = 1;
         else if (!strcmp(a, "--no-sync")) cfg.no_sync = 1;
         else if (!strcmp(a, "--trace")) cfg.trace = 1;
+        else if (!strcmp(a, "--no-socket")) cfg.socket_name = NULL;
         else if (!strcmp(a, "--help") || !strcmp(a, "-h")) { usage(); return 0; }
         else if (!v) { usage(); return 2; }
         else if (!strcmp(a, "--interval-ms")) cfg.interval_ms = int_arg(a, argv[++i], 1, 1000);
@@ -534,6 +709,9 @@ int main(int argc, char **argv)
         else if (!strcmp(a, "--reboot-cmd")) cfg.reboot_cmd = argv[++i];
         else if (!strcmp(a, "--poweroff-cmd")) cfg.poweroff_cmd = argv[++i];
         else if (!strcmp(a, "--replay")) cfg.replay = argv[++i];
+        else if (!strcmp(a, "--socket")) cfg.socket_name = argv[++i];
+        else if (!strcmp(a, "--packages")) cfg.packages = argv[++i];
+        else if (!strcmp(a, "--allow-uid")) cfg.allow_uid = int_arg(a, argv[++i], 1, 1000000);
         else if (!strcmp(a, "--led")) {
             if (cfg.led_count >= MAX_LEDS) { usage(); return 2; }
             cfg.leds[cfg.led_count++] = argv[++i];
@@ -582,8 +760,10 @@ int main(int argc, char **argv)
         mlockall(MCL_CURRENT | MCL_FUTURE);
 #endif
     }
+    if (open_command_socket()) say("cannot open the command socket %s: no manual power off (%s)", cfg.socket_name, strerror(errno));
     say("powerd " VERSION "%s", cfg.dry ? " (dry run)" : "");
     int rc = run_guard();
+    if (socket_fd >= 0 && cfg.socket_name[0] == '/') unlink(cfg.socket_name);
     if (wake_fd >= 0) {
         write_small("/sys/power/wake_unlock", "thinkos-power\n");
     }

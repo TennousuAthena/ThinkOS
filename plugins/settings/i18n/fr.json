@@ -28,5 +28,7 @@
   "components.installed": "Installés : {count}",
   "components.unknown": "Version inconnue",
   "error.time": "Choisissez une heure par pas de 5 minutes",
-  "error.time_window": "Le début et la fin doivent être différents"
+  "error.time_window": "Le début et la fin doivent être différents",
+  "poweroff": "Éteindre",
+  "poweroff.confirm": "Éteindre maintenant ?"
 }
