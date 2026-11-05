@@ -1,6 +1,6 @@
 -- Factory panel: state comes from public OS mode, including failed and asynchronous changes.
 assert(_VERSION == "Lua 5.4")
-local handlers, state, timers, calls = {}, nil, {}, {}
+local handlers, state, timers, calls, opened = {}, nil, {}, {}, {}
 local mode, failure, delayed = "day", false, false
 tos = {
   on = function(name, fn) handlers[name] = fn end,
@@ -18,10 +18,10 @@ tos = {
       if failure then return nil, "device mode needs a recent touch" end
       mode = value; return true
     end,
-    wifi = function() end, mute = function() end, openAndroid = function() end,
+    wifi = function() end, mute = function() end, openAndroid = function(target) opened[#opened + 1] = "android:" .. target end,
   },
   update = { status = function() return {} end, open = function() end },
-  settings = { open = function() end }, apps = { open = function() end },
+  settings = { open = function(scope, section) opened[#opened + 1] = "settings:" .. scope .. ":" .. tostring(section) end }, apps = { open = function() end },
 }
 assert(arg[1], "pass plugins/panel/main.lua")
 assert(loadfile(arg[1]))()
@@ -54,3 +54,15 @@ previous = state
 emit("tap", "sleep")
 assert(mode == "sleep" and state == previous)
 print("PASS a closed panel ignores late mode results and releases its clock timer")
+
+-- A held button opens its own settings; the plain tap keeps toggling.
+mode = "day"; calls = {}; opened = {}
+emit("tap", "wifi.hold")
+assert(opened[1] == "android:wifi" and #calls == 0)
+emit("tap", "redshift.hold")
+assert(opened[2] == "settings:system:mode" and mode == "day" and #calls == 0)
+emit("tap", "sleep.hold")
+assert(opened[3] == "settings:system:mode" and mode == "day" and #calls == 0)
+emit("tap", "settings")
+assert(opened[4] == "settings:system:nil")
+print("PASS held Wi-Fi, redshift and sleep buttons open their settings without changing any state")

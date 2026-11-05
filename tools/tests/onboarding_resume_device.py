@@ -282,10 +282,9 @@ class Driver:
         self.tap("简体中文")  # Exact preflight zh-CN: production handler does not setLocale.
         self.check("2 real greeting tap enters language and current Chinese advances within onboarding", self.opened("setup"))
         self.tap("继续")  # Recommended current zh-CN region; no picker/timezone mutation.
-        # No Wi-Fi toggle or Android settings: skip only when this actual screen exists.
+        # Setup has no way past the Wi-Fi screen offline (no RTC): the device must already be online, which hides it.
         labels = {node.get("text") for node in self.tree() if node.get("package") == APP}
-        if "Wi-Fi" in labels:
-            self.tap("跳过")
+        require("Wi-Fi" not in labels, "Wi-Fi screen shown: connect the device to a network before this run")
         require(any(node.get("text") == "不收集任何数据" for node in self.tree()), "Region did not reach real privacy")
         self.tap("继续")
         self.tap("只自动下载")

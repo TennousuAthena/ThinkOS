@@ -90,15 +90,30 @@ emit("form.change","region","US")
 assert(state.public.setup.region=="US","an explicit region is shared through the declared onboarding export")
 assert(values["units.system"]=="imperial" and state.step=="wifi")
 tap("primary");assert(opened[#opened]=="wifi" and state.step=="wifi")
-tap("secondary");assert(state.step=="privacy" and state.public.setup.pending)
+assert(state.secondary=="","offline Wi-Fi shows no skip: the clock cannot be set without a network")
+tap("secondary");assert(state.step=="wifi" and persisted.progress.skipped.wifi==nil,"a stale skip tap cannot pass the Wi-Fi screen")
+online=true;emit("device");assert(state.primary~=nil and state.step=="wifi")
+tap("primary");assert(state.step=="privacy" and state.public.setup.pending)
+online=false
 tap("secondary");assert(opened[#opened]=="licenses" and state.step=="privacy")
 tap("primary");assert(state.step=="updates")
 tap("secondary");assert(values["update.auto_install"]==false and state.step=="location")
-pass("offline Wi-Fi is optional; privacy licenses stay on the same step; download-only writes false")
+pass("offline Wi-Fi cannot be skipped and continues once online; privacy licenses stay on the same step; download-only writes false")
 
 assert(state.hero=="12:34")
 emit("form.change","location.name",{mode="manual",name="City",latitude=1,longitude=2,elevation=3,timezone="Asia/Shanghai"})
 assert(values["location.name"]=="City" and values["location.longitude"]==2)
+do
+  local zoneCalls, oldCan, oldSet = {}, tos.device.canSetTimeZone, tos.device.setTimeZone
+  tos.device.canSetTimeZone=function() return true end
+  tos.device.setTimeZone=function(id) zoneCalls[#zoneCalls+1]=id; return true end
+  emit("form.change","location.name",{mode="manual",name="Paris",latitude=48,longitude=2,elevation=35,timezone="Europe/Paris"})
+  assert(values["location.name"]=="Paris" and zoneCalls[1]=="Europe/Paris" and #zoneCalls==1,"the chosen place sets the system zone when the module can")
+  emit("form.change","location.name",{mode="auto"})
+  assert(#zoneCalls==1)
+  tos.device.canSetTimeZone, tos.device.setTimeZone = oldCan, oldSet
+  emit("form.change","location.name",{mode="manual",name="City",latitude=1,longitude=2,elevation=3,timezone="Asia/Shanghai"})
+end
 emit("form.change","action:timezone",true);assert(opened[#opened]=="date" and state.step=="location")
 tap("primary");assert(state.step=="appearance" and #state.fields==3)
 emit("form.change","theme.mode","dark");assert(values["theme.mode"]=="dark")

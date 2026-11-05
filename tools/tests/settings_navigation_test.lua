@@ -2,6 +2,7 @@
 assert(_VERSION == "Lua 5.4")
 local handlers, state, intercepted, resets, writes, opened = {}, nil, false, {}, {}, {}
 local setupData={pending=false,skipped={}}
+local canSetZone, zonesSet = false, {}
 local updateStatus={silent_install=true}
 local sections = {
   {id="display",label="Display",icon="monitor"}, {id="location",label="Location",icon="map-pin"},
@@ -52,7 +53,8 @@ tos={
   state={set=function(next) state=next end},
   i18n={t=function(key,params) return key=="components.installed" and key..":"..params.count or key end},
   timer={after=function() return 1 end,cancel=function() end},
-  device={openAndroid=function(target) opened[#opened+1]=target end},
+  device={openAndroid=function(target) opened[#opened+1]=target end,
+    canSetTimeZone=function() return canSetZone end, setTimeZone=function(zone) zonesSet[#zonesSet+1]=zone; return true end},
   update={status=function() return updateStatus end, open=function() opened[#opened+1]="updates"; return true end},
   settings={
     get=get,
@@ -121,6 +123,15 @@ emit("form.change","endpoint","keep-advanced")
 emit("back")
 emit("form.change","location.name",{mode="manual",name="Place",latitude=1,longitude=2,elevation=3,timezone=""})
 assert(many==1 and values.system["location.name"]=="Place" and values.system["location.latitude"]==1)
+assert(#zonesSet==0,"a place without a zone never touches the system zone")
+emit("form.change","location.name",{mode="manual",name="Place",latitude=1,longitude=2,elevation=3,timezone="Asia/Tokyo"})
+assert(#zonesSet==0,"without the system module nothing is attempted")
+canSetZone=true
+emit("form.change","location.name",{mode="manual",name="Place",latitude=1,longitude=2,elevation=3,timezone="Asia/Tokyo"})
+assert(#zonesSet==1 and zonesSet[1]=="Asia/Tokyo","with the module the system zone follows the chosen place")
+emit("form.change","location.name",{mode="auto"})
+assert(#zonesSet==1,"following the device never sets a zone")
+canSetZone=false
 values.system["display.delay"]=55;values.weather.retry=99
 emit("form.change","reset:page",true)
 for _,part in ipairs {"mode","name","latitude","longitude","elevation","timezone"} do
@@ -158,6 +169,16 @@ pass("a removed plugin scope falls back to system categories")
 emit("form.change","section:missing",true)
 assert(not intercepted and #state.fields==6)
 pass("an invalid category reuses its existing description and returns to system categories")
+
+emit("page.enter","form","",{scope="system",section="location"})
+assert(intercepted and has("units.system") and state.title=="Location")
+emit("back");assert(not intercepted and #state.fields==6)
+emit("page.enter","form","",{scope="system",section="missing"})
+assert(not intercepted and #state.fields==6)
+emit("page.enter","form","",{scope="weather",section="location"})
+assert(has("interval") and not has("section:display"),"a category only names a system page, never a plugin page")
+emit("page.enter","form","",{scope="system"})
+pass("opening the system page at a named category returns to the category list on Back; unknown and plugin scopes ignore it")
 
 emit("form.layout",true)
 assert(state.nav.current=="display" and has("display.delay") and not intercepted)

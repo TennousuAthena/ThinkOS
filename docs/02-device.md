@@ -83,6 +83,7 @@
 | `rv4a_engine` | ViPER4Android 音频引擎（可用可不用） |
 | `zygisk_vector` | Vector（Xposed）框架，API 102 |
 | `thinkos-certs`（2026-11-04已安装并重启生效，`v2026.10.20`、replace模式） | 系统CA已整体替换为Mozilla/curl的117张；文件摘要、权限/上下文、应用AndroidCAStore和ISRG X1/X2、GTS R4原生HTTPS均通过。原135张不再是生效库。证据 `artifacts/certs/CERT-3/activation-20261104/` |
+| **同文输入法 Trime 3.3.13**（普通应用，不是模块；2026-11-06 起装在 HUA0BWUT 上，`tools/install_ime.py` 校验后安装，设为默认输入法，AOSP 键盘保留） | 中文拼音输入（Rime 内核）。F-Droid 构建，APK 的签名者是 F-Droid（指纹 `5bc77b5d…792c`）；GPL-3.0，是单独安装的应用，不在 ThinkOS 的 APK 里，但若把它做进金镜像分发，要按 GPLv3 另附源码。Rime 数据在应用专属外部存储 `/sdcard/Android/data/com.osfans.trime/files/rime`；`default.custom.yaml` 把 `luna_pinyin_simp`（朙月拼音·简化字）排第一，输出简体。首次要走一遍它自己的设置向导（选“使用应用专属存储空间”）。**已知：**Trime 进程被强停后，系统会把默认输入法退回 AOSP 键盘，要重新 `ime set com.osfans.trime/.ime.core.TrimeInputMethodService`。谷歌拼音没装：见 `docs/36` 的 2026-11-06 输入法记录 |
 | `thinkos-power`（**源码在本仓库 `system/`，尚未装进设备，阈值待拔线实验**） | 断电保护：盯系统主供电轨 VPH_PWR，拔电源线掉压时刷盘并紧急只读；见 `docs/40-power-loss.md` |
 | `thinkos-cast`（**未持久安装；当前会话临时运行**） | 0.1.27已采用`/data/local/tmp`的root守护进程；11项脚本化接收检查通过，未重启/真实发送端验收。证据`artifacts/cast/CAST-1/0.1.27/`；持久装法见`system/README.md`（OWN-28） |
 | `thinkos-immersive`（Vector 模块 APK `moe.kiwi.thinkos.immersive`，**2026-11-02 已装并启用，作用范围 = 系统框架**；源码在本仓库 `system/`） | ThinkOS 在前台时，边缘滑动不再唤出安卓的状态栏和导航栏（ADR-037）；装法与撤销见 `system/README.md`。**注意**：Vector 2.2 在这台设备（API 27）上，只要有启用的模块，守护进程每次开机后一两秒就会崩，管理器和 `cli` 之后连不上；已加载的钩子照常工作（`10-known-issues.md` §13） |
