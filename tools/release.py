@@ -354,11 +354,17 @@ def gpl_attachments(manifest, destination):
     return attachments
 
 
+# Device and host validation evidence (screenshots, recordings, logs) is tracked for the development team but is not source:
+# it is hundreds of MB, and a published release must not carry it. Nothing the app build reads lives here.
+SOURCE_EXCLUDED = 'artifacts'
+
+
 def source_archive(output, version, commit):
     destination = output / ('thinkos-source-v' + version + '.tar.gz')
     # Stream the committed tree; no staging directory, private config or untracked build output.
     with tempfile.TemporaryFile() as stderr, destination.open('xb') as stream:
-        process = subprocess.Popen(['git', 'archive', '--format=tar', '--prefix=thinkos-v' + version + '/', commit],
+        process = subprocess.Popen(['git', 'archive', '--format=tar', '--prefix=thinkos-v' + version + '/', commit,
+                                    '--', '.', ':(exclude)' + SOURCE_EXCLUDED],
                                    cwd=ROOT, stdout=subprocess.PIPE, stderr=stderr)
         try:
             with gzip.GzipFile(filename='', mode='wb', fileobj=stream, mtime=0) as zipped:
@@ -368,7 +374,8 @@ def source_archive(output, version, commit):
         if process.wait():
             raise RuntimeError('Host tool failed: git archive')
     expected = {('thinkos-v' + version + '/' + name.decode('utf-8'))
-                for name in run(['git', 'ls-tree', '-r', '--name-only', '-z', commit], cwd=ROOT).split(b'\x00') if name}
+                for name in run(['git', 'ls-tree', '-r', '--name-only', '-z', commit], cwd=ROOT).split(b'\x00')
+                if name and not name.decode('utf-8').startswith(SOURCE_EXCLUDED + '/')}
     with tarfile.open(destination, 'r:gz') as archive:
         actual = {entry.name for entry in archive.getmembers() if not entry.isdir()}
     if actual != expected:

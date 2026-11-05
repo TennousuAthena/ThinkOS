@@ -2296,6 +2296,9 @@ DLNA补验（2026-11-05）：**0.1.23已装**，真实标准SOAP SetURI/Play、�
 - 试导出结果（2026-11-05，从工作树导出到 `/private/tmp`，仅试验）：2120 个文件；导出目录里 424 项 Python 测试全部通过；Gradle 完整构建见 REL-4。
 - [ ] 验收：从公开地址匿名下载的源码包，能按其内容复现出与发布版相同的 APK 摘要（或写明哪些不能复现及原因）。
 
+- [x] **源码包不带 `artifacts/`（2026-11-06）：**0.1.31 在开发仓库里准备，`git archive` 把 `main` 里已跟踪的 2319 个验收文件（截图展开后 240 MB）都打进了 207 MB 的源码包，发现后在上传开始前停掉，没有上传。`release.py` 现在用 `:(exclude)artifacts` 打包并同步放宽“不漏文件”检查（真源码约 18 MB），`test_release_tools.py` 加了回归；0.1.31 的 CNB release 作废，改发 0.1.32。FFmpeg 对应源码存档（447 MB）是 GPL 要求，不属于证据，仍要附。
+- 开发机现在是正式证书。`android/keystore.properties`（被 `.gitignore` 忽略）要一直留在 `android/` 下，否则 `tools/deploy.sh` 装的 debug 包会因证书不符装不上。
+
 #### REL-4 首发构建参数
 
 - [x] 按 OWN-32（2026-11-05 完成）：`release.py` 默认带 `-Pthinkos.fairplay=false` 构建，`--fairplay` 才打开；`inspect_apk` 核对 APK 里是否有 `lib/armeabi-v7a/libthinkos_playfair.so` 与所选开关一致，不一致就停；`release-preparation.json` 记录 `build.fairplay`。`BuildConfig.DISTRIBUTION_GPL` 仍为 true（FFmpeg）。

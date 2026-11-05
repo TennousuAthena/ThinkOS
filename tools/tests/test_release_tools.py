@@ -261,6 +261,22 @@ class ReleaseToolsTest(unittest.TestCase):
             self.assertIn('thinkos-v0.1.6/source.txt', archive.getnames())
             self.assertFalse(any(name.endswith('/owner-only.txt') for name in archive.getnames()))
 
+    def test_corresponding_source_leaves_out_tracked_validation_evidence(self):
+        repository, git = self.repository()
+        (repository / 'artifacts/ui').mkdir(parents=True)
+        (repository / 'artifacts/ui/shot.png').write_bytes(b'x' * 4096)
+        (repository / 'artifacts-notes.md').write_text('a source file whose name only starts like the folder')
+        git('add', '-A'); git('commit', '--quiet', '-m', 'evidence beside source')
+        commit = git('rev-parse', 'HEAD').decode().strip()
+        out = self.work / 'out-evidence'; out.mkdir()
+        with patch.object(release, 'ROOT', repository):
+            archive = release.source_archive(out, '0.1.6', commit)
+        with tarfile.open(out / archive['path'], 'r:gz') as opened:
+            names = opened.getnames()
+        self.assertIn('thinkos-v0.1.6/source.txt', names)
+        self.assertIn('thinkos-v0.1.6/artifacts-notes.md', names)
+        self.assertFalse(any('/artifacts/' in name for name in names))
+
     def test_gpl_attachment_hashes_and_complete_build_sources_are_required(self):
         root = self.work / 'gpl-fixture'; (root/'tools').mkdir(parents=True)
         (root/'tools/ffmpeg-source.lock.json').write_text(json.dumps({'root':'fixture-ffmpeg-source'}))
