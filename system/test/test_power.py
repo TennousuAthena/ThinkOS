@@ -227,6 +227,8 @@ class WholePath(unittest.TestCase):
         log = p.stop()
         self.assertIn('sync done', log)
         self.assertEqual(self.board.read('sysrq'), 'u')
+        self.assertEqual(self.board.read('led'), '0')
+        self.assertLess(log.index('backlight off'), log.index('sync done'), 'the biggest load goes first, before the flush')
 
     def test_waits_until_data_is_read_only(self):
         p = self.start('--no-sync')

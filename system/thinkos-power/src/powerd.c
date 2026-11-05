@@ -330,6 +330,16 @@ static void trip_sequence(void)
     }
 #endif
     say("power failing: starting the emergency flush");
+    /* The backlight is one of the biggest loads and turning it off is a single write: do it first, so the rail holds longer for the
+     * flush below, and the person sees the device has noticed. */
+    for (int i = 0; i < cfg.led_count; i++) {
+        if (cfg.dry) continue;
+        if (led_fd[i] >= 0) {
+            ssize_t r = write(led_fd[i], "0", 1);
+            (void)r;
+        }
+    }
+    say("backlight off +%lld us", (long long)(now_us() - t0));
     if (!cfg.no_sync) {
         sync();
         say("sync done +%lld us", (long long)(now_us() - t0));
@@ -340,13 +350,6 @@ static void trip_sequence(void)
         while (!watched_is_readonly() && now_us() < deadline) usleep(2000);
         say("%s %s +%lld us", cfg.watch, watched_is_readonly() ? "is read-only" : "is STILL read-write",
              (long long)(now_us() - t0));
-    }
-    for (int i = 0; i < cfg.led_count; i++) {
-        if (cfg.dry) continue;
-        if (led_fd[i] >= 0) {
-            ssize_t r = write(led_fd[i], "0", 1);
-            (void)r;
-        }
     }
     say("flush finished +%lld us", (long long)(now_us() - t0));
 }
