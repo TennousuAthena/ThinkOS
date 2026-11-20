@@ -1,6 +1,8 @@
 package moe.kiwi.thinkos.ui.form
 
 import moe.kiwi.thinkos.ui.Stroke
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
@@ -9,6 +11,8 @@ import android.graphics.RectF
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
+import moe.kiwi.thinkos.anim.Motion
+import moe.kiwi.thinkos.perf.InputTrace
 import moe.kiwi.thinkos.ui.Palette
 import kotlin.math.abs
 import kotlin.math.max
@@ -63,6 +67,7 @@ internal class ToggleView(context: Context) : View(context) {
 internal class SliderView(context: Context) : View(context) {
     private val dp = resources.displayMetrics.density
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val trackBounds = RectF()
     var palette = Palette.DARK
         set(value) { field = value; invalidate() }
     var minimum = 0.0
@@ -70,6 +75,8 @@ internal class SliderView(context: Context) : View(context) {
     var step = 1.0
     private var current = 0.0
     private var committed = 0.0
+    private var dragFraction: Float? = null
+    private var snapAnimator: ValueAnimator? = null
     private var tracking = false
     val isTracking: Boolean get() = tracking
     private var downX = 0f
@@ -80,7 +87,11 @@ internal class SliderView(context: Context) : View(context) {
         get() = current
         set(v) {
             committed = snap(v)
-            if (!tracking) { current = committed; invalidate() }
+            if (!tracking) {
+                if (current != committed) snapAnimator?.cancel()
+                current = committed
+                invalidate()
+            }
         }
     var onPreview: (Double) -> Unit = {}
     var onCommit: (Double) -> Unit = {}
@@ -89,47 +100,41 @@ internal class SliderView(context: Context) : View(context) {
 
     init { importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO }
 
-    fun snap(v: Double): Double {
-        val clamped = min(max(v, minimum), maximum)
-        if (step <= 0) return clamped
-        val snapped = minimum + Math.rint((clamped - minimum) / step) * step
-        // Round away floating-point dust such as 0.30000000000000004.
-        return min(max(Math.round(snapped * 1e6) / 1e6, minimum), maximum)
-    }
+    fun snap(v: Double): Double = SliderMath.snap(v, minimum, maximum, step)
 
-    private fun fraction() = if (maximum > minimum) ((value - minimum) / (maximum - minimum)).toFloat() else 0f
+    private fun fraction() = SliderMath.fraction(current, minimum, maximum)
     private fun mirrored() = layoutDirection == LAYOUT_DIRECTION_RTL
-
-    private fun valueAt(x: Float): Double {
-        val inset = 14 * dp
-        val usable = max(1f, width - 2 * inset)
-        var f = ((x - inset) / usable).coerceIn(0f, 1f)
-        if (mirrored()) f = 1f - f
-        return snap(minimum + f * (maximum - minimum))
-    }
+    private fun trackInset() = min(14 * dp, width / 2f)
+    private fun thumbX(fraction: Float): Float = SliderMath.xAt(fraction, trackInset(), width - trackInset(), mirrored())
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) =
         setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), (48 * dp).toInt())
 
     override fun onDraw(canvas: Canvas) {
-        val inset = 14 * dp
+        val inset = trackInset()
         val cy = height / 2f
         val left = inset
         val right = width - inset
         val track = Stroke.TRACK * dp
         paint.color = palette.divider
-        canvas.drawRoundRect(RectF(left, cy - track / 2, right, cy + track / 2), track, track, paint)
-        val f = fraction()
-        val x = if (mirrored()) right - (right - left) * f else left + (right - left) * f
+        trackBounds.set(left, cy - track / 2, right, cy + track / 2)
+        canvas.drawRoundRect(trackBounds, track, track, paint)
+        val displayedFraction = dragFraction ?: (snapAnimator?.animatedValue as? Float) ?: fraction()
+        val x = thumbX(displayedFraction)
         paint.color = palette.accent
-        val (a, b) = if (mirrored()) x to right else left to x
-        canvas.drawRoundRect(RectF(a, cy - track / 2, b, cy + track / 2), track, track, paint)
+        if (mirrored()) trackBounds.left = x else trackBounds.right = x
+        canvas.drawRoundRect(trackBounds, track, track, paint)
         canvas.drawCircle(x, cy, if (dragging) 13 * dp else 11 * dp, paint)
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.actionMasked) {
-            MotionEvent.ACTION_DOWN -> { tracking = true; downX = event.x; downY = event.y }
+            MotionEvent.ACTION_DOWN -> {
+                snapAnimator?.cancel()
+                tracking = true
+                downX = event.x
+                downY = event.y
+            }
             MotionEvent.ACTION_MOVE -> {
                 if (!tracking) return false
                 if (!dragging) {
@@ -146,9 +151,13 @@ internal class SliderView(context: Context) : View(context) {
                 if (!tracking) return false
                 if (!dragging) performClick()
                 update(event.x)
+                val releasedFraction = dragFraction ?: fraction()
+                val animateSnap = dragging
+                dragFraction = null
                 tracking = false; dragging = false; committed = current
                 parent?.requestDisallowInterceptTouchEvent(false)
                 invalidate()
+                if (animateSnap) settle(releasedFraction)
                 onCommit(value)
             }
             MotionEvent.ACTION_CANCEL -> cancelTracking()
@@ -159,8 +168,10 @@ internal class SliderView(context: Context) : View(context) {
     override fun performClick(): Boolean { super.performClick(); return true }
 
     private fun cancelTracking() {
+        snapAnimator?.cancel()
         if (!tracking) return
         tracking = false; dragging = false
+        dragFraction = null
         current = committed
         parent?.requestDisallowInterceptTouchEvent(false)
         onPreview(current)
@@ -176,7 +187,52 @@ internal class SliderView(context: Context) : View(context) {
     fun cancelGesture() = cancelTracking()
 
     private fun update(x: Float) {
-        val next = valueAt(x)
-        if (abs(next - current) > 1e-9) { current = next; invalidate(); onPreview(next) }
+        val inset = trackInset()
+        val nextFraction = if (maximum > minimum) SliderMath.fractionAt(x, inset, width - inset, mirrored()) else 0f
+        if (nextFraction != dragFraction) {
+            dragFraction = nextFraction
+            invalidate()
+            InputTrace.applied(InputTrace.SLIDER, thumbX(nextFraction))
+        }
+        val next = snap(minimum + nextFraction * (maximum - minimum))
+        if (abs(next - current) > 1e-9) { current = next; onPreview(next) }
+    }
+
+    private fun settle(releasedFraction: Float) {
+        val target = fraction()
+        if (!ValueAnimator.areAnimatorsEnabled() || abs(thumbX(releasedFraction) - thumbX(target)) <= 2 * dp) return
+        val animator = ValueAnimator.ofFloat(releasedFraction, target).apply {
+            duration = 80
+            interpolator = Motion.EASE
+            addUpdateListener { invalidate() }
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    snapAnimator = null
+                    invalidate()
+                }
+            })
+        }
+        snapAnimator = animator
+        animator.start()
+    }
+}
+
+internal object SliderMath {
+    fun fraction(value: Double, minimum: Double, maximum: Double): Float =
+        if (maximum > minimum) ((value - minimum) / (maximum - minimum)).toFloat().coerceIn(0f, 1f) else 0f
+
+    fun fractionAt(x: Float, left: Float, right: Float, rtl: Boolean): Float {
+        val fraction = if (right > left) ((x - left) / (right - left)).coerceIn(0f, 1f) else 0f
+        return if (rtl) 1f - fraction else fraction
+    }
+
+    fun xAt(fraction: Float, left: Float, right: Float, rtl: Boolean): Float =
+        left + (right - left) * if (rtl) 1f - fraction else fraction
+
+    fun snap(value: Double, minimum: Double, maximum: Double, step: Double): Double {
+        val clamped = min(max(value, minimum), maximum)
+        if (step <= 0) return clamped
+        val snapped = minimum + Math.rint((clamped - minimum) / step) * step
+        return min(max(Math.round(snapped * 1e6) / 1e6, minimum), maximum)
     }
 }

@@ -39,6 +39,7 @@ interface PageEvents {
     val backEdgeDp: Float get() = 24f
     val upEnabled: Boolean get() = true
     val upEdgeDp: Float get() = 24f
+    val gesturePredictMillis: Int get() = 0
 
     /** Factory for OS capabilities (media, images); this is not a plugin-provided style API. */
     fun component(context: Context, pluginId: String, definition: JSONObject): RenderComponent? = null

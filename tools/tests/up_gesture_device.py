@@ -88,7 +88,7 @@ def main():
     def up(width, height, x=None):
         x = width//2 if x is None else x
         d.shell('input', 'swipe', x, height-3, x, int(height*.52), 250)
-        wait(lambda: ui()['page'] == 'tiles.apps')
+        wait(lambda: ui()['page'] == 'home.main')
         wait(lambda: abs(stage()['translationY']) < 1)
     def reason(): return re.search(r'data="([^"]*)"', d.debug('benchmark_state'))[1].split('|')[6]
     def open_panel(width, height):
@@ -224,11 +224,11 @@ def main():
         for name, orientation in (('portrait', 1), ('landscape', 0)):
             d.shell('am', 'broadcast', '-n', APP+'/.DebugReceiver', '--es', 'command', 'orientation', '--ei', 'value', orientation)
             time.sleep(1); width, height = stage()['width'], stage()['height']
-            for source in ('home.main', 'clock.face', 'tiles.main'):
+            for source in ('clock.face', 'tiles.main'):
                 page(source); up(width, height)
-                check(name+' '+source+' bottom swipe reaches launcher with its navigation reason', reason() == 'launcher' and not stage()['canGoBack'])
+                check(name+' '+source+' bottom swipe reaches Home with its navigation reason', reason() == 'home_gesture' and not stage()['canGoBack'])
             page('cast.home'); up(width, height); back()
-            check(name+' cast bottom swipe clears the return stack', ui()['page']=='tiles.apps' and not stage()['canGoBack'])
+            check(name+' cast bottom swipe clears the return stack', ui()['page']=='home.main' and not stage()['canGoBack'])
             page('home.main'); d.debug('settings', value='system'); wait(lambda: ui()['page']=='settings.form')
             up(width, height)
             check(name+' settings bottom swipe closes settings and clears the stack', not stage()['canGoBack'])
@@ -241,12 +241,12 @@ def main():
             check(name+' held up gesture builds no target page',sample['edge']=='UP' and sample['upProgress']>0 and sample['children']==before['children'])
             check(name+' cancelled short drag settles without navigating',ui()['page']=='clock.face')
 
-            page('home.main')
+            page('clock.face')
             _, raw=drag(d,(width//2,height-3),(width//2,height*.9),observe=stage)
             (args.output/(name+'-short-touch.log')).write_text(raw)
-            check(name+' short slow release stays on its original page',ui()['page']=='home.main')
+            check(name+' short slow release stays on its original page',ui()['page']=='clock.face')
             page('home.main');page('cast.home'); up(width,height,x=2)
-            check(name+' bottom-left upward motion chooses launcher',ui()['page']=='tiles.apps')
+            check(name+' bottom-left upward motion chooses Home',ui()['page']=='home.main' and reason()=='home_gesture')
             page('home.main');page('cast.home');d.shell('input','swipe',2,height-3,int(width*.65),height-3,300)
             wait(lambda:ui()['page']=='home.main')
             check(name+' bottom-left rightward motion chooses Back')
@@ -265,43 +265,42 @@ def main():
             wait(lambda:ui()['page']=='settings.form')
             check(name+' an undecided bottom press retains the 600ms settings long press')
 
-            page('home.main');setting('nav.up_enabled',False)
+            page('clock.face');setting('nav.up_enabled',False)
             d.shell('input','swipe',width//2,height-3,width//2,int(height*.5),250);time.sleep(.7)
-            check(name+' disabling up gestures leaves navigation to the page',ui()['page']=='home.main')
-            setting('nav.up_enabled',True);page('tiles.apps')
+            check(name+' disabling up gestures leaves navigation to the page',ui()['page']=='clock.face')
+            setting('nav.up_enabled',True);page('home.main')
             sample,raw=drag(d,(width//2,height-3),(width//2,height*.85),cancel=True,observe=stage)
-            (args.output/(name+'-launcher-touch.log')).write_text(raw)
-            check(name+' the launcher with an empty stack does not claim the bottom strip',sample['edge']=='IDLE' and sample['upProgress']==0)
+            (args.output/(name+'-home-touch.log')).write_text(raw)
+            check(name+' Home with an empty stack does not claim the bottom strip',sample['edge']=='IDLE' and sample['upProgress']==0)
 
-            page('home.main');open_panel(width,height)
-            d.shell('input','swipe',width//2,height-3,width//2,int(height*.5),250);time.sleep(.5)
-            check(name+' an open control panel prevents launcher interception',ui()['page']=='home.main')
-            back();page('home.main');open_panel(width,height);tap(find('应用'))
+            page('clock.face');open_panel(width,height);up(width,height)
+            check(name+' bottom swipe dismisses the control panel and goes Home',not stage()['panelOpen'])
+            page('home.main');open_panel(width,height);tap(find('应用'))
             wait(lambda:ui()['page']=='tiles.apps')
             check(name+' the panel apps button opens the launcher',reason()=='launcher')
 
-            page('home.main');d.debug('preview_safe_mode',value='true')
+            page('clock.face');d.debug('preview_safe_mode',value='true')
             d.shell('input','swipe',width//2,height-3,width//2,int(height*.5),250);time.sleep(.6)
-            check(name+' safe mode ignores the gesture without crashing',ui()['page']=='home.main')
+            check(name+' safe mode ignores the gesture without crashing',ui()['page']=='clock.face')
             d.debug('preview_safe_mode',value='false')
-            page('home.main');d.debug('locale',value='ar');up(width,height)
+            page('clock.face');d.debug('locale',value='ar');up(width,height)
             check(name+' Arabic keeps the same physical bottom gesture');d.debug('locale',value='zh-CN')
-            page('home.main');d.debug('motion_scale',value=0.0)
+            page('clock.face');d.debug('motion_scale',value=0.0)
             assert not stage()['animatorsEnabled']
             d.shell('input','swipe',width//2,height-3,width//2,int(height*.5),250)
             immediate=stage();report['gestures'][name+'-animations-off']=immediate
-            check(name+' disabled animations switch directly without a visible outgoing page',immediate['page']=='tiles.apps' and immediate['translationY']==0 and immediate['visibleChildren']==1)
+            check(name+' disabled animations switch directly without a visible outgoing page',immediate['page']=='home.main' and immediate['translationY']==0 and immediate['visibleChildren']==1)
             d.debug('motion_scale',value=1.0)
 
-            page('home.main')
+            page('clock.face')
             sample,raw=drag(d,(width//2,height-3),(width//2,height*.55),chord=True,observe=stage)
             (args.output/(name+'-two-finger-touch.log')).write_text(raw)
-            check(name+' a second pointer cancels an active up gesture',sample['edge']=='SWALLOW' and ui()['page']=='home.main')
+            check(name+' a second pointer cancels an active up gesture',sample['edge']=='SWALLOW' and ui()['page']=='clock.face')
             page('player.library');tap(find('视频'));tap(find('Up gesture test'))
             wait(lambda:ui()['page']=='player.video');wait(lambda:(d.state() or {}).get('status')=='playing')
             up(width,height);wait(lambda:(d.state() or {}).get('status')=='paused')
-            check(name+' leaving the actual player video through launcher pauses playback')
-            shot(name+'-launcher')
+            check(name+' leaving the actual player video for Home pauses playback')
+            shot(name+'-home')
 
         # The hidden rescue chord still works; no maintenance action is selected.
         page('home.main')

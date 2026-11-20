@@ -7,10 +7,13 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.Process
 import android.provider.Settings
 import android.util.Log
 import android.view.MotionEvent
+import android.view.FrameMetrics
 import android.view.View
 import android.view.ViewConfiguration
 import android.widget.FrameLayout
@@ -18,6 +21,7 @@ import moe.kiwi.thinkos.core.Mode
 import moe.kiwi.thinkos.core.SleepTaps
 import moe.kiwi.thinkos.device.SleepBacklight
 import android.view.WindowManager
+import android.view.Window
 import moe.kiwi.thinkos.core.OnboardingPolicy
 import moe.kiwi.thinkos.core.Theme
 import moe.kiwi.thinkos.plugin.PluginPage
@@ -59,6 +63,9 @@ class MainActivity : Activity(), RuntimeHost.Observer {
     private var pluginConsent: PluginConsentDialog? = null
     private lateinit var kiosk: KioskPolicy
     private var reportedDrawn = false
+    private var catalogDrawReported = false
+    private var clockFrameReported = false
+    private var clockFrameListener: Window.OnFrameMetricsAvailableListener? = null
     private var lastLocale: java.util.Locale = java.util.Locale.getDefault()
     private var storageRequest: Long? = null
     private var foreignLaunchPending = false
@@ -91,7 +98,8 @@ class MainActivity : Activity(), RuntimeHost.Observer {
         // Reading /sdcard/Music needs a runtime permission; as Device Owner we grant it without a dialog.
         kiosk.grantStorageRead()
         host.store.update { it.copy(safeMode = CrashRecovery.isSafeMode(this)) }
-        stage = ThinkStage(this, host.store, host.router, { host.sensors.touch() }, { showMaintenance() }, host.pageEvents, host::openSettings)
+        stage = ThinkStage(this, host.store, host.router, { host.sensors.touch(fromStage = true) }, { showMaintenance() }, host.pageEvents, host::openSettings)
+        stage.onStartupClockDraw = ::awaitStartupClockFrame
         stage.onPractice = host::practiceCompleted
         sleepCurtain = View(this).apply {
             setBackgroundColor(android.graphics.Color.BLACK)
@@ -131,6 +139,7 @@ class MainActivity : Activity(), RuntimeHost.Observer {
         KioskState.leaveForeign()
         KioskState.foreignFromSetup = false
         kiosk.apply(this, host.system.kioskLock, host.system.panelEnabled)   // coming back from Android's settings locks again
+        if (BuildConfig.DEBUG) moe.kiwi.thinkos.perf.InputTrace.window(window)
         stage.start()
         host.replayPractice()
         host.foreignPanel.sync()
@@ -144,11 +153,14 @@ class MainActivity : Activity(), RuntimeHost.Observer {
         miracastModule?.dismiss()
         if (BuildConfig.DEBUG && KioskState.ownsForegroundTask(taskId)) TouchInjection.stageState = null
         KioskState.notePaused(taskId)
+        if (BuildConfig.DEBUG) moe.kiwi.thinkos.perf.InputTrace.window(null)
         stage.stop()
         host.foreignPanel.sync()
         super.onPause()
     }
     override fun onDestroy() {
+        clockFrameListener?.let(window::removeOnFrameMetricsAvailableListener)
+        clockFrameListener = null
         if (BuildConfig.DEBUG) { TouchInjection.sink = null; TouchInjection.legalState = null; TouchInjection.updateState = null }
         if (!::host.isInitialized) { super.onDestroy(); return }
         // An Activity cannot leave Lua suspended on a permission dialog it is no longer able to show.
@@ -236,8 +248,29 @@ class MainActivity : Activity(), RuntimeHost.Observer {
         stage.updateCatalog(pages, widgets)
         if (!reportedDrawn && pages.isNotEmpty()) {
             reportedDrawn = true
-            stage.post { reportFullyDrawn() }
+            stage.post {
+                reportFullyDrawn()
+                catalogDrawReported = true
+                if (clockFrameReported) stage.warmStartupWallpaper()
+            }
         }
+    }
+    private fun awaitStartupClockFrame(frameMillis: Long) {
+        if (clockFrameReported || clockFrameListener != null) return
+        val listener = Window.OnFrameMetricsAvailableListener { _, metrics, _ ->
+            val vsyncMillis = metrics.getMetric(FrameMetrics.VSYNC_TIMESTAMP) / 1_000_000
+            if (clockFrameListener == null || vsyncMillis < frameMillis || metrics.getMetric(FrameMetrics.TOTAL_DURATION) <= 0L) {
+                return@OnFrameMetricsAvailableListener
+            }
+            clockFrameListener?.let(window::removeOnFrameMetricsAvailableListener)
+            clockFrameListener = null
+            if (vsyncMillis != frameMillis) return@OnFrameMetricsAvailableListener
+            clockFrameReported = true
+            if (BuildConfig.DEBUG) Log.i("ThinkOS", "Startup clock frame: $vsyncMillis")
+            if (catalogDrawReported) stage.warmStartupWallpaper()
+        }
+        clockFrameListener = listener
+        window.addOnFrameMetricsAvailableListener(listener, Handler(Looper.getMainLooper()))
     }
     override fun onState(pluginId: String, state: JSONObject) { stage.updatePluginState(pluginId, state) }
     override fun onOrientationRequest(value: Int) {

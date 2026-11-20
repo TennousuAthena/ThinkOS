@@ -47,6 +47,7 @@ object SystemSettings {
         const val PANEL_IDLE = "panel.idle_s"
         const val NAV_BACK_ENABLED = "nav.back_enabled"
         const val NAV_BACK_EDGE_DP = "nav.back_edge_dp"
+        const val GESTURE_PREDICT_MS = "gesture.predict_ms"
         const val NAV_UP_ENABLED = "nav.up_enabled"
         const val NAV_UP_EDGE_DP = "nav.up_edge_dp"
         const val APPS_ANDROID = "apps.android"
@@ -172,6 +173,7 @@ class SystemValues(private val store: SettingsStore) {
     /** The back swipe from the left edge (ADR-040): whether it is on, and how wide the strip it starts in is. */
     val navBackEnabled: Boolean get() = bool(SystemSettings.Keys.NAV_BACK_ENABLED)
     val navBackEdgeDp: Float get() = number(SystemSettings.Keys.NAV_BACK_EDGE_DP).toFloat()
+    val gesturePredictMillis: Int get() = number(SystemSettings.Keys.GESTURE_PREDICT_MS).toInt()
     val navUpEnabled: Boolean get() = bool(SystemSettings.Keys.NAV_UP_ENABLED)
     val navUpEdgeDp: Float get() = number(SystemSettings.Keys.NAV_UP_EDGE_DP).toFloat()
     /** Whether Android's own apps are listed beside the ThinkOS ones, which package names stay out, and how long one may keep the screen. */

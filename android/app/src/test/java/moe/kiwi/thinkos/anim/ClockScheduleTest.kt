@@ -31,6 +31,30 @@ class ClockScheduleTest {
         assertEquals(0L, ClockSchedule.armDelay(boundary + 700, boundary))
     }
 
+    @Test fun stageCannotRevertTheBucketAlreadySelectedByTheTicker() {
+        val period = 1_000L
+        val boundary = 1_795_068_517_000L
+        val stageWall = boundary - 1
+        val tickerBucket = ClockSchedule.bucket(ClockSchedule.displayed(boundary - lead), period)
+        val oldStageBucket = ClockSchedule.bucket(stageWall, period)
+        assertEquals(tickerBucket - 1, oldStageBucket)
+        assertEquals(1_017L, ClockSchedule.displayed(boundary) - oldStageBucket * period)
+        assertFalse(ClockSchedule.acceptsBucket(oldStageBucket, tickerBucket, force = false))
+        val stageBucket = ClockSchedule.bucket(ClockSchedule.displayed(stageWall), period)
+        assertEquals(tickerBucket, stageBucket)
+        assertTrue(ClockSchedule.acceptsBucket(stageBucket, tickerBucket, force = false))
+    }
+
+    @Test fun aWallClockStepBackTwoSecondsIsAcceptedImmediately() {
+        val period = 1_000L
+        val now = 1_795_068_517_000L
+        val previous = ClockSchedule.bucket(ClockSchedule.displayed(now), period)
+        val corrected = ClockSchedule.bucket(ClockSchedule.displayed(now - 2_000L), period)
+        assertEquals(previous - 2, corrected)
+        assertFalse(ClockSchedule.acceptsBucket(corrected, previous, force = false))
+        assertTrue(ClockSchedule.acceptsBucket(corrected, previous, force = true))
+    }
+
     @Test fun everyWakeOfALongRunLandsOnTheNextSecondWithoutSkippingOrRepeating() {
         // Simulate a 60 Hz display: from a random phase, deliver on the first frame displayed past each boundary.
         var wall = 1_793_000_000_321L

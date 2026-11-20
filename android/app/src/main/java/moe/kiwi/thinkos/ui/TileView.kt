@@ -3,7 +3,6 @@ package moe.kiwi.thinkos.ui
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Color
-import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.text.TextUtils
 import android.util.Log
@@ -13,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import moe.kiwi.thinkos.anim.Motion
 import moe.kiwi.thinkos.core.Attention
+import moe.kiwi.thinkos.perf.InputTrace
 import org.json.JSONObject
 
 /** OS-owned density and typography. Bindings update this same tree, including its background. */
@@ -43,7 +43,7 @@ internal class TileView(
     private var palette = Palette.DARK
     private var fill = palette.accent
     private var targetFill = fill
-    private val shape = GradientDrawable()
+    private val shape = InputTrace.componentSpan("tile.background") { GradientDrawable() }
     private var colorAnimation: ValueAnimator? = null
     private var active = false
     private var night = 0f
@@ -55,26 +55,29 @@ internal class TileView(
     private var pictureSource = Binding.compile("")
     private var showingPicture = false
     private val scrim = View(context).apply {
-        background = GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, intArrayOf(0, 0xC0000000.toInt()))
+        background = InputTrace.componentSpan("tile.background") {
+            GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, intArrayOf(0, 0xC0000000.toInt()))
+        }
         visibility = GONE
     }
-    private val icon = IconView(context)
+    private val icon = InputTrace.componentSpan("tile.icon") { IconView(context, tileGlyph = true) }
 
     private fun text(sp: Float, medium: Boolean = false) =
-        TileTextView(context).apply {
+        InputTrace.componentSpan("tile.text") { TileTextView(context) }.apply {
             textSize = sp
             maxLines = 1
             ellipsize = TextUtils.TruncateAt.END
             includeFontPadding = true
             gravity = Gravity.START or Gravity.CENTER_VERTICAL
-            typeface =
-                Typeface.create(if (medium) "sans-serif-medium" else "sans-serif", Typeface.NORMAL)
+            typeface = InputTrace.componentSpan("tile.typeface") {
+                if (medium) PageTypefaces.medium else PageTypefaces.regular
+            }
             fontFeatureSettings = "tnum"
         }
 
     private val value = text(TextScale.DISPLAY)
     private val label = text(TextScale.CAPTION)
-    private val detail = text(TextScale.CAPTION).apply { typeface = Typeface.create("sans-serif-light", Typeface.NORMAL) }
+    private val detail = text(TextScale.CAPTION).apply { typeface = PageTypefaces.light }
     private val badge = text(TextScale.CAPTION, true).apply { gravity = Gravity.END or Gravity.CENTER_VERTICAL }
     private val positions = mutableMapOf<View, RenderGeometry.Box>()
     private val face =
@@ -82,7 +85,7 @@ internal class TileView(
             override fun onMeasure(wSpec: Int, hSpec: Int) {
                 val w = MeasureSpec.getSize(wSpec)
                 val h = MeasureSpec.getSize(hSpec)
-                arrange(w, h)
+                InputTrace.componentSpan("tile.arrange") { arrange(w, h) }
                 for ((v, b) in positions) v.measure(
                     exact(if (v.visibility == GONE) 0 else b.width),
                     exact(if (v.visibility == GONE) 0 else b.height),
@@ -108,7 +111,6 @@ internal class TileView(
         get() = eligibleFaces.size > 1
 
     init {
-        icon.tileGlyph = true
         background = shape
         clipToOutline = true
         clipChildren = true
@@ -127,6 +129,10 @@ internal class TileView(
     /** Tilt toward the finger like a physical button; [x] and [y] are in this tile's own coordinates. */
     fun press(x: Float, y: Float) {
         if (!ValueAnimator.areAnimatorsEnabled() || width == 0 || height == 0 || visibility != VISIBLE) return
+        moe.kiwi.thinkos.perf.InputTrace.marked(moe.kiwi.thinkos.perf.InputTrace.PRESS) { tiltToward(x, y) }
+    }
+
+    private fun tiltToward(x: Float, y: Float) {
         cameraDistance = resources.displayMetrics.density * 1400f
         val nx = (x / width * 2f - 1f).coerceIn(-1f, 1f)
         val ny = (y / height * 2f - 1f).coerceIn(-1f, 1f)
@@ -304,8 +310,8 @@ internal class TileView(
             contentGroups = groups.values.toList()
         }
         faceIndex = 0
-        styleTexts()
-        bind(owner, setOf(""), true)
+        InputTrace.componentSpan("tile.textStyle") { styleTexts() }
+        InputTrace.componentSpan("tile.bind") { bind(owner, setOf(""), true) }
     }
 
     /** Value is a big light number, except over a photo where it is a two-line title. */
@@ -314,12 +320,12 @@ internal class TileView(
             value.setAutoSizeTextTypeWithDefaults(TextView.AUTO_SIZE_TEXT_TYPE_NONE)
             value.textSize = TextScale.BODY
             value.maxLines = 2
-            value.typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+            value.typeface = PageTypefaces.medium
             detail.textSize = TextScale.CAPTION
             detail.maxLines = 2
         } else {
             value.maxLines = 1
-            value.typeface = Typeface.create("sans-serif-light", Typeface.NORMAL)
+            value.typeface = PageTypefaces.light
             value.setAutoSizeTextTypeUniformWithPresetSizes(
                 TextScale.presets(if (size == "small") TextScale.TITLE else TextScale.DISPLAY),
                 android.util.TypedValue.COMPLEX_UNIT_SP,
@@ -377,7 +383,7 @@ internal class TileView(
                 f["icon"].isNullOrBlank()
         val hadValue = value.text.isNotEmpty()
         val hadIcon = icon.name.isNotBlank()
-        icon.name = if (labelOnly) "" else f["icon"].orEmpty()
+        InputTrace.componentSpan("tile.icon") { icon.name = if (labelOnly) "" else f["icon"].orEmpty() }
         if (hadIcon != icon.name.isNotBlank()) requestLayout()
         fun text(view: TextView, next: String) {
             if (view.text.toString() != next) view.text = next

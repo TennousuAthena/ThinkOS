@@ -138,13 +138,6 @@ def main():
         if not any(n.get('text')==labels['setting_theme_mode'] for n in tree().iter('node')):
             tap(find(labels['setting_section_display']))
         find(labels['setting_theme_mode'])
-    def ensure_night(enabled):
-        label = labels['setting_theme_night'];root = tree()
-        rows = [n for n in root.iter('node') if any(x.get('text')==label for x in n.iter('node'))
-                and any(x.get('class')=='android.widget.Switch' for x in n.iter('node'))]
-        row = min(rows, key=lambda n: len(list(n.iter('node'))))
-        switch = next(n for n in row.iter('node') if n.get('class')=='android.widget.Switch')
-        if (switch.get('checked')=='true') != enabled: tap(find(label))
     def weather_settings(from_card):
         orient();navigate('home.main' if from_card else 'weather.detail')
         x = 950 if from_card else 250
@@ -172,7 +165,7 @@ def main():
         shell('am', 'start', '-W', '-n', HOME)
         debug('hold_attention', 'AWAKE')
         initial_pid=pid();report['uiPid']=initial_pid
-        open_system();ensure_night(True)
+        open_system()
         tap(find(labels['setting_theme_mode']));tap(find(labels['setting_theme_mode_auto']))
         tap(find(done))
         if args.motion_only:

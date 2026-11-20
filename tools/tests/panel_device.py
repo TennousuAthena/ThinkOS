@@ -182,7 +182,10 @@ def main():
         check('and tapping again puts it back', (find(plugin['mute']).get('checked') == 'true') == was)
 
         # ---- closing ----
-        swipe(width // 2, int(height * .40), width // 2, 20)
+        footer = next((node for node in tree().iter('node') if node.get('text') == plugin['network.footer']), None)
+        assert footer is not None, 'Missing panel footer for the close gesture'
+        close_x, close_y = center(footer)
+        swipe(close_x, close_y, close_x, 20)
         check('a pull up closes the sheet', wait(lambda: not open_now() or None, 4))
         swipe(width // 2, edge, width // 2, int(height * .45))
         sheet_open()

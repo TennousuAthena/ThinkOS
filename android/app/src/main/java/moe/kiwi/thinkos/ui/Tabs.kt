@@ -5,9 +5,11 @@ import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
+import moe.kiwi.thinkos.perf.InputTrace
 import org.json.JSONObject
 
 /**
@@ -47,7 +49,7 @@ internal class TabsComponent(context: Context, private val definition: JSONObjec
             labels = next
             removeAllViews()
             next.forEachIndexed { index, label ->
-                val tab = TextView(context).apply {
+                val tab = TabView(context).apply {
                     text = label
                     gravity = Gravity.CENTER
                     includeFontPadding = false
@@ -56,12 +58,36 @@ internal class TabsComponent(context: Context, private val definition: JSONObjec
                     setAutoSizeTextTypeUniformWithPresetSizes(intArrayOf(TextScale.CAPTION.toInt(), TextScale.BODY.toInt()), TypedValue.COMPLEX_UNIT_SP)
                     setPadding((8 * dp).toInt(), 0, (8 * dp).toInt(), 0)
                     isClickable = true
-                    setOnClickListener { if (event.isNotBlank()) tap(event, index + 1) }
+                    setOnClickListener {
+                        if (event.isNotBlank()) InputTrace.marked(InputTrace.TAB_CLICK) { tap(event, index + 1) }
+                    }
                 }
                 addView(tab, LayoutParams(0, LayoutParams.MATCH_PARENT, 1f))
             }
         }
         paint()
+    }
+
+    private class TabView(context: Context) : TextView(context) {
+        private val click = ImmediateClick(this)
+        private var stage: ThinkStage? = null
+
+        override fun onAttachedToWindow() {
+            super.onAttachedToWindow()
+            var ancestor = parent
+            while (ancestor != null && ancestor !is ThinkStage) ancestor = ancestor.parent
+            stage = ancestor as? ThinkStage
+        }
+
+        override fun onDetachedFromWindow() {
+            stage = null
+            super.onDetachedFromWindow()
+        }
+
+        override fun onTouchEvent(event: MotionEvent): Boolean =
+            click.touch(event, stage?.singlePointerGesture != false) { super.onTouchEvent(it) }
+
+        override fun performLongClick(): Boolean = super.performLongClick().also { if (it) click.longPressed() }
     }
 
     override fun colors(value: Palette) { palette = value; paint() }

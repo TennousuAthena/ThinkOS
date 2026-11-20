@@ -737,6 +737,15 @@
       "level": "hidden",
       "section": "desktop"
     },
+    "gesture.predict_ms": {
+      "type": "number",
+      "label": "Drag prediction (ms)",
+      "default": 0,
+      "min": 0,
+      "max": 16,
+      "step": 1,
+      "level": "hidden"
+    },
     "nav.up_edge_dp": {
       "type": "number",
       "label": "@setting.nav.up_edge_dp",

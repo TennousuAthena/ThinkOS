@@ -21,6 +21,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import kotlin.coroutines.resume
 import moe.kiwi.thinkos.BuildConfig
+import moe.kiwi.thinkos.perf.InputTrace
 import moe.kiwi.thinkos.i18n.Formats
 import moe.kiwi.thinkos.i18n.Labels
 import moe.kiwi.thinkos.i18n.LocaleChain
@@ -366,6 +367,8 @@ class PluginRuntime(
         var seenUses = emptyMap<String, UseResolution>()
         val dataPending = mutableSetOf<String>()
         val dataDelivered = mutableMapOf<String, Long>()
+        var traceEvent = 0
+        var traceStarted = 0L
         var lua: NativeLua? = null
         val state: JsonDocument = previous?.state ?: JsonDocument()
         val strings: StringTable = StringTable.load(bundle.directory)
@@ -383,7 +386,10 @@ class PluginRuntime(
         } else null
         val health: PluginHealth = previous?.health ?: PluginHealth()
         val store = stores.getOrPut(bundle.id) { LocalStore(bundle.id) }
-        var publishPending = false
+        var publishPending: Runnable? = null
+        var publishDueUptime = 0L
+        var userEventElapsed: Long? = null
+        var lastFastPublishElapsed: Long? = null
         /** While the plugin handles a `back` event: whether it asked the OS for anything but a reading. */
         var backPage: String? = null
         var backAnswered = false
@@ -417,6 +423,8 @@ class PluginRuntime(
             mediaLive.set(false)
             main.post { runCatching { media.releaseOwner(mediaOwner) }.onFailure { Log.w(TAG, "Media owner cleanup failed", it) } }
             if (sendStop) runCatching { slice(this) { lua?.dispatch("stop") } }
+            publishPending?.let(worker::removeCallbacks)
+            publishPending = null
             timers.values.forEach(worker::removeCallbacks)
             timers.clear()
             awaits.values.forEach { it?.cancel(true) }
@@ -497,7 +505,9 @@ class PluginRuntime(
         val eventElapsed = SystemClock.elapsedRealtime()
         if (pluginId != null && name == "tap") tapped[pluginId] = SystemClock.elapsedRealtime()
         val values = (JsonDocument.toHost(args) as List<*>).toTypedArray()
+        val traceEvent = InputTrace.enqueue(pluginId, name)
         worker.post {
+            InputTrace.workerStart(traceEvent)
             if (pluginId == null && name == "attention") currentAttention = values
             val targets = if (pluginId == null) active.values.toList() else listOfNotNull(active[pluginId])
             targets.forEach { instance ->
@@ -506,17 +516,34 @@ class PluginRuntime(
                 if (pluginId != null && name in setOf("tap", "form.change")) instance.onboardingTapElapsed = eventElapsed
                 if (name in PluginEventPolicy.restricted && !PluginEventPolicy.allows(
                         name, instance.bundle.manifest.getInt("api"), instance.grantedPermissions())) return@forEach
-                if (name != "back") { execute(instance) { it.dispatch(name, values) }; return@forEach }
+                if (pluginId != null && PublishPolicy.isUserEvent(name)) noteUserEvent(instance, eventElapsed)
+                if (traceEvent != 0) {
+                    instance.traceEvent = traceEvent
+                    instance.traceStarted = InputTrace.publishing()
+                }
+                if (name != "back") {
+                    InputTrace.marked(InputTrace.LUA, traceEvent) { execute(instance) { it.dispatch(name, values) } }
+                    return@forEach
+                }
                 // Back (ADR-040): did the plugin do anything about it? If not, the next press leaves without it.
                 instance.backPage = (values.firstOrNull() as? String)?.let { instance.bundle.id + "." + it }
                 instance.backAnswered = false
-                try { execute(instance) { it.dispatch(name, values) } } finally { instance.backPage = null }
+                try {
+                    InputTrace.marked(InputTrace.LUA, traceEvent) { execute(instance) { it.dispatch(name, values) } }
+                } finally { instance.backPage = null }
                 if (instance.backAnswered) main.post { if (!closed) callbacks.onBackAnswered(instance.bundle.id) }
             }
         }
     }
     fun setVariant(pluginId: String, variant: String) {
-        worker.post { active[pluginId]?.let { it.state.set("variant", variant); publishState(it) } }
+        val elapsed = SystemClock.elapsedRealtime()
+        worker.post {
+            active[pluginId]?.let {
+                noteUserEvent(it, elapsed)
+                it.state.set("variant", variant)
+                publishState(it)
+            }
+        }
     }
     fun diagnostics(): List<PluginDiagnostic> = diagnosticSnapshot
     /** Debug receiver only: cumulative worker CPU, including host calls, without private plugin state. */
@@ -1433,13 +1460,33 @@ class PluginRuntime(
         main.post { if (!closed) callbacks.onCatalog(pages, widgets) }
         event(null, "apps")
     }
-    private fun publishState(instance: Instance) = schedulePublish(instance, 50)
-    private fun schedulePublish(instance: Instance, delay: Long) {
-        if (instance.publishPending) return
-        instance.publishPending = true
-        worker.postDelayed({
-            instance.publishPending = false
-            if (active[instance.bundle.id] !== instance || closed) return@postDelayed
+    private fun noteUserEvent(instance: Instance, elapsed: Long) {
+        if (!PublishPolicy.inUserWindow(elapsed, instance.userEventElapsed)) instance.lastFastPublishElapsed = null
+        instance.userEventElapsed = elapsed
+    }
+
+    private fun publishState(instance: Instance) {
+        val now = SystemClock.elapsedRealtime()
+        val delay = PublishPolicy.delay(now, instance.userEventElapsed, instance.lastFastPublishElapsed)
+        schedulePublish(instance, delay, advance = PublishPolicy.inUserWindow(now, instance.userEventElapsed))
+    }
+
+    private fun schedulePublish(instance: Instance, delay: Long, advance: Boolean = false) {
+        val due = SystemClock.uptimeMillis() + delay
+        instance.publishPending?.let {
+            if (!advance || due >= instance.publishDueUptime) return
+            worker.removeCallbacks(it)
+        }
+        val traceEnqueued = InputTrace.publishing()
+        val publish = Runnable {
+            instance.publishPending = null
+            if (active[instance.bundle.id] !== instance || closed) return@Runnable
+            val now = SystemClock.elapsedRealtime()
+            if (PublishPolicy.inUserWindow(now, instance.userEventElapsed)) instance.lastFastPublishElapsed = now
+            val traceNow = InputTrace.publishing()
+            val traceEvent = instance.traceEvent.takeIf { traceNow - instance.traceStarted in 0..2_000_000_000L } ?: 0
+            instance.traceEvent = 0
+            InputTrace.published(traceEvent, maxOf(traceEnqueued, instance.traceStarted))
             val snapshot = instance.state.snapshot()
             // Read before `config` joins the snapshot: an export can only ever carry published state.
             // A candidate still starting shares this state; it publishes when it commits, not half way.
@@ -1453,9 +1500,15 @@ class PluginRuntime(
             // `media` is reserved as well: the OS media session, for plugins that hold the media permission.
             if ("media" in instance.permissions) snapshot.put("media", mediaJson)
             published[instance.bundle.id] = snapshot
-            main.post { if (!closed) callbacks.onState(instance.bundle.id, snapshot) }
+            val tracePosted = InputTrace.publishing()
+            main.post {
+                if (!closed) InputTrace.deliver(traceEvent, tracePosted) { callbacks.onState(instance.bundle.id, snapshot) }
+            }
             updateDiagnostics()
-        }, delay)
+        }
+        instance.publishPending = publish
+        instance.publishDueUptime = due
+        worker.postAtTime(publish, due)
     }
     /** Keeps the previous object for an unchanged value: consumers then share it and diff by identity. */
     private fun captureExports(instance: Instance, snapshot: JSONObject): Boolean {

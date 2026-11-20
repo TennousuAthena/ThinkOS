@@ -42,6 +42,7 @@ class SensorController(
     private var injectedLux: Float? = null
     private var heldTheme: Theme? = null
     private var heldAttention: Attention? = null
+    private var releaseAttentionOnTouch = false
     private var heldPresence: Boolean? = null
     private var brightnessAnimator: ValueAnimator? = null
     private var displayedBrightness = 0.85f
@@ -103,10 +104,11 @@ class SensorController(
         mediaHold = value
         evaluate()
     }
-    fun debugHoldAttention(value: Attention?) {
-        if (Looper.myLooper() != handler.looper) { handler.post { debugHoldAttention(value) }; return }
+    fun debugHoldAttention(value: Attention?, untilTouch: Boolean = false) {
+        if (Looper.myLooper() != handler.looper) { handler.post { debugHoldAttention(value, untilTouch) }; return }
         if (!BuildConfig.DEBUG) return
         heldAttention = value
+        releaseAttentionOnTouch = untilTouch && value == Attention.AMBIENT
         evaluate()
     }
     fun debugHoldTheme(value: Theme?) {
@@ -135,9 +137,16 @@ class SensorController(
         if (value != null) debugPresence(value)
     }
     var debugTouchCount = 0L; private set
-    fun touch() {
-        if (Looper.myLooper() != handler.looper) { handler.post { touch() }; return }
-        if (BuildConfig.DEBUG) debugTouchCount++
+    fun touch(fromStage: Boolean = false) {
+        if (fromStage) moe.kiwi.thinkos.perf.InputTrace.touchEntry()
+        if (Looper.myLooper() != handler.looper) { handler.post { touch(fromStage) }; return }
+        if (BuildConfig.DEBUG) {
+            debugTouchCount++
+            if (fromStage && releaseAttentionOnTouch) {
+                heldAttention = null
+                releaseAttentionOnTouch = false
+            }
+        }
         val now = SystemClock.elapsedRealtime()
         attention.touch(now); touchUpdates.value = now; evaluate(touched = true)
     }

@@ -5,8 +5,10 @@ import android.content.Context
 import android.graphics.*
 import android.os.SystemClock
 import android.view.View
+import android.view.ViewParent
 import moe.kiwi.thinkos.BuildConfig
 import moe.kiwi.thinkos.R
+import moe.kiwi.thinkos.anim.ClockSchedule
 import moe.kiwi.thinkos.anim.ClockStats
 import moe.kiwi.thinkos.anim.ClockTicker
 import moe.kiwi.thinkos.anim.Motion
@@ -47,6 +49,10 @@ class ClockView(context: Context, private val declaration: JSONObject, private v
     private val line = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeCap = Paint.Cap.ROUND }
     private var now = WallClock.now()
     private var lastBucket = -1L
+    private var lastPeriod = 0L
+    private var debugAttachedAt = 0L
+    private var startupDrawReported = false
+    private var debugSource = ClockStats.Source.ATTACH
     private var attention = Attention.AWAKE
     private var sun: JSONObject? = null
     private val daylight = DaylightPainter()
@@ -102,25 +108,30 @@ class ClockView(context: Context, private val declaration: JSONObject, private v
     }
 
     /** The heartbeat reached a boundary: [wall] is the time the frame being recorded is shown at. */
-    override fun onTick(wall: Long) = showTime(wall)
+    override fun onTick(wall: Long) = showTime(wall, ClockStats.Source.TICKER)
+
+    override fun onWallClockAdjusted(wall: Long) = showTime(wall, ClockStats.Source.TICKER, force = true)
 
     /** The stage's own tick. The heartbeat normally got there first; this only catches a face it missed. */
     fun tick(monotonic: Long, level: Attention) {
         val moved = level != attention
         attention = level
         if (moved) ClockTicker.rearm()
-        showTime(WallClock.now())
+        showTime(ClockSchedule.displayed(WallClock.now()), ClockStats.Source.STAGE)
         updatePulse()
     }
 
-    private fun showTime(wall: Long) {
+    private fun showTime(wall: Long, source: ClockStats.Source, force: Boolean = false) {
         val level = attention
         val interval = periodMillis
-        val bucket = wall / interval
-        if (bucket != lastBucket) {
+        val bucket = ClockSchedule.bucket(wall, interval)
+        if (!ClockSchedule.acceptsBucket(bucket, ClockSchedule.bucket(now, interval), force)) return
+        if (force || bucket != lastBucket || interval != lastPeriod) {
             val first = lastBucket < 0L
             lastBucket = bucket
+            lastPeriod = interval
             now = wall
+            if (BuildConfig.DEBUG) debugSource = source
             val synced = wall >= SYNCED_AFTER
             val home = Zones.home()
             // The dial reads ZoneClock.fields(now); formatting digital cells here only delays its boundary frame.
@@ -136,28 +147,33 @@ class ClockView(context: Context, private val declaration: JSONObject, private v
             ) else Parts("--", "--", null, null, ":", false)
             val changed = next.main != parts.main || next.period != parts.period
             if (changed && !first && clockStyle == "digital" && MotionPrefs.clock != "none" && next.main.length == parts.main.length &&
-                level in setOf(Attention.AWAKE, Attention.ENGAGED) && android.animation.ValueAnimator.areAnimatorsEnabled()
+                (level == Attention.AWAKE || level == Attention.ENGAGED) && android.animation.ValueAnimator.areAnimatorsEnabled()
             ) { rollFrom = parts.main; rollStart = SystemClock.uptimeMillis(); rollMode = MotionPrefs.clock }
             parts = next
             if (changed || first) contentDescription = if (synced) ZoneFormat.format("@time", wall, home) else "--:--"
-            if (first || changed || clockStyle in setOf("analog", "solar", "world", "float")) invalidate()
+            if (first || changed || clockStyle == "solar" || clockStyle == "world" || clockStyle == "float") invalidate()
         }
     }
 
     private fun updatePulse() {
-        val active = isAttachedToWindow && clockStyle == "digital" && attention in setOf(Attention.AWAKE, Attention.ENGAGED) && android.animation.ValueAnimator.areAnimatorsEnabled()
+        val active = isShown && windowVisibility == VISIBLE && isAttachedToWindow && clockStyle == "digital" &&
+            (attention == Attention.AWAKE || attention == Attention.ENGAGED) && android.animation.ValueAnimator.areAnimatorsEnabled()
         if (active) pulse.start()
         else {
             pulse.stop()
             alpha = 1f
         }
     }
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-        // Whatever this face showed while away is old: take the time now, then follow the heartbeat.
-        lastBucket = -1
-        showTime(WallClock.now())
-        ClockTicker.add(this)
+    override fun onVisibilityAggregated(isVisible: Boolean) {
+        super.onVisibilityAggregated(isVisible)
+        if (isVisible) {
+            if (BuildConfig.DEBUG) debugAttachedAt = SystemClock.uptimeMillis()
+            lastBucket = -1
+            showTime(ClockSchedule.displayed(WallClock.now()), ClockStats.Source.ATTACH, force = true)
+            ClockTicker.add(this)
+        } else {
+            ClockTicker.remove(this)
+        }
         updatePulse()
     }
     override fun onDetachedFromWindow() { ClockTicker.remove(this); pulse.stop(); super.onDetachedFromWindow() }
@@ -166,7 +182,10 @@ class ClockView(context: Context, private val declaration: JSONObject, private v
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (width == 0 || height == 0) return
-        if (BuildConfig.DEBUG && lastBucket >= 0) ClockStats.drawn(System.identityHashCode(this), periodMillis, lastBucket)
+        if (BuildConfig.DEBUG && lastBucket >= 0) {
+            ClockStats.drawn(System.identityHashCode(this), periodMillis, lastBucket, attention, this,
+                SystemClock.uptimeMillis() - debugAttachedAt, debugSource, now)
+        }
         paint.color = palette.primary
         if (now < SYNCED_AFTER && clockStyle != "float") { text(canvas, "--:--", width / 2f, height / 2f, min(width * .25f, height * .5f)); return }
         when (clockStyle) {
@@ -178,6 +197,14 @@ class ClockView(context: Context, private val declaration: JSONObject, private v
             "world" -> world(canvas)
             "float" -> digital(canvas)
             else -> digital(canvas)
+        }
+        if (!startupDrawReported && canvas.isHardwareAccelerated && isShown && windowVisibility == VISIBLE) {
+            val frameTime = drawingTime
+            if (frameTime <= 0L) return
+            startupDrawReported = true
+            var ancestor: ViewParent? = parent
+            while (ancestor != null && ancestor !is ThinkStage) ancestor = ancestor.parent
+            (ancestor as? ThinkStage)?.startupClockDrawn(frameTime)
         }
     }
 

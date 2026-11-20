@@ -21,6 +21,7 @@ import moe.kiwi.thinkos.R
 import moe.kiwi.thinkos.anim.ClockTicker
 import moe.kiwi.thinkos.core.Attention
 import moe.kiwi.thinkos.core.WallClock
+import moe.kiwi.thinkos.perf.InputTrace
 import moe.kiwi.thinkos.plugin.PluginWidget
 import moe.kiwi.thinkos.tz.ZoneFormat
 import org.json.JSONArray
@@ -53,7 +54,7 @@ internal class AeroHomeView(
         text(TextScale.TITLE, Color.WHITE).apply {
             text = "T"
             gravity = Gravity.CENTER
-            typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+            typeface = PageTypefaces.medium
         }
     private val tray =
         text(TextScale.CAPTION, Color.WHITE).apply {
@@ -61,13 +62,7 @@ internal class AeroHomeView(
             maxLines = 2
         }
     private val buttons = mutableListOf<TextView>()
-    private val menu =
-        LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            elevation = dp(12).toFloat()
-            visibility = GONE
-            setPadding(dp(7), dp(7), dp(7), dp(7))
-        }
+    private var menu: LinearLayout? = null
     private var dark = true
     private var active = false
     private var minute = -1L
@@ -83,7 +78,7 @@ internal class AeroHomeView(
 
     init {
         clipChildren = true
-        listOf(wallpaper, heading, brand, taskbar, start, tray, menu).forEach(::addView)
+        listOf(wallpaper, heading, brand, taskbar, start, tray).forEach(::addView)
         start.setOnClickListener { toggleMenu() }
         tray.setOnClickListener { events.openSettings("system") }
         localeChanged()
@@ -95,14 +90,14 @@ internal class AeroHomeView(
     private fun exact(n: Int) = MeasureSpec.makeMeasureSpec(n.coerceAtLeast(0), MeasureSpec.EXACTLY)
 
     private fun text(sp: Float, color: Int) =
-        AeroTextView(context).apply {
+        InputTrace.componentSpan("aero.text") { AeroTextView(context) }.apply {
             textSize = sp
             setTextColor(color)
             gravity = Gravity.START or Gravity.CENTER_VERTICAL
             includeFontPadding = true
             maxLines = 1
             ellipsize = TextUtils.TruncateAt.END
-            typeface = Typeface.create("sans-serif", Typeface.NORMAL)
+            typeface = PageTypefaces.regular
         }
 
     fun update(pageOwner: String, references: JSONArray, widgets: List<PluginWidget>) {
@@ -114,7 +109,6 @@ internal class AeroHomeView(
         windows.clear()
         buttons.forEach(::removeView)
         buttons.clear()
-        menu.removeAllViews()
         for (i in 0 until references.length()) {
             val (plugin, declaration, opens) =
                 resolveStackItem(pageOwner, references.opt(i), widgets, "glance")
@@ -133,7 +127,7 @@ internal class AeroHomeView(
             val title =
                 events.text(plugin, "name")
                     ?: references.optJSONObject(i)?.optString("widget").orEmpty()
-            val frame = AeroWindow(context, title, body)
+            val frame = InputTrace.componentSpan("aero.window") { AeroWindow(context, title, body) }
             frame.contentDescription = title
             frame.setOnClickListener { opens?.let(events::openPage) }
             val window = Window(plugin, opens, frame, body)
@@ -149,27 +143,18 @@ internal class AeroHomeView(
                 }
             buttons += button
             addView(button, indexOfChild(start))
-            menu.addView(
-                menuItem(title) {
-                    closeMenu()
-                    opens?.let(events::openPage)
-                }
-            )
         }
-        menu.addView(
-            menuItem(context.getString(R.string.setting_system_name)) {
-                closeMenu()
-                events.openSettings("system")
-            }
-        )
-        menu.bringToFront()
+        menu?.let {
+            if (it.visibility == VISIBLE) populateMenu(it) else it.removeAllViews()
+            it.bringToFront()
+        }
         start.bringToFront()
         colors(if (dark) Palette.DARK else Palette.LIGHT)
         active(active)
         requestLayout()
     }
 
-    private fun menuItem(title: String, action: () -> Unit) =
+    private fun menuItem(title: String, action: () -> Unit) = InputTrace.componentSpan("aero.menu") {
         text(TextScale.BODY, 0xff12253b.toInt()).apply {
             text = title
             setPadding(dp(14), 0, dp(14), 0)
@@ -185,12 +170,47 @@ internal class AeroHomeView(
                     }
             setOnClickListener { action() }
         }
+    }
+
+    private fun populateMenu(menu: LinearLayout) {
+        menu.removeAllViews()
+        windows.forEach { window ->
+            menu.addView(menuItem(window.view.contentDescription.toString()) {
+                closeMenu()
+                window.opens?.let(events::openPage)
+            })
+        }
+        menu.addView(menuItem(context.getString(R.string.setting_system_name)) {
+            closeMenu()
+            events.openSettings("system")
+        })
+    }
+
+    private fun createMenu(): LinearLayout = LinearLayout(context).apply {
+        orientation = LinearLayout.VERTICAL
+        elevation = dp(12).toFloat()
+        visibility = GONE
+        setPadding(dp(7), dp(7), dp(7), dp(7))
+        background = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(0xf0d6e9fb.toInt(), 0xf0477197.toInt()),
+        ).apply {
+            cornerRadius = dp(6).toFloat()
+            setStroke(dp(1).coerceAtLeast(1), 0xffc4e7ff.toInt())
+        }
+    }.also {
+        addView(it)
+        start.bringToFront()
+        menu = it
+    }
 
     private fun toggleMenu() {
+        val menu = menu ?: createMenu()
         if (menu.visibility == VISIBLE) {
             closeMenu()
             return
         }
+        if (menu.childCount == 0) populateMenu(menu)
         menu.visibility = VISIBLE
         if (android.animation.ValueAnimator.areAnimatorsEnabled()) {
             menu.alpha = 0f
@@ -206,14 +226,15 @@ internal class AeroHomeView(
     }
 
     /** Back closes the start menu before it leaves the page (ADR-040). */
-    val hasBack: Boolean get() = menu.visibility == VISIBLE
+    val hasBack: Boolean get() = menu?.visibility == VISIBLE
     fun back(): Boolean {
-        if (menu.visibility != VISIBLE) return false
+        if (!hasBack) return false
         closeMenu()
         return true
     }
 
     private fun closeMenu() {
+        val menu = menu ?: return
         menu.animate().cancel()
         menu.visibility = GONE
         menu.alpha = 1f
@@ -221,6 +242,7 @@ internal class AeroHomeView(
     }
 
     fun tapAt(x: Float, y: Float): Boolean {
+        val menu = menu ?: return false
         if (menu.visibility == VISIBLE && !hit(menu, x, y) && !hit(start, x, y)) {
             closeMenu()
             return true
@@ -234,7 +256,7 @@ internal class AeroHomeView(
     fun interactiveAt(x: Float, y: Float) =
         hit(start, x, y) ||
             hit(tray, x, y) ||
-            hit(menu, x, y) ||
+            menu?.let { hit(it, x, y) } == true ||
             buttons.any { hit(it, x, y) } ||
             windows.any { hit(it.view, x, y) }
 
@@ -296,11 +318,15 @@ internal class AeroHomeView(
         }
     }
 
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-        minute = -1
-        showTime(WallClock.now())
-        ClockTicker.add(this)
+    override fun onVisibilityAggregated(isVisible: Boolean) {
+        super.onVisibilityAggregated(isVisible)
+        if (isVisible) {
+            minute = -1
+            showTime(WallClock.now())
+            ClockTicker.add(this)
+        } else {
+            ClockTicker.remove(this)
+        }
     }
 
     override fun onDetachedFromWindow() {
@@ -318,9 +344,9 @@ internal class AeroHomeView(
             val name = events.text(win.owner, "name") ?: win.owner
             win.view.title(name)
             buttons.getOrNull(i)?.text = name
-            (menu.getChildAt(i) as? TextView)?.text = name
+            (menu?.getChildAt(i) as? TextView)?.text = name
         }
-        (menu.getChildAt(windows.size) as? TextView)?.text =
+        (menu?.getChildAt(windows.size) as? TextView)?.text =
             context.getString(R.string.setting_system_name)
         minute = -1
     }
@@ -404,15 +430,6 @@ internal class AeroHomeView(
                         setStroke(dp(1).coerceAtLeast(1), 0x77e2f3ff)
                     }
         }
-        menu.background =
-            GradientDrawable(
-                    GradientDrawable.Orientation.TOP_BOTTOM,
-                    intArrayOf(0xf0d6e9fb.toInt(), 0xf0477197.toInt()),
-                )
-                .apply {
-                    cornerRadius = dp(6).toFloat()
-                    setStroke(dp(1).coerceAtLeast(1), 0xffc4e7ff.toInt())
-                }
     }
 
     private val boxes = linkedMapOf<View, android.graphics.Rect>()
@@ -466,8 +483,10 @@ internal class AeroHomeView(
         buttons.forEachIndexed { i, b ->
             box(b, dp(74) + i * bw, h - bar + dp(5), bw - dp(6), bar - dp(10))
         }
-        val mh = dp(48) * (windows.size + 1) + dp(14)
-        box(menu, dp(8), h - bar - mh, minOf(dp(300), w - dp(16)), mh)
+        menu?.takeIf { it.visibility == VISIBLE }?.let {
+            val mh = dp(48) * (windows.size + 1) + dp(14)
+            box(it, dp(8), h - bar - mh, minOf(dp(300), w - dp(16)), mh)
+        }
         setMeasuredDimension(w, h)
     }
 
@@ -481,31 +500,96 @@ internal class AeroHomeView(
 }
 
 /** The blue ribbons are original vector artwork, cached in the view's display list. */
-private class AeroWallpaper(context: Context) : View(context) {
-    init {
-        setLayerType(LAYER_TYPE_HARDWARE, null)
-    }
+internal fun prepareAeroWallpaper(width: Int, height: Int, palette: Palette) {
+    AeroWallpapers.request(AeroWallpapers.Style(width, height, Color.red(palette.bg) < 128))
+}
 
+private class AeroWallpaper(context: Context) : View(context) {
     var dark = true
         set(value) {
             if (field != value) {
                 field = value
+                if (isAttachedToWindow) AeroWallpapers.request(style())
                 invalidate()
             }
         }
 
-    private val p = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val bitmapPaint = Paint(Paint.FILTER_BITMAP_FLAG)
+    private fun style() = AeroWallpapers.Style(width, height, dark)
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        AeroWallpapers.views[this] = Unit
+        AeroWallpapers.request(style())
+    }
+
+    override fun onDetachedFromWindow() {
+        AeroWallpapers.views.remove(this)
+        super.onDetachedFromWindow()
+    }
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        AeroWallpapers.request(style())
+    }
 
     override fun onDraw(c: Canvas) {
-        val w = width.toFloat()
-        val h = height.toFloat()
+        if (width <= 0 || height <= 0) return
+        val style = style()
+        val bitmap = AeroWallpapers.bitmap(style)
+        if (bitmap != null) c.drawBitmap(bitmap, 0f, 0f, bitmapPaint)
+        else {
+            AeroWallpapers.request(style)
+            AeroWallpapers.draw(c, style)
+        }
+    }
+}
+
+private object AeroWallpapers {
+    data class Style(val width: Int, val height: Int, val dark: Boolean)
+
+    val views = java.util.WeakHashMap<AeroWallpaper, Unit>()
+    private const val MAX_BITMAP_BYTES = 4L * 1024 * 1024
+    private var wanted: Style? = null
+    private var pending = false
+    private var cached: Pair<Style, Bitmap>? = null
+
+    fun bitmap(style: Style): Bitmap? = cached?.takeIf { it.first == style }?.second
+
+    fun request(style: Style) {
+        if (style.width <= 0 || style.height <= 0) return
+        wanted = style.takeIf { it.width.toLong() * it.height <= MAX_BITMAP_BYTES / 4 }
+        if (cached?.first != wanted) cached = null
+        if (pending || cached != null || wanted == null) return
+        pending = true
+        AeroRaster.worker.execute {
+            val bitmap = Bitmap.createBitmap(style.width, style.height, Bitmap.Config.ARGB_8888).apply {
+                density = Bitmap.DENSITY_NONE
+            }
+            draw(Canvas(bitmap), style)
+            bitmap.prepareToDraw()
+            AeroRaster.main.post {
+                pending = false
+                val current = wanted
+                if (current == style) {
+                    cached = style to bitmap
+                    if (moe.kiwi.thinkos.BuildConfig.DEBUG) android.util.Log.i("ThinkOS", "Aero wallpaper cached: " + android.os.SystemClock.uptimeMillis())
+                    views.keys.forEach(View::invalidate)
+                } else if (current != null) request(current)
+            }
+        }
+    }
+
+    fun draw(c: Canvas, style: Style) {
+        val w = style.width.toFloat()
+        val h = style.height.toFloat()
+        val p = Paint(Paint.ANTI_ALIAS_FLAG)
         p.shader =
             LinearGradient(
                 0f,
                 0f,
                 w,
                 h,
-                if (dark) intArrayOf(0xff061d3c.toInt(), 0xff0d5784.toInt(), 0xff087e9e.toInt())
+                if (style.dark) intArrayOf(0xff061d3c.toInt(), 0xff0d5784.toInt(), 0xff087e9e.toInt())
                 else intArrayOf(0xff174f96.toInt(), 0xff178fc1.toInt(), 0xff39b9bb.toInt()),
                 null,
                 Shader.TileMode.CLAMP,

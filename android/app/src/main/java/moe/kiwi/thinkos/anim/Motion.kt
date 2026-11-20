@@ -96,15 +96,17 @@ class PropertyBreath(private val view: View, private val lowAlpha: Float, privat
 class FrameGovernor {
     var attention = Attention.AWAKE
     var reducedMotion = false
+    var touching = false
     var activeAnimations = false
     var ambientAnimations = false
     val fps: Int
         get() = when {
             reducedMotion -> 5
             attention == Attention.ASLEEP -> if (activeAnimations) 5 else 1
-            activeAnimations && attention in setOf(Attention.AWAKE, Attention.ENGAGED) -> 60
+            touching -> 60
+            activeAnimations && attention != Attention.AMBIENT -> 60
             activeAnimations -> 30
-            ambientAnimations && attention in setOf(Attention.AWAKE, Attention.ENGAGED) -> 30
+            ambientAnimations && attention != Attention.AMBIENT -> 30
             attention == Attention.AMBIENT -> 3
             else -> 1
         }

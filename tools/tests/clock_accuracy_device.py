@@ -26,6 +26,7 @@ def main():
     parser.add_argument('--output', type=Path, default=ROOT / 'artifacts/clock/accuracy')
     parser.add_argument('--seconds', type=int, default=60, help='length of the steady run')
     parser.add_argument('--face', choices=('digital','analog'), default='digital', help='Pin the tested face instead of inheriting a saved variant')
+    parser.add_argument('--leave-return', action='store_true', help='Check accuracy after the clock page leaves the screen and returns')
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     base = ['adb', '-s', args.serial]
@@ -82,6 +83,20 @@ def main():
         assert steady['skipped'] == 0, steady
         assert steady['p95'] <= 40 and steady['max'] <= 80, steady
         passed(f'{steady["n"]} consecutive second changes: p50 {steady["p50"]} ms, p95 {steady["p95"]} ms, max {steady["max"]} ms late, none skipped')
+
+        if args.leave_return:
+            device.debug('page', value='aero.main')
+            time.sleep(2)
+            away = broadcast_json(device, 'stage_state')
+            assert away['page'] == 'aero.main' and away['visibleChildren'] == 1, away
+            debug('clock_reset')
+            device.debug('page', value='clock.face')
+            time.sleep(12)
+            assert broadcast_json(device, 'stage_state')['page'] == 'clock.face'
+            returned = stats('the 12 s after returning to the clock')
+            assert returned['n'] >= 10 and returned['skipped'] == 0 and returned['p95'] <= 40 and returned['max'] <= 80, returned
+            report['leaveReturn'] = {'away': away, 'afterReturn': returned}
+            passed('the clock resumes immediately after leaving and returning')
 
         errors = [error() for _ in range(3)]
         print('  against a time server (ms, rtt, synced):', errors, flush=True)

@@ -59,11 +59,11 @@ def main():
         start = adb('shell', 'am', 'start', '-W', '-n', 'moe.kiwi.thinkos/.MainActivity').decode()
         (args.output / 'am-start.txt').write_text(start)
         total = int(re.search(r'TotalTime: (\d+)', start).group(1))
-        assert 0 < total < 5000, start
         # Wireless ADB polling can take hundreds of milliseconds. Measure the device's
         # reportFullyDrawn duration rather than counting host transport as application work.
         fully_drawn = None
-        while time.monotonic() - launched < 8:
+        deadline = time.monotonic() + 8
+        while time.monotonic() < deadline:
             timings = adb('logcat', '-d', '-t', '200', '-s', 'ActivityManager:I').decode()
             lines = timings.splitlines()
             displayed = max((i for i, line in enumerate(lines) if 'Displayed moe.kiwi.thinkos/.MainActivity:' in line), default=-1)
@@ -72,18 +72,36 @@ def main():
                 if m: fully_drawn = int(m[1] or 0)*1000 + int(m[2])
             if fully_drawn is not None: break
             time.sleep(.1)
-        assert fully_drawn is not None and fully_drawn < 5000, 'Device fully drawn duration: ' + str(fully_drawn)
         debug('state')
         current = adb('logcat', '-d', '-t', '25', '-s', 'ThinkOS:V').decode().split('DEBUG state=')[-1]
+        startup_ui = broadcast_json(device, 'ui_state')
+        startup_mode = broadcast_json(device, 'mode_state')
         content_ready_ms = fully_drawn
         host_observed_ms = round((time.monotonic()-launched)*1000)
         log = adb('logcat', '-d', '-s', 'ActivityManager:I', 'ThinkOS:V', 'AndroidRuntime:E').decode()
         (args.output / 'logcat.txt').write_text(log)
+        pid = adb('shell', 'pidof', 'moe.kiwi.thinkos').decode().strip()
+        local_log = adb('logcat', '-d', '--pid='+pid, '-s', 'ThinkOS:I').decode()
+        clock_frame = re.search(r'Startup clock frame: (\d+)', local_log)
+        wallpaper = re.search(r'Aero wallpaper cached: (\d+)', local_log)
+        if startup_mode['theme'] == 'NIGHT':
+            device.debug('theme', value='DARK')
+            time.sleep(2.1)
         (args.output / 'offline-home.png').write_bytes(adb('exec-out', 'screencap', '-p'))
-        assert 'page=home.main' in current and 'safeMode=false' in current
+        result = {
+            'total_ms': total, 'content_ready_ms': content_ready_ms, 'host_observed_ms': host_observed_ms,
+            'wifi_disabled': network is None, 'app_network_blocked': network is not None, 'server': 'none',
+            'page': startup_ui['page'], 'mode': startup_mode['mode'],
+            'clock_frame_uptime_ms': int(clock_frame[1]) if clock_frame else None,
+            'wallpaper_ready_uptime_ms': int(wallpaper[1]) if wallpaper else None,
+            'state': current.strip(),
+        }
+        (args.output / 'result.json').write_text(json.dumps(result, indent=2, ensure_ascii=False) + '\n')
+        expected_page = 'clock.face' if startup_mode['mode'] in ('redshift', 'sleep') else 'home.main'
+        assert startup_ui['page'] == expected_page and not startup_ui['safeMode'], startup_ui
         assert 'id=clock' in current and 'id=home' in current and 'id=runtime-probe' not in current
-        (args.output / 'result.json').write_text(json.dumps({'total_ms': total, 'content_ready_ms': content_ready_ms, 'host_observed_ms': host_observed_ms, 'wifi_disabled': network is None, 'app_network_blocked': network is not None, 'server': 'none', 'state': current.strip()}, indent=2, ensure_ascii=False) + '\n')
-        print('PASS offline cold start ' + str(total) + 'ms; complete home cards ' + str(content_ready_ms) + 'ms')
+        assert 0 < total < 5000 and fully_drawn is not None and fully_drawn < 5000, (total, fully_drawn)
+        print(f"PASS offline cold start {total}ms; {expected_page} fully drawn in {content_ready_ms}ms")
     finally:
         if network:network.stop()
         if wifi != '0':

@@ -3,10 +3,13 @@ import hashlib
 import os
 from pathlib import Path
 import queue
+import secrets
 import subprocess
 import tempfile
 import threading
 import zipfile
+
+from gestures import validate_path
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT/'tools/tests/android/ThinkTouch.java'
@@ -63,3 +66,39 @@ def drag(device, start, end, *, cancel=False, observe=lambda: None, chord=False,
             # Give the helper's bounded hold time and finally block time to release the pointer.
             try: process.wait(timeout=12)
             except subprocess.TimeoutExpired: process.terminate(); process.wait(timeout=5)
+
+
+def path(device, points, *, finish='up', prepare_page=None, settle_delay=0):
+    """Inject a timed path through Android's input dispatcher exactly once."""
+    if finish not in ('up', 'cancel'):
+        raise ValueError('Expected up or cancel')
+    points = validate_path(points)
+    prefix = '/data/local/tmp/thinkos-path-' + secrets.token_hex(8)
+    remote_file, remote_jar = prefix + '.txt', prefix + '.jar'
+    with tempfile.TemporaryDirectory(prefix='thinkos-path-') as directory:
+        local = Path(directory) / 'points.txt'
+        local.write_text(''.join(f'{at} {x:.4f} {y:.4f}\n' for at, x, y in points), encoding='ascii')
+        try:
+            device.push(touch_jar(), remote_jar)
+            device.push(local, remote_file)
+            command = device.base + ['shell', 'uiautomator', 'runtest', remote_jar, '-c', 'ThinkTouch#testPath',
+                                     '-e', 'path', remote_file, '-e', 'finish', finish]
+            if prepare_page is not None:
+                command += ['-e', 'prepare_page', prepare_page, '-e', 'settle_delay', str(settle_delay)]
+            result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=45)
+            if result.returncode or 'OK (1 test)' not in result.stdout or 'FAILURES' in result.stdout:
+                raise RuntimeError('Touch path failed: ' + result.stdout)
+            return result.stdout
+        finally:
+            device.shell('rm', '-f', remote_file, remote_jar)
+
+
+def set_editor_text(device, text):
+    remote = '/data/local/tmp/thinkos-editor-' + secrets.token_hex(8) + '.jar'
+    try:
+        device.push(touch_jar(), remote)
+        result = device.shell('uiautomator', 'runtest', remote, '-c', 'ThinkTouch#testSetEditorText', '-e', 'text', text)
+        if 'OK (1 test)' not in result or 'FAILURES' in result:
+            raise AssertionError('The focused native editor did not accept ACTION_SET_TEXT')
+    finally:
+        device.shell('rm', '-f', remote)

@@ -82,6 +82,7 @@ ThinkOS 是运行在 ThinkSmart View 上的 **Kiosk 主应用（设备外壳）*
 | [docs/44-call-plan.md](docs/44-call-plan.md) | 通话实施方案（局域网版）：架构、决定、发现与信令、阶段与门槛、风险 |
 | [docs/45-modes.md](docs/45-modes.md) | 模式：白天、红移、睡眠，以及怎么切换 |
 | [docs/46-bluetooth-speaker.md](docs/46-bluetooth-speaker.md) | 蓝牙音箱：手机连上设备，用它的扬声器播放 |
+| [docs/48-responsiveness-plan.md](docs/48-responsiveness-plan.md) | 跟手性：真机延迟基线、优化计划和验收 |
 
 磁贴已接入 API 4：直角 Metro 网格、自定义底色与动态翻面，设备可离线使用。实现与实测结果见 [磁贴验收](docs/24-tiles-validation.md)。
 

@@ -18,8 +18,10 @@ import android.widget.TextView
 import kotlinx.coroutines.*
 import moe.kiwi.thinkos.anim.*
 import moe.kiwi.thinkos.core.*
+import moe.kiwi.thinkos.perf.InputTrace
 import moe.kiwi.thinkos.plugin.PluginPage
 import moe.kiwi.thinkos.plugin.PluginWidget
+import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.math.*
 
@@ -56,7 +58,10 @@ class ThinkStage(
     /** OS recognition only. The caller has already checked the built-in onboarding authority. */
     var onPractice: ((String) -> Unit)? = null
     fun setPractice(name: String?, text: String) {
-        val next = name?.takeIf { it in setOf("swipe", "variant", "panel", "back", "home", "long-press") }
+        val next = when (name) {
+            "swipe", "variant", "panel", "back", "home", "long-press" -> name
+            else -> null
+        }
         if (practiceFeedbackPage != null) {
             if (router.onboardingOpen && router.currentPage?.key == practiceFeedbackPage &&
                 router.currentPage?.roles?.contains("onboarding") == true) {
@@ -130,10 +135,19 @@ class ThinkStage(
     private var widgets = emptyList<PluginWidget>()
     private var current: PageView? = null
     private var neighbor: PageView? = null
-    private var prepared: PageView? = null
+    internal var onStartupClockDraw: ((Long) -> Unit)? = null
+    private data class WarmTarget(val page: PluginPage, val variant: String) {
+        val key get() = PageCacheKey(page.key, variant)
+    }
+    private val cache = PageCachePolicy<PageView>(pageHost::removeView)
+    private var warmEligible = emptySet<String>()
+    private var launchTarget: WarmTarget? = null
+    private var settledSince = 0L
     private var previewQueued = false
     private var previewChecked = false
     private var touching = false
+    internal var singlePointerGesture = true
+        private set
     private var debugDownX = -1f
     private var debugDownY = -1f
     private var debugDownCount = 0L
@@ -142,28 +156,32 @@ class ThinkStage(
         .put("downCount", debugDownCount).put("width", width).put("height", height)
         .put("children", pageHost.childCount).put("touching", touching).put("page", deck.page)
         .put("visibleChildren", (0 until pageHost.childCount).count { pageHost.getChildAt(it).visibility == VISIBLE })
+        .put("warmPages", JSONArray(cache.views.map { "${it.page.key}:${it.variant}" }))
+        .put("warmVisible", cache.views.count { it.visibility != INVISIBLE })
+        .put("warmAccessible", cache.views.count { it.importantForAccessibility != IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS })
         .put("edge", panelTouch.name).put("upProgress", system.upProgress).put("offset", offset)
         .put("translationY", current?.translationY ?: 0f).put("canGoBack", router.canGoBack)
         .put("pageBack", current?.hasBack == true).put("animatorsEnabled", ValueAnimator.areAnimatorsEnabled())
         .put("layoutDirection", layoutDirection).put("fontScale", resources.configuration.fontScale)
         .put("panelOpen", panel.showing)
+        .put("variant", deck.variant).put("attention", store.current.attention.name)
+        .put("settled", !touching && springs.none { it.isRunning } && !appTransition.running && !panel.animating)
+        .put("warmSettledAt", settledSince)
+        .put("nextPage", router.previewPage(1)?.key ?: JSONObject.NULL)
+        .put("nextVariant", router.previewVariant(1) ?: JSONObject.NULL)
         .put("practice", practiceName ?: JSONObject.NULL).put("practiceText", practiceText).put("practiceDone", practiceDone)
         .put("practiceVisible", practiceHint.visibility == VISIBLE)
     private val previewIdle = MessageQueue.IdleHandler {
         previewQueued = false
-        if (canPreparePreview()) {
-            previewChecked = true
-            val page = listOf(-1, 1).firstNotNullOfOrNull { direction ->
-                router.previewPage(direction)?.takeIf(::photoPage)
-            }
-            if (page != null) {
-                prepared = newPage(page, router.rememberedVariant(page)).also {
-                    it.visibility = INVISIBLE
-                    pageHost.addView(it, LayoutParams(-1, -1))
-                    it.measure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY))
-                    it.layout(0, 0, width, height)
-                }
-            }
+        val prediction = launchTarget
+        if (touching && prediction != null && canWarm()) {
+            if (prediction.key !in cache) buildWarm(WarmSlot.LAUNCH, prediction)
+        } else if (isWarmSettled() && SystemClock.uptimeMillis() - settledSince >= WARM_SETTLE_MILLIS) {
+            val targets = warmTargets()
+            cache.assign(targets.mapValues { it.value.key })
+            val next = targets.entries.firstOrNull { it.value.key !in cache }
+            previewChecked = next == null || cache.size >= PageCachePolicy.MAX_WARM
+            if (!previewChecked && next != null) buildWarm(next.key, next.value)
         }
         false
     }
@@ -191,6 +209,8 @@ class ThinkStage(
     private var stackDrag = false
     private var commitDrag = false
     private var velocity: VelocityTracker? = null
+    private var dragPrediction: DragPrediction? = null
+    private val flingVelocity = ViewConfiguration.get(context).scaledMaximumFlingVelocity.toFloat()
     private val slop = ViewConfiguration.get(context).scaledTouchSlop
     private val springs = mutableListOf<ValueAnimator>()
     private val handler = Handler(Looper.getMainLooper())
@@ -212,6 +232,7 @@ class ThinkStage(
         if (!longPressArmed) return@Runnable
         longPressArmed = false
         longPressFired = true
+        cancelWarmLaunch()
         pageHost.animate().cancel()
         pageHost.scaleX = 1f
         pageHost.scaleY = 1f
@@ -282,15 +303,16 @@ class ThinkStage(
                 overlayText.text = message.orEmpty()
                 overlayText.visibility = if (message == null) GONE else VISIBLE
                 if (lastAttention != value.attention) {
-                    prepared?.tick(SystemClock.uptimeMillis(), value.attention)
                     if (value.attention == Attention.ASLEEP) clearPrepared()
-                    val waking = value.attention in setOf(Attention.AWAKE, Attention.ENGAGED) && lastAttention in setOf(Attention.ASLEEP, Attention.AMBIENT)
+                    val resting = value.attention == Attention.ASLEEP || value.attention == Attention.AMBIENT
+                    val waking = !resting && (lastAttention == Attention.ASLEEP || lastAttention == Attention.AMBIENT)
                     if (waking) {
                         system.wakeAt = SystemClock.uptimeMillis()
                         wakeUntil = system.wakeAt + 750
                     }
-                    if (waking || value.attention in setOf(Attention.AMBIENT, Attention.ASLEEP)) current?.animateAttention(waking)
+                    if (waking || resting) current?.animateAttention(waking)
                     current?.tick(SystemClock.uptimeMillis(), value.attention)
+                    if (waking) InputTrace.awake()
                     lastAttention = value.attention
                 }
                 clock.wake()
@@ -325,13 +347,14 @@ class ThinkStage(
     fun closePanel(animated: Boolean = true) = panel.close(animated)
     fun prepareSystemHome() {
         cancelPracticeFeedback(); setPractice(null, "")
-        panel.close(false); clearPrepared(); cancelGesture(); endPanelTouch()
+        panel.close(false); cancelGesture(); endPanelTouch()
         if (touching) panelTouch = PanelTouch.SWALLOW
     }
     fun updateCatalog(nextPages: List<PluginPage>, nextWidgets: List<PluginWidget>) {
         clearPrepared()
         pages = nextPages
         widgets = nextWidgets
+        warmEligible = pages.filter { PreparePolicy.allowed(it, widgets) }.mapTo(hashSetOf()) { it.key }
         val visible = current
         val replacement = pages.firstOrNull { it.key == visible?.page?.key }
         if (visible != null && replacement != null) {
@@ -349,78 +372,157 @@ class ThinkStage(
         layoutDirection = android.text.TextUtils.getLayoutDirectionFromLocale(java.util.Locale.getDefault())
         current?.localeChanged()
         neighbor?.localeChanged()
-        prepared?.localeChanged()
+        cache.views.forEach(PageView::localeChanged)
         panel.localeChanged()
     }
     fun updatePluginState(pluginId: String, state: JSONObject) {
-        val changed = Binding.changed(states.put(pluginId, state), state)
+        val changed = InputTrace.marked(InputTrace.DIFF) { Binding.changed(states.put(pluginId, state), state) }
         if (changed.isEmpty()) return
-        panel.bind(pluginId, changed)
-        current?.bind(pluginId, changed)
-        neighbor?.bind(pluginId, changed)
-        prepared?.bind(pluginId, changed)
+        InputTrace.marked(InputTrace.BIND) {
+            panel.bind(pluginId, changed)
+            current?.bind(pluginId, changed)
+            neighbor?.bind(pluginId, changed)
+            cache.views.forEach { it.bind(pluginId, changed) }
+        }
     }
-    private fun photoPage(page: PluginPage): Boolean {
-        if (page.view.optString("layout") != "stage") return false
-        val slot = page.view.optJSONObject("slots")?.optJSONObject("stage") ?: return false
-        val children = slot.optJSONArray("children")
-        val component = if (children == null) slot else children.takeIf { it.length() == 1 }?.optJSONObject(0)
-        return component?.optString("type").let { it == "image" || it == "carousel" }
+    private fun warmTargets(): Map<WarmSlot, WarmTarget> {
+        val targets = linkedMapOf<WarmSlot, WarmTarget>()
+        fun add(slot: WarmSlot, page: PluginPage?, variant: String? = null) {
+            if (page == null || page.key == current?.page?.key || page.key !in warmEligible) return
+            val target = WarmTarget(page, variant ?: router.rememberedVariant(page))
+            if (targets.values.none { it.key == target.key }) targets[slot] = target
+        }
+        router.previewBack()?.let { (page, variant) -> add(WarmSlot.BACK, page, variant) }
+        add(WarmSlot.LEFT, router.previewPage(-1))
+        add(WarmSlot.RIGHT, router.previewPage(1))
+        if (targets.size < PageCachePolicy.MAX_WARM) {
+            val free = listOf(WarmSlot.LEFT, WarmSlot.RIGHT, WarmSlot.LAUNCH).first { it !in targets }
+            add(free, router.homePage)
+        }
+        return targets
     }
-    private fun canPreparePreview() = collection != null && !touching && axis == 0 && neighbor == null &&
-        prepared == null && current?.isLaidOut == true && width > 0 && height > 0 &&
-        store.current.attention != Attention.ASLEEP &&
+    private fun canWarm() = collection != null && current?.isLaidOut == true && width > 0 && height > 0 &&
+        store.current.attention != Attention.ASLEEP && !router.onboardingOpen && !router.settingsOpen
+
+    internal fun startupClockDrawn(frameTimeMillis: Long) {
+        val callback = onStartupClockDraw ?: return
+        onStartupClockDraw = null
+        callback(frameTimeMillis)
+    }
+
+    internal fun warmStartupWallpaper() {
+        Looper.getMainLooper().queue.addIdleHandler {
+            if (canWarm() && !touching && pages.any { it.view.optString("layout") == "aero" }) {
+                prepareAeroWallpaper(width, height, targetPalette)
+            }
+            false
+        }
+    }
+
+    private fun isWarmSettled() = canWarm() && !touching && axis == 0 && neighbor == null && !themeAnimating &&
+        !appTransition.running && !panel.showing && !panel.animating && springs.none { it.isRunning } &&
         abs(current?.translationX ?: 0f) < .5f && abs(current?.translationY ?: 0f) < .5f
+
     private fun queuePreview() {
-        if (previewQueued || previewChecked || !canPreparePreview()) return
+        if (!isWarmSettled()) { settledSince = 0L; return }
+        if (previewQueued || previewChecked) return
+        val now = SystemClock.uptimeMillis()
+        if (settledSince == 0L) settledSince = now
+        if (now - settledSince >= WARM_SETTLE_MILLIS) queueWarmIdle()
+    }
+    private fun queueWarmIdle() {
+        if (previewQueued) return
         previewQueued = true
         Looper.getMainLooper().queue.addIdleHandler(previewIdle)
     }
-    private fun clearPrepared() {
+    private fun cancelWarmIdle() {
         Looper.getMainLooper().queue.removeIdleHandler(previewIdle)
-        previewQueued = false; previewChecked = false
-        prepared?.let(pageHost::removeView)
-        prepared = null
+        previewQueued = false
     }
-    private fun takePrepared(page: PluginPage, variant: String): PageView? {
-        val view = prepared?.takeIf { it.page.key == page.key && it.variant == variant }
-        if (view != null) {
-            prepared = null
-            view.visibility = VISIBLE
-            view.tick(SystemClock.uptimeMillis(), store.current.attention)
+    private fun clearPrepared() {
+        cancelWarmIdle()
+        launchTarget = null
+        settledSince = 0L
+        previewChecked = false
+        cache.clear()
+    }
+    private fun cancelWarmLaunch() {
+        val prediction = launchTarget ?: return
+        cancelWarmIdle()
+        launchTarget = null
+        if (cache.key(WarmSlot.LAUNCH) == prediction.key) cache.drop(WarmSlot.LAUNCH)
+        previewChecked = false
+    }
+    private fun predictLaunch(x: Float, y: Float) {
+        if (!canWarm() || appTransition.running) return
+        val target = current?.openAt(x, y) ?: return
+        val page = pages.firstOrNull { it.key == target && it.key in warmEligible && it.key != current?.page?.key } ?: return
+        val prediction = WarmTarget(page, router.rememberedVariant(page))
+        if (prediction.key in cache) return
+        launchTarget = prediction
+        queueWarmIdle()
+    }
+    private fun buildWarm(slot: WarmSlot, target: WarmTarget) {
+        val view = newPage(target.page, target.variant, Attention.AMBIENT)
+        keepWarm(slot, view)
+        pageHost.addView(view, LayoutParams(-1, -1))
+        view.measure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY))
+        view.layout(0, 0, width, height)
+    }
+    private fun keepWarm(slot: WarmSlot, view: PageView) {
+        view.visibility = INVISIBLE
+        view.importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+        view.translationX = 0f; view.translationY = 0f
+        view.active(false)
+        cache.put(slot, PageCacheKey(view.page.key, view.variant), view)
+    }
+    private fun takePrepared(page: PluginPage, variant: String): PageView? = InputTrace.marked(InputTrace.TAKE) {
+        cache.take(PageCacheKey(page.key, variant))?.also {
+            previewChecked = false
+            it.importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_AUTO
+            it.bringToFront()
+            it.visibility = VISIBLE
+            it.tick(SystemClock.uptimeMillis(), store.current.attention)
         }
-        clearPrepared()
-        return view
     }
     private fun retire(view: PageView) {
-        val adjacent = listOf(-1, 1).any { direction ->
-            router.previewPage(direction)?.let { it.key == view.page.key && router.rememberedVariant(it) == view.variant } == true
-        }
-        if (view.parent === pageHost && prepared == null && collection != null &&
-            store.current.attention != Attention.ASLEEP && adjacent &&
-            (view.photoStage || current?.photoStage == true)) {
-            // Keep one adjacent page warm for an immediate reversal; it owns no running animation.
-            view.visibility = INVISIBLE
-            view.translationX = 0f; view.translationY = 0f
+        val key = PageCacheKey(view.page.key, view.variant)
+        val targets = if (view.parent === pageHost && canWarm()) warmTargets() else emptyMap()
+        val slot = targets.entries.firstOrNull { it.value.key == key && it.value.page == view.page }?.key
+        if (slot != null && (slot == WarmSlot.BACK || view.photoStage || current?.photoStage == true) && key !in cache) {
+            cache.assign(targets.mapValues { it.value.key })
+            keepWarm(slot, view)
             view.tick(SystemClock.uptimeMillis(), Attention.AMBIENT)
-            prepared = view
         } else pageHost.removeView(view)
         if (neighbor === view) neighbor = null
+        settledSince = 0L
+        previewChecked = false
         applyDrift()
         queuePreview()
     }
-    private fun newPage(page: PluginPage, variant: String): PageView = PageView(context, page, variant, widgets, events) { states[it] ?: JSONObject() }.also {
-        it.colors(palette)
-        it.night(night)
-        it.tick(SystemClock.uptimeMillis(), store.current.attention)
+    private fun newPage(page: PluginPage, variant: String, attention: Attention = store.current.attention): PageView = InputTrace.marked(InputTrace.NEW_PAGE) {
+        InputTrace.pageSpan(page.key, "build") {
+            PageView(context, page, variant, widgets, events) { states[it] ?: JSONObject() }.also {
+                it.colors(palette)
+                it.night(night)
+                it.tick(SystemClock.uptimeMillis(), attention)
+            }
+        }
     }
     private fun renderDeck(next: DeckState) {
         if (next.page == deck.page && next.variant == deck.variant && current != null) return
+        InputTrace.marked(InputTrace.RENDER) { renderChangedDeck(next) }
+    }
+
+    private fun renderChangedDeck(next: DeckState) {
         val page = pages.firstOrNull { it.key == next.page } ?: return
         appTransition.snap()
         val old = current
         val preview = neighbor?.takeIf { it.page.key == next.page && it.variant == next.variant && commitDrag }
         val incoming = preview ?: takePrepared(page, next.variant) ?: newPage(page, next.variant).also { pageHost.addView(it, LayoutParams(-1, -1)) }
+        cancelWarmLaunch()
+        settledSince = 0L
+        previewChecked = false
         if (preview == null) neighbor?.let(pageHost::removeView)
         neighbor = old
         current = incoming
@@ -439,7 +541,7 @@ class ThinkStage(
                 retire(old)
             }.start()
             old.animate().alpha(0f).setDuration(180).start()
-        } else if (old != null && next.transition in setOf(Transition.LAUNCH, Transition.RETURN) && old.page.key != next.page && preview == null &&
+        } else if (old != null && (next.transition == Transition.LAUNCH || next.transition == Transition.RETURN) && old.page.key != next.page && preview == null &&
             !governor.reducedMotion && ValueAnimator.areAnimatorsEnabled()) {
             // An app opens or closes: the Start page turns away and the app turns in, or the other way round (ADR-040).
             // The page that comes in is placed now: the turn needs its size (the hinge, which tiles there are), not the next frame's.
@@ -447,8 +549,10 @@ class ThinkStage(
                 incoming.measure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY))
                 incoming.layout(0, 0, width, height)
             }
-            if (next.transition == Transition.LAUNCH) appTransition.launch(old, incoming, launchOrigin) { retire(old) }
-            else appTransition.back(old, incoming, launchOrigin) { retire(old) }
+            if (next.transition == Transition.LAUNCH) {
+                appTransition.launch(old, incoming, launchOrigin) { retire(old) }
+                InputTrace.launched(appTransition.millis)
+            } else appTransition.back(old, incoming, launchOrigin) { retire(old) }
         } else if (old != null && !governor.reducedMotion && ValueAnimator.areAnimatorsEnabled()) {
             if (preview == null) position(incoming, direction * extent, vertical)
             val speed = if (commitDrag) velocity?.let { if (vertical) it.yVelocity else it.xVelocity } ?: 0f else 0f
@@ -494,14 +598,24 @@ class ThinkStage(
     private fun prepareNeighbor(direction: Int, vertical: Boolean) {
         ambient.covered(false)
         if (dragDirection == direction && neighbor != null) return
-        neighbor?.let(pageHost::removeView)
+        InputTrace.marked(InputTrace.PREPARE) { loadNeighbor(direction, vertical) }
+    }
+
+    private fun loadNeighbor(direction: Int, vertical: Boolean) {
+        val previous = neighbor
+        val previousDirection = dragDirection
         neighbor = null
         dragDirection = direction
         val page = if (vertical) router.currentPage else router.previewPage(direction)
         val variant = if (vertical) router.previewVariant(direction) else page?.let(router::rememberedVariant)
         if (page != null && variant != null) {
             neighbor = takePrepared(page, variant) ?: newPage(page, variant).also { pageHost.addView(it, LayoutParams(-1, -1)) }
-        } else clearPrepared()
+        }
+        if (previous != null) {
+            if (!vertical && previousDirection != direction && previous.page.key in warmEligible && canWarm()) {
+                keepWarm(if (previousDirection < 0) WarmSlot.LEFT else WarmSlot.RIGHT, previous)
+            } else pageHost.removeView(previous)
+        }
         applyDrift()
     }
     fun interruptForSleep() {
@@ -512,6 +626,7 @@ class ThinkStage(
     }
 
     private fun cancelGesture() {
+        cancelWarmLaunch()
         appTransition.snap()
         system.backProgress = 0f
         system.upProgress = 0f
@@ -527,13 +642,14 @@ class ThinkStage(
         commitDrag = false
         velocity?.recycle()
         velocity = null
+        dragPrediction = null
         previewChecked = false
         applyDrift()
     }
     /** `tos.tile.animate` from a plugin (ADR-028). */
     fun playTileAnimation(pluginId: String, name: String) { current?.playTileAnimation(pluginId, name) }
     fun refreshSettings() {
-        current?.renderSettingsChanged(); neighbor?.renderSettingsChanged(); prepared?.renderSettingsChanged()
+        current?.renderSettingsChanged(); neighbor?.renderSettingsChanged(); cache.views.forEach(PageView::renderSettingsChanged)
         current?.tick(SystemClock.uptimeMillis(), store.current.attention); clock.wake()
     }
     private fun tick(now: Long) {
@@ -563,6 +679,7 @@ class ThinkStage(
             if (now >= wakeUntil) system.wakeAt = 0
             system.invalidate()
         }
+        governor.touching = touching || springs.any { it.isRunning }
         governor.activeAnimations = themeAnimating || systemActive || panel.animating || appTransition.running || current?.activeAnimations == true || neighbor?.activeAnimations == true
         governor.ambientAnimations = current?.ambientAnimations == true || neighbor?.ambientAnimations == true
         queuePreview()
@@ -572,7 +689,7 @@ class ThinkStage(
         boot.setTextColor(value.primary)
         current?.colors(value)
         neighbor?.colors(value)
-        prepared?.colors(value)
+        cache.views.forEach { it.colors(value) }
         overlayText.setTextColor(value.secondary)
         practiceHint.colors(value)
         panel.colors(value)
@@ -583,7 +700,7 @@ class ThinkStage(
         panel.night(night)
         current?.night(night)
         neighbor?.night(night)
-        prepared?.night(night)
+        cache.views.forEach { it.night(night) }
         if (night <= 0f) { setLayerType(LAYER_TYPE_NONE, null); return }
         val gray = floatArrayOf(.2126f, .7152f, .0722f)
         val matrix = FloatArray(20)
@@ -617,15 +734,17 @@ class ThinkStage(
         downX = event.x; downY = event.y; offset = 0f
         velocity?.recycle()
         velocity = VelocityTracker.obtain().also { it.addMovement(event) }
+        dragPrediction = events.gesturePredictMillis.takeIf { it > 0 }?.let(::DragPrediction)
         onInteraction()
         armLongPress()
+        predictLaunch(downX, downY)
     }
 
     /** Let controls tap and lists scroll vertically; claim horizontal swipes after intent is clear. */
     override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
         // While the control sheet is up it owns every touch; the page under it must not start a swipe or a long press.
         if (panel.showing) return false
-        if (longPressFired && event.actionMasked in setOf(MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL)) return true
+        if (longPressFired && (event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_CANCEL)) return true
         if (router.settingsOpen) return false
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
@@ -741,6 +860,7 @@ class ThinkStage(
                         panel.beginPull(width, height)
                         down?.let { panel.pullTo(0f, it) }
                         panel.pullTo(dy, event)
+                        InputTrace.applied(InputTrace.PANEL, dy)
                         onInteraction()
                     }
                     BackGesture.Verdict.BACK -> beginBackSwipe(event)
@@ -779,7 +899,11 @@ class ThinkStage(
             return true
         }
         when (event.actionMasked) {
-            MotionEvent.ACTION_MOVE -> panel.pullTo(event.y - panelDownY, event)
+            MotionEvent.ACTION_MOVE -> {
+                val distance = event.y - panelDownY
+                panel.pullTo(distance, event)
+                InputTrace.applied(InputTrace.PANEL, distance)
+            }
             MotionEvent.ACTION_UP -> { panel.pullTo(event.y - panelDownY, event); panel.release(false); endPanelTouch() }
             MotionEvent.ACTION_CANCEL -> { panel.release(true); endPanelTouch() }
             MotionEvent.ACTION_POINTER_DOWN -> { panel.release(true); endPanelTouch(); panelTouch = PanelTouch.SWALLOW }
@@ -804,11 +928,10 @@ class ThinkStage(
         panelTouch = PanelTouch.BACK
         handler.removeCallbacks(edgePress)
         cancelGesture()
-        clearPrepared()
         ambient.covered(false)
         // The page Back leads to slides in from the left under the finger; an app that wants Back for itself has nothing to show there.
         (if (practiceActive() || panel.showing || current?.hasBack == true) null else router.previewBack())?.let { (page, variant) ->
-            neighbor = newPage(page, variant).also { pageHost.addView(it, LayoutParams(-1, -1)) }
+            neighbor = takePrepared(page, variant) ?: newPage(page, variant).also { pageHost.addView(it, LayoutParams(-1, -1)) }
         }
         dragDirection = -1
         axis = 1
@@ -827,6 +950,7 @@ class ThinkStage(
         system.backProgress = BackGesture.progress(offset, width.toFloat())
         system.backY = event.y
         system.invalidate()
+        if (InputTrace.enabled) InputTrace.applied(InputTrace.BACK, current?.translationX ?: 0f)
     }
 
     private fun backSwipe(event: MotionEvent): Boolean {
@@ -879,7 +1003,6 @@ class ThinkStage(
         panelTouch = PanelTouch.UP
         handler.removeCallbacks(edgePress)
         cancelGesture()
-        clearPrepared()
         // Home is built only after release commits. A drag moves just the current page and OS arrow.
         axis = 2
         offset = 0f
@@ -894,6 +1017,7 @@ class ThinkStage(
         current?.let { position(it, -offset * .16f, true) }
         system.upProgress = BackGesture.progress(offset, height.toFloat())
         system.invalidate()
+        if (InputTrace.enabled) InputTrace.applied(InputTrace.UP, current?.translationY ?: 0f)
     }
 
     private fun upSwipe(event: MotionEvent): Boolean {
@@ -945,6 +1069,18 @@ class ThinkStage(
 
     /** The hidden recovery gesture (two fingers held top-left) must work on every page, form included. */
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (!InputTrace.enabled) return dispatchStageTouch(event)
+        InputTrace.input(event)
+        try {
+            return if (event.actionMasked == MotionEvent.ACTION_UP) {
+                InputTrace.marked(InputTrace.UP_DISPATCH) { dispatchStageTouch(event) }
+            } else dispatchStageTouch(event)
+        } finally { InputTrace.inputFinished() }
+    }
+
+    private fun dispatchStageTouch(event: MotionEvent): Boolean {
+        if (event.actionMasked == MotionEvent.ACTION_DOWN) singlePointerGesture = event.pointerCount == 1
+        else if (event.pointerCount > 1) singlePointerGesture = false
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE, MotionEvent.ACTION_UP,
             MotionEvent.ACTION_POINTER_DOWN, MotionEvent.ACTION_POINTER_UP -> router.noteInteraction()
@@ -952,10 +1088,13 @@ class ThinkStage(
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 if (moe.kiwi.thinkos.BuildConfig.DEBUG) { debugDownX = event.x; debugDownY = event.y; debugDownCount++ }
+                cancelWarmIdle()
+                settledSince = 0L
                 // Only swallow the release of the press that opened settings. Settings
                 // bypass beginTouch(), so its next tap must clear the old press flag here.
                 longPressFired = false
                 touching = true; maintenanceX = event.x; maintenanceY = event.y
+                clock.wake()
             }
             MotionEvent.ACTION_POINTER_DOWN -> if (event.pointerCount == 2 && maintenanceX < width * .25f && maintenanceY < height * .25f) {
                 maintenanceArmed = true
@@ -971,7 +1110,11 @@ class ThinkStage(
                 maintenanceArmed = false
             }
         }
-        practiceHint.touch(if (practiceActive() && event.actionMasked !in setOf(MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL)) PointF(event.x, event.y) else null)
+        when (event.actionMasked) {
+            MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_POINTER_DOWN -> cancelWarmLaunch()
+            MotionEvent.ACTION_MOVE, MotionEvent.ACTION_UP -> if (launchTarget != null && max(abs(event.x - downX), abs(event.y - downY)) > slop) cancelWarmLaunch()
+        }
+        practiceHint.touch(if (practiceActive() && event.actionMasked != MotionEvent.ACTION_UP && event.actionMasked != MotionEvent.ACTION_CANCEL) PointF(event.x, event.y) else null)
         if (panelGesture(event)) {
             if (event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_CANCEL) {
                 touching = false; queuePreview(); finishPracticeFeedback()
@@ -982,12 +1125,14 @@ class ThinkStage(
         // A seek bar owns its whole gesture, so its parent no longer sees the moves that would cancel the long press.
         if (nativeHorizontal && event.actionMasked == MotionEvent.ACTION_DOWN) disarmLongPress()
         if (event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_CANCEL) {
+            cancelWarmIdle()
             touching = false
             queuePreview()
             finishPracticeFeedback()
         }
         return handled
     }
+
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
@@ -1005,7 +1150,7 @@ class ThinkStage(
                     maintenanceArmed = false
                     disarmLongPress()
                 }
-                if (event.pointerCount == 1) dragTo(dx, dy)
+                if (event.pointerCount == 1) dragTo(dx, dy, event.takeIf { singlePointerGesture })
             }
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 disarmLongPress()
@@ -1023,8 +1168,12 @@ class ThinkStage(
                 // cannot fall through as a tap, and so release uses the actual finger distance.
                 if (event.actionMasked == MotionEvent.ACTION_UP && event.pointerCount == 1)
                     dragTo(event.x - downX, event.y - downY)
+                if (event.actionMasked == MotionEvent.ACTION_CANCEL && dragPrediction != null && axis != 0 && !stackDrag && neighbor != null) {
+                    positionDrag(offset, axis == 2)
+                }
+                dragPrediction = null
                 velocity?.addMovement(event)
-                velocity?.computeCurrentVelocity(1000, ViewConfiguration.get(context).scaledMaximumFlingVelocity.toFloat())
+                velocity?.computeCurrentVelocity(1000, flingVelocity)
                 val vertical = axis == 2
                 val speed = velocity?.let { if (vertical) it.yVelocity else it.xVelocity } ?: 0f
                 if (practiceActive() && axis != 0) {
@@ -1049,7 +1198,8 @@ class ThinkStage(
                         }
                     }
                 } else if (event.actionMasked == MotionEvent.ACTION_UP) {
-                    if (current?.tapAt(event.x, event.y) != true) current?.openAt(event.x, event.y)?.let {
+                    val tapped = InputTrace.marked(InputTrace.DECLARATIVE_TAP) { current?.tapAt(event.x, event.y) == true }
+                    if (!tapped) current?.openAt(event.x, event.y)?.let {
                         launchOrigin = PointF(event.x, event.y)
                         router.open(it)
                     }
@@ -1063,7 +1213,7 @@ class ThinkStage(
         }
         return true
     }
-    private fun dragTo(dx: Float, dy: Float) {
+    private fun dragTo(dx: Float, dy: Float, move: MotionEvent? = null) {
         if (axis == 0 && max(abs(dx), abs(dy)) > slop) {
             disarmLongPress()
             axis = if (abs(dx) > abs(dy)) 1 else 2
@@ -1079,10 +1229,24 @@ class ThinkStage(
         offset = if (vertical) dy else dx
         stackDrag = vertical && current?.dragVertical(downX, downY, offset) == true
         if (!stackDrag) {
-            prepareNeighbor(if (offset < 0) 1 else -1, vertical)
-            current?.let { position(it, if (neighbor == null) offset * .16f else offset, vertical) }
-            neighbor?.let { position(it, offset + dragDirection * if (vertical) height else width, vertical) }
+            if (offset != 0f) prepareNeighbor(if (offset < 0) 1 else -1, vertical)
+            val tracker = velocity
+            val prediction = dragPrediction
+            val displayed = if (move != null && prediction != null && tracker != null && neighbor != null) {
+                tracker.computeCurrentVelocity(1000, flingVelocity)
+                prediction.sample(offset, move.eventTime, if (vertical) tracker.yVelocity else tracker.xVelocity)
+            } else offset
+            positionDrag(displayed, vertical)
         }
+        if (InputTrace.enabled) {
+            val kind = if (stackDrag) InputTrace.STACK else if (vertical) InputTrace.VERTICAL else InputTrace.HORIZONTAL
+            InputTrace.applied(kind, if (stackDrag) offset else current?.let { position(it, vertical) } ?: 0f)
+        }
+    }
+
+    private fun positionDrag(displayed: Float, vertical: Boolean) {
+        current?.let { position(it, if (neighbor == null) displayed * .16f else displayed, vertical) }
+        neighbor?.let { position(it, displayed + dragDirection * if (vertical) height else width, vertical) }
     }
 
     /** Static guidance plus one cached RenderThread pointer; recognition and navigation stay with ThinkStage. */
@@ -1269,6 +1433,7 @@ class ThinkStage(
     override fun performClick(): Boolean { super.performClick(); return true }
 
     companion object {
+        private const val WARM_SETTLE_MILLIS = 300L
         const val LONG_PRESS_MILLIS = 600L
         const val FEEDBACK_AFTER_MILLIS = 300L
     }
@@ -1299,7 +1464,7 @@ private class AmbientLayer(context: Context) : FrameLayout(context) {
     fun mode(level: Attention, reducedMotion: Boolean) {
         attention = level
         reduced = reducedMotion
-        val active = !covered && level in setOf(Attention.AWAKE, Attention.ENGAGED) && !reducedMotion && ValueAnimator.areAnimatorsEnabled()
+        val active = !covered && (level == Attention.AWAKE || level == Attention.ENGAGED) && !reducedMotion && ValueAnimator.areAnimatorsEnabled()
         if (active && isAttachedToWindow) breath.start() else pause()
     }
     fun tick(now: Long) { if (!covered && !breath.running && !reduced) applyPhase(now.mod(Motion.BREATH).toFloat() / Motion.BREATH) }

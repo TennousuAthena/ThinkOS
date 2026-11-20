@@ -22,6 +22,8 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--serial',default='HUA0BWUT')
     parser.add_argument('--baseline-apk',type=Path)
+    parser.add_argument('--test-package',default=TEST)
+    parser.add_argument('--test-apk',type=Path,default=ROOT/'android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk')
     parser.add_argument('--record',action='store_true')
     parser.add_argument('--output',type=Path,default=ROOT/'artifacts/gallery/short-swipe')
     args=parser.parse_args();args.output.mkdir(parents=True,exist_ok=True)
@@ -36,12 +38,13 @@ def main():
         pixels=b''.join(b'\0'+bytes((245,245,245) if y%10==0 else color)*64 for y in range(40))
         return b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',64,40,8,2,0,0,0))+chunk(b'IDAT',zlib.compress(pixels))+chunk(b'IEND',b'')
     scale=shell('settings','get','global','animator_duration_scale').strip()
-    had_test=bool(shell('pm','path',TEST,check=False).strip())
+    had_test=bool(shell('pm','path',args.test_package,check=False).strip())
     assert not shell('run-as',APP,'ls','files/dev-plugins').strip(),'Preserve existing development plugins'
     try:
         shell('settings','put','global','animator_duration_scale',1)
-        adb('install','-r','-t',ROOT/'android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk')
-        assert 'GallerySwipeInstrumentation' in shell('pm','list','instrumentation').decode(), 'Build with -PgalleryGestureProbe=true assembleDebugAndroidTest'
+        adb('install','-r','-t',args.test_apk)
+        component = args.test_package+'/moe.kiwi.thinkos.GallerySwipeInstrumentation'
+        assert component in shell('pm','list','instrumentation').decode(), 'Build with -PgalleryGestureProbe=true assembleDebugAndroidTest'
         with tempfile.TemporaryDirectory(prefix='thinkos-short-swipe-') as temp:
             source=Path(temp)/PROBE;shutil.copytree(ROOT/'tools/tests/fixtures'/PROBE,source)
             (source/'assets').mkdir()
@@ -66,7 +69,7 @@ end)
                         recording=subprocess.Popen(base+['shell','screenrecord','--time-limit','18','--bit-rate','2500000',remote],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
                         time.sleep(.4)
                     output=adb('shell','am','instrument','-w','-e','expect',name,
-                               TEST+'/moe.kiwi.thinkos.GallerySwipeInstrumentation')
+                               component)
                     (args.output/(name+'-instrumentation.txt')).write_bytes(output)
                     data=json.loads(adb('exec-out','run-as',APP,'cat','files/swipe-instrumentation.json'))
                     (args.output/(name+'.json')).write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
@@ -82,7 +85,7 @@ end)
     finally:
         if published:remove_plugin(PROBE,args.serial)
         shell('run-as',APP,'rm','-f','files/swipe-instrumentation.json')
-        if not had_test:adb('uninstall',TEST)
+        if not had_test:adb('uninstall',args.test_package)
         if scale==b'null':shell('settings','delete','global','animator_duration_scale')
         else:shell('settings','put','global','animator_duration_scale',scale.decode())
         shell('am','start','-W','-n',APP+'/.MainActivity')

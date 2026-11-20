@@ -20,6 +20,7 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import moe.kiwi.thinkos.anim.Motion
 import moe.kiwi.thinkos.core.Attention
+import moe.kiwi.thinkos.perf.InputTrace
 import moe.kiwi.thinkos.plugin.LayoutVocabulary
 import moe.kiwi.thinkos.plugin.PluginPage
 import moe.kiwi.thinkos.plugin.PluginWidget
@@ -121,65 +122,70 @@ internal class ComponentGroup(
             removeAllViews()
             bound.clear()
             definitions.forEach { def ->
-                val renderer = if(desktop && def.optString("type")=="clock" && def.optString("style")=="analog") AeroClockView(context) else BuiltinComponents.create(context, def, compact, pluginId,
-                    images = { image -> events.component(context, pluginId, image) }) { event, index ->
-                    events.send(pluginId, "tap", if (index == null) listOf(event) else listOf(event, index))
-                } ?: if (def.optString("type") !in setOf("clock", "form", "icon", "text")) events.component(context, pluginId, def) else null
-                val view = renderer?.view ?: when (def.optString("type")) {
-                    "clock" -> ClockView(context, def, compact)
-                    "form" -> FormView(context, formHost)
-                    "icon" -> IconView(context)
-                    // A media view whose plugin has lost (or never had) the media permission shows nothing rather than crashing the page.
-                    "controls", "video", "seekbar", "nowplaying", "tv", "slider" -> View(context)
-                    "text" -> (if(desktop) TileTextView(context) else TextView(context)).apply {
-                        gravity = Gravity.CENTER; includeFontPadding = false; maxLines = if(desktop && def.optString("style")=="caption") 4 else 2
-                        ellipsize = TextUtils.TruncateAt.END
-                        val style = def.optString("style", "body")
-                        textSize = when (style) { "display" -> TextScale.DISPLAY; "title" -> TextScale.TITLE; "caption" -> TextScale.CAPTION; else -> TextScale.BODY }
-                        typeface = Typeface.create(when (style) { "display" -> "sans-serif-light"; "title" -> "sans-serif-medium"; else -> "sans-serif" }, Typeface.NORMAL)
-                        fontFeatureSettings = "tnum"
-                    }
-                    else -> error("OS renderer unavailable: ${def.optString("type")}")
-                }
-                if (card && def.optString("type") in setOf("image", "carousel")) {
-                    view.outlineProvider = object : android.view.ViewOutlineProvider() {
-                        override fun getOutline(view: View, outline: android.graphics.Outline) {
-                            outline.setRoundRect(0, 0, view.width, view.height, (CARD_RADIUS_DP - 24f) * resources.displayMetrics.density)
-                        }
-                    }
-                    view.clipToOutline = true
-                }
-                val primary = when (view) {
-                    is IconView -> def.optString("name")
-                    is ClockView -> def.optString("style", "digital")
-                    is FormView -> "{{${def.optString("path")}}}${def.optString("title")}${def.optString("done")}"
-                    else -> def.optString("value")
-                }
-                val item = Bound(view, def, Binding.compile(primary), renderer, dependencies(def))
-                if (view is ClockView) {
-                    val format = def.optString("format", "@time")
-                    item.formatTemplate = Binding.compile(if (format.startsWith('@')) "@$format" else format)
-                    val zones = def.optJSONArray("zones")
-                    item.zoneTemplates = (0 until (zones?.length() ?: 0)).mapNotNull { zones?.optJSONObject(it) }.map { zone ->
-                        Binding.compile(zone.optString("timezone")) to zone.optString("label").takeIf { it.isNotEmpty() }?.let(Binding::compile)
-                    }
-                }
-                if (renderer?.handlesTap != true && view !is FormView) def.optString("tap").takeIf { it.isNotBlank() }?.let { event ->
-                    view.setOnClickListener { events.send(pluginId, "tap", listOf(event)) }
-                }
-                // A held toggle sends its 'hold' name as a tap instead of the plain tap (the press is consumed, so never both).
-                if (view !is FormView) def.optString("hold").takeIf { it.isNotBlank() }?.let { event ->
-                    view.setOnLongClickListener { events.send(pluginId, "tap", listOf(event)); true }
-                }
-                bound += item
-                addView(view)
-                renderer?.active(active)
+                InputTrace.componentSpan(def.optString("type")) { addComponent(def) }
             }
             signature = nextSignature
             requestLayout()
         }
         bind(pluginId, setOf(""), force = true)
         colors(palette)
+    }
+
+    private fun addComponent(def: JSONObject) {
+        val renderer = if(desktop && def.optString("type")=="clock" && def.optString("style")=="analog") AeroClockView(context) else BuiltinComponents.create(context, def, compact, pluginId,
+            images = { image -> events.component(context, pluginId, image) }) { event, index ->
+            events.send(pluginId, "tap", if (index == null) listOf(event) else listOf(event, index))
+        } ?: if (def.optString("type") !in setOf("clock", "form", "icon", "text")) events.component(context, pluginId, def) else null
+        val view = renderer?.view ?: when (def.optString("type")) {
+            "clock" -> ClockView(context, def, compact)
+            "form" -> FormView(context, formHost)
+            "icon" -> IconView(context)
+            // A media view whose plugin has lost (or never had) the media permission shows nothing rather than crashing the page.
+            "controls", "video", "seekbar", "nowplaying", "tv", "slider" -> View(context)
+            "text" -> (if(desktop) TileTextView(context) else TextView(context)).apply {
+                gravity = Gravity.CENTER; includeFontPadding = false; maxLines = if(desktop && def.optString("style")=="caption") 4 else 2
+                ellipsize = TextUtils.TruncateAt.END
+                val style = def.optString("style", "body")
+                textSize = when (style) { "display" -> TextScale.DISPLAY; "title" -> TextScale.TITLE; "caption" -> TextScale.CAPTION; else -> TextScale.BODY }
+                typeface = Typeface.create(when (style) { "display" -> "sans-serif-light"; "title" -> "sans-serif-medium"; else -> "sans-serif" }, Typeface.NORMAL)
+                fontFeatureSettings = "tnum"
+            }
+            else -> error("OS renderer unavailable: ${def.optString("type")}")
+        }
+        if (card && def.optString("type") in setOf("image", "carousel")) {
+            view.outlineProvider = object : android.view.ViewOutlineProvider() {
+                override fun getOutline(view: View, outline: android.graphics.Outline) {
+                    outline.setRoundRect(0, 0, view.width, view.height, (CARD_RADIUS_DP - 24f) * resources.displayMetrics.density)
+                }
+            }
+            view.clipToOutline = true
+        }
+        val primary = when (view) {
+            is IconView -> def.optString("name")
+            is ClockView -> def.optString("style", "digital")
+            is FormView -> "{{${def.optString("path")}}}${def.optString("title")}${def.optString("done")}"
+            else -> def.optString("value")
+        }
+        val item = Bound(view, def, Binding.compile(primary), renderer, dependencies(def))
+        if (view is ClockView) {
+            val format = def.optString("format", "@time")
+            item.formatTemplate = Binding.compile(if (format.startsWith('@')) "@$format" else format)
+            val zones = def.optJSONArray("zones")
+            item.zoneTemplates = (0 until (zones?.length() ?: 0)).mapNotNull { zones?.optJSONObject(it) }.map { zone ->
+                Binding.compile(zone.optString("timezone")) to zone.optString("label").takeIf { it.isNotEmpty() }?.let(Binding::compile)
+            }
+        }
+        if (renderer?.handlesTap != true && view !is FormView) def.optString("tap").takeIf { it.isNotBlank() }?.let { event ->
+            if (view is TextView) view.minimumHeight = (48 * resources.displayMetrics.density).toInt()
+            view.setOnClickListener { events.send(pluginId, "tap", listOf(event)) }
+        }
+        // A held toggle sends its 'hold' name as a tap instead of the plain tap (the press is consumed, so never both).
+        if (view !is FormView) def.optString("hold").takeIf { it.isNotBlank() }?.let { event ->
+            view.setOnLongClickListener { events.send(pluginId, "tap", listOf(event)); true }
+        }
+        bound += item
+        addView(view)
+        renderer?.active(active)
     }
     fun bind(changedPlugin: String, paths: Set<String>, force: Boolean = false) {
         embeddedTile?.let { it.bind(changedPlugin, paths, force); return }
@@ -534,6 +540,9 @@ internal class PageView(
     private var title: TextView? = null
     private var titleBox: RenderGeometry.Box? = null
     private var backdrop: TileBackdrop? = null
+    private var measuredEpoch = -1
+    private var laidOutEpoch = -1
+    private var firstDraw = true
     private fun liveTiles(): List<TileView> = tiles.values.filter { it.visibility == VISIBLE } + stacks.values.flatMap { it.tileViews() } + groups.values.flatMap { it.tileViews() }
     private var active = false
     fun active(value: Boolean) { if (!value) cadence.reset(); active = value; aero?.active(value); groups.values.forEach { it.active(value) }; stacks.values.forEach { it.active(value) }; tiles.values.forEach { it.active(value && it.visibility == VISIBLE) } }
@@ -555,9 +564,13 @@ internal class PageView(
         return resolveStackItem(page.pluginId, stackItems[name]?.opt(index), widgets, "glance")
     }
     fun update(next: PluginPage, nextWidgets: List<PluginWidget>) {
+        InputTrace.pageSpan(next.key, "page.update") { updatePage(next, nextWidgets) }
+    }
+
+    private fun updatePage(next: PluginPage, nextWidgets: List<PluginWidget>) {
         page = next
         widgets = nextWidgets
-        quietBackdrop = PageBackdrop.quiet(next.view)
+        InputTrace.pageSpan(next.key, "page.parse") { quietBackdrop = PageBackdrop.quiet(next.view) }
         if (previousLayout.isNotEmpty() && previousLayout != layout) {
             groups.values.forEach { it.active(false) }; stacks.values.forEach { it.active(false) }; tiles.values.forEach { it.active(false) }
             removeAllViews()
@@ -571,18 +584,29 @@ internal class PageView(
         }
         previousLayout = layout
         contentDescription = localizedTitle()
-        val slots = page.view.optJSONObject("slots") ?: JSONObject()
+        val slots = InputTrace.pageSpan(page.key, "page.parse") { page.view.optJSONObject("slots") ?: JSONObject() }
+        InputTrace.pageSpan(page.key, "page.slots") { updateSlots(slots) }
+        requestLayout()
+        if (layout == "aero") return
+        active(active)
+        night(night)
+    }
+
+    private fun updateSlots(slots: JSONObject) {
         if (layout == "aero") {
-            val desktop = aero ?: AeroHomeView(context, events, state) { variant }.also { aero = it; addView(it) }
-            desktop.update(page.pluginId, slots.optJSONArray("windows") ?: JSONArray(), widgets)
-            desktop.colors(palette); desktop.night(night); desktop.active(active); requestLayout(); return
+            InputTrace.componentSpan("aero") {
+                val desktop = aero ?: AeroHomeView(context, events, state) { variant }.also { aero = it; addView(it) }
+                desktop.update(page.pluginId, slots.optJSONArray("windows") ?: JSONArray(), widgets)
+                desktop.colors(palette); desktop.night(night); desktop.active(active)
+            }
+            return
         }
         for (name in slotNames) {
             if (roles[name] == "tiles") {
                 tileItems = slots.optJSONArray(name) ?: JSONArray()
                 ensureTitle()
                 tiles.keys.filter { it >= tileItems.length() }.toList().forEach { i -> tiles.remove(i)?.let { it.active(false); removeView(it) } }
-                for (i in 0 until tileItems.length()) {
+                for (i in 0 until tileItems.length()) InputTrace.componentSpan("tile") {
                     val reference = tileItems.getJSONObject(i)
                     val (owner, definition, opens) = resolveStackItem(page.pluginId, reference, widgets, "tile")
                     val tile = tiles.getOrPut(i) { TileView(context, state, { variant }, events).also { addView(it) } }
@@ -622,9 +646,6 @@ internal class PageView(
                 }
             }
         }
-        requestLayout()
-        active(active)
-        night(night)
     }
     fun night(amount: Float) { night = amount; aero?.night(amount); tiles.values.forEach { it.night(amount) }; groups.values.forEach { it.night(amount) }; stacks.values.forEach { it.night(amount) } }
     fun bind(pluginId: String, paths: Set<String>) {
@@ -642,7 +663,10 @@ internal class PageView(
     private fun applyBackdrop() {
         if (layout != "tiles") { background = null; backdrop = null; return }
         val wanted = TileBackdrop.Variant.of(events.tilesBackground)
-        if (backdrop?.variant != wanted) { backdrop = TileBackdrop(wanted); background = backdrop }
+        if (backdrop?.variant != wanted) InputTrace.pageSpan(page.key, "page.backdrop") {
+            backdrop = TileBackdrop(wanted)
+            background = backdrop
+        }
     }
     /** `tiles.background` changed in the settings page. */
     fun renderSettingsChanged() { if (layout == "tiles") applyBackdrop() }
@@ -684,6 +708,10 @@ internal class PageView(
     private var pressed: TileView? = null
     /** A finger went down on the Start page: the tile under it tilts toward the touch. */
     fun pressAt(x: Float, y: Float) {
+        moe.kiwi.thinkos.perf.InputTrace.marked(moe.kiwi.thinkos.perf.InputTrace.PRESS_AT) { pressComponents(x, y) }
+    }
+
+    private fun pressComponents(x: Float, y: Float) {
         releasePress()
         groups.values.forEach { it.touchDown(x - it.left - it.translationX, y - it.top - it.translationY) }
         if (layout != "tiles") return
@@ -898,6 +926,13 @@ internal class PageView(
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        if (InputTrace.pageDetail && measuredEpoch != InputTrace.pageEpoch) {
+            measuredEpoch = InputTrace.pageEpoch
+            InputTrace.pageSpan(page.key, "page.measure") { measurePage(widthMeasureSpec, heightMeasureSpec) }
+        } else measurePage(widthMeasureSpec, heightMeasureSpec)
+    }
+
+    private fun measurePage(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         if (layout == "panel") { measurePanel(widthMeasureSpec, heightMeasureSpec); return }
         val w = MeasureSpec.getSize(widthMeasureSpec)
         val h = MeasureSpec.getSize(heightMeasureSpec)
@@ -926,6 +961,13 @@ internal class PageView(
         setMeasuredDimension(w, h)
     }
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+        if (InputTrace.pageDetail && laidOutEpoch != InputTrace.pageEpoch) {
+            laidOutEpoch = InputTrace.pageEpoch
+            InputTrace.pageSpan(page.key, "page.layout") { layoutPage(changed) }
+        } else layoutPage(changed)
+    }
+
+    private fun layoutPage(changed: Boolean) {
         if (layout == "panel") { layoutPanel(); return }
         aero?.layout(0,0,width,height)
         aero?.burnInOffset(contentDriftX, contentDriftY)
@@ -954,5 +996,12 @@ internal class PageView(
                 view.animate().translationX(0f).translationY(0f).setDuration(Motion.PAGE).setInterpolator(Motion.EASE).start()
             }
         }
+    }
+
+    override fun dispatchDraw(canvas: Canvas) {
+        if (firstDraw) {
+            firstDraw = false
+            InputTrace.pageSpan(page.key, "page.firstDraw") { super.dispatchDraw(canvas) }
+        } else super.dispatchDraw(canvas)
     }
 }

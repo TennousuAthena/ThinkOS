@@ -8,6 +8,7 @@ import android.os.Looper
 import android.util.Log
 import moe.kiwi.thinkos.core.Attention
 import moe.kiwi.thinkos.core.Theme
+import moe.kiwi.thinkos.perf.InputTrace
 
 /** Test input is shell-protected and exists only in debug APKs. It never writes device settings. */
 class DebugReceiver : BroadcastReceiver() {
@@ -118,6 +119,19 @@ class DebugReceiver : BroadcastReceiver() {
                 Log.i("ThinkOS", "DEBUG page $key -> ${host.store.current.deck.page} known=${host.router.pages.any { it.key == key }} " +
                     "attention=${host.store.current.attention} reason=${host.router.lastNavigationReason}")
             }
+            "latency_on" -> {
+                val mode = intent.getStringExtra("value")
+                InputTrace.enable(true, detail = mode == "page" || mode == "pss", pss = mode == "pss")
+            }
+            "latency_off" -> InputTrace.enable(false)
+            "latency_reset" -> InputTrace.reset()
+            "latency_report" -> {
+                val pending = goAsync()
+                Thread({
+                    try { pending.resultData = InputTrace.report() } finally { pending.finish() }
+                }, "ThinkOS-latency-report").start()
+                return
+            }
             "benchmark_state" -> {
                 val s = host.store.current
                 resultData = listOf(s.deck.page, s.attention.name, s.theme.name, s.orientation.name,
@@ -170,6 +184,7 @@ class DebugReceiver : BroadcastReceiver() {
             }
             "clock_reset" -> moe.kiwi.thinkos.anim.ClockStats.reset()
             "clock_report" -> Log.i("ThinkOS", "DEBUG clock ${moe.kiwi.thinkos.anim.ClockStats.report()}")
+            "clock_details" -> resultData = moe.kiwi.thinkos.anim.ClockStats.details()
             "clock_error" -> {
                 // How far the displayed time is from a fresh reading of a time server, measured now and independent of TimeSync.
                 Thread {
@@ -189,7 +204,8 @@ class DebugReceiver : BroadcastReceiver() {
             "lux" -> host.sensors.debugInjectLux(if (intent.hasExtra("value")) intent.getFloatExtra("value", 20f) else null)
             "presence" -> host.sensors.debugPresence(intent.getBooleanExtra("value", false))
             "hold_presence" -> host.sensors.debugHoldPresence(if (intent.hasExtra("value")) intent.getBooleanExtra("value", false) else null)
-            "hold_attention" -> host.sensors.debugHoldAttention(Attention.entries.firstOrNull { it.name == intent.getStringExtra("value") })
+            "hold_attention" -> host.sensors.debugHoldAttention(
+                Attention.entries.firstOrNull { it.name == intent.getStringExtra("value") }, intent.getBooleanExtra("until_touch", false))
             "drift" -> moe.kiwi.thinkos.ui.BurnIn.forced = if (intent.hasExtra("x")) intent.getFloatExtra("x", 0f) to intent.getFloatExtra("y", 0f) else null
             "theme" -> host.sensors.debugHoldTheme(Theme.entries.firstOrNull { it.name == intent.getStringExtra("value") })
             "attention" -> intent.getStringExtra("value")?.let { name ->

@@ -128,6 +128,15 @@ adb shell am broadcast -n moe.kiwi.thinkos/.DebugReceiver --es command hold_atte
 
 功能在设备上确认、告知所有者后，`python3 tools/tests/settings_perf_device.py`采样固定数字表盘AWAKE120秒、横竖屏设置各20秒（保持在30秒闲置退出之前）、首页AMBIENT600秒，持续核对页面/变体/注意力/方向/进程/触摸和导航代次。默认关闭秒以匹配出厂基线；`--clock-seconds`另作压力场景。保存CPU、gfxinfo、PSS和警告原文，读取实际安装APK摘要；记录历史基线比较。不会自动改变媒体音量。
 
+跟手性测试见 [计划 48](../docs/48-responsiveness-plan.md)。`gestures.py` 生成可重复的定时轨迹，`device_touch.path(device, points, finish='cancel')` 通过 Android 输入管线注入并清理临时文件。`latency_report.py` 校验 debug 广播及 API 27 framestats。单次功能检查只验证打点与配对。
+
+所有者确认真机使用时间后，`responsiveness_device.py` 按场景记录延迟、功能终态、时钟与 GC。默认令 ThinkOS 离线，`--fixture` 为 S14 放行一个仅本机访问的天气夹具端口，S12 需要 `--media-sample` 指定合成本地音频或使用默认样片路径。脚本结束后还原应用设置、页面和音量。R2 全量基线命令如下。
+
+```bash
+python3 tools/tests/responsiveness_device.py --repeat 30 --fixture --theme DARK \
+  --atrace S1 --atrace S5 --atrace S10 --output artifacts/perf/R2
+```
+
 `python3 tools/tests/clock_accuracy_device.py --face digital`固定表盘测60秒换秒、时间源、进程重启和阻塞恢复，`--face analog`可测指针；默认数字，不沿用保存的变体。`clock_frame_probe.py --output <目录>`是每表盘30秒的短诊断，记录完整framestats和阶段耗时，不能替代十分钟验收。两者均需事先告知，使用私有恢复日志，不改默认桌面。
 
 `python3 tools/tests/apps_device.py`验证安卓应用网格、18个桌面入口、横竖屏/三主题/三语言、Back/Lock Task、隐藏/开关与第三方API和app图片权限；计算器临时停用后恢复原始enabled状态，设置和导航字节还原。先通过功能、告知后再用`--scroll-only`测100项grid-probe的120秒滚动掉帧。`idle_threads_device.py --output <目录>`只做60秒AMBIENT线程CPU诊断，不能替代正式性能验收。

@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools"))
 from device_hierarchy import dump_hierarchy, visible_nodes
 from device_recovery import capture, restore
+from device_touch import set_editor_text
 from media_device import Device
 from ui_walkthrough import broadcast_json
 from package_plugins import package_plugin
@@ -134,13 +135,21 @@ def main():
         input_node = next(n for n in tree.iter("node") if n.attrib.get("class") == "android.widget.EditText")
         if secret:
             assert input_node.attrib.get("password") == "true"
-        tap(input_node)
         if not secret:
+            tap(input_node)
             existing = input_node.attrib.get("text", "")
             shell("input", "keyevent", 123)
             if existing:
                 shell("input", "keyevent", *([67] * len(existing)))
-        shell("input", "text", text)
+            shell("input", "text", text)
+            entered = next(n for n in snapshot().iter("node") if n.get("class") == "android.widget.EditText")
+            result["shellTextReachedEditor"] = entered.get("text") == text
+            if entered.get("text") != text:
+                set_editor_text(device, text)
+                entered = next(n for n in snapshot().iter("node") if n.get("class") == "android.widget.EditText")
+                assert entered.get("text") == text, "The editor did not display the requested text"
+        else:
+            set_editor_text(device, text)
         tap(find(resource="android:id/button1"))
         time.sleep(.3)
 

@@ -80,7 +80,8 @@ def main():
 
     def navigate(page, direction=1):
         # The runtime sorts contributed page IDs; manifest declaration order is not deck order.
-        for _ in range(8):
+        deadline = time.monotonic() + 40
+        while time.monotonic() < deadline:
             current = state()
             if current["page"] == page:
                 return

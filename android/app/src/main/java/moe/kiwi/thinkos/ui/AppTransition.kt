@@ -36,7 +36,7 @@ internal class AppTransition(private val density: Float, private val handler: Ha
         swingIn(listOf(into), OVERLAP_MILLIS)
         // The Start page's own backdrop goes once the app is on its way in, instead of vanishing when the old page is released.
         fadeBackdrop(out, 255, 0, OVERLAP_MILLIS, IN_MILLIS)
-        begin(targets + into, staying = listOf(into), maxOf(lastDelay(targets) + OUT_MILLIS, OVERLAP_MILLIS + IN_MILLIS), done)
+        begin(targets + into, out, maxOf(lastDelay(targets) + OUT_MILLIS, OVERLAP_MILLIS + IN_MILLIS), done)
     }
 
     /** [app] turns away while the Start page [tiles] turns back in, the tile the app came from first. */
@@ -47,7 +47,7 @@ internal class AppTransition(private val density: Float, private val handler: Ha
         swingAway(listOf(app), 0L)
         swingIn(targets, RETURN_DELAY_MILLIS)
         fadeBackdrop(tiles, 0, 255, 0L, IN_MILLIS)
-        begin(targets + app, staying = targets, maxOf(OUT_MILLIS, RETURN_DELAY_MILLIS + lastDelay(targets) + IN_MILLIS), done)
+        begin(targets + app, tiles, maxOf(OUT_MILLIS, RETURN_DELAY_MILLIS + lastDelay(targets) + IN_MILLIS), done)
     }
 
     /** Ends whatever runs at once: every view rests in its final pose and the page that went away is released. */
@@ -55,7 +55,12 @@ internal class AppTransition(private val density: Float, private val handler: Ha
         handler.removeCallbacks(end)
         val done = finish ?: return
         finish = null
-        views.forEach { it.animate().cancel(); it.setLayerType(View.LAYER_TYPE_NONE, null) }
+        views.forEach { view ->
+            view.animate().cancel()
+            view.setLayerType(View.LAYER_TYPE_NONE, null)
+            view.rotationY = 0f; view.alpha = 1f
+            view.pivotX = view.width / 2f; view.pivotY = view.height / 2f
+        }
         views = emptyList()
         fades.forEach(ValueAnimator::cancel)
         fades.clear()
@@ -63,16 +68,11 @@ internal class AppTransition(private val density: Float, private val handler: Ha
         done()
     }
 
-    private fun begin(touched: List<View>, staying: List<View>, duration: Long, done: () -> Unit) {
+    private fun begin(touched: List<View>, backdrop: PageView, duration: Long, done: () -> Unit) {
         views = touched
         millis = duration
         finish = {
-            // The views that stay come to rest as they are drawn everywhere else: upright, opaque, turning about their middle.
-            staying.forEach { view ->
-                view.background?.alpha = 255
-                view.rotationY = 0f; view.alpha = 1f
-                view.pivotX = view.width / 2f; view.pivotY = view.height / 2f
-            }
+            backdrop.background?.alpha = 255
             done()
         }
         handler.postDelayed(end, duration + SLACK_MILLIS)

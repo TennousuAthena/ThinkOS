@@ -183,6 +183,7 @@ class RuntimeHost(private val context: Context) : PluginRuntime.Callbacks {
         override val panelIdleMillis get() = system.panelIdleMillis
         override val backEnabled get() = system.navBackEnabled || foreignPanel.globalNavigation
         override val backEdgeDp get() = system.navBackEdgeDp
+        override val gesturePredictMillis get() = system.gesturePredictMillis
         override val upEnabled get() = system.navUpEnabled || foreignPanel.globalNavigation
         override val upEdgeDp get() = system.navUpEdgeDp
         override fun panelChanged(open: Boolean) { panelOpen = open; router.panelChanged(open); if (open) sensors.touch() }

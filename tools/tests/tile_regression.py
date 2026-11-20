@@ -17,7 +17,8 @@ LAUNCHER='org.lineageos.trebuchet/com.android.launcher3.searchlauncher.SearchLau
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--serial',required=True)
     p.add_argument('--only',choices=['component_ui','weather_ui','settings_ui'])
-    args=p.parse_args();out=ROOT/'artifacts/tiles/regression';out.mkdir(parents=True,exist_ok=True)
+    p.add_argument('--output',type=Path,default=ROOT/'artifacts/tiles/regression')
+    args=p.parse_args();out=args.output;out.mkdir(parents=True,exist_ok=True)
     base=['adb','-s',args.serial]
     def shell(*args,data=None):return subprocess.check_output(base+['shell','-T',shlex.join(map(str,args))],input=data,timeout=30)
     path='files/settings/local.json';original=read_app_file(args.serial,path)
@@ -31,7 +32,7 @@ def main():
         if original is not None:Path(backup,'local.json').write_bytes(original)
         try:
             shell('cmd','package','set-home-activity',LAUNCHER);shell('am','force-stop',APP)
-            config=json.loads(original or b'{}');config.setdefault('system',{}).update({'theme.mode':'auto','theme.night':True,'display.orientation':'landscape'})
+            config=json.loads(original or b'{}');config.setdefault('system',{}).update({'theme.mode':'auto','display.orientation':'landscape'})
             write(json.dumps(config,ensure_ascii=False).encode());shell('cmd','package','set-home-activity',HOME);shell('am','start','-n',HOME)
             import time;time.sleep(4)
             for name in ([args.only] if args.only else ['component_ui','weather_ui','settings_ui']):

@@ -213,7 +213,10 @@ internal class LevelSlider(context: Context, private val brightness: Boolean, pr
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> { parent?.requestDisallowInterceptTouchEvent(true); dragging = true; move(event.x, false) }
-            MotionEvent.ACTION_MOVE -> if (dragging) move(event.x, false)
+            MotionEvent.ACTION_MOVE -> if (dragging) {
+                move(event.x, false)
+                moe.kiwi.thinkos.perf.InputTrace.applied(moe.kiwi.thinkos.perf.InputTrace.SLIDER, event.x)
+            }
             MotionEvent.ACTION_UP -> if (dragging) { move(event.x, true); dragging = false; reread() }
             MotionEvent.ACTION_CANCEL -> { dragging = false; reread(); invalidate() }
         }

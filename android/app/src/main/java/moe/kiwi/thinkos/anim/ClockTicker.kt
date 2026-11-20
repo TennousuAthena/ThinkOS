@@ -4,6 +4,9 @@ import android.os.Handler
 import android.os.Looper
 import android.view.Choreographer
 import moe.kiwi.thinkos.core.WallClock
+import moe.kiwi.thinkos.core.Attention
+import org.json.JSONArray
+import org.json.JSONObject
 
 /** The arithmetic of [ClockTicker], free of Android so it runs in JVM tests. */
 object ClockSchedule {
@@ -19,6 +22,9 @@ object ClockSchedule {
 
     /** What a frame recorded at [frameWall] will show: the time it reaches the glass. */
     fun displayed(frameWall: Long): Long = frameWall + PRESENT_LEAD_MILLIS
+
+    fun acceptsBucket(bucket: Long, previousBucket: Long, force: Boolean): Boolean =
+        force || bucket >= previousBucket
 
     /** How long to sleep, at [now], before polling frames for a value that changes at [boundaryWall] (displayed time). */
     fun armDelay(now: Long, boundaryWall: Long): Long =
@@ -40,6 +46,7 @@ object ClockTicker {
         val periodMillis: Long
         /** [wall] is the true time the frame now being recorded will be shown at. */
         fun onTick(wall: Long)
+        fun onWallClockAdjusted(wall: Long) = onTick(wall)
     }
 
     private class Entry(val listener: Listener) { var bucket = Long.MIN_VALUE }
@@ -51,7 +58,12 @@ object ClockTicker {
     private var listening = false
     private val arm = Runnable { poll() }
     private val frame = Choreographer.FrameCallback { onFrame(it) }
-    private val adjusted: () -> Unit = { handler.post { deliver(WallClock.now() + ClockSchedule.PRESENT_LEAD_MILLIS, force = true); schedule() } }
+    private val adjusted: () -> Unit = {
+        handler.post {
+            deliver(ClockSchedule.displayed(WallClock.now()), force = true)
+            schedule()
+        }
+    }
 
     fun add(listener: Listener) {
         if (entries.any { it.listener === listener }) return
@@ -85,7 +97,10 @@ object ClockTicker {
         for (entry in entries.toList()) {
             val period = entry.listener.periodMillis.coerceAtLeast(1)
             val bucket = ClockSchedule.bucket(displayed, period)
-            if (force || bucket != entry.bucket) { entry.bucket = bucket; entry.listener.onTick(displayed) }
+            if (force || bucket != entry.bucket) {
+                entry.bucket = bucket
+                if (force) entry.listener.onWallClockAdjusted(displayed) else entry.listener.onTick(displayed)
+            }
         }
     }
 
@@ -111,14 +126,23 @@ object ClockTicker {
 
 /** Debug builds only: how late each clock face really showed its new value. Never read in production. */
 object ClockStats {
-    private class Face { var bucket = Long.MIN_VALUE }
+    enum class Source { TICKER, STAGE, ATTACH }
+
+    private class Face {
+        var bucket = Long.MIN_VALUE
+        var period = 0L
+    }
     private val faces = HashMap<Int, Face>()
     private val lateness = ArrayList<Long>()
+    private val awakeLateness = ArrayList<Long>()
+    private val lateDetails = ArrayList<JSONObject>()
+    private var wholePeriodsLate = 0
     private var skipped = 0
     private var frames = 0
 
     /** A face recorded a frame showing [bucket] of [period]. Counted once per bucket. */
-    fun drawn(face: Int, period: Long, bucket: Long) {
+    fun drawn(face: Int, period: Long, bucket: Long, attention: Attention, view: android.view.View,
+              attachedMs: Long, source: Source, updatedWall: Long) {
         val state = faces.getOrPut(face) { Face() }
         if (bucket == state.bucket) return
         // How far past the boundary this frame was recorded; the glass shows it about one refresh later.
@@ -126,12 +150,38 @@ object ClockStats {
         if (state.bucket != Long.MIN_VALUE) {
             if (bucket - state.bucket > 1) skipped += (bucket - state.bucket - 1).toInt()
             if (lateness.size < 20_000) lateness += late
+            if ((attention == Attention.AWAKE || attention == Attention.ENGAGED) && awakeLateness.size < 20_000) {
+                awakeLateness += late
+            }
+            if (late >= 1_000) wholePeriodsLate++
+            if (late > 100 && lateDetails.size < 32) {
+                var ancestor = view.parent
+                while (ancestor != null && ancestor !is moe.kiwi.thinkos.ui.PageView) ancestor = ancestor.parent
+                lateDetails += JSONObject().put("face", face).put("page", (ancestor as? moe.kiwi.thinkos.ui.PageView)?.page?.key)
+                    .put("lateMs", late).put("periodMillis", period).put("previousPeriodMillis", state.period)
+                    .put("bucket", bucket).put("previousBucket", state.bucket).put("attention", attention.name)
+                    .put("isShown", view.isShown).put("windowVisibility", view.windowVisibility)
+                    .put("attachedMs", attachedMs).put("source", source.name).put("updatedWall", updatedWall)
+            }
             frames++
         }
         state.bucket = bucket
+        state.period = period
     }
 
-    fun reset() { faces.clear(); lateness.clear(); skipped = 0; frames = 0 }
+    fun reset() {
+        faces.clear()
+        lateness.clear()
+        awakeLateness.clear()
+        lateDetails.clear()
+        wholePeriodsLate = 0
+        skipped = 0
+        frames = 0
+    }
+
+    fun details(): String = JSONObject().put("late", JSONArray(lateDetails))
+        .put("awakeLatenessMs", JSONArray(awakeLateness.takeLast(1024)))
+        .put("awakeCount", awakeLateness.size).put("wholePeriodsLate", wholePeriodsLate).put("skipped", skipped).toString()
 
     fun report(): String {
         if (lateness.isEmpty()) return "n=0"

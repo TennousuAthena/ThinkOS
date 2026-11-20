@@ -23,7 +23,7 @@ import moe.kiwi.thinkos.core.Attention
  * move a little while somebody is looking: the sun sways, clouds drift. That is a transform of one cached hardware layer, so a tick
  * rasterises nothing and costs a property change.
  */
-internal class IconView(context: Context) : ViewGroup(context) {
+internal class IconView(context: Context, private val tileGlyph: Boolean = false) : ViewGroup(context) {
     var palette = Palette.DARK
         set(value) {
             val repaint = field.accent != value.accent
@@ -33,18 +33,13 @@ internal class IconView(context: Context) : ViewGroup(context) {
 
     var name = "sun"
         set(value) {
-            if (field == value) return
+            if (field == value) {
+                if (mask == null && value.isNotEmpty()) rebuild()
+                return
+            }
             field = value
             contentDescription = value
             rebuild()
-        }
-
-    var tileGlyph = false
-        set(value) {
-            if (field != value) {
-                field = value
-                rebuild()
-            }
         }
 
     private var phase = 0.0
@@ -94,13 +89,11 @@ internal class IconView(context: Context) : ViewGroup(context) {
     init {
         clipChildren = true
         addView(viewport)
-        rebuild()
+        if (!tileGlyph) rebuild()
     }
 
     private fun rebuild() {
-        removeAllViews()
         viewport.removeAllViews()
-        addView(viewport)
         // A name nobody knows shows the question mark, never nothing: an unknown condition must not look like a clear sky.
         val key = when {
             name.isEmpty() -> null
@@ -114,8 +107,9 @@ internal class IconView(context: Context) : ViewGroup(context) {
     }
 
     private fun tint() {
+        val shown = mask ?: return
         layerPaint.colorFilter = PorterDuffColorFilter(palette.accent, PorterDuff.Mode.SRC_IN)
-        mask?.setLayerPaint(layerPaint)
+        shown.setLayerPaint(layerPaint)
     }
 
     private fun position() {
