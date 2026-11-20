@@ -65,6 +65,6 @@ VERSION=$(sed -n 's/^version=//p' "$MODULE/module.prop")
 [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+$ ]] || { echo "Invalid module version" >&2; exit 1; }
 ZIP="$PWD/$OUT/$MODULE-$VERSION.zip"
 rm -f "$ZIP"
-(cd "$STAGE" && zip -q -X -r "$ZIP" .)
+python3 -I "$PWD/pack_module.py" "$STAGE" "$ZIP"
 cp "$STAGE/bin/updaterd" "$OUT/updaterd-armv7"
 echo "$ZIP"

@@ -34,7 +34,7 @@ chmod 755 "$STAGE/bin/powerd" "$STAGE/post-fs-data.sh" "$STAGE/customize.sh" "$S
 VERSION=$(sed -n 's/^version=//p' "$MODULE/module.prop")
 ZIP="$OUT/$MODULE-$VERSION.zip"
 rm -f "$ZIP"
-(cd "$STAGE" && zip -q -X -r "$OLDPWD/$ZIP" .)
+python3 -I "$PWD/pack_module.py" "$STAGE" "$ZIP"
 cp "$STAGE/bin/powerd" "$OUT/powerd-armv7"
 echo "$ZIP"
 unzip -l "$ZIP" | tail -n +4
