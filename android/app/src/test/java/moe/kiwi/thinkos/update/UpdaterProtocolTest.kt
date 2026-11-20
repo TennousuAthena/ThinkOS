@@ -22,6 +22,11 @@ class UpdaterProtocolTest {
         assertThrows(IllegalArgumentException::class.java) { UpdaterProtocol.segments(stage, 4) }
         assertThrows(IllegalArgumentException::class.java) { UpdaterProtocol.segments(byteArrayOf(10), 2) }
     }
+    @Test fun moduleUpdatesWaitUntilTheUpdaterMayRebootAgain() {
+        assertFalse(ModuleUpdatePolicy.rebootSpacingReady(0))
+        assertFalse(ModuleUpdatePolicy.rebootSpacingReady(3_599_999))
+        assertTrue(ModuleUpdatePolicy.rebootSpacingReady(3_600_000))
+    }
     @Test fun setupMutationsRequireARecentRealMonotonicTap() {
         assertTrue(UpdaterProtocol.fresh(1_000, 6_000))
         assertFalse(UpdaterProtocol.fresh(1_000, 6_001))

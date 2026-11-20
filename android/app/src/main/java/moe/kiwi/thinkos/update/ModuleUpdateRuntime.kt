@@ -261,6 +261,11 @@ internal class ModuleUpdateRuntime private constructor(private val context: Cont
         val local = verifier.inspectInstalled(installedFile())
         val selected = if (mutable.value.available) selection(catalog, additional) else emptyList()
         if (plan != null) require(featureBinding(plan.scope, catalog, selected) == plan.binding)
+        if (selected.isNotEmpty() && !ModuleUpdatePolicy.rebootSpacingReady(android.os.SystemClock.uptimeMillis())) {
+            // updaterd refuses a reboot within an hour of boot; starting now would roll back and blacklist this version.
+            android.util.Log.i("ThinkOS", "Module update deferred: the updater cannot reboot within an hour of boot")
+            return@withLock UpdateInstaller.Outcome.CANCELLED
+        }
         mutable.value = mutable.value.copy(selectedChanges = selected.isNotEmpty())
         require(selected.isNotEmpty() || local.identity != identity(catalog)) { "No update changes" }
         selected.forEach { verifyFiles(it, requireNotNull(systemKeys)) }
@@ -632,6 +637,8 @@ internal class ModuleUpdateRuntime private constructor(private val context: Cont
 
 /** Pure protocol/policy decisions, independent of Android, socket or timers. */
 internal object ModuleUpdatePolicy {
+    /** Mirrors updaterd's fixed reboot spacing (CLOCK_MONOTONIC, one hour since boot). */
+    fun rebootSpacingReady(uptimeMillis: Long): Boolean = uptimeMillis >= UpdaterProtocol.REBOOT_SPACING_MS
     fun rootAdmission(digest: String?, readyDigest: String?, keys: Int, active: Boolean, ownedDigest: String?,
                       apkChanges: Boolean, moduleChanges: Boolean): Boolean =
         digest != null && digest.matches(Regex("[a-f0-9]{64}")) && digest == readyDigest && keys in 1..2 &&

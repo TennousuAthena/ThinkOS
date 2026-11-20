@@ -126,6 +126,9 @@ internal object UpdaterProtocol {
     // 180s. This is not an installation retry or a user-facing timer setting.
     const val MUTATION_TIMEOUT_MS = 190_000
     const val RESPONSE_MAX = 4096
+    // Fixed by updaterd (reboot_request): no updater reboot within an hour of the
+    // last one or of boot. Protocol behaviour, not a user-facing timer setting.
+    const val REBOOT_SPACING_MS = 3_600_000L
     private val fixed = setOf("HELLO", "STATUS", "BEGIN", "STAGE", "INSTALL_APK", "REBOOT", "HEALTHY", "ROLLBACK", "GRANT_LANGUAGE")
     fun timeoutFor(line: String): Int = if (line in setOf("BEGIN", "STAGE", "INSTALL_APK", "ROLLBACK")) MUTATION_TIMEOUT_MS else TIMEOUT_MS
     fun zoneId(id: String): Boolean = id.length in 1..64 && id.all {
