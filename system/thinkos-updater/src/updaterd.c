@@ -738,9 +738,12 @@ static int read_small(int dir, const char *name, unsigned char *bytes, size_t ma
     ssize_t n = pread(fd, bytes, (size_t)s.st_size, 0); close(fd); if (n != s.st_size) return -1;
     *length = (size_t)n; return 0;
 }
+/* --pkg pins the expected package name for a full replacement. -p would make an
+ * inherit-existing (split) session, which API27 rejects whenever the version code
+ * changes: INSTALL_FAILED_INVALID_APK "Existing base version code ... inconsistent". */
 static int install_apk(const char *path, const char *package, int downgrade) {
-    char *words[] = {"install", "-r", "-p", (char *)package, (char *)path, NULL};
-    char *back[] = {"install", "-r", "-d", "-p", (char *)package, (char *)path, NULL};
+    char *words[] = {"install", "-r", "--pkg", (char *)package, (char *)path, NULL};
+    char *back[] = {"install", "-r", "-d", "--pkg", (char *)package, (char *)path, NULL};
     return pm_execute(downgrade ? "rollback-apk" : "install-apk", downgrade ? back : words);
 }
 static const char *stage_module(struct request *r) {

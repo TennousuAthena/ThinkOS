@@ -497,7 +497,7 @@ int main(int argc,char **argv) {
         self.assertEqual(self.request('INSTALL_APK', [apk]), 'OK')
         args = self.executions()[-1]
         self.assertEqual(args[0], 'install-apk')
-        self.assertEqual(args[1:5], ['install', '-r', '-p', 'moe.kiwi.thinkos'])
+        self.assertEqual(args[1:5], ['install', '-r', '--pkg', 'moe.kiwi.thinkos'])
         self.assertNotIn('-d', args)
         self.assertEqual(self.request('ROLLBACK'), 'OK')
         self.assertIn('-d', self.executions()[-1])
@@ -713,8 +713,8 @@ int main(int argc,char **argv) {
         self.assertIn(['package-path', 'path', 'moe.kiwi.thinkos'], self.read_executions())
         self.assertEqual(self.executions(), [
             ['grant-language', 'grant', 'moe.kiwi.thinkos', 'android.permission.CHANGE_CONFIGURATION'],
-            ['install-apk', 'install', '-r', '-p', 'moe.kiwi.thinkos', str(self.root / 'transaction/application.apk')],
-            ['rollback-apk', 'install', '-r', '-d', '-p', 'moe.kiwi.thinkos', str(self.root / 'transaction/previous.apk')]])
+            ['install-apk', 'install', '-r', '--pkg', 'moe.kiwi.thinkos', str(self.root / 'transaction/application.apk')],
+            ['rollback-apk', 'install', '-r', '-d', '--pkg', 'moe.kiwi.thinkos', str(self.root / 'transaction/previous.apk')]])
 
     def test_real_execve_rejects_no_shebang_script_and_never_falls_back_to_a_shell(self):
         script = self.home / 'no-shebang-pm'

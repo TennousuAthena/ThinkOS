@@ -180,3 +180,9 @@
 | 系统动画开关设为 0 或开了“减少动画”时，打开应用没有翻转 | 设计如此：此时退回滑动或直接替换 | — |
 | 横屏安装时左缘滑动闪出系统导航栏 | **未验证**：导航栏在哪一侧取决于安装方向；没装 `thinkos-immersive` 时可能和顶部下拉同源 | 装 `system/thinkos-immersive`（人工安装） |
 | 应用声明了 `tos.back.intercept(true)` 却没有 `back` 处理，第一次返回“没反应” | 它被告知了，但什么也没做；2 秒后下一次返回会直接退出 | 应用的 bug：回到根层要 `tos.back.intercept(false)` |
+
+## 16. 系统更新器装应用失败（2026-11-20）
+
+| 现象 | 原因 | 处理 |
+|---|---|---|
+| 装了 `thinkos-updater` 的机器（金镜像刷出的都装了）点“检查更新”下载、校验都成功，安装后仍是旧版；`module-pending.json` 为 `FAILED`、`rolled_back` | updaterd 用 `pm install -r -p <包名>` 装应用。API 27 的 `-p` 是继承已装包的分包会话，要求新旧版本号相同，升级必定报 `INSTALL_FAILED_INVALID_APK: Existing base version code 1033 inconsistent with 1034`，随后自动装回旧版。没装更新器的机器走 ThinkOS 自己的安装，不受影响 | 更新器 v1.2 改用 `--pkg`（只校验包名，完整替换）。**已装旧更新器的机器无法靠云端自愈**：新版本也由旧 daemon 安装，必须接线用 `system/install-updater.sh` 装 v1.2 并重启。失败过的目录摘要会被记入 `module-failed-*.json`，修好后需要更新的目录（新版本）才会重试。金镜像要换成带 v1.2 的再刷新机 |
