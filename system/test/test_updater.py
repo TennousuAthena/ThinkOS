@@ -56,9 +56,35 @@ class Updater(unittest.TestCase):
         # Compile the actual production metadata helper with synthetic stat
         # records; rejecting foreign uid/gid must not require privileged chown.
         harness = cls.directory / 'vector-metadata.c'
-        harness.write_text('#define main updaterd_production_entry\n#include ' +
+        harness.write_text(r'''
+#ifdef UPDATER_GROUP_FAULT_TEST
+#include <sys/types.h>
+#include <unistd.h>
+static int group_fault;
+static int injected_setpgid(pid_t, pid_t);
+#define setpgid injected_setpgid
+#endif
+''' + '#define main updaterd_production_entry\n#include ' +
             json.dumps(str(SYSTEM / 'thinkos-updater/src/updaterd.c')) + '\n#undef main\n' + r'''
+#ifdef UPDATER_GROUP_FAULT_TEST
+#undef setpgid
+static int injected_setpgid(pid_t pid, pid_t group) {
+ /* Deterministically model both cases: isolation already holds despite an
+  * error, or neither parent nor child can establish it. No retry is involved. */
+ if (pid==0 && group_fault==1 && setpgid(pid,group)) return -1;
+ errno=EPERM; return -1;
+}
+#endif
 int main(int argc,char **argv) {
+#ifdef UPDATER_GROUP_FAULT_TEST
+ if (argc==3 && (!strcmp(argv[1],"--group-ready") || !strcmp(argv[1],"--group-denied"))) {
+  group_fault=!strcmp(argv[1],"--group-ready") ? 1 : 2;
+  test_exec=argv[2]; char path[PATH_MAX];
+  int result=package_path(APP,path,sizeof(path));
+  return group_fault==1 ? (result==0 && !strcmp(path,"/data/app/thinkos-app-old/base.apk") ? 0 : 43)
+                        : (result==-1 ? 0 : 44);
+ }
+#endif
  if (argc==3 && !strcmp(argv[1],"--no-shebang")) {
   char *args[]={argv[2],NULL}, output[64];
   return execute_until("no-shebang-fixture",argv[2],args,output,sizeof(output),probe_deadline())==-1 && !output[0] ? 0 : 40;
@@ -95,6 +121,18 @@ int main(int argc,char **argv) {
         cls.pm_path_binary = cls.directory / 'updater-pm-path'
         command(os.environ.get('CC') or 'clang', '-Wall', '-Wextra', '-Werror', '-O1', '-DUPDATER_HOST_TEST',
                 '-o', cls.pm_path_binary, harness, *sources, SYSTEM / 'thinkos-updater/vendor/sha-2/sha-256.c')
+        cls.group_fault_binary = cls.directory / 'updater-group-fault'
+        command(os.environ.get('CC') or 'clang', '-Wall', '-Wextra', '-Werror', '-O1',
+                '-DUPDATER_HOST_TEST', '-DUPDATER_GROUP_FAULT_TEST', '-o', cls.group_fault_binary,
+                harness, *sources, SYSTEM / 'thinkos-updater/vendor/sha-2/sha-256.c')
+
+        # One native executable per suite, shared through per-test argv[0]
+        # symlinks. No interpreter/site startup or per-test executable warmup.
+        cls.native_executor = cls.directory / 'native-fake-exec'
+        json_source = SYSTEM.parent / 'android/app/src/main/cpp/json'
+        command(os.environ.get('CC') or 'clang', '-std=c11', '-Wall', '-Wextra', '-Werror', '-O1',
+                '-I', json_source, '-o', cls.native_executor,
+                SYSTEM / 'test/updater_fake_exec.c', json_source / 'yyjson.c')
 
     @classmethod
     def tearDownClass(cls):
@@ -133,117 +171,34 @@ int main(int argc,char **argv) {
         (module / 'module.prop').write_text('id=thinkos-cast\nversion=v1.0\nversionCode=1\n')
         (module / 'service.sh').write_text('old service\n')
         self.executor = self.home / 'fake-exec'
-        # This subprocess is a stdlib-only fixture, not a second application.
-        # The suite's python -I is not inherited across the C execve. Disable
-        # ambient site/.pth startup inside every actual fake-exec process.
-        self.executor.write_text('#!' + sys.executable + ' -S\n' +
-            'import sys\nif not sys.flags.no_site:sys.exit(98)\n' +
-            'import json,os,pathlib,re,time\n' +
-            'root=pathlib.Path(' + repr(str(self.root)) + ')\n' +
-            'updates=pathlib.Path(' + repr(str(self.updates)) + ')\n' + r'''
-import traceback
-def crash_hook(kind,value,trace):  # stderr goes to /dev/null in the daemon: keep a failed fake's reason where tearDown can see it
- with (root/"fake-crash.log").open("a") as out:out.write("".join(traceback.format_exception(kind,value,trace)))
-sys.excepthook=crash_hook
-action=sys.argv[1]
-if action=="warmup":sys.exit(0)
-program=sys.argv[2]
-original_argv=sys.argv[3:]
-pm_actions={"package-info","package-path","install-apk","rollback-apk","grant-language"}
-is_pm=action in pm_actions
-with (root/"program-invocations.jsonl").open("a") as out:
- out.write(json.dumps({"action":action,"program":program,"argv":original_argv})+"\n")
-def refuse(code,why):
- with (root/"fake-refusals.log").open("a") as out:out.write(json.dumps({"code":code,"why":why,"action":action,"program":program,"argv":original_argv})+"\n")
- sys.exit(code)
-if is_pm:
- if program!="/system/bin/app_process" or original_argv[:3]!=["/system/bin/app_process","/system/bin","com.android.commands.pm.Pm"]:refuse(96,"pm program/argv")
- semantic=original_argv[3:]
-else:
- known={"set-timezone":"/system/bin/service","install-module":"/sbin/magisk",
-        "reboot":"/system/bin/reboot","guard-reboot":"/system/bin/reboot",
-        "vector-state":"/system/bin/sqlite3","vector-backup":"/system/bin/sqlite3",
-        "vector-sync":"/system/bin/sqlite3","vector-restore":"/system/bin/sqlite3",
-        "guard-vector-disable":"/system/bin/sqlite3"}
- if program!=known.get(action) or not original_argv or original_argv[0]!=program:refuse(96,"program/argv0")
- semantic=original_argv[1:]
-expected_env={"PATH":"/system/bin:/system/xbin:/data/adb/magisk","LANG":"C","ANDROID_ROOT":"/system","ANDROID_DATA":"/data"}
-if is_pm:expected_env["CLASSPATH"]="/system/framework/pm.jar"
-fixed_env={name:os.environ.get(name) for name in expected_env}
-# Interpreter/runtime keys are added after execve, not inherited from daemon
-# envp. A minimal-env probe of the actual macOS venv interpreter also observed
-# __CF_USER_TEXT_ENCODING; do not excuse that key on any other host platform.
-runtime_env={"LC_CTYPE","__PYVENV_LAUNCHER__"}
-if sys.platform=="darwin":runtime_env.add("__CF_USER_TEXT_ENCODING")
-unexpected_env=sorted(set(os.environ)-set(expected_env)-runtime_env)
-with (root/"child-environments.jsonl").open("a") as out:
- out.write(json.dumps({"action":action,"fixed":fixed_env,"unexpected":unexpected_env,"no_site":bool(sys.flags.no_site)})+"\n")
-if fixed_env!=expected_env or unexpected_env:refuse(97,{"fixed":fixed_env,"unexpected":unexpected_env})
-# Preserve every existing assertion on the actual PM subcommand/flags/package
-# after checking the real executable, Java prefix and dedicated classpath.
-sys.argv=[sys.argv[0],action]+semantic
-read_only=action in ("package-info","package-path","vector-state")
-with (root/("read-executions.jsonl" if read_only else "executions.jsonl")).open("a") as out:
- out.write(json.dumps(sys.argv[1:])+"\n")
-if (root/"slow-action").exists() and (root/"slow-action").read_text()==action:time.sleep(10)
-if (root/"probe-delays.json").exists():time.sleep(json.loads((root/"probe-delays.json").read_text()).get(action,0))
-if (root/"fail-action").exists() and (root/"fail-action").read_text()==action:sys.exit(9)
-if action=="package-info":
- override=root/"host-pm-output"
- if override.exists():sys.stdout.buffer.write(override.read_bytes())
- elif (root/"host-pm-code").read_text()!="absent":
-  print("package:"+(root/"host-pm-path").read_text()+"=moe.kiwi.thinkos.immersive versionCode:"+(root/"host-pm-code").read_text())
-if action=="package-path":
- if sys.argv[2:]!=["path","moe.kiwi.thinkos"]:sys.exit(95)
- print("package:/data/app/thinkos-app-old/base.apk")
-if action=="vector-state":
- source=root/("host-vector-output" if (root/"host-vector-output").exists() else "host-vector-state")
- sys.stdout.buffer.write(source.read_bytes())
-if action=="install-module":
- fields=dict(line.split("=",1) for line in (root/"transaction/manifest.new").read_text().splitlines() if "=" in line)
- staged=updates/fields["id"];staged.mkdir()
- (staged/"module.prop").write_text("id="+fields["id"]+"\nversion=v1.1\nversionCode="+fields["code"]+"\n")
- (staged/"service.sh").write_text("new service\n")
-if action in ("install-apk","rollback-apk") and "moe.kiwi.thinkos.immersive" in sys.argv:
- if action=="install-apk":
-  fields=dict(line.split("=",1) for line in (root/"transaction/manifest.new").read_text().splitlines() if "=" in line)
-  (root/"host-pm-code").write_text(fields["code"])
-  (root/"host-pm-path").write_text("/data/app/thinkos-immersive-new-"+fields["code"]+"/base.apk")
- else:
-  (root/"host-pm-code").write_text("1")
-  (root/"host-pm-path").write_text("/data/app/thinkos-immersive-restored/base.apk")
-if action=="vector-backup":
- (root/"transaction/vector.db").write_bytes(b"consistent-backup")
- (root/"transaction/vector-state.before").write_bytes((root/"host-vector-state").read_bytes())
-if action=="vector-restore":
- (root/"host-vector-state").write_bytes((root/"transaction/vector-state.before").read_bytes())
-if action=="vector-sync":
- match=re.search(r"apk_path='([^']+)'",sys.argv[-1])
- if not match:sys.exit(8)
- enabled=(root/"host-vector-state").read_text().split("|",1)[0]
- if "enabled=1" in sys.argv[-1]:enabled="1"
- (root/"host-vector-state").write_text(enabled+"|"+match[1]+"\n")
- print("1")
-if action=="guard-vector-disable":
- path=(root/"host-vector-state").read_text().split("|",1)[1]
- (root/"host-vector-state").write_text("0|"+path)
- print("1")
-if action=="set-timezone":
- value=sys.argv[-1]
- mismatch=root/"timezone-mismatch"
- if mismatch.exists() and (value!="Asia/Hong_Kong" or mismatch.read_text()=="always"):value="Etc/GMT"
- (root/"host-timezone").write_text(value)
-''')
-        self.executor.chmod(0o700)
-        # A freshly written executable can cost macOS a security scan on its first run, which on a busy machine is longer than the
-        # daemon's 1.8 s probe budget. Pay for it here, once, outside every timed exchange.
-        subprocess.run([str(self.executor), 'warmup', '-'], check=True, capture_output=True, stdin=subprocess.DEVNULL, timeout=60)
+        self.executor.symlink_to(self.native_executor)
         self.address = str(self.home / 'socket')
         self.process = None
+        self.daemon_output = []
         self.start()
 
     def tearDown(self):
         self.stop()
+        result = self._outcome.result
+        failed = [(case, detail) for case, detail in result.failures + result.errors
+                  if case is self or getattr(case, 'test_case', None) is self]
+        evidence = os.environ.get('THINKOS_UPDATER_FAILURE_DIR')
+        if evidence and failed:
+            directory = Path(evidence)
+            directory.mkdir(parents=True, exist_ok=True)
+            retained = Path(tempfile.mkdtemp(prefix=self._testMethodName + '-', dir=directory))
+            (retained / 'assertion.txt').write_text(''.join(detail for case, detail in failed))
+            (retained / 'daemon.json').write_text(json.dumps(self.daemon_output, indent=2))
+            # Fixed fixture diagnostics only: never copy signing keys, APKs,
+            # arbitrary private paths or the fixture's complete directory.
+            for name in ('program-invocations.jsonl', 'child-environments.jsonl', 'executions.jsonl',
+                         'read-executions.jsonl', 'fake-refusals.log', 'fake-crash.log',
+                         'host-pm-code', 'host-pm-path', 'host-vector-state',
+                         'probe-delays.json', 'fail-action', 'slow-action'):
+                source = self.root / name
+                if source.is_file() and not source.is_symlink():
+                    shutil.copyfile(source, retained / name)
+            print('FAILURE_EVIDENCE', retained, file=sys.stderr)
         for name in ('fake-refusals.log', 'fake-crash.log'):
             report = self.root / name  # the fixture refused or crashed on a call: say why instead of failing blind
             if report.exists():
@@ -279,11 +234,72 @@ if action=="set-timezone":
         if self.process:
             self.process.terminate()
             try:
-                self.process.communicate(timeout=5)
+                stdout, stderr = self.process.communicate(timeout=5)
             except subprocess.TimeoutExpired:
                 self.process.kill()
-                self.process.communicate(timeout=5)
+                stdout, stderr = self.process.communicate(timeout=5)
+            self.daemon_output.append({'exit_code': self.process.returncode,
+                                       'stdout': stdout[-65536:].decode(errors='replace'),
+                                       'stderr': stderr[-65536:].decode(errors='replace')})
             self.process = None
+
+    def fixture(self, action, program, *words, environment=None):
+        fixed = {'PATH': '/system/bin:/system/xbin:/data/adb/magisk', 'LANG': 'C',
+                 'ANDROID_ROOT': '/system', 'ANDROID_DATA': '/data'}
+        if program == '/system/bin/app_process':
+            fixed['CLASSPATH'] = '/system/framework/pm.jar'
+        return subprocess.run([str(self.executor), action, program, *words],
+                              env=fixed if environment is None else environment,
+                              capture_output=True, timeout=5)
+
+    def test_native_fixture_rejects_changed_program_argv0_and_java_prefix(self):
+        for action, program, words in (
+                ('grant-language', '/system/bin/pm', ('/system/bin/pm', 'grant')),
+                ('grant-language', '/system/bin/app_process', ('/system/bin/app_process', '/wrong', 'com.android.commands.pm.Pm')),
+                ('reboot', '/system/bin/reboot', ('/wrong/argv0',))):
+            with self.subTest(action=action, program=program, words=words):
+                self.assertEqual(self.fixture(action, program, *words).returncode, 96)
+        self.assertEqual(self.executions(), [])
+        failures = [json.loads(row) for row in (self.root / 'fake-refusals.log').read_text().splitlines()]
+        self.assertEqual([row['code'] for row in failures], [96, 96, 96])
+
+    def test_native_fixture_rejects_missing_poisoned_and_wrong_classpath_environment(self):
+        program = '/system/bin/app_process'
+        words = (program, '/system/bin', 'com.android.commands.pm.Pm', 'grant',
+                 'moe.kiwi.thinkos', 'android.permission.CHANGE_CONFIGURATION')
+        fixed = {'PATH': '/system/bin:/system/xbin:/data/adb/magisk', 'LANG': 'C',
+                 'ANDROID_ROOT': '/system', 'ANDROID_DATA': '/data', 'CLASSPATH': '/system/framework/pm.jar'}
+        missing = dict(fixed); missing.pop('ANDROID_ROOT')
+        for environment in (missing, {**fixed, 'CLASSPATH': '/untrusted.jar'}, {**fixed, 'UPDATER_CHILD_POISON': 'no'}):
+            with self.subTest(environment=environment):
+                self.assertEqual(self.fixture('grant-language', program, *words, environment=environment).returncode, 97)
+        self.assertEqual(self.executions(), [])
+
+    def test_native_fixture_roundtrips_untrusted_argument_text_without_executing_it(self):
+        program = '/system/bin/app_process'
+        literal = '引号"\\路径\n$(not-a-command); *'
+        words = (program, '/system/bin', 'com.android.commands.pm.Pm', 'grant', literal)
+        self.assertEqual(self.fixture('grant-language', program, *words).returncode, 0)
+        self.assertEqual(self.program_invocations()[-1]['argv'], list(words))
+        self.assertEqual(self.executions(), [['grant-language', 'grant', literal]])
+        self.assertEqual(self.child_environments()[-1]['runtime'], 'native')
+
+    def test_native_fixture_preserves_injected_failure_and_reports_malformed_controls(self):
+        (self.root / 'fail-action').write_text('reboot')
+        self.assertEqual(self.fixture('reboot', '/system/bin/reboot', '/system/bin/reboot').returncode, 9)
+        self.assertEqual(self.executions(), [['reboot']])
+        (self.root / 'fail-action').unlink()
+        (self.root / 'probe-delays.json').write_text('{broken')
+        self.assertEqual(self.fixture('reboot', '/system/bin/reboot', '/system/bin/reboot').returncode, 94)
+        self.assertIn('malformed probe-delays fixture', (self.root / 'fake-crash.log').read_text())
+
+    def test_child_group_error_only_proceeds_when_isolation_already_holds(self):
+        command(self.group_fault_binary, '--group-ready', self.executor)
+        calls = self.program_invocations()
+        self.assertEqual([call['action'] for call in calls], ['package-path'])
+        command(self.group_fault_binary, '--group-denied', self.executor)
+        self.assertEqual(self.program_invocations(), calls)
+        self.assertEqual(self.executions(), [])
 
     def connect(self):
         peer = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -688,7 +704,7 @@ if action=="set-timezone":
                 self.assertEqual(row['program'], '/system/bin/app_process')
                 self.assertEqual(row['argv'][:3], ['/system/bin/app_process', '/system/bin', 'com.android.commands.pm.Pm'])
         for row in self.child_environments():
-            self.assertIs(row['no_site'], True)
+            self.assertEqual(row['runtime'], 'native')
             if row['action'] in pm_actions:
                 self.assertEqual(row['fixed'].get('CLASSPATH'), '/system/framework/pm.jar')
             else:

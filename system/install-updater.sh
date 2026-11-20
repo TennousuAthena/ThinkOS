@@ -29,6 +29,7 @@ VERSION=$(sed -n 's/^version=//p' thinkos-updater/module.prop)
 [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+$ ]] || exit 1
 ZIP="thinkos-updater-$VERSION.zip"
 adb -s "$SERIAL" push "build/$ZIP" "/data/local/tmp/$ZIP"
-adb -s "$SERIAL" shell su -c "/data/adb/magisk/magisk --install-module /data/local/tmp/$ZIP"
+# Magisk 27 keeps its binary as /data/adb/magisk/magisk32 behind /sbin/magisk, so call it by name like the other installers do.
+adb -s "$SERIAL" shell "su -c 'magisk --install-module /data/local/tmp/$ZIP'"
 echo "Installed $ZIP. The module installer also placed the recovery guard, its policy and the two boot launchers (system/thinkos-updater/guard/README.md)."
 echo "Activate with an owner-performed restart. This script did not restart the device."

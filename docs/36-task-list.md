@@ -1333,18 +1333,21 @@ API与恢复页初始检查点（2026-11-04）：11dac015…已安装，0.1.1/10
 
 #### OTA6-FIX-2 损坏APK事务的原生恢复
 
+2026-11-17只读复核：生产Runtime准入、固定root探测、模块→APK双锁、原件隔离、中断恢复与后续认证更新健康退休接线仍在源码中。沿用已有22项针对性JVM历史证据；独立UID的API27文件系统及中文横竖/实际触摸分项已通过，不能合并为生产全链通过。旧024未安装和026候选说明仅属当日状态，不再作为当前待办。新增 [证据分层与生产交接](../artifacts/update/OTA6-FIX-2/review-20261117/production-handoff.md) 及 `qualification.json`；本轮未改恢复器或运行设备步骤，`complete_F2=false`。
+
 2026-11-05中文窗口实机增量：F030独立UID、已装修订test416db8…完成真实竖/横READY与按钮完整可见、ACTION_CLICK负例、一次实际触摸隔离、4项原生+4项外层检查。只操作自有cache损坏样本，真实update/registry/native等历史保持，token/reverse与临时唤醒保持均清理，五流0。已确认此前首触失败/表盘漂移来自实际ASLEEP自动角色切换，非外部操作的证明；原失败保留。完整生产Runtime准入/重开与后续健康退休仍待，不勾整项，见`artifacts/update/OTA6-FIX-2/ui-030-20261105/qualification.json`。
 
 2026-11-05窗口准备增量：真实Settings过渡已消除独立包instrumentation冷启动被原锁定模式拦截的问题；旧探针在READY前因异步自有媒体状态检查失败，未点隔离。已修为只读等registry/v3提交、同Main验证并Stop，构建及修订test416db8…安装完成，尚未实机验证修订窗口，不计通过。原应用层已真实Back恢复，管理/静音保持；随后外部页面/表盘变化照现值保留，见`artifacts/update/OTA6-FIX-2/ui-setup-030-20261105/qualification.json`。
 
 2026-11-05实际API27增量：F030独立UID验证真实updater不存在、ATOMIC_MOVE保持inode/fileKey、目录fsync和文件原字节；正式UI/同PID、两包耐久历史/权限/静音保持，自有cache清理。源码已随030安装，旧024未安装说明为历史；真实中文窗口、生产Runtime准入/重开与健康退休仍待，见`artifacts/update/OTA6-FIX-2/api27-030-20261105/qualification.json`。
 
-- [ ] 合入并验收保留损坏证据、拒绝并发覆盖、不误回滚、保持history/failure/seq的原生恢复流程。
+- [x] 生产源码已整合保留损坏证据、拒绝并发覆盖、不误回滚、保持history/failure/seq的原生恢复流程，已有针对性主机测试。
+- [ ] 同一生产Runtime完整验收准入、取消/重开、损坏事务隔离及后续真实认证更新健康退休；不以独立UID分项替代。
 - [ ] 正常设备、未知root/未决会话、隔离中断和后续健康退休记录均有对应验证。
 
-结果：2026-11-05，**0.1.24/1024生产已整合并编译，尚未安装**。原生恢复入口、固定JNI探测、双锁/损坏原件归档与历史保护、健康ACK同锁退休已接入；22项针对性JVM（文件12/策略5/真实Controller取消5）通过，完整1057项0失败/错误（1旧skip），Python214、共享Go契约、debug主包/测试包/lint/插件校验通过；只含armv7，APK manifest min/target27，新JNI符号已打入。首次两项样本notes不合法与异常身份断言失败均保留，未放宽生产schema。真机ADB清单空且USB未识别HUA，已知地址无路由：API27实际socket/文件系统、真实中文触摸/横竖与后续健康退休未跑，不冒称实机通过；本机最后确认安装为0.1.23。独有cache组件探针和外driver已编译/语法检查，只用于接回后验收，不改真实更新事务；两项保持开放。证据 `artifacts/update/OTA6-FIX-2/0.1.24/qualification.json`。
+结果（历史快照）：2026-11-05，**0.1.24/1024生产已整合并编译，尚未安装**。原生恢复入口、固定JNI探测、双锁/损坏原件归档与历史保护、健康ACK同锁退休已接入；22项针对性JVM（文件12/策略5/真实Controller取消5）通过，完整1057项0失败/错误（1旧skip），Python214、共享Go契约、debug主包/测试包/lint/插件校验通过；只含armv7，APK manifest min/target27，新JNI符号已打入。首次两项样本notes不合法与异常身份断言失败均保留，未放宽生产schema。真机ADB清单空且USB未识别HUA，已知地址无路由：API27实际socket/文件系统、真实中文触摸/横竖与后续健康退休未跑，不冒称实机通过；本机最后确认安装为0.1.23。独有cache组件探针和外driver已编译/语法检查，只用于接回后验收，不改真实更新事务；两项保持开放。证据 `artifacts/update/OTA6-FIX-2/0.1.24/qualification.json`。
 
-候选包更新：F2源码继续包含于待装0.1.26，后续实际API27/窗口/健康退休验证仍开放；本轮新增模块功能不替代F2验收。
+候选包更新（2026-11-05历史）：F2源码继续包含于当时待装0.1.26，后续实际API27/窗口/健康退休验证仍开放；本轮新增模块功能不替代F2验收。
 
 #### OTA6-FIX-3 备用机安装边界
 
@@ -1359,7 +1362,9 @@ API与恢复页初始检查点（2026-11-04）：11dac015…已安装，0.1.1/10
 
 #### MOD-1 更新器
 
-等人工：正式系统根与OWN-4备用机的更新器/外置守卫部署、重启；见[部署前置与回滚](../artifacts/system/MOD-1/human-steps.md)。HUA0BWUT不装更新器/守卫；原不稳定测试的确切因果仍待Agent查明。
+等人工（设备门槛）：先按 docs/19 §12核对所选备用实物已有模块/守卫状态，再安排真实系统签名更新、必要持久变更及重启；见[部署前置与回滚](../artifacts/system/MOD-1/human-steps.md)。不盲目重复参考机已完成的安装，HUA0BWUT保护边界保持。主机稳定性本轮已收口，不能据此勾模块OTA。
+
+结果：2026-11-17，**完整 system/test/run.sh 同源码连续10次通过、零重试**，每轮updater为54项。C夹具保留固定程序/参数/环境、拒绝/崩溃与延时语义；旧基线第6轮失败原件已保留。临时诊断捕获子进程 setpgid 返回EPERM而pid==pgid，旧代码在解释器/夹具执行前退出126；改为失败时核对隔离确已建立，未隔离仍拒绝。确定性旧/新回归证实差异。删除门禁重试，无生产预算放宽；API27/armv7无钥匙生产路径交叉编译通过，未签名/安装。不能把所有未留状态的历史故障都归为同一原因，更不能继续称Python被系统杀掉已证实。证据 artifacts/system/MOD-1/host-20261117/qualification.json、ten-consecutive/summary.json。
 
 2026-11-05主机增量：现有44项完整host套件连续10次全部通过（440项），假执行器显式禁用ambient Python site/.pth，并逐子进程验证；首次单次STATUS仍严格验证真实code/active及PM+SQLite共享1800ms，不预热、不sleep、不重试。加入fixture前置与失败诊断。原审计首次失败的确切成因仍未证实，因而下方因果收口待办保留；未更改生产预算/设备模块。证据 `artifacts/system/MOD-1/host-20261105/qualification.json`。
 
@@ -1379,9 +1384,9 @@ API与恢复页初始检查点（2026-11-04）：11dac015…已安装，0.1.1/10
 
 - [x] 主机测试：坏签名、别的钥匙、旧 `code`、不在白名单的 id、超大文件、畸形清单全部拒绝；验签结果和 `openssl` 一致。
 - [ ] 模拟被攻破的应用，对 socket 发任意内容：装不了未签名的东西；别的 uid 得到 `ERR denied`；重启被限速。
-- [ ] `system/test/run.sh` 通过；产物只有 armv7。
-- [ ] 修不稳定的主机测试（2026-11-05 审计）：`test_pm_uses_real_fixed_java_prefix_and_private_classpath_for_every_operation` 在整套第一次跑时失败过一次（`module_status('thinkos-immersive')['active']` 为 False），隔离重跑 3 次、整套重跑都通过。找出时序依赖，改成等待明确条件而不是靠运气；连续整套跑 10 次全部通过。
-  - 2026-11-06 新数据：整套连续跑 30 多次，约八分之一失败一次，**每次是不同的测试**（`test_status_sqlite…`、`test_timezone_success…`、`test_vector_health…`、`test_immersive_…` 等），共同点是假执行器的一次调用失败（`ERR reboot-failed`、`install-failed`、探针返回 -1），假执行器没有留下拒绝记录也没有 Python 异常（已给它加了拒绝和崩溃日志，`tearDown` 会打印）。已做：每个测试开始前先预热一次假执行器（新写出的可执行文件第一次运行在 macOS 上会被安全扫描拖慢）、把两个贴着 1.8 秒预算的延时调松（0.9 和 1.2 秒），预热后连跑 10 次全过、之后 12 次里又失败 2 次。怀疑是 macOS 启动 Python 解释器偶尔被系统杀掉，不是更新器的问题，但**没有证实**。`system/test/run.sh` 因此对更新器套件允许响亮地重试一次，两次都失败才算失败。要彻底解决，把假执行器换成编译出来的小程序，不依赖解释器。
+- [x] `system/test/run.sh` 连续10次通过；本次变更的updater另以API27编译确认ELF32 ARM，未新增设备依赖。仅主机/编译验收，非模块OTA。
+- [x] 修不稳定的主机测试（2026-11-17收口）：编译版夹具、进程组竞态的确定性回归及完整系统10连跑通过，首个失败/环境/源码与日志摘要留存；无预热、sleep等待或失败重试。11月5日未留子进程状态的个别历史失败不反推成已证实。
+  - 2026-11-06 新数据（历史；下述临时重试已由2026-11-17修复取代）：整套连续跑 30 多次，约八分之一失败一次，**每次是不同的测试**（`test_status_sqlite…`、`test_timezone_success…`、`test_vector_health…`、`test_immersive_…` 等），共同点是假执行器的一次调用失败（`ERR reboot-failed`、`install-failed`、探针返回 -1），假执行器没有留下拒绝记录也没有 Python 异常（已给它加了拒绝和崩溃日志，`tearDown` 会打印）。已做：每个测试开始前先预热一次假执行器（新写出的可执行文件第一次运行在 macOS 上会被安全扫描拖慢）、把两个贴着 1.8 秒预算的延时调松（0.9 和 1.2 秒），预热后连跑 10 次全过、之后 12 次里又失败 2 次。怀疑是 macOS 启动 Python 解释器偶尔被系统杀掉，不是更新器的问题，但**没有证实**。`system/test/run.sh` 因此对更新器套件允许响亮地重试一次，两次都失败才算失败。要彻底解决，把假执行器换成编译出来的小程序，不依赖解释器。
 
 #### MOD-2 模块 OTA
 
@@ -1584,7 +1589,7 @@ JVM补验（2026-11-05）：Repository17项＋Policy7项零失败，完整1064�
 
 2026-11-06引导期间不进红移（所有者在重置后的真机上发现）：0.1.32 在凌晨清掉应用数据后，引导第一屏是 3% 亮度的红屏——红移按默认的日落到日出日程触发，决策器没有给引导做例外。已改：引导打开期间，日程和光线触发的红移与睡眠不生效，手动覆盖照旧（`OnboardingPolicy.displayMode`，`SensorController` 在决策后套用；`ModeController` 不变），`docs/35` §4.9 和 `docs/45` 已写明。主机测试2项新增并通过。**没验证：**真机上引导全程不红、结束后正确进入红移、以及第 9 步改 `redshift.trigger` 的表现；需要新版本装上后在夜间再走一遍。
 
-2026-11-06 无人值守批次（所有者睡前授权：按已提的要求自己决定，不再逐项确认；不推送、不发布、不持久装模块、不重启）：（4）**局域网重名**：`cast.name` 默认改为空=自动，名字是 `ThinkOS-XXXX`，四位取自投屏身份种子（30 个符号、81 万种；去掉 I L O U 0 1），重启和升级不变，设置“媒体与投屏”的名称行为空时显示当前自动名；DLNA、AirPlay、Miracast 共用；不放进引导（引导可跳过），见 `docs/28` §16。JVM 新增 2 项。（5）**选地点**：键盘的搜索键、页面上的放大镜、点别处都会收起键盘并取消焦点，点别处时输入有变化就顺手搜一次；键盘走后用 `OnSystemUiVisibilityChangeListener` 把系统栏（左边那个安卓返回键）重新隐藏；中文名没带“市/县/区”时依次再试加这三个字（接口按整名匹配，“阜新”搜不到、“阜新市”能搜到）。选中地点后，能设系统时区（有更新器模块）就设，两个插件（设置、引导）都接了，Lua 测试覆盖有/无模块；没有模块的设备（现在的 HUA0BWUT）改不了安卓的系统时区（要 root 守护进程），所以另加了 `Zones.followPlace`：手动地点带时区时，ThinkOS 自己的时钟、日出日落和红移都按该时区，不用模块；“按时区”那一行仍显示安卓的时区（`Zones.device()`）。真机验证：选东京后大时钟显示 04:59，系统时间是 03:59；测完已改回阜新市。只有安卓自己的界面还按系统时区。**系统时区这一路的真机验证（2026-11-06，HUA0BWUT，不持久）：**用 `--device-test` 版更新器从 `/data/local/tmp` 以 root 临时跑，配上 `--test-tzdata`、`host-timezone` 文件和一个会真的执行 `service call alarm 3` 的执行器；在选择地点页选阜新市，系统时区从 Asia/Hong_Kong 变成 Asia/Shanghai，位置存成阜新市。测完已删除临时程序并把系统时区改回 Hong_Kong。注意这是测试版更新器，不是正式包：正式包的读回、SELinux enforcing 都没验证，更新器模块也没装到任何设备。第一次实验没配这些文件，更新器回的是 `ERR zone-unknown`、时区没变，那次实验无效，不是应用的问题。（6）**中文输入法**：设备上只有 AOSP 键盘。谷歌拼音拿不到可验证的 32 位包：APKMirror、APKPure、Uptodown 都挡 Cloudflare/Turnstile（不绕过）；Internet Archive 上同一上传者的 4.1.1、3.3.0、3.2.1、3.1.0 全是被剥掉 `lib/` 的包，`apksigner` 报签名不通过；Aptoide 只有第三方上传的 arm64 包。改用 F-Droid 的同文输入法 Trime 3.3.13（15 MB，权限只有振动、唤醒锁等，无联网权限；armeabi-v7a；minSdk 21；GPL-3.0），写了 `tools/install_ime.py`（默认只出计划；只认白名单里的包名加签名者组合，Google 的指纹来自 `google.com/.well-known/assetlinks.json`，Trime 的来自 f-droid.org 的 TLS，7 项主机测试）。已装、已启用、设为默认；真机验证：拼音 `fuxin`→候选“阜新”、简体字方案、点放大镜或点别处键盘收起、搜到“阜新市”。证据 `artifacts/ui/location-ime-20261106/`。**没验证/没做：**Trime 被强停后默认输入法会退回 AOSP 键盘（要重新设）；设备重启后 Trime 是否仍是默认；谷歌拼音本身。 （7）**拔线保护**：`powerd` 触发时先灭背光再刷盘（`docs/40` §3）；新增命令 socket 和“关机”（PWR-4，模块 v0.2；设置里模块存在时出现带确认的“关机”行；真机用 `--dry-run` 临时跑验证过，实测 sync 21 ms）；空闲写入基线 18 KB/s（`docs/40` §2.5）；查证了“原厂拔线关机”的说法（§2.4）。（8）**脚本和模块 OTA**：外置守卫改成 `current`/`previous` 两份，`thinkos-updater` 自更新通过健康期后自动轮换；启动脚本很小、带版本、只升不降，选用顺序 current→previous→旧单文件；模块安装器首次安装时放好守卫、策略和启动脚本（`system/thinkos-updater/guard/README.md`、`docs/34`）；updater 模块 v1.1。主机测试：updater 49 项、守卫脚本 16 项，`system/test/run.sh` 现在把每个模块的主机套件都跑一遍。`thinkos-btsink` 还不在白名单（`tools/OWNER-RELEASE.md` 末尾写了要改哪些）。更新器套件有一个既有的偶发失败（约八分之一），已加诊断并在 `run.sh` 里允许响亮地重试一次，原因未证实（MOD-1 的不稳定测试项）。
+2026-11-06 无人值守批次（所有者睡前授权：按已提的要求自己决定，不再逐项确认；不推送、不发布、不持久装模块、不重启）：（4）**局域网重名**：`cast.name` 默认改为空=自动，名字是 `ThinkOS-XXXX`，四位取自投屏身份种子（30 个符号、81 万种；去掉 I L O U 0 1），重启和升级不变，设置“媒体与投屏”的名称行为空时显示当前自动名；DLNA、AirPlay、Miracast 共用；不放进引导（引导可跳过），见 `docs/28` §16。JVM 新增 2 项。（5）**选地点**：键盘的搜索键、页面上的放大镜、点别处都会收起键盘并取消焦点，点别处时输入有变化就顺手搜一次；键盘走后用 `OnSystemUiVisibilityChangeListener` 把系统栏（左边那个安卓返回键）重新隐藏；中文名没带“市/县/区”时依次再试加这三个字（接口按整名匹配，“阜新”搜不到、“阜新市”能搜到）。选中地点后，能设系统时区（有更新器模块）就设，两个插件（设置、引导）都接了，Lua 测试覆盖有/无模块；没有模块的设备（现在的 HUA0BWUT）改不了安卓的系统时区（要 root 守护进程），所以另加了 `Zones.followPlace`：手动地点带时区时，ThinkOS 自己的时钟、日出日落和红移都按该时区，不用模块；“按时区”那一行仍显示安卓的时区（`Zones.device()`）。真机验证：选东京后大时钟显示 04:59，系统时间是 03:59；测完已改回阜新市。只有安卓自己的界面还按系统时区。**系统时区这一路的真机验证（2026-11-06，HUA0BWUT，不持久）：**用 `--device-test` 版更新器从 `/data/local/tmp` 以 root 临时跑，配上 `--test-tzdata`、`host-timezone` 文件和一个会真的执行 `service call alarm 3` 的执行器；在选择地点页选阜新市，系统时区从 Asia/Hong_Kong 变成 Asia/Shanghai，位置存成阜新市。测完已删除临时程序并把系统时区改回 Hong_Kong。注意这是测试版更新器，不是正式包：正式包的读回、SELinux enforcing 都没验证，更新器模块也没装到任何设备。第一次实验没配这些文件，更新器回的是 `ERR zone-unknown`、时区没变，那次实验无效，不是应用的问题。（6）**中文输入法**：设备上只有 AOSP 键盘。谷歌拼音拿不到可验证的 32 位包：APKMirror、APKPure、Uptodown 都挡 Cloudflare/Turnstile（不绕过）；Internet Archive 上同一上传者的 4.1.1、3.3.0、3.2.1、3.1.0 全是被剥掉 `lib/` 的包，`apksigner` 报签名不通过；Aptoide 只有第三方上传的 arm64 包。改用 F-Droid 的同文输入法 Trime 3.3.13（15 MB，权限只有振动、唤醒锁等，无联网权限；armeabi-v7a；minSdk 21；GPL-3.0），写了 `tools/install_ime.py`（默认只出计划；只认白名单里的包名加签名者组合，Google 的指纹来自 `google.com/.well-known/assetlinks.json`，Trime 的来自 f-droid.org 的 TLS，7 项主机测试）。已装、已启用、设为默认；真机验证：拼音 `fuxin`→候选“阜新”、简体字方案、点放大镜或点别处键盘收起、搜到“阜新市”。证据 `artifacts/ui/location-ime-20261106/`。**没验证/没做：**Trime 被强停后默认输入法会退回 AOSP 键盘（要重新设）；设备重启后 Trime 是否仍是默认；谷歌拼音本身。 （7）**拔线保护**：`powerd` 触发时先灭背光再刷盘（`docs/40` §3）；新增命令 socket 和“关机”（PWR-4，模块 v0.2；设置里模块存在时出现带确认的“关机”行；真机用 `--dry-run` 临时跑验证过，实测 sync 21 ms）；空闲写入基线 18 KB/s（`docs/40` §2.5）；查证了“原厂拔线关机”的说法（§2.4）。（8）**脚本和模块 OTA**：外置守卫改成 `current`/`previous` 两份，`thinkos-updater` 自更新通过健康期后自动轮换；启动脚本很小、带版本、只升不降，选用顺序 current→previous→旧单文件；模块安装器首次安装时放好守卫、策略和启动脚本（`system/thinkos-updater/guard/README.md`、`docs/34`）；updater 模块 v1.1。主机测试：updater 49 项、守卫脚本 16 项，`system/test/run.sh` 现在把每个模块的主机套件都跑一遍。`thinkos-btsink` 还不在白名单（`tools/OWNER-RELEASE.md` 末尾写了要改哪些）。当时更新器套件有既有偶发失败并临时允许一次响亮重试（历史）；2026-11-17已定位进程组错误路径、改用C夹具并删除重试，完整系统10连跑通过，见MOD-1新证据。
 
 2026-11-06 所有者测出的三处（同一包，0.1.32 内容基础上本机构建，未发布）：（1）从引导打开的安卓页面（Wi-Fi、日期、辅助功能）按 Home 回来，引导被当成“稍后设置”退出，回主页后没法继续。原因：系统会为 Home 新建一个 `MainActivity`（实测任务 1039 之外多出 1041），原来记在 Activity 里的状态丢了。已改：“由引导打开”的标记放在进程级的 `KioskState`，`onCreate` 和 `onNewIntent` 的 Home 都先看它（`OnboardingPolicy.homeKeepsSetup`）；返回键本来就回到同一步。（2）Wi-Fi 一步去掉“跳过”，没联网不能往下（设备没有 RTC，没网时钟设不了）；`docs/35` §4.4、§4.5 已改，第一屏“跳过设置”和 Home 仍是出口。（3）控制面板 Wi-Fi、红移、睡眠三个按钮可长按：视图契约 `toggle.hold`，长按以同名 `tap` 事件发给插件；Wi-Fi 进安卓 Wi-Fi 页，红移和睡眠进设置的“模式”分类，为此 `tos.settings.open(scope, section?)` 加了可选的分类参数。主机：JVM 1158 项（1 项跳过）、Python 432 项、Native/Lua、Go、插件校验、字符串检查通过。真机（HUA0BWUT，正式签名的非 debug 包）：引导第一屏是深色，引导关闭后设置页才是红的；从安卓辅助功能页按 Home 回到引导第一屏；面板长按红移进“模式”，长按 Wi-Fi 进安卓 Wi-Fi 页，Wi-Fi 保持开启。证据 `artifacts/ui/onboarding-panel-20261106/`。**没验证：**（2）在真机上的样子（设备已联网，Wi-Fi 一步不出现，只有 Lua 测试覆盖）；Wi-Fi 步骤里从安卓页用 Home 回来的真机路径（辅助功能页走的是同一条代码，但没在 Wi-Fi 页上重测）；长按静音、设置、应用没有定义。
 
@@ -2340,7 +2345,7 @@ DLNA补验（2026-11-05）：**0.1.23已装**，真实标准SOAP SetURI/Play、�
 
 - [ ] OTA-5 第 2、5、6、7、9 项在真机上有证据。
 - [ ] OTA-3 的 7 条验收有“真实来源”的证据。
-- [ ] OTA6-FIX-2（损坏的 `pending.json`）修复并有测试；OTA-6 的 P1 在源码里已修（F1、F3），复核者确认。
+- [ ] OTA6-FIX-2生产完整恢复/后续健康退休验收；F1/F2/F3均已有源码与主机证据，F2独立UID分项不等于完整通过，见§7及2026-11-17复核。
 - [ ] REL-0 到 REL-4 完成。
 - [ ] 在第二个版本上，CNB 和 GitHub 各自单独作为唯一来源推送成功一次；断开其中一个，另一个仍可用。
 - [ ] PUB-2 扫描通过；`THIRD_PARTY_NOTICES.md` 与实际打包一致。

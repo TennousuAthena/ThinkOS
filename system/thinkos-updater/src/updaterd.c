@@ -319,7 +319,10 @@ static int execute_until(const char *action, const char *program, char *const ar
     int pipes[2]; if (pipe(pipes)) return -1;
     pid_t child = fork(); if (child < 0) { close(pipes[0]); close(pipes[1]); return -1; }
     if (!child) {
-        if (setpgid(0, 0)) _exit(126);
+        /* The parent also establishes this group to close the fork race. On
+         * macOS the redundant child call can report EPERM after it succeeds
+         * in the parent. Continue only if the required isolation already holds. */
+        if (setpgid(0, 0) && getpgrp() != getpid()) _exit(126);
         close(pipes[0]); if (dup2(pipes[1], STDOUT_FILENO) < 0) _exit(126); close(pipes[1]);
         int null = open("/dev/null", O_RDWR); if (null >= 0) { (void)dup2(null, STDIN_FILENO); (void)dup2(null, STDERR_FILENO); if (null > 2) close(null); }
         /* API27's pm script has no shebang: execve cannot run it. Only the fixed
