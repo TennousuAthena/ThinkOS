@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "plugins": [
+    {
+      "id": "aero",
+      "digest": "22cba905f53abf9afd8c3d6c5983a417a023812c1b5e54c881f0dd6429713b29"
+    },
+    {
+      "id": "apps",
+      "digest": "68b06e8a0bf60b58e5a4171588721ff599a08309b49688eac7ce7de8a582ceef"
+    },
+    {
+      "id": "cast",
+      "digest": "6c807712b5daa81960e05b2ae6b927349fb7572f7dba542080e3ab5a1cfa399b"
+    },
+    {
+      "id": "clock",
+      "digest": "668286fb25acb9e67e75184da86e7f159efa2b88473f28d749a763ad149e2b6d"
+    },
+    {
+      "id": "gallery",
+      "digest": "9304daa31102d25c97c931196810345049275ce276bb193fff98e288ed8d2248"
+    },
+    {
+      "id": "home",
+      "digest": "66aa7826620faf16936fce3a6a7b10f89c480e428e37bc326ebb60738ba00f24"
+    },
+    {
+      "id": "hub",
+      "digest": "d69c3d96396e3680ccac1862a1a1742eaced6535af0e90ecf37a42e93690a4d7"
+    },
+    {
+      "id": "iptv",
+      "digest": "7ef8f9f00008d2139b2ad5be430dd042b70e77b70a962856773953b7cc11742b"
+    },
+    {
+      "id": "panel",
+      "digest": "6c8eb75f8ffc8d769db4a152aa8f48a22596454eb1ce66554901d33c68f36f83"
+    },
+    {
+      "id": "player",
+      "digest": "5b59d12eed192cdfe24ec6c21b71d6d86088051326e2e51ec1d77f444d50d709"
+    },
+    {
+      "id": "radio",
+      "digest": "9e1cf1411ba48d4f1b87d8bddb59e9db8d953d28ee3258a72d5a2ce34d6f493a"
+    },
+    {
+      "id": "settings",
+      "digest": "f57dfc995965689a37796814d486546090ed28f422c1d59cbd821fc0643c0079"
+    },
+    {
+      "id": "tiles",
+      "digest": "c06747fea49988320956b9ac997936c26c96741fb14714d5721e956e02b6a458"
+    },
+    {
+      "id": "weather",
+      "digest": "afc67cf51f7ae96c9520d849572062573f514fba076bfda1325dbc8724dd8e98"
+    },
+    {
+      "id": "welcome",
+      "digest": "d89d6078e9c6a576709e3cfaf07278b77e51090af236454f1c235932d443c7f3"
+    }
+  ]
+}

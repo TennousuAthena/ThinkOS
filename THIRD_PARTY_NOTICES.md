@@ -37,6 +37,27 @@ Radio Browser 是可关闭、默认关闭的在线电台目录，台名、标签
 
 ## 开发工具与 CI
 
+### 独立网页模拟器（不进入 APK）
+
+`simulator/` 的 Python、TypeScript、JNI 适配与构建代码为本项目 MIT。它只读复用已有 Lua、yyjson、ThinkOS 桥接源码和四个 Kotlin 纯逻辑文件，不链接上文的 GPL 投屏或 FFmpeg 模块。浏览器依赖与开发工具分别如下；固定下载地址、版本和 npm tarball integrity 在 `simulator/package-lock.json`，Emscripten 的官方来源、提交及摘要在 `simulator/native/toolchain.lock.json`。
+
+| 内容 | 许可证 | 用途 |
+|---|---|---|
+| CanvasKit 0.42.0（Skia） | BSD-3-Clause，分发包包含其第三方声明 | 浏览器 Canvas/段落整形，官方 [Skia CanvasKit](https://skia.org/docs/user/modules/canvaskit/) |
+| Shaka Player 5.3.4 | Apache-2.0 | 浏览器 HLS/DASH；[上游](https://github.com/shaka-project/shaka-player) |
+| Kotlin/JS 标准库 2.2.0 | Apache-2.0 | 与四个原始 Kotlin 文件一起编译；来源及 SHA-256 在 `simulator/reference/README.md` |
+| Lua 5.4.9、yyjson 0.12.0 | MIT | 同上文设备源码，以 WASM 编译；通知随 `runtime/LICENSES.txt` 分发 |
+| Emscripten 6.0.13 | MIT/NCSA | 仅编译工具及生成的 WASM 加载器；源码锁见 `simulator/native/` |
+| Vite 8.3.4、Rolldown 1.2.16 | MIT | 仅构建；平台 binding 沿用相同版本 Rolldown 许可证 |
+| TypeScript 7.0.2、Playwright Core 1.65.0 | Apache-2.0 | 仅类型检查与测试；测试使用已有 Chromium，不自动下载浏览器 |
+| Lightning CSS 1.33.0 | MPL-2.0 | Vite 的构建期依赖，未修改代码；不进入设备 APK |
+| Unicode CLDR weekData 的区域首周信息 | Unicode-3.0 | `locale-time.ts` 的最小首周天数；全文在 `simulator/assets/licenses/Unicode-3.0.txt` |
+| FontTools 4.59.1（已有主机工具） | MIT | 仅从所有者已有 ROM 的 TTC 提取正确 SC/TC 字体 face，不进入网页 JS/APK |
+
+其余 npm 传递依赖的原始许可证由 `simulator/scripts/collect_licenses.py` 从锁定安装中汇集到网页 `licenses/`，同时输出带 SHA-256 的清单；包括 MIT、ISC、BSD-3-Clause 和 Apache-2.0 声明。构建遇到无可核对声明的安装会失败。该步骤不联网。Kotlin 编译器使用主机已有缓存，不进入浏览器。
+
+模拟器复用 IANA 2026e 数据及本仓库天文算法/系数，沿用上文来源与 VSOP87D 的 OWN-12 待办。设备字体由所有者已有的本地 ROM 只读提取，目录被 Git 忽略；Roboto（Apache-2.0）与 Noto（SIL OFL-1.1）的字形不作修改，仅 TTC 容器拆分，并记录源字体摘要与索引。字体不作为本仓库新增可再分发资源。浏览器/Android CLDR 版本与 Skia 栅格差异仍需真机校准。
+
 以下工具由主机或 GitHub runner 提供，没有把其程序代码打进 APK。
 
 | 项目 | 许可证 | 用途与来源 |

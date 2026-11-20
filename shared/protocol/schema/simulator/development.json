@@ -1,0 +1,1997 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "thinkos:simulator:development:1",
+  "title": "Local simulator development channel; independent of device proto=1",
+  "$defs": {
+    "PluginIdentity": {
+      "type": "object",
+      "required": [
+        "pluginId",
+        "digest"
+      ],
+      "properties": {
+        "pluginId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "HttpRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pluginId",
+        "digest",
+        "method",
+        "url"
+      ],
+      "properties": {
+        "pluginId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "method": {
+          "enum": [
+            "GET",
+            "POST"
+          ]
+        },
+        "url": {
+          "type": "string",
+          "maxLength": 8192
+        },
+        "body": {
+          "type": "string",
+          "maxLength": 1048576
+        },
+        "headers": {
+          "type": "object",
+          "maxProperties": 32,
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 8192
+          }
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 500,
+          "maximum": 10000
+        },
+        "maxBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1048576
+        },
+        "sameOrigin": {
+          "type": "boolean"
+        }
+      }
+    },
+    "DnsRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pluginId",
+        "digest",
+        "host"
+      ],
+      "properties": {
+        "pluginId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "host": {
+          "type": "string",
+          "maxLength": 253
+        }
+      }
+    },
+    "StorageRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pluginId",
+        "digest",
+        "value"
+      ],
+      "properties": {
+        "pluginId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "value": {
+          "type": "object"
+        }
+      }
+    },
+    "Environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "orientation": {
+          "enum": [
+            "landscape",
+            "portrait"
+          ],
+          "default": "landscape"
+        },
+        "theme": {
+          "enum": [
+            "DARK",
+            "LIGHT",
+            "NIGHT"
+          ],
+          "default": "DARK"
+        },
+        "locale": {
+          "type": "string",
+          "maxLength": 32,
+          "default": "zh-Hans"
+        },
+        "timezone": {
+          "type": "string",
+          "maxLength": 128,
+          "default": "Asia/Hong_Kong"
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4096,
+          "default": 1280
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4096,
+          "default": 800
+        },
+        "density": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 4,
+          "default": 1.625
+        },
+        "fontScale": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2,
+          "default": 1
+        },
+        "lux": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100000,
+          "default": 50
+        },
+        "presence": {
+          "type": "boolean",
+          "default": true
+        },
+        "attention": {
+          "enum": [
+            "ENGAGED",
+            "AWAKE",
+            "AMBIENT",
+            "ASLEEP"
+          ],
+          "default": "AWAKE"
+        },
+        "mode": {
+          "enum": [
+            "day",
+            "redshift",
+            "sleep"
+          ],
+          "default": "day"
+        },
+        "networkMode": {
+          "enum": [
+            "live",
+            "fixture"
+          ],
+          "default": "live"
+        },
+        "systemSimulation": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{0,63}$"
+          },
+          "default": []
+        },
+        "now": {
+          "type": "number",
+          "minimum": 0
+        },
+        "location": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "latitude": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            },
+            "longitude": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            },
+            "name": {
+              "type": "string",
+              "maxLength": 512
+            },
+            "elevation": {
+              "type": "number",
+              "minimum": -500,
+              "maximum": 10000
+            },
+            "timezone": {
+              "type": "string",
+              "maxLength": 512
+            },
+            "source": {
+              "type": "string",
+              "maxLength": 512
+            }
+          }
+        },
+        "wifi": {
+          "type": "boolean"
+        },
+        "muted": {
+          "type": "boolean"
+        },
+        "http": {
+          "type": "object",
+          "maxProperties": 64,
+          "additionalProperties": {
+            "$ref": "#/$defs/HttpResponse"
+          }
+        },
+        "library": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "items": {
+              "type": "array",
+              "maxItems": 512,
+              "items": {
+                "type": "object",
+                "maxProperties": 24
+              }
+            },
+            "truncated": {
+              "type": "boolean"
+            },
+            "scanned": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "directory": {
+              "type": "string",
+              "maxLength": 512
+            }
+          }
+        },
+        "catalog": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "items": {
+              "type": "array",
+              "maxItems": 256,
+              "items": {
+                "$ref": "#/$defs/RegistryCatalogItem"
+              }
+            },
+            "error": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 512
+            },
+            "total": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 256
+            },
+            "offset": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 256
+            },
+            "configured": {
+              "type": "boolean"
+            },
+            "refreshing": {
+              "type": "boolean"
+            },
+            "expired": {
+              "type": "boolean"
+            }
+          }
+        },
+        "update": {
+          "$ref": "../../../schema/update/status.json"
+        },
+        "cast": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string",
+              "maxLength": 512
+            },
+            "dlna": {
+              "type": "boolean"
+            },
+            "airplay": {
+              "type": "boolean"
+            },
+            "mirror": {
+              "type": "boolean"
+            },
+            "miracast": {
+              "type": "boolean"
+            },
+            "miracastModule": {
+              "type": "boolean"
+            },
+            "ip": {
+              "type": "string",
+              "maxLength": 512
+            }
+          }
+        },
+        "onboarding": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "version": {
+              "type": "integer"
+            },
+            "active": {
+              "type": "boolean"
+            },
+            "updater": {
+              "type": "boolean"
+            },
+            "done": {
+              "type": "boolean"
+            },
+            "greeting_seconds": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 10
+            }
+          }
+        },
+        "zones": {
+          "type": "object",
+          "maxProperties": 256,
+          "additionalProperties": {
+            "type": "array",
+            "maxItems": 1024,
+            "items": {
+              "type": [
+                "string",
+                "object"
+              ]
+            }
+          }
+        },
+        "astro.sun": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "start": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "end": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "noon": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "sunrise": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "sunset": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "dayLength": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "dayLengthChange": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "maximumAltitude": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "azimuth": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "altitude": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "timezone": {
+              "type": "string",
+              "maxLength": 512
+            },
+            "polar": {
+              "enum": [
+                "normal",
+                "midnight_sun",
+                "polar_night",
+                "transition"
+              ]
+            },
+            "civil": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "dawn": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "dusk": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "nautical": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "dawn": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "dusk": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "astronomical": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "dawn": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "dusk": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "golden": {
+              "type": "array",
+              "maxItems": 8,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "start": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "end": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  }
+                }
+              }
+            },
+            "blue": {
+              "type": "array",
+              "maxItems": 8,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "start": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "end": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "astro.moon": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "start": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "end": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "rise": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "set": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "transit": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "azimuth": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "altitude": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "timezone": {
+              "type": "string",
+              "maxLength": 512
+            },
+            "alwaysUp": {
+              "type": "boolean"
+            },
+            "alwaysDown": {
+              "type": "boolean"
+            },
+            "rises": {
+              "type": "array",
+              "maxItems": 8,
+              "items": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "sets": {
+              "type": "array",
+              "maxItems": 8,
+              "items": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "transits": {
+              "type": "array",
+              "maxItems": 8,
+              "items": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "phase": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "angle": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "illumination": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "ageDays": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "previousNewMoon": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "nextNewMoon": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "nextFirstQuarter": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "nextFullMoon": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "nextLastQuarter": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "name": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "waxing": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
+        "astro.seasons": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "year": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "marchEquinox": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "juneSolstice": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "septemberEquinox": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "decemberSolstice": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          }
+        },
+        "androidApps": {
+          "type": "array",
+          "maxItems": 512,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "kind",
+              "title"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 256
+              },
+              "kind": {
+                "const": "android"
+              },
+              "title": {
+                "type": "string",
+                "maxLength": 256
+              },
+              "icon": {
+                "type": "string",
+                "maxLength": 512
+              },
+              "image": {
+                "type": "string",
+                "maxLength": 512
+              }
+            }
+          }
+        },
+        "capabilities": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "locale": {
+              "type": "boolean"
+            },
+            "timeZone": {
+              "type": "boolean"
+            },
+            "powerOff": {
+              "type": "boolean"
+            }
+          }
+        },
+        "operationResults": {
+          "type": "object",
+          "additionalProperties": false,
+          "maxProperties": 16,
+          "properties": {
+            "update.check": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "ok"
+              ],
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "error": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "delayMs": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 30000
+                }
+              }
+            },
+            "update.download": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "ok"
+              ],
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "error": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "delayMs": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 30000
+                }
+              }
+            },
+            "update.install": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "ok"
+              ],
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "error": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "delayMs": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 30000
+                }
+              }
+            },
+            "update.open": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "ok"
+              ],
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "error": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "delayMs": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 30000
+                }
+              }
+            },
+            "plugins.install": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "ok"
+              ],
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "error": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "delayMs": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 30000
+                }
+              }
+            },
+            "plugins.update": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "ok"
+              ],
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "error": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "delayMs": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 30000
+                }
+              }
+            },
+            "plugins.uninstall": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "ok"
+              ],
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "error": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "delayMs": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 30000
+                }
+              }
+            },
+            "plugins.open": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "ok"
+              ],
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "error": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "delayMs": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 30000
+                }
+              }
+            },
+            "plugins.setAuto": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "ok"
+              ],
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "error": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "delayMs": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 30000
+                }
+              }
+            },
+            "device.setLocale": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "ok"
+              ],
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "error": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "delayMs": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 30000
+                }
+              }
+            },
+            "device.setTimeZone": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "ok"
+              ],
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "error": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "delayMs": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 30000
+                }
+              }
+            },
+            "device.powerOff": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "ok"
+              ],
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "error": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "delayMs": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 30000
+                }
+              }
+            },
+            "apps.open": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "ok"
+              ],
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "error": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "delayMs": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 30000
+                }
+              }
+            },
+            "onboarding.practice": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "ok"
+              ],
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "error": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "delayMs": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 30000
+                }
+              }
+            },
+            "onboarding.stop": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "ok"
+              ],
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "error": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "delayMs": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 30000
+                }
+              }
+            }
+          }
+        },
+        "hour24": {
+          "type": "boolean",
+          "default": true
+        },
+        "brightness": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "default": 75
+        },
+        "volume": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "default": 50
+        },
+        "registryInstalled": {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/$defs/RegistryInstalledRecord"
+          },
+          "default": []
+        }
+      }
+    },
+    "ProfileRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "settings": {
+          "type": "object"
+        },
+        "environment": {
+          "$ref": "#/$defs/Environment"
+        },
+        "reset": {
+          "type": "array",
+          "maxItems": 128,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "scope"
+            ],
+            "properties": {
+              "scope": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]{0,63}$"
+              },
+              "key": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            }
+          }
+        },
+        "replaceEnvironment": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ProfileResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "settings",
+        "environment"
+      ],
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "settings": {
+          "type": "object"
+        },
+        "environment": {
+          "$ref": "#/$defs/Environment"
+        }
+      }
+    },
+    "HttpResponse": {
+      "type": "object",
+      "required": [
+        "status",
+        "headers",
+        "body"
+      ],
+      "properties": {
+        "status": {
+          "type": "integer"
+        },
+        "headers": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "body": {
+          "type": "string"
+        }
+      }
+    },
+    "DnsResponse": {
+      "type": "object",
+      "required": [
+        "entries"
+      ],
+      "properties": {
+        "entries": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "required": [
+              "address"
+            ],
+            "properties": {
+              "address": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "ErrorResponse": {
+      "type": "object",
+      "required": [
+        "error"
+      ],
+      "properties": {
+        "error": {
+          "type": "object",
+          "required": [
+            "code",
+            "message"
+          ],
+          "properties": {
+            "code": {
+              "type": "string"
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "Session": {
+      "type": "object",
+      "required": [
+        "protocol",
+        "token",
+        "revision",
+        "profile",
+        "plugins",
+        "settings",
+        "bootstrap",
+        "storage",
+        "environment",
+        "fonts",
+        "glyphs",
+        "diagnostics",
+        "developmentSettings"
+      ],
+      "properties": {
+        "protocol": {
+          "const": 1
+        },
+        "token": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "profile": {
+          "type": "string"
+        },
+        "plugins": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "digest",
+              "factory",
+              "manifest",
+              "files"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "digest": {
+                "type": "string"
+              },
+              "factory": {
+                "type": "boolean"
+              },
+              "manifest": {
+                "type": "object"
+              },
+              "files": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string",
+                  "maxLength": 1398104
+                }
+              }
+            }
+          }
+        },
+        "settings": {
+          "type": "object"
+        },
+        "bootstrap": {
+          "type": "string"
+        },
+        "storage": {
+          "type": "object"
+        },
+        "profileSettings": {
+          "type": "object"
+        },
+        "environment": {
+          "$ref": "#/$defs/Environment"
+        },
+        "fixtureMode": {
+          "type": "boolean"
+        },
+        "fixturePlugins": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fonts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "family",
+              "data",
+              "sha256"
+            ],
+            "properties": {
+              "family": {
+                "type": "string"
+              },
+              "data": {
+                "type": "string",
+                "maxLength": 44739244
+              },
+              "sha256": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "glyphs": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "systemStrings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "factoryPlugins": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "type": "string"
+          }
+        },
+        "buildInfo": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "version",
+            "code"
+          ],
+          "properties": {
+            "version": {
+              "type": "string",
+              "maxLength": 32
+            },
+            "code": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2147483647
+            }
+          }
+        },
+        "developmentSettings": {
+          "$ref": "#/$defs/DevelopmentSettings"
+        }
+      }
+    },
+    "ResourceRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pluginId",
+        "digest",
+        "url",
+        "kind"
+      ],
+      "properties": {
+        "pluginId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "url": {
+          "type": "string",
+          "maxLength": 8192
+        },
+        "kind": {
+          "enum": [
+            "image",
+            "media"
+          ]
+        },
+        "headers": {
+          "type": "object",
+          "maxProperties": 32,
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 8192
+          }
+        },
+        "range": {
+          "type": "string",
+          "pattern": "^bytes=(?:[0-9]+-[0-9]*|-[0-9]+)$",
+          "maxLength": 80
+        },
+        "publicOnly": {
+          "type": "boolean"
+        },
+        "originUrl": {
+          "type": "string",
+          "maxLength": 8192
+        }
+      }
+    },
+    "ResourceTicketResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "url"
+      ],
+      "properties": {
+        "url": {
+          "type": "string",
+          "pattern": "^/api/resource/[A-Za-z0-9_-]+$",
+          "maxLength": 128
+        }
+      }
+    },
+    "OkResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ok"
+      ],
+      "properties": {
+        "ok": {
+          "const": true
+        }
+      }
+    },
+    "RevisionEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "diagnostics"
+      ],
+      "properties": {
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "diagnostics": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "type": "string",
+            "maxLength": 512
+          }
+        }
+      }
+    },
+    "LibraryRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pluginId",
+        "digest",
+        "options"
+      ],
+      "properties": {
+        "pluginId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "enum": [
+                "image",
+                "audio",
+                "video"
+              ]
+            },
+            "dir": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "recursive": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "LibraryResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 512,
+          "items": {
+            "type": "object",
+            "maxProperties": 24
+          }
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "scanned": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "directory": {
+          "type": "string",
+          "maxLength": 512
+        }
+      }
+    },
+    "RuntimeRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pluginId",
+        "digest",
+        "action"
+      ],
+      "properties": {
+        "pluginId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "action": {
+          "enum": [
+            "commit",
+            "release"
+          ]
+        }
+      }
+    },
+    "DevelopmentLogEntries": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5000,
+      "default": 500
+    },
+    "DevelopmentWorkerWatchdogMs": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 60000,
+      "default": 10000
+    },
+    "DevelopmentWatchRetryMs": {
+      "type": "integer",
+      "minimum": 100,
+      "maximum": 30000,
+      "default": 1000
+    },
+    "DevelopmentWorkerHeartbeatMs": {
+      "type": "integer",
+      "minimum": 100,
+      "maximum": 5000,
+      "default": 1000
+    },
+    "DevelopmentSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "log_entries",
+        "worker_watchdog_ms",
+        "watch_retry_ms",
+        "worker_heartbeat_ms"
+      ],
+      "properties": {
+        "log_entries": {
+          "$ref": "#/$defs/DevelopmentLogEntries"
+        },
+        "worker_watchdog_ms": {
+          "$ref": "#/$defs/DevelopmentWorkerWatchdogMs"
+        },
+        "watch_retry_ms": {
+          "$ref": "#/$defs/DevelopmentWatchRetryMs"
+        },
+        "worker_heartbeat_ms": {
+          "$ref": "#/$defs/DevelopmentWorkerHeartbeatMs"
+        }
+      }
+    },
+    "RegistryInstalledRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "digest",
+        "repo",
+        "commit",
+        "tier",
+        "name",
+        "auto",
+        "enabled",
+        "revoked",
+        "update",
+        "error",
+        "available_version",
+        "apps"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "../../../schema/registry/catalog.json#/$defs/plugin/properties/id"
+        },
+        "version": {
+          "$ref": "../../../schema/registry/catalog.json#/$defs/release/properties/version"
+        },
+        "digest": {
+          "$ref": "../../../schema/registry/catalog.json#/$defs/release/properties/digest"
+        },
+        "repo": {
+          "$ref": "../../../schema/registry/catalog.json#/$defs/plugin/properties/repo"
+        },
+        "commit": {
+          "$ref": "../../../schema/registry/catalog.json#/$defs/release/properties/commit"
+        },
+        "tier": {
+          "$ref": "../../../schema/registry/catalog.json#/$defs/plugin/properties/tier"
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "auto": {
+          "type": "boolean"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "revoked": {
+          "type": "boolean"
+        },
+        "update": {
+          "type": "boolean"
+        },
+        "error": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 512
+        },
+        "available_version": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 48
+        },
+        "apps": {
+          "type": "array",
+          "maxItems": 0,
+          "items": {
+            "type": "string",
+            "maxLength": 64
+          }
+        }
+      }
+    },
+    "RegistryCatalogItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "digest",
+        "repo",
+        "commit",
+        "tier",
+        "name",
+        "author",
+        "license",
+        "tags",
+        "size",
+        "permissions",
+        "summary",
+        "why",
+        "installed",
+        "update",
+        "revoked",
+        "error"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "../../../schema/registry/catalog.json#/$defs/plugin/properties/id"
+        },
+        "version": {
+          "$ref": "../../../schema/registry/catalog.json#/$defs/release/properties/version"
+        },
+        "digest": {
+          "$ref": "../../../schema/registry/catalog.json#/$defs/release/properties/digest"
+        },
+        "repo": {
+          "$ref": "../../../schema/registry/catalog.json#/$defs/plugin/properties/repo"
+        },
+        "commit": {
+          "$ref": "../../../schema/registry/catalog.json#/$defs/release/properties/commit"
+        },
+        "tier": {
+          "$ref": "../../../schema/registry/catalog.json#/$defs/plugin/properties/tier"
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "author": {
+          "$ref": "../../../schema/registry/catalog.json#/$defs/plugin/properties/author"
+        },
+        "license": {
+          "$ref": "../../../schema/registry/catalog.json#/$defs/plugin/properties/license"
+        },
+        "tags": {
+          "$ref": "../../../schema/registry/catalog.json#/$defs/plugin/properties/tags"
+        },
+        "size": {
+          "$ref": "../../../schema/registry/catalog.json#/$defs/release/properties/size"
+        },
+        "permissions": {
+          "$ref": "../../../schema/registry/catalog.json#/$defs/release/properties/permissions"
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "why": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "network": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "alert": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "media": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "library": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "presence": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "server": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "location": {
+              "type": "string",
+              "maxLength": 256
+            }
+          }
+        },
+        "installed": {
+          "type": "boolean"
+        },
+        "update": {
+          "type": "boolean"
+        },
+        "revoked": {
+          "type": "boolean"
+        },
+        "error": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 512
+        }
+      }
+    },
+    "SnapshotResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "plugins",
+        "diagnostics"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/Session/properties/revision"
+        },
+        "plugins": {
+          "$ref": "#/$defs/Session/properties/plugins"
+        },
+        "diagnostics": {
+          "$ref": "#/$defs/Session/properties/diagnostics"
+        }
+      }
+    },
+    "PlaceSearchRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "query"
+      ],
+      "properties": {
+        "query": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "locale": {
+          "type": "string",
+          "maxLength": 64,
+          "pattern": "^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$"
+        }
+      }
+    },
+    "PlaceSearchResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "location",
+              "detail"
+            ],
+            "properties": {
+              "location": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "latitude",
+                  "longitude",
+                  "elevation",
+                  "timezone",
+                  "source"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 160
+                  },
+                  "latitude": {
+                    "type": "number",
+                    "minimum": -90,
+                    "maximum": 90
+                  },
+                  "longitude": {
+                    "type": "number",
+                    "minimum": -180,
+                    "maximum": 180
+                  },
+                  "elevation": {
+                    "type": "number",
+                    "minimum": -500,
+                    "maximum": 10000
+                  },
+                  "timezone": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 160
+                  },
+                  "source": {
+                    "const": "manual"
+                  }
+                }
+              },
+              "detail": {
+                "type": "string",
+                "maxLength": 646
+              }
+            }
+          }
+        },
+        "offline": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

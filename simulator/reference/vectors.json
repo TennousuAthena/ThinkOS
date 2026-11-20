@@ -1,0 +1,1514 @@
+{
+  "source": "unchanged production Kotlin, JVM 17",
+  "kotlin": "2.2.0",
+  "sha256": {
+    "ui/RenderGeometry.kt": "2a96e9d7b8b5c91d5144f8624a515ed53e1717e05547f5ca6070ba805ad9d3a8",
+    "ui/PanelGeometry.kt": "f26a164f4323c3a226f4d4b02710780ee1389683cfa50c9e7ef09411c73a8ba0",
+    "ui/TileColor.kt": "7ddf5ba46e04a0e896701bb0b9bf0896d3e00da63077830c2ffa502c2295ad54",
+    "core/NavStack.kt": "b5dd1109095a44ed364fed7cedffc8802269052fe2a9d6214a480095497b7931"
+  },
+  "cases": [
+    {
+      "command": "slot",
+      "args": [
+        "focus",
+        "main",
+        1280,
+        800,
+        1.625,
+        true,
+        true
+      ],
+      "expected": [
+        32,
+        123,
+        1248,
+        677
+      ]
+    },
+    {
+      "command": "slot",
+      "args": [
+        "focus",
+        "header",
+        1280,
+        800,
+        1.625,
+        true,
+        true
+      ],
+      "expected": [
+        32,
+        32,
+        1248,
+        123
+      ]
+    },
+    {
+      "command": "slot",
+      "args": [
+        "split",
+        "lead",
+        1280,
+        800,
+        1.625,
+        true,
+        true
+      ],
+      "expected": [
+        32,
+        123,
+        508,
+        677
+      ]
+    },
+    {
+      "command": "slot",
+      "args": [
+        "split",
+        "main",
+        1280,
+        800,
+        1.625,
+        true,
+        true
+      ],
+      "expected": [
+        534,
+        123,
+        1248,
+        677
+      ]
+    },
+    {
+      "command": "slot",
+      "args": [
+        "stage",
+        "stage",
+        1280,
+        800,
+        1.625,
+        true,
+        true
+      ],
+      "expected": [
+        0,
+        0,
+        1280,
+        800
+      ]
+    },
+    {
+      "command": "slot",
+      "args": [
+        "stage",
+        "under",
+        1280,
+        800,
+        1.625,
+        true,
+        true
+      ],
+      "expected": [
+        32,
+        677,
+        1248,
+        768
+      ]
+    },
+    {
+      "command": "tiles",
+      "args": [
+        "wide,medium,medium,large,wide,medium,small,small,small,small",
+        1280,
+        800,
+        1.625,
+        false
+      ],
+      "expected": [
+        [
+          269,
+          34,
+          752,
+          269
+        ],
+        [
+          765,
+          34,
+          1000,
+          269
+        ],
+        [
+          1013,
+          34,
+          1248,
+          269
+        ],
+        [
+          269,
+          282,
+          752,
+          765
+        ],
+        [
+          765,
+          282,
+          1248,
+          517
+        ],
+        [
+          765,
+          530,
+          1000,
+          765
+        ],
+        [
+          1013,
+          530,
+          1124,
+          641
+        ],
+        [
+          1137,
+          530,
+          1248,
+          641
+        ],
+        [
+          1013,
+          654,
+          1124,
+          765
+        ],
+        [
+          1137,
+          654,
+          1248,
+          765
+        ]
+      ]
+    },
+    {
+      "command": "tiles",
+      "args": [
+        "wide,medium,medium,large,wide,medium,small,small,small,small",
+        1280,
+        800,
+        1.625,
+        true
+      ],
+      "expected": [
+        [
+          528,
+          34,
+          1011,
+          269
+        ],
+        [
+          280,
+          34,
+          515,
+          269
+        ],
+        [
+          32,
+          34,
+          267,
+          269
+        ],
+        [
+          528,
+          282,
+          1011,
+          765
+        ],
+        [
+          32,
+          282,
+          515,
+          517
+        ],
+        [
+          280,
+          530,
+          515,
+          765
+        ],
+        [
+          156,
+          530,
+          267,
+          641
+        ],
+        [
+          32,
+          530,
+          143,
+          641
+        ],
+        [
+          156,
+          654,
+          267,
+          765
+        ],
+        [
+          32,
+          654,
+          143,
+          765
+        ]
+      ]
+    },
+    {
+      "command": "tiles",
+      "args": [
+        "large,large,wide,wide",
+        1280,
+        800,
+        1.625,
+        false
+      ],
+      "expected": [
+        [
+          269,
+          34,
+          752,
+          517
+        ],
+        [
+          765,
+          34,
+          1248,
+          517
+        ],
+        [
+          269,
+          530,
+          752,
+          765
+        ],
+        [
+          765,
+          530,
+          1248,
+          765
+        ]
+      ]
+    },
+    {
+      "command": "tiles",
+      "args": [
+        "large,large,wide,wide",
+        1280,
+        800,
+        1.625,
+        true
+      ],
+      "expected": [
+        [
+          528,
+          34,
+          1011,
+          517
+        ],
+        [
+          32,
+          34,
+          515,
+          517
+        ],
+        [
+          528,
+          530,
+          1011,
+          765
+        ],
+        [
+          32,
+          530,
+          515,
+          765
+        ]
+      ]
+    },
+    {
+      "command": "tiles",
+      "args": [
+        "large,large,large",
+        1280,
+        800,
+        1.625,
+        false
+      ],
+      "expected": [
+        [
+          269,
+          34,
+          752,
+          517
+        ],
+        [
+          765,
+          34,
+          1248,
+          517
+        ],
+        null
+      ]
+    },
+    {
+      "command": "tiles",
+      "args": [
+        "large,large,large",
+        1280,
+        800,
+        1.625,
+        true
+      ],
+      "expected": [
+        [
+          528,
+          34,
+          1011,
+          517
+        ],
+        [
+          32,
+          34,
+          515,
+          517
+        ],
+        null
+      ]
+    },
+    {
+      "command": "tiles",
+      "args": [
+        "small,invalid,medium",
+        1280,
+        800,
+        1.625,
+        false
+      ],
+      "expected": [
+        [
+          269,
+          34,
+          380,
+          145
+        ],
+        null,
+        [
+          393,
+          34,
+          628,
+          269
+        ]
+      ]
+    },
+    {
+      "command": "tiles",
+      "args": [
+        "small,invalid,medium",
+        1280,
+        800,
+        1.625,
+        true
+      ],
+      "expected": [
+        [
+          900,
+          34,
+          1011,
+          145
+        ],
+        null,
+        [
+          652,
+          34,
+          887,
+          269
+        ]
+      ]
+    },
+    {
+      "command": "slot",
+      "args": [
+        "focus",
+        "main",
+        800,
+        1280,
+        1.625,
+        true,
+        true
+      ],
+      "expected": [
+        32,
+        123,
+        768,
+        1157
+      ]
+    },
+    {
+      "command": "slot",
+      "args": [
+        "focus",
+        "header",
+        800,
+        1280,
+        1.625,
+        true,
+        true
+      ],
+      "expected": [
+        32,
+        32,
+        768,
+        123
+      ]
+    },
+    {
+      "command": "slot",
+      "args": [
+        "split",
+        "lead",
+        800,
+        1280,
+        1.625,
+        true,
+        true
+      ],
+      "expected": [
+        32,
+        123,
+        768,
+        526
+      ]
+    },
+    {
+      "command": "slot",
+      "args": [
+        "split",
+        "main",
+        800,
+        1280,
+        1.625,
+        true,
+        true
+      ],
+      "expected": [
+        32,
+        552,
+        768,
+        1157
+      ]
+    },
+    {
+      "command": "slot",
+      "args": [
+        "stage",
+        "stage",
+        800,
+        1280,
+        1.625,
+        true,
+        true
+      ],
+      "expected": [
+        0,
+        0,
+        800,
+        1280
+      ]
+    },
+    {
+      "command": "slot",
+      "args": [
+        "stage",
+        "under",
+        800,
+        1280,
+        1.625,
+        true,
+        true
+      ],
+      "expected": [
+        32,
+        1157,
+        768,
+        1248
+      ]
+    },
+    {
+      "command": "tiles",
+      "args": [
+        "wide,medium,medium,large,wide,medium,small,small,small,small",
+        800,
+        1280,
+        1.625,
+        false
+      ],
+      "expected": [
+        [
+          34,
+          269,
+          517,
+          504
+        ],
+        [
+          530,
+          269,
+          765,
+          504
+        ],
+        [
+          34,
+          517,
+          269,
+          752
+        ],
+        [
+          282,
+          517,
+          765,
+          1000
+        ],
+        [
+          34,
+          1013,
+          517,
+          1248
+        ],
+        [
+          34,
+          765,
+          269,
+          1000
+        ],
+        [
+          530,
+          1013,
+          641,
+          1124
+        ],
+        [
+          654,
+          1013,
+          765,
+          1124
+        ],
+        [
+          530,
+          1137,
+          641,
+          1248
+        ],
+        [
+          654,
+          1137,
+          765,
+          1248
+        ]
+      ]
+    },
+    {
+      "command": "tiles",
+      "args": [
+        "wide,medium,medium,large,wide,medium,small,small,small,small",
+        800,
+        1280,
+        1.625,
+        true
+      ],
+      "expected": [
+        [
+          283,
+          269,
+          766,
+          504
+        ],
+        [
+          35,
+          269,
+          270,
+          504
+        ],
+        [
+          531,
+          517,
+          766,
+          752
+        ],
+        [
+          35,
+          517,
+          518,
+          1000
+        ],
+        [
+          283,
+          1013,
+          766,
+          1248
+        ],
+        [
+          531,
+          765,
+          766,
+          1000
+        ],
+        [
+          159,
+          1013,
+          270,
+          1124
+        ],
+        [
+          35,
+          1013,
+          146,
+          1124
+        ],
+        [
+          159,
+          1137,
+          270,
+          1248
+        ],
+        [
+          35,
+          1137,
+          146,
+          1248
+        ]
+      ]
+    },
+    {
+      "command": "tiles",
+      "args": [
+        "large,large,wide,wide",
+        800,
+        1280,
+        1.625,
+        false
+      ],
+      "expected": [
+        [
+          34,
+          269,
+          517,
+          752
+        ],
+        [
+          34,
+          765,
+          517,
+          1248
+        ],
+        null,
+        null
+      ]
+    },
+    {
+      "command": "tiles",
+      "args": [
+        "large,large,wide,wide",
+        800,
+        1280,
+        1.625,
+        true
+      ],
+      "expected": [
+        [
+          283,
+          269,
+          766,
+          752
+        ],
+        [
+          283,
+          765,
+          766,
+          1248
+        ],
+        null,
+        null
+      ]
+    },
+    {
+      "command": "tiles",
+      "args": [
+        "large,large,large",
+        800,
+        1280,
+        1.625,
+        false
+      ],
+      "expected": [
+        [
+          34,
+          269,
+          517,
+          752
+        ],
+        [
+          34,
+          765,
+          517,
+          1248
+        ],
+        null
+      ]
+    },
+    {
+      "command": "tiles",
+      "args": [
+        "large,large,large",
+        800,
+        1280,
+        1.625,
+        true
+      ],
+      "expected": [
+        [
+          283,
+          269,
+          766,
+          752
+        ],
+        [
+          283,
+          765,
+          766,
+          1248
+        ],
+        null
+      ]
+    },
+    {
+      "command": "tiles",
+      "args": [
+        "small,invalid,medium",
+        800,
+        1280,
+        1.625,
+        false
+      ],
+      "expected": [
+        [
+          34,
+          269,
+          145,
+          380
+        ],
+        null,
+        [
+          158,
+          269,
+          393,
+          504
+        ]
+      ]
+    },
+    {
+      "command": "tiles",
+      "args": [
+        "small,invalid,medium",
+        800,
+        1280,
+        1.625,
+        true
+      ],
+      "expected": [
+        [
+          655,
+          269,
+          766,
+          380
+        ],
+        null,
+        [
+          407,
+          269,
+          642,
+          504
+        ]
+      ]
+    },
+    {
+      "command": "slot",
+      "args": [
+        "focus",
+        "main",
+        12,
+        8,
+        1.625,
+        true,
+        true
+      ],
+      "expected": [
+        6,
+        4,
+        6,
+        4
+      ]
+    },
+    {
+      "command": "slot",
+      "args": [
+        "focus",
+        "header",
+        12,
+        8,
+        1.625,
+        true,
+        true
+      ],
+      "expected": [
+        6,
+        4,
+        6,
+        4
+      ]
+    },
+    {
+      "command": "slot",
+      "args": [
+        "split",
+        "lead",
+        12,
+        8,
+        1.625,
+        true,
+        true
+      ],
+      "expected": [
+        6,
+        4,
+        6,
+        4
+      ]
+    },
+    {
+      "command": "slot",
+      "args": [
+        "split",
+        "main",
+        12,
+        8,
+        1.625,
+        true,
+        true
+      ],
+      "expected": [
+        6,
+        4,
+        6,
+        4
+      ]
+    },
+    {
+      "command": "slot",
+      "args": [
+        "stage",
+        "stage",
+        12,
+        8,
+        1.625,
+        true,
+        true
+      ],
+      "expected": [
+        0,
+        0,
+        12,
+        8
+      ]
+    },
+    {
+      "command": "slot",
+      "args": [
+        "stage",
+        "under",
+        12,
+        8,
+        1.625,
+        true,
+        true
+      ],
+      "expected": [
+        6,
+        4,
+        6,
+        4
+      ]
+    },
+    {
+      "command": "tiles",
+      "args": [
+        "wide,medium,medium,large,wide,medium,small,small,small,small",
+        12,
+        8,
+        1.625,
+        false
+      ],
+      "expected": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "command": "tiles",
+      "args": [
+        "wide,medium,medium,large,wide,medium,small,small,small,small",
+        12,
+        8,
+        1.625,
+        true
+      ],
+      "expected": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "command": "tiles",
+      "args": [
+        "large,large,wide,wide",
+        12,
+        8,
+        1.625,
+        false
+      ],
+      "expected": [
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "command": "tiles",
+      "args": [
+        "large,large,wide,wide",
+        12,
+        8,
+        1.625,
+        true
+      ],
+      "expected": [
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "command": "tiles",
+      "args": [
+        "large,large,large",
+        12,
+        8,
+        1.625,
+        false
+      ],
+      "expected": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "command": "tiles",
+      "args": [
+        "large,large,large",
+        12,
+        8,
+        1.625,
+        true
+      ],
+      "expected": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "command": "tiles",
+      "args": [
+        "small,invalid,medium",
+        12,
+        8,
+        1.625,
+        false
+      ],
+      "expected": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "command": "tiles",
+      "args": [
+        "small,invalid,medium",
+        12,
+        8,
+        1.625,
+        true
+      ],
+      "expected": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "command": "vertical",
+      "args": [
+        100,
+        "10,99,99",
+        "0,1,2",
+        5
+      ],
+      "expected": {
+        "heights": [
+          10,
+          27,
+          53
+        ],
+        "gap": 5,
+        "offset": 0
+      }
+    },
+    {
+      "command": "vertical",
+      "args": [
+        100,
+        "10,20",
+        "0,0",
+        10
+      ],
+      "expected": {
+        "heights": [
+          10,
+          20
+        ],
+        "gap": 10,
+        "offset": 30
+      }
+    },
+    {
+      "command": "vertical",
+      "args": [
+        10,
+        "2147483647,2147483647,0",
+        "0,NaN,1",
+        0
+      ],
+      "expected": {
+        "heights": [
+          10,
+          0,
+          0
+        ],
+        "gap": 0,
+        "offset": 0
+      }
+    },
+    {
+      "command": "vertical",
+      "args": [
+        101,
+        "5,5,5",
+        "1e308,1e308,5e-324",
+        0
+      ],
+      "expected": {
+        "heights": [
+          51,
+          50,
+          0
+        ],
+        "gap": 0,
+        "offset": 0
+      }
+    },
+    {
+      "command": "vertical",
+      "args": [
+        0,
+        "20,20",
+        "1,1",
+        20
+      ],
+      "expected": {
+        "heights": [
+          0,
+          0
+        ],
+        "gap": 0,
+        "offset": 0
+      }
+    },
+    {
+      "command": "panel",
+      "args": [
+        1280,
+        800,
+        1.625,
+        true,
+        true,
+        2,
+        false,
+        true,
+        true,
+        6
+      ],
+      "expected": {
+        "width": 1170,
+        "height": 609,
+        "header": [
+          39,
+          19,
+          849,
+          97
+        ],
+        "quick": [
+          39,
+          110,
+          578,
+          396
+        ],
+        "levels": [
+          39,
+          409,
+          578,
+          577
+        ],
+        "media": null,
+        "footer": [
+          862,
+          19,
+          1131,
+          97
+        ],
+        "update": [
+          591,
+          110,
+          1131,
+          201
+        ]
+      }
+    },
+    {
+      "command": "panel",
+      "args": [
+        1280,
+        800,
+        1.625,
+        true,
+        true,
+        2,
+        true,
+        true,
+        true,
+        6
+      ],
+      "expected": {
+        "width": 1170,
+        "height": 609,
+        "header": [
+          39,
+          19,
+          849,
+          97
+        ],
+        "quick": [
+          39,
+          110,
+          578,
+          396
+        ],
+        "levels": [
+          39,
+          409,
+          578,
+          577
+        ],
+        "media": [
+          591,
+          110,
+          1131,
+          350
+        ],
+        "footer": [
+          862,
+          19,
+          1131,
+          97
+        ],
+        "update": [
+          591,
+          363,
+          1131,
+          454
+        ]
+      }
+    },
+    {
+      "command": "panel",
+      "args": [
+        800,
+        1280,
+        1.625,
+        true,
+        true,
+        2,
+        false,
+        true,
+        true,
+        6
+      ],
+      "expected": {
+        "width": 800,
+        "height": 713,
+        "header": [
+          39,
+          19,
+          761,
+          97
+        ],
+        "quick": [
+          39,
+          110,
+          761,
+          396
+        ],
+        "levels": [
+          39,
+          409,
+          761,
+          577
+        ],
+        "media": null,
+        "footer": [
+          581,
+          590,
+          761,
+          681
+        ],
+        "update": [
+          39,
+          590,
+          568,
+          681
+        ]
+      }
+    },
+    {
+      "command": "panel",
+      "args": [
+        800,
+        1280,
+        1.625,
+        true,
+        true,
+        2,
+        true,
+        true,
+        true,
+        6
+      ],
+      "expected": {
+        "width": 800,
+        "height": 966,
+        "header": [
+          39,
+          19,
+          761,
+          97
+        ],
+        "quick": [
+          39,
+          110,
+          761,
+          396
+        ],
+        "levels": [
+          39,
+          409,
+          761,
+          577
+        ],
+        "media": [
+          39,
+          590,
+          761,
+          830
+        ],
+        "footer": [
+          581,
+          843,
+          761,
+          934
+        ],
+        "update": [
+          39,
+          843,
+          568,
+          934
+        ]
+      }
+    },
+    {
+      "command": "colors",
+      "args": [
+        "#ffffff",
+        0
+      ],
+      "expected": {
+        "background": "#ffffff",
+        "foreground": "#000000"
+      }
+    },
+    {
+      "command": "colors",
+      "args": [
+        "#ffffff",
+        1
+      ],
+      "expected": {
+        "background": "#fe3a2f",
+        "foreground": "#000000"
+      }
+    },
+    {
+      "command": "colors",
+      "args": [
+        "#000000",
+        0
+      ],
+      "expected": {
+        "background": "#000000",
+        "foreground": "#ffffff"
+      }
+    },
+    {
+      "command": "colors",
+      "args": [
+        "#000000",
+        1
+      ],
+      "expected": {
+        "background": "#000000",
+        "foreground": "#fe3a2f"
+      }
+    },
+    {
+      "command": "colors",
+      "args": [
+        "#0B5CC4",
+        0
+      ],
+      "expected": {
+        "background": "#0b5cc4",
+        "foreground": "#ffffff"
+      }
+    },
+    {
+      "command": "colors",
+      "args": [
+        "#0B5CC4",
+        1
+      ],
+      "expected": {
+        "background": "#400e0b",
+        "foreground": "#fe3a2f"
+      }
+    },
+    {
+      "command": "colors",
+      "args": [
+        "#D24726",
+        0
+      ],
+      "expected": {
+        "background": "#d24726",
+        "foreground": "#000000"
+      }
+    },
+    {
+      "command": "colors",
+      "args": [
+        "#D24726",
+        1
+      ],
+      "expected": {
+        "background": "#400e0b",
+        "foreground": "#fe3a2f"
+      }
+    },
+    {
+      "command": "colors",
+      "args": [
+        "#ffff00",
+        0
+      ],
+      "expected": {
+        "background": "#ffff00",
+        "foreground": "#000000"
+      }
+    },
+    {
+      "command": "colors",
+      "args": [
+        "#ffff00",
+        1
+      ],
+      "expected": {
+        "background": "#ec362b",
+        "foreground": "#000000"
+      }
+    },
+    {
+      "command": "colors",
+      "args": [
+        "bad",
+        0
+      ],
+      "expected": {
+        "background": "#7c95ff",
+        "foreground": "#000000"
+      }
+    },
+    {
+      "command": "colors",
+      "args": [
+        "bad",
+        1
+      ],
+      "expected": {
+        "background": "#400e0b",
+        "foreground": "#fe3a2f"
+      }
+    }
+  ]
+}

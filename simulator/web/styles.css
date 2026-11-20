@@ -1,0 +1,68 @@
+/* The workbench is separate from the fixed-density ThinkOS device viewport. */
+:root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #e5e8ed; background: #111418; font-synthesis: none; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 760px; min-height: 100vh; }
+button, input, select, textarea { font: inherit; }
+button, select, input { border: 1px solid #363d48; border-radius: 6px; background: #222832; color: inherit; padding: 8px 11px; }
+button { cursor: pointer; }
+button:hover { background: #303a48; border-color: #556073; }
+button:disabled { cursor: default; opacity: .45; }
+input:focus, select:focus, button:focus-visible, textarea:focus { outline: 2px solid #8aa7ee; outline-offset: 2px; }
+a { color: #adc6ff; }
+label { color: #b6becb; }
+canvas { display: block; touch-action: none; }
+.sim-workbench { display: grid; grid-template-rows: auto 1fr auto; min-height: 100vh; }
+.sim-toolbar { min-height: 64px; display: flex; align-items: center; gap: 12px; padding: 12px 22px; border-bottom: 1px solid #2b313b; background: #191e25; }
+.sim-title { font-size: 18px; font-weight: 600; letter-spacing: -.02em; margin-right: auto; }
+.sim-badge { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #64512f; color: #e0bc77; background: #30291e; border-radius: 4px; font-size: 12px; line-height: 1.4; padding: 4px 7px; }
+.sim-content { display: grid; grid-template-columns: 220px minmax(0, 1fr) 300px; min-height: 0; }
+.sim-sidebar, .sim-inspector { padding: 20px 16px; background: #191e25; overflow: auto; }
+.sim-sidebar { border-right: 1px solid #2b313b; }
+.sim-inspector { border-left: 1px solid #2b313b; }
+.sim-sidebar h2, .sim-inspector h2 { font-size: 14px; font-weight: 600; margin: 0 0 12px; color: #e4e9f2; }
+.sim-sidebar button { width: 100%; margin-bottom: 6px; text-align: left; }
+.sim-sidebar button[aria-current="page"] { background: #293c60; border-color: #698ac9; }
+.sim-device-area { min-height: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 28px; overflow: hidden; background-image: radial-gradient(#242b35 .7px, transparent .7px); background-size: 18px 18px; }
+.sim-device { width: 100%; max-width: 1280px; aspect-ratio: 8 / 5; position: relative; overflow: hidden; border: 8px solid #050608; border-radius: 16px; background: #0e0f12; box-shadow: 0 12px 40px #0007; }
+.sim-device[data-orientation="portrait"] { aspect-ratio: 5 / 8; width: min(100%, 520px); }
+.sim-device canvas { width: 100%; height: 100%; outline-offset: -3px; }
+.sim-device-meta { display: flex; align-items: center; flex-wrap: wrap; justify-content: center; gap: 12px; color: #8b96a6; font-size: 12px; }
+.sim-controls { display: flex; flex-wrap: wrap; gap: 8px; }
+.sim-control { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; font-size: 13px; }
+.sim-control input, .sim-control select { width: 100%; }
+.sim-status { color: #aeb9c9; font-size: 12px; padding: 10px 20px; border-top: 1px solid #2b313b; background: #191e25; }
+.sim-log { white-space: pre-wrap; overflow-wrap: anywhere; background: #11161c; border: 1px solid #303843; border-radius: 6px; padding: 12px; color: #b8c5d6; font: 12px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; max-height: 360px; overflow: auto; }
+.sim-error { color: #ff9b90; }
+.sim-field-editor { color: #e5e8ed; background: #1b1d22; border: 1px solid #4c5565; border-radius: 12px; width: min(480px, 90vw); padding: 24px; }
+.sim-field-editor::backdrop { background: #000a; }
+.sim-field-editor h2 { font-size: 18px; line-height: 1.4; margin: 0 0 20px; }
+.sim-field-editor input, .sim-field-editor select { width: 100%; margin: 0 0 20px; }
+.sim-field-editor form > div { display: flex; justify-content: flex-end; gap: 10px; }
+.sim-field-editor button[type="submit"] { background: #31579a; border-color: #7299dd; }
+.sim-field-picker { width: min(680px, 94vw); height: min(760px, 90vh); padding: 20px; font-size: 18px; }
+.sim-field-picker[open] { display: flex; flex-direction: column; gap: 14px; }
+.sim-field-picker[data-theme="LIGHT"] { color-scheme: light; color: #1b1d21; background: #f7f8fa; }
+.sim-field-picker[data-theme="LIGHT"] button, .sim-field-picker[data-theme="LIGHT"] input { color: inherit; background: #fff; border-color: #b8bec8; }
+.sim-field-picker[data-theme="NIGHT"] { color: #ed3934; background: #140202; }
+.sim-picker-header { display: flex; align-items: center; gap: 14px; flex: 0 0 auto; }
+.sim-picker-header h2 { flex: 1; margin: 0; font-size: 18px; }
+.sim-picker-header button[data-action="back"] { font-size: 32px; padding: 0 13px; line-height: 1.25; }
+.sim-field-picker input { margin: 0; min-width: 0; }
+.sim-picker-search { display: flex; gap: 10px; flex: 0 0 auto; }
+.sim-picker-search input { flex: 1; }
+.sim-picker-areas { display: flex; flex-wrap: wrap; gap: 6px; flex: 0 0 auto; }
+.sim-picker-areas button { font-size: 14px; }
+.sim-picker-list { overflow-y: auto; min-height: 0; flex: 1; }
+.sim-picker-row { display: flex; flex-direction: column; gap: 5px; width: 100%; text-align: start; border: 0; border-bottom: 1px solid #56607055; border-radius: 0; padding: 14px 12px; background: transparent; min-height: 65px; }
+.sim-picker-row small, .sim-picker-status, .sim-picker-attribution { font-size: 14px; line-height: 1.5; }
+.sim-picker-row small { opacity: .7; }
+.sim-field-picker button[aria-pressed="true"] { color: #91b2ff; }
+.sim-field-picker[data-theme="LIGHT"] button[aria-pressed="true"] { color: #31579a; }
+.sim-picker-status { margin: 0; flex: 0 0 auto; }
+.sim-picker-attribution { text-align: center; opacity: .65; }
+.sim-picker-manual { display: flex; flex-direction: column; gap: 14px; overflow: hidden; min-height: 0; flex: 1; }
+.sim-picker-manual-fields { overflow-y: auto; min-height: 0; flex: 1; }
+.sim-picker-manual-fields label { display: block; font-size: 14px; color: inherit; margin-bottom: 16px; }
+.sim-picker-manual-fields input { display: block; margin-top: 5px; font-size: 18px; }
+.sim-picker-actions { display: flex; justify-content: flex-end; gap: 10px; }
+@media (max-width: 1180px) { .sim-content { grid-template-columns: 180px minmax(0, 1fr); } .sim-inspector { grid-column: 1 / -1; border-left: 0; border-top: 1px solid #2b313b; display: flex; flex-wrap: wrap; gap: 20px; } .sim-inspector > * { flex: 1 1 220px; } }

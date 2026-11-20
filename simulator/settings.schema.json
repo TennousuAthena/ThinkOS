@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ThinkOS simulator host settings",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "port": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 65535,
+      "default": 8766
+    },
+    "watch_ms": {
+      "type": "integer",
+      "minimum": 100,
+      "maximum": 10000,
+      "default": 350
+    },
+    "profile": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_-]{1,64}$",
+      "default": "default"
+    },
+    "profile_dir": {
+      "type": "string",
+      "default": ".local/profiles"
+    },
+    "fixture_mode": {
+      "type": "boolean",
+      "default": false
+    },
+    "fixture_plugins": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]{0,63}$"
+      },
+      "maxItems": 32,
+      "default": []
+    },
+    "request_bytes": {
+      "const": 1572864,
+      "default": 1572864
+    },
+    "body_bytes": {
+      "const": 1048576,
+      "default": 1048576
+    },
+    "storage_bytes": {
+      "const": 262144,
+      "default": 262144
+    },
+    "profile_bytes": {
+      "const": 16777216,
+      "default": 16777216
+    },
+    "network_timeout_s": {
+      "const": 3,
+      "default": 3
+    },
+    "network_global": {
+      "const": 32,
+      "default": 32
+    },
+    "network_per_plugin": {
+      "const": 8,
+      "default": 8
+    },
+    "sse_heartbeat_s": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 60,
+      "default": 15
+    },
+    "max_clients": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 32,
+      "default": 8
+    },
+    "image_bytes": {
+      "type": "integer",
+      "minimum": 1048576,
+      "maximum": 16777216,
+      "default": 8388608
+    },
+    "media_bytes": {
+      "type": "integer",
+      "minimum": 1048576,
+      "maximum": 268435456,
+      "default": 67108864
+    },
+    "resource_timeout_s": {
+      "type": "integer",
+      "minimum": 3,
+      "maximum": 60,
+      "default": 15
+    },
+    "ticket_lifetime_s": {
+      "type": "integer",
+      "minimum": 60,
+      "maximum": 86400,
+      "default": 3600
+    },
+    "max_tickets": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 512,
+      "default": 128
+    },
+    "socket_timeout_s": {
+      "type": "integer",
+      "minimum": 3,
+      "maximum": 60,
+      "default": 15
+    },
+    "max_workers": {
+      "type": "integer",
+      "minimum": 8,
+      "maximum": 128,
+      "default": 64
+    },
+    "library_mounts": {
+      "type": "object",
+      "maxProperties": 8,
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 4096
+      },
+      "default": {}
+    },
+    "library_items": {
+      "const": 512,
+      "default": 512
+    },
+    "library_entries": {
+      "const": 8192,
+      "default": 8192
+    },
+    "library_depth": {
+      "const": 16,
+      "default": 16
+    },
+    "http_total_timeout_s": {
+      "type": "number",
+      "minimum": 0.1,
+      "maximum": 120,
+      "default": 30
+    },
+    "resource_total_timeout_s": {
+      "type": "number",
+      "minimum": 0.1,
+      "maximum": 600,
+      "default": 120
+    },
+    "log_entries": {
+      "$ref": "../shared/protocol/schema/simulator/development.json#/$defs/DevelopmentLogEntries"
+    },
+    "worker_watchdog_ms": {
+      "$ref": "../shared/protocol/schema/simulator/development.json#/$defs/DevelopmentWorkerWatchdogMs"
+    },
+    "watch_retry_ms": {
+      "$ref": "../shared/protocol/schema/simulator/development.json#/$defs/DevelopmentWatchRetryMs"
+    },
+    "worker_heartbeat_ms": {
+      "$ref": "../shared/protocol/schema/simulator/development.json#/$defs/DevelopmentWorkerHeartbeatMs"
+    }
+  }
+}

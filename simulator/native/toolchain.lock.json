@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "emscriptenVersion": "6.0.13",
+  "emscriptenRelease": "eb132757325583b787fe9414b09afea9442b72ad",
+  "emsdkRepository": "https://github.com/emscripten-core/emsdk.git",
+  "emsdkCommit": "d7b4130688bfa348392b921ab04015aa15c4f154",
+  "emsdkLicense": "MIT",
+  "emsdkLicenseSha256": "99d9a9616fbde3f5ee22a71d8645799a8522d48526130c5ba6dc27ad15ce01f1",
+  "emsdkInstallerSha256": "5f9ac5896342e084e97e315f6e77679f305530d679b3024ec4f14f6ba8527fea",
+  "releaseTagsSha256": "b4a6c147e4ee4d8044ae403328d43928708f2f2e589837074299a94c63c17b2f",
+  "manifestSha256": "d163881207ed0131ee456c6b41cf96634a9c15aafb5d13b6260f5da5b204f71c",
+  "installDirectory": "simulator/.toolchains/emsdk",
+  "notes": "Official upstream installer inspected before execution; installation authorized by owner. No global activation. Emscripten runtime MIT/NCSA, Lua and yyjson MIT.",
+  "emscripten_runtime_license_sha256": "620a78084fc7ca97c0b5dea9abf891f3ffcadfdbf305276f099c9c4e12fc1d86"
+}

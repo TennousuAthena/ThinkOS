@@ -1,0 +1,18 @@
+{
+  "name": "thinkos-simulator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "build": "python3 scripts/build_assets.py && python3 scripts/build_wasm.py --check && python3 scripts/collect_licenses.py && python3 reference/build.py && vite build",
+    "build:web": "vite build",
+    "check": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "prepare-assets": "python3 scripts/build_assets.py",
+    "build:wasm": "python3 scripts/build_wasm.py"
+  },
+  "dependencies": {"canvaskit-wasm": "0.42.0", "shaka-player": "5.3.4"},
+  "devDependencies": {"typescript": "7.0.2", "vite": "8.3.4", "playwright-core": "1.65.0"},
+  "engines": {"node": ">=24"}
+}

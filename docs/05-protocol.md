@@ -284,6 +284,43 @@ ws://<server>:8765/ws
 - 设备不运行Git、不访问作者仓库；可从公开镜像或可选Server镜像读取签名registry目录和内容寻址文件。`source`中的作者仓库地址仍只用于显示/排错，不会变成设备的Git或下载入口。
 - 插件的权限由设备按 manifest 强制执行，Server 下发不能绕过
 
+## 12. 本地网页模拟器开发通道
+
+`python3 -m simulator serve --plugin <目录>` 启动独立的本地主机工具；它不参与设备与 Server 的同步，不安装 APK，也不修改 Android 源码或设备。开发协议版本独立为 `1`，不改变上文设备协议的 `proto=1`。唯一机器可读来源为 `shared/protocol/schema/simulator/development.json`；`python3 simulator/scripts/gen_protocol.py` 生成 `simulator/generated/protocol.py` 与 `protocol.ts`，`--check` 检查漂移。模拟器配置统一来自 `simulator/settings.schema.json`。
+
+服务只监听 `127.0.0.1`。先从同源 `GET /api/session` 取得随机会话 token，后续 JSON API 与 SSE 请求携带 `X-ThinkOS-Session`；服务检查 Host、Origin 和 Sec-Fetch-Site，不启用跨源访问。`GET /api/events` 使用带 header 的 fetch 读取 SSE，事件 `revision` 的数据为 `RevisionEvent`。静态前端来自 `simulator/dist`，未构建时明确报出构建命令，不打开或操作主机窗口。
+
+| 入口 | 请求/响应契约 | 用途 |
+|---|---|---|
+| `GET /api/session` | `Session` | 当前 revision、已验证插件快照、设置 schema、Lua bootstrap、虚拟 profile、字体及图标 |
+| `GET /api/snapshot` | `SnapshotResponse` | 需会话 header；热更仅取得 revision、插件快照和诊断，不重复传输字体与环境配置 |
+| `POST /api/http` | `HttpRequest` → `HttpResponse` | 有 network 权限的 GET/POST；权限从当前 pluginId/digest 对应清单读取 |
+| `POST /api/dns` | `DnsRequest` → `DnsResponse` | API10、有 network 权限的有界 DNS 发现 |
+| `POST /api/storage` | `StorageRequest` → `OkResponse` | 保存当前 profile 的单插件虚拟 store，不访问设备数据 |
+| `POST /api/profile` | `ProfileRequest` → `ProfileResponse` | 保存模拟场景及 `{system,plugins}` 设置覆盖；字段仍按系统/插件设置 schema 校验，返回完整 settings/environment |
+| `POST /api/place-search` | `PlaceSearchRequest` → `PlaceSearchResponse` | OS 地点选择器搜索；只使用 system location.search_url，返回最多 20 项，不接受插件或请求自选地址 |
+| `POST /api/runtime` | `RuntimeRequest` → `OkResponse` | 新 VM 初始化成功后的 commit，或释放匹配 digest 的旧运行快照 |
+| `POST /api/library` | `LibraryRequest` → `LibraryResponse` | 只读枚举当前 profile 的虚拟媒体库；需 library 权限 |
+| `POST /api/resource` | `ResourceRequest` → 二进制 | 受权限和网络策略控制的图片/媒体流；媒体另需 media 权限 |
+| `POST /api/resource-ticket` | `ResourceRequest` → `ResourceTicketResponse` | 为不能设置请求 header 的 audio/video 创建有期限的 opaque URL |
+| `GET /api/resource/<ticket>` | 固定资源映射 → 二进制 | 不接受任意 URL；再次验证原 pluginId/digest/权限，支持 Range；不携带主会话 token |
+
+快照只读源目录，经安全文件读取、现有插件校验和最终字节校验后按 digest 发布；文件内容在 `Session.plugins[].files` 中以 base64 表达。候选校验失败保留上一版并发送诊断；页面以新 revision 重新取得快照。生产权限仅在 digest 匹配构建时固定的 `simulator/assets/factory-index.json` 时授予。显式内置插件开发档只能选该固定清单的 ID，其系统能力仅改变独立模拟状态。更改插件源码不会自动成为出厂副本，声明 `system.*` 也不构成授权。
+
+每个插件只保留最新候选和已 commit 的运行快照，不积累历史链。新候选启动失败时旧运行代仍可使用原权限的 HTTP、资源和 store；浏览器初始化候选成功后先 commit 再替换旧 VM。commit 必须匹配最新候选或已运行代，并撤销更旧的资源票据；迟到的旧代 release 不影响新代。同一 profile 的浏览器窗口共用运行代，因此一个 profile 同时只开一个开发预览；要独立预览使用不同 profile 和端口。
+
+HTTP 与 DNS 沿用插件 API 的限额和地址策略，媒体使用独立流量上限；`originUrl` 表示媒体入口来源，跨源子资源与重定向去除非可携带请求头。真实请求使用开发机 DNS、网络和系统信任库，不能用它证明设备连通性或设备 TLS 行为；确定性检查使用有界 fixture。profile 默认只写入 `simulator/.local/profiles`，不保存至设备，不读取任意主机媒体路径。接口失败统一返回 `ErrorResponse`，不记录会话 token、资源 ticket、外部凭据或原始网络异常。
+
+默认虚拟目录 `/sdcard/Android/data/moe.kiwi.thinkos/files/{Pictures,Music,Movies}` 对应 `simulator/.local/profiles/<profile>/library` 的同名子目录；`/sdcard/{Pictures,Music,Movies}` 是同一 profile 目录的别名，兼容现有插件默认配置，缺省目录未创建时列表为空。额外目录只能由主机设置 schema 的 `library_mounts` 显式映射；扫描和最终读取都以目录文件描述符逐层打开，不跟随符号链接，绝不把任意 Android 绝对路径解释为 Mac 路径。媒体票据支持虚拟 file URI 和 Range；`content:` 需要显式场景 fixture，不访问真实 provider。当前本地枚举的容器标签、时长、EXIF 等可选元数据为空，不能以此冒充 Android 媒体解析结果。设置修改验证实际值与跨字段约束，数值 step 只作为 UI 步进；时间要求五分钟步进，文字长度按原生 UTF-16 单元检查。
+
+`ProfileRequest.reset` 是最多 128 项的 `{scope,key?}` 数组，scope 为 `system` 或当前插件 ID；省略 key 清该 scope 全部覆盖值。服务先删除覆盖值，再应用 settings 补丁，对最终有效设置校验后原子写入。重置不写入默认值，后续默认值变化仍可自然生效。
+
+普通 environment 请求是补丁。导入整份场景时使用 `replaceEnvironment:true` 并提供 environment；服务先恢复环境默认值再应用导入内容，清除旧场景未提供的 now/http 等 fixture，返回完整规范化环境。此替换不清空插件 store 或设置覆盖；浏览器和 Worker 也必须使用替换语义，不能继续合并旧场景字段。
+
+`Session.developmentSettings` 只暴露工作台的 `log_entries`、`worker_watchdog_ms`、`watch_retry_ms`、`worker_heartbeat_ms`，其默认值与边界通过主机设置 schema 的引用统一验证；它不授予插件改设置的能力。环境 fixture 显式定义系统音量/亮度、24 小时时制、引导间隔、catalog 分页状态与完整 installed 记录，未知字段拒绝；这些记录不触发真实安装或修改设备 registry。
+
+地点搜索属于 OS 选择器服务，不向 Lua 增加私有能力。`/api/place-search` 需要会话验证，只接受 query/locale；真实模式使用 system `location.search_url`、现有 DNS/HTTP 地址与体积/超时/并发限制，按原生规则处理中文市县区变体和结果清洗。fixture 模式返回 `{items:[],offline:true}` 供离线城市列表接手；真实搜索成功但为空时不设置 offline。所有 HTTP/资源入口拒绝模拟器控制服务响应，防止插件利用局域网权限读取另一 profile 的会话。不同目录使用相同插件 ID 会拒绝初始启动；后来出现的冲突保留原拥有者并发布诊断。
+
 ## 在线音乐源 HTTP v1
 
 音乐源独立于设备管理 Server。音源基址来自播放器的 `music_source_url`。返回 UTF-8 JSON。契约见 `shared/protocol/schema/music/v1.json`。执行 `python3 tools/music-source/gen_contract.py --check` 可验证生成的限制。

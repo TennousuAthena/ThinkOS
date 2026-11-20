@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.local/
+.toolchains/
+public/runtime/
+public/licenses/
+assets/fonts/
+__pycache__/
+*.pyc
+reference/.gradle/
+reference/build/
