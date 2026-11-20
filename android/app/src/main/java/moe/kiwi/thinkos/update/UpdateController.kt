@@ -36,6 +36,9 @@ internal class UpdateController(
         suspend fun download(manual: Boolean, environment: StateFlow<UpdateSession.Environment>): Boolean
         val installable: Boolean get() = false
         suspend fun install(manual: Boolean, environment: StateFlow<UpdateSession.Environment>): Boolean = false
+        /** Emits when a root-module transaction stops being active (healthy or rolled back).
+         * It can finish long after the submitting operation, even after a reboot. */
+        val settled: Flow<Unit> get() = emptyFlow()
     }
     enum class Action { CHECK, DOWNLOAD, INSTALL }
     class Unconfigured(val code: String) : Exception()
@@ -162,6 +165,11 @@ internal class UpdateController(
         try {
             launch { work.status.collect { mutable.value = mutable.value.copy(state = it, offer = work.offer, installable = work.installable); wake.trySend(Unit) } }
             launch { combine(policy, environment, availability, automaticInstall) { _, _, _, _ -> Unit }.collect { wake.trySend(Unit) } }
+            // Only restore() reconciles a finished transaction's INSTALLING hint; while it
+            // stays, every manual request (even CHECK) is refused until the next restart.
+            launch { work.settled.collect {
+                if (operation == null && work.status.value.phase == "INSTALLING") { work.restore(); wake.trySend(Unit) }
+            } }
             work.restore()
             ordinaryReady = true
             mutable.value = mutable.value.copy(configured = true, offer = work.offer, installable = work.installable)

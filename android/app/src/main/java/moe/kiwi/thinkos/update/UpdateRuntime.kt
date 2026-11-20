@@ -8,7 +8,13 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.collect
@@ -438,6 +444,8 @@ internal class UpdateRuntime(private val context: Context, private val settings:
         override suspend fun installFeature(plan: FeaturePreparedPlan, admitted: suspend () -> Boolean): UpdateInstaller.Outcome =
             requireNotNull(feature) { "Native feature updater unavailable" }.installFeature(plan, admitted)
         override val status get() = session.status
+        override val settled: Flow<Unit> = modules?.view?.map { it.active }?.distinctUntilChanged()?.drop(1)
+            ?.filter { active -> !active }?.map { } ?: emptyFlow()
         override val offer get() = session.offer
         override suspend fun restore() { session.restore() }
         override suspend fun check(sources: List<String>) = session.check(sources).origin != UpdateCatalogClient.Origin.OFFLINE_CACHE

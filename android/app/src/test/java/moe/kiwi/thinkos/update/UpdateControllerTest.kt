@@ -20,7 +20,11 @@ class UpdateControllerTest {
             status.value = status.value.copy(phase = "INSTALLING"); awaitCancellation()
         }
         val installModes = mutableListOf<Boolean>()
-        override suspend fun restore() = Unit
+        var restores = 0
+        var onRestore: Work.() -> Unit = {}
+        val settledEvents = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+        override val settled: Flow<Unit> get() = settledEvents
+        override suspend fun restore() { restores++; onRestore() }
         override suspend fun check(sources: List<String>): Boolean { checks++; return onCheck() }
         override suspend fun download(manual: Boolean, environment: StateFlow<UpdateSession.Environment>): Boolean {
             downloads++
@@ -90,6 +94,21 @@ class UpdateControllerTest {
             assertTrue(h.controller.manual(UpdateController.Action.CHECK, 5000))
             until { h.work.checks == 1 }
             assertFalse(h.controller.manual(UpdateController.Action.DOWNLOAD, -1))
+        } finally { h.stop() }
+    }
+
+    @Test fun aSettledModuleTransactionClearsTheStaleInstallingHintSoManualChecksWorkAgain() = runBlocking {
+        val h = Harness(this, policy(false)); try {
+            h.started(); h.online.value = UpdateController.Availability(true, true); h.now = 10_000
+            h.work.status.value = h.work.status.value.copy(phase = "INSTALLING", size = 10, downloaded = 10, seq = 1, catalog_digest = "1")
+            yield(); delay(2)
+            assertFalse(h.controller.manual(UpdateController.Action.CHECK, h.now))
+            val before = h.work.restores
+            h.work.onRestore = { status.value = status.value.copy(phase = "IDLE", size = 0, downloaded = 0) }
+            h.work.settledEvents.emit(Unit)
+            until { h.work.restores == before + 1 && h.controller.status.value.state.phase == "IDLE" }
+            assertTrue(h.controller.manual(UpdateController.Action.CHECK, h.now))
+            until { h.work.checks == 1 }
         } finally { h.stop() }
     }
 
