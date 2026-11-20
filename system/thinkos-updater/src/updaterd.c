@@ -128,6 +128,25 @@ static int open_owned_dir(const char *path) {
     if (fd >= 0 && (fstat(fd, &s) || s.st_uid != getuid() || (s.st_mode & 0022))) { close(fd); errno = EPERM; return -1; }
     return fd;
 }
+/* Magisk 27 creates /data/adb/modules_update with mode 0777. That is only safe
+ * because its parent is root-owned and closed to everyone else, so accept the
+ * loose mode there and nowhere else; the parent check is what keeps others out. */
+static int open_updates_dir(void) {
+    int fd = open(updates_path, O_RDONLY | O_DIRECTORY | O_CLOEXEC | O_NOFOLLOW); struct stat s;
+    if (fd < 0) return -1;
+    if (fstat(fd, &s) || s.st_uid != getuid()) { close(fd); errno = EPERM; return -1; }
+    if (!(s.st_mode & 0022)) return fd;
+    char parent[PATH_MAX]; size_t n = strlen(updates_path); const char *slash = strrchr(updates_path, '/');
+    struct stat p; int closed = 0;
+    if (slash && slash != updates_path && n < sizeof(parent)) {
+        memcpy(parent, updates_path, (size_t)(slash - updates_path)); parent[slash - updates_path] = 0;
+        int up = open(parent, O_RDONLY | O_DIRECTORY | O_CLOEXEC | O_NOFOLLOW);
+        closed = up >= 0 && !fstat(up, &p) && p.st_uid == getuid() && !(p.st_mode & 0077);
+        if (up >= 0) close(up);
+    }
+    if (!closed) { close(fd); errno = EPERM; return -1; }
+    return fd;
+}
 static int make_dir_at(int parent, const char *name) {
     if (mkdirat(parent, name, 0700) && errno != EEXIST) return -1;
     return open_dir_at(parent, name);
@@ -662,7 +681,7 @@ static const char *begin_transaction(void) {
     int good = save_package(dir, APP, "previous.apk") == 0;
     int modules = open_owned_dir(modules_path);
     if (modules < 0) good = 0;
-    int updates = open_owned_dir(updates_path);
+    int updates = open_updates_dir();
     if (updates < 0 && errno != ENOENT) good = 0;
     for (int i = 0; good && i < MODULES; i++) {
         struct stat s;
@@ -719,7 +738,7 @@ static int magisk_enabled(int index) {
         if (!rc || errno != ENOENT) { close(directory); return 0; }
     }
     close(directory);
-    int updates = open_owned_dir(updates_path);
+    int updates = open_updates_dir();
     if (updates < 0) return errno == ENOENT;
     int rc = fstatat(updates, ids[index], &st, AT_SYMLINK_NOFOLLOW), missing = rc && errno == ENOENT;
     close(updates); return missing;
@@ -811,7 +830,7 @@ static const char *install_application(struct request *r) {
 }
 static int restore_modules(int dir) {
     int modules = open_owned_dir(modules_path);
-    int updates = open_owned_dir(updates_path);
+    int updates = open_updates_dir();
     if (updates < 0 && errno != ENOENT) { if (modules >= 0) close(modules); return -1; }
     if (modules < 0) { if (updates >= 0) close(updates); return -1; }
     int rc = 0; copied_bytes = 0; copied_files = 0;

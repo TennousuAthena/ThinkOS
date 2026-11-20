@@ -466,6 +466,30 @@ int main(int argc,char **argv) {
         self.assertEqual(self.request('BEGIN'), 'OK')
         self.assertEqual(self.request('STAGE', files), 'ERR old')
 
+    def test_magisk_world_writable_modules_update_is_accepted_inside_a_closed_parent(self):
+        # Magisk 27 creates /data/adb/modules_update as 0777; /data/adb itself is root-only 0700.
+        self.home.chmod(0o700); self.updates.chmod(0o777)
+        files = self.signed()
+        self.assertEqual(self.request('BEGIN'), 'OK')
+        self.assertEqual(self.request('STAGE', files), 'OK')
+        self.assertTrue((self.updates / 'thinkos-cast').exists())
+        self.assertEqual(self.request('ROLLBACK'), 'OK')
+        self.assertFalse((self.updates / 'thinkos-cast').exists())
+        self.assertFalse(self.status()['transaction'])
+        self.assertEqual(self.request('BEGIN'), 'OK')
+        self.assertEqual(self.request('STAGE', files), 'OK')
+        self.activate_boot()
+        self.updates.chmod(0o777)
+        self.assertTrue(self.module_status()['active'])
+        self.assertEqual(self.request('HEALTHY'), 'OK')
+
+    def test_world_writable_modules_update_in_an_open_parent_is_refused(self):
+        self.home.chmod(0o755); self.updates.chmod(0o777)
+        try:
+            self.assertNotEqual(self.request('BEGIN'), 'OK')
+        finally:
+            self.home.chmod(0o700)
+
     def test_bad_signature_unknown_id_hash_and_size_do_not_execute(self):
         self.assertEqual(self.request('BEGIN'), 'OK')
         cases = [(self.signed(key=2), 'ERR bad-signature'),

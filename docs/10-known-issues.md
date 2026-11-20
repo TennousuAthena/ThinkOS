@@ -186,3 +186,4 @@
 | 现象 | 原因 | 处理 |
 |---|---|---|
 | 装了 `thinkos-updater` 的机器（金镜像刷出的都装了）点“检查更新”下载、校验都成功，安装后仍是旧版；`module-pending.json` 为 `FAILED`、`rolled_back` | updaterd 用 `pm install -r -p <包名>` 装应用。API 27 的 `-p` 是继承已装包的分包会话，要求新旧版本号相同，升级必定报 `INSTALL_FAILED_INVALID_APK: Existing base version code 1033 inconsistent with 1034`，随后自动装回旧版。没装更新器的机器走 ThinkOS 自己的安装，不受影响 | 更新器 v1.2 改用 `--pkg`（只校验包名，完整替换）。**已装旧更新器的机器无法靠云端自愈**：新版本也由旧 daemon 安装，必须接线用 `system/install-updater.sh` 装 v1.2 并重启。失败过的目录摘要会被记入 `module-failed-*.json`，修好后需要更新的目录（新版本）才会重试。金镜像要换成带 v1.2 的再刷新机 |
+| 模块暂存后撤销失败（`ERR rollback-failed`），更新后的健康检查也看不到模块生效 | Magisk 27 把 `/data/adb/modules_update` 建成 0777；updaterd v1.2 及以前要求模块目录不能被他人写，于是拒绝打开它，撤销删不掉暂存的模块（2026-11-21 在 44fec07a 上诊断时复现，已手动恢复） | 更新器 v1.3：只有父目录 `/data/adb` 属 root 且对他人封闭时才接受 0777 的 `modules_update`。旧更新器的机器要接线装 v1.3 |
