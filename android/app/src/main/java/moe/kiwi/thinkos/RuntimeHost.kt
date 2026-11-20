@@ -476,8 +476,8 @@ class RuntimeHost(private val context: Context) : PluginRuntime.Callbacks {
         updates.request(action, tapElapsed, result)
     override fun onBackIntercept(pluginId: String, on: Boolean) { router.interceptBack(pluginId, on) }
     override fun onBackAnswered(pluginId: String) { router.backAnswered(pluginId) }
-    override fun onFocus(pageKey: String, live: Boolean, release: Boolean, answersTap: Boolean) {
-        router.requestFocus(pageKey, live, release, answersTap)
+    override fun onFocus(pageKey: String, live: Boolean, release: Boolean, answersTap: Boolean, backFrom: String?) {
+        router.requestFocus(pageKey, live, release, answersTap, backFrom)
     }
     override fun onError(pluginId: String, message: String) {
         Log.e("ThinkOS", "[plugin:$pluginId] $message")

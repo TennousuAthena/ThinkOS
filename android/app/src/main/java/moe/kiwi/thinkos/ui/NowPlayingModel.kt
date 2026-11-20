@@ -169,7 +169,7 @@ internal object NowPlayingGeometry {
     private class Tier(val titleLines: Int, val format: Boolean, val volume: Boolean)
     private val TIERS = listOf(Tier(2, true, true), Tier(1, true, true), Tier(1, false, true), Tier(1, false, false))
 
-    fun layout(style: String, variant: String, width: Int, height: Int, density: Float, rtl: Boolean, hasNotice: Boolean, active: Boolean): NowPlayingLayout {
+    fun layout(style: String, variant: String, width: Int, height: Int, density: Float, rtl: Boolean, hasNotice: Boolean, active: Boolean, hasArt: Boolean = true): NowPlayingLayout {
         val d = density.takeIf { it.isFinite() && it > 0f } ?: 1f
         val w = width.coerceAtLeast(0)
         val h = height.coerceAtLeast(0)
@@ -177,7 +177,7 @@ internal object NowPlayingGeometry {
         val plan = when (style) {
             "bar" -> bar(w, h, dp, active)
             "card" -> card(w, h, dp, active, hasNotice)
-            else -> (if (variant == "queue" && active) queue(w, h, dp) else cover(w, h, dp, active, hasNotice)) ?: bar(w, h, dp, active)
+            else -> (if (variant == "queue" && active) queue(w, h, dp) else cover(w, h, dp, active, hasNotice, hasArt)) ?: bar(w, h, dp, active)
         }
         return if (rtl) plan.mirrored(w) else plan
     }
@@ -238,7 +238,18 @@ internal object NowPlayingGeometry {
     }
 
     /** The full page, `cover` variant: the cover beside (landscape) or above (portrait) the column of text and controls. */
-    private fun cover(w: Int, h: Int, dp: (Float) -> Int, active: Boolean, notice: Boolean): NowPlayingLayout? {
+    private fun cover(w: Int, h: Int, dp: (Float) -> Int, active: Boolean, notice: Boolean, hasArt: Boolean): NowPlayingLayout? {
+        if (active && !hasArt && h > w) {
+            val side = minOf(w, dp(84f))
+            val gap = dp(16f)
+            val tier = TIERS.firstOrNull { need(it, notice, dp) + gap + side <= h }
+            if (tier != null) {
+                val block = side + gap + need(tier, notice, dp)
+                val top = (h - block) / 2
+                val left = (w - side) / 2
+                return column(0, w, top + side + gap, top + block, tier, notice, dp, Box(left, top, left + side, top + side))
+            }
+        }
         if (w >= h) {
             val gap = dp(28f)
             val side = min(h, w - gap - dp(236f))

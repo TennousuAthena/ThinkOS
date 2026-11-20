@@ -427,10 +427,12 @@ class PluginPackageTests(unittest.TestCase):
         self.assertEqual({'media', 'network'}, set(manifest['permissions']))
         self.assertTrue(any(page.get('live') for page in manifest['pages']))
 
-    def test_player_plugin_is_a_valid_api_nine_package(self):
+    def test_player_plugin_is_a_valid_api_twelve_package(self):
         manifest, _ = packages.validate_plugin(ROOT / 'plugins/player')
-        self.assertEqual(9, manifest['api'])
-        self.assertIn('media', manifest['permissions'])
+        self.assertEqual(12, manifest['api'])
+        self.assertTrue({'media', 'network'}.issubset(manifest['permissions']))
+        self.assertEqual('', manifest['settings']['music_source_url']['default'])
+        self.assertTrue(next(page for page in manifest['pages'] if page['id'] == 'search')['live'])
 
     def test_new_api_is_rejected(self):
         self.manifest(lambda data: data.update(api=tools.SCHEMAS['layouts.json']['x-thinkos-api']['current'] + 1))

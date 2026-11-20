@@ -34,5 +34,20 @@
   "error.audio": "آڈیو آؤٹ پٹ ناکام ہو گیا",
   "error.other": "پلے بیک ناکام ہو گیا",
   "placeholder.stream_url": "http، https یا rtsp پتہ",
-  "placeholder.playlist_url": "M3U پتہ"
+  "placeholder.playlist_url": "M3U پتہ",
+  "variant.online": "آن لائن",
+  "online.browse": "موسیقی دیکھیں",
+  "online.browseUnavailable": "موسیقی کی فہرست دستیاب نہیں",
+  "online.search": "گانے تلاش کریں",
+  "online.query": "گانا یا فنکار",
+  "setting.music_source_url": "موسیقی کے ذریعے کا URL",
+  "online.configure": "موسیقی کا ذریعہ ترتیب دیں",
+  "online.loading": "لوڈ ہو رہا ہے…",
+  "online.empty": "کوئی گانا نہیں ملا",
+  "online.failed": "ذریعہ یا پلے بیک دستیاب نہیں",
+  "online.sleep": "نیند کے دوران پلے بیک رکا ہے",
+  "placeholder.music_source_url": "https://music.example.net",
+  "nav.discover": "دریافت",
+  "nav.featured": "منتخب گانے",
+  "nav.queue": "اگلا"
 }

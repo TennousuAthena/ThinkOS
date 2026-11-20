@@ -1,21 +1,17 @@
 {
   "layout": "focus",
-  "variants": [
-    {
-      "id": "cover",
-      "title": "Cover"
-    },
-    {
-      "id": "queue",
-      "title": "Queue"
-    }
-  ],
   "slots": {
     "hero": {
       "type": "nowplaying",
       "style": "full",
       "idle": "{{nowTitle}}",
       "notice": "{{playNotice}}"
+    },
+    "over": {
+      "type": "text",
+      "style": "body",
+      "value": "@nav.queue",
+      "tap": "upnext"
     }
   }
 }

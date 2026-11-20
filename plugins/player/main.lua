@@ -3,13 +3,14 @@
 -- what to play: local files, a stream address, the channels of a playlist, and what was played last.
 local m3u = require("m3u")
 local library = require("library")
+local online = require("online")
 
 local RECENT_LIMIT, SAVED_LIMIT, CHANNEL_LIMIT = 30, 30, 300
 local LIBRARY_PAGE = "library"
 
-local ORDER = {"music", "video", "recent", "streams"}
+local ORDER = {"music", "video", "recent", "streams", "online"}
 local variant = "music"
-local lists = {music = {}, video = {}, recent = {}, streams = {}}
+local lists = {music = {}, video = {}, recent = {}, streams = {}, online = {}}
 local recent, saved, channels = {}, {}, {}
 local notices = {}
 local queue = {}                 -- what was last handed to tos.media.load, by Lua index
@@ -17,6 +18,12 @@ local session, scanGeneration, listGeneration = 0, 0, 0
 local scannedAt = nil
 local saver, releaseTimer
 local stopped = false
+local onlineRevision, activePage = 0, nil
+local query, onlineNotice = "", nil
+local onlineBusy = false
+local pendingSearch
+local onlineSearchResults = false
+local browseLoaded = false
 local previous = {}              -- last seen values of the settings that trigger work
 
 local function empty() return tos.json.decode("[]") end
@@ -51,8 +58,18 @@ end
 -- ---------------------------------------------------------------------------------------------------------------
 -- what the library page shows
 
+local libraryVariant = "music"
+local discoveryTracks, searchOrigin, failedId
+local sourceGeneration = 0
+local function onlineOffset() return onlineSearchResults and 0 or -1 end
+
 local function row(name, item)
-  if name == "music" or name == "video" then
+  if name == "online" then
+    local album = item.album and item.album ~= "" and item.album ~= item.artist and item.album
+    local subtitle = album and item.artist ~= "" and (item.artist .. " / " .. album) or album or item.artist
+    return {icon = "music", image = item.art, title = m3u.clip(item.title, 120), subtitle = m3u.clip(subtitle, 120),
+      trailing = library.duration(item.duration)}
+  elseif name == "music" or name == "video" then
     local title, artist = library.describe(item)
     return {title = m3u.clip(m3u.clean(title), 120),
       subtitle = m3u.clip(m3u.clean(artist ~= "" and artist or (item.album or "")), 120), trailing = library.duration(item.duration)}
@@ -94,14 +111,43 @@ local function playingRow()
   local entry = queue[tos.state.get("media.index") or 0]
   if not entry then return 0 end
   for i, item in ipairs(lists[variant]) do
-    if item.url == entry.url then return i end
+    if variant == "online" then
+      if entry.onlineId == item.id and entry.source == online.source(tos.config.music_source_url) then return i + onlineOffset() end
+    elseif item.url == entry.url then return i end
   end
   return 0
 end
 
 local function render()
   local rows = empty()
-  for i, item in ipairs(lists[variant]) do rows[i] = row(variant, item) end
+  local offset = variant == "online" and onlineOffset() or 0
+  local featured = variant == "online" and not onlineSearchResults and lists.online[1]
+  local first = featured and row("online", featured) or nil
+  for i, item in ipairs(lists[variant]) do
+    if i + offset > 0 then rows[i + offset] = row(variant, item) end
+  end
+  local categories = empty()
+  if variant ~= "online" then
+    for i = 1, 4 do categories[i] = tos.i18n.t("variant." .. ORDER[i]) end
+  end
+  local entry = queue[tos.state.get("media.index") or 0]
+  local featuredPlaying = first and entry and entry.onlineId == featured.id and entry.source == online.source(tos.config.music_source_url) and tos.state.get("media.status") ~= "stopped"
+  if failedId and variant == "online" then
+    for i, track in ipairs(lists.online) do
+      local item = rows[i + offset]
+      if item and track.id == failedId then item.subtitle = onlineNotice end
+    end
+  end
+  local sourceNotice = variant == "online" and
+    (onlineNotice or (not online.source(tos.config.music_source_url) and tos.i18n.t("online.configure")) or "") or ""
+  tos.state.set(tos.json.encode({browseKey = variant .. ":" .. sourceGeneration .. ":" .. (onlineSearchResults and query or ""),
+    featureArt = first and featured.art or "", navigation = {tos.i18n.t("nav.discover"), tos.i18n.t("group.library"), tos.i18n.t("online.search")},
+    navIndex = onlineSearchResults and variant == "online" and 3 or variant == "online" and 1 or 2,
+    categories = categories, featureHeading = first and ((featuredPlaying and "♫  " or "▶  ") .. first.title) or "",
+    featureDetail = first and (first.subtitle .. "  " .. first.trailing) or "",
+    section = variant ~= "online" and emptyNotice(variant)
+      or onlineSearchResults and query or #rows > 0 and tos.i18n.t("nav.featured") or "",
+    featureNotice = first and sourceNotice or "", sourceNotice = not first and sourceNotice or ""}))
   -- The footer is where the player's own words go: why a list is empty, why playback failed. The list itself is chosen by the tabs.
   lastCurrent = playingRow()
   tos.state.set(tos.json.encode({items = rows, playNotice = notices.play or "", heading = tos.i18n.t("variant." .. variant),
@@ -158,7 +204,7 @@ local function entryOf(item, kind)
 end
 
 local function remember(entry)
-  if not entry then return end
+  if not entry or entry.onlineId then return end
   local kept = {url = entry.url, title = entry.title, artist = entry.artist, kind = entry.kind, type = entry.type,
     agent = entry.headers and entry.headers["User-Agent"], referer = entry.headers and entry.headers.Referer, position = 0, duration = 0, at = now()}
   for _, old in ipairs(recent) do
@@ -172,7 +218,7 @@ end
 -- Where the title is now, kept for "continue where you left off". Live streams and finished titles restart.
 local function savePosition(finished)
   local entry = queue[tos.state.get("media.index") or 0]
-  if not entry then return end
+  if not entry or entry.onlineId then return end
   for _, old in ipairs(recent) do
     if old.url == entry.url then
       local live = tos.state.get("media.live")
@@ -209,26 +255,36 @@ local function play(entries, index, kind, start)
   local previous = queue
   queue = entries
   local options = {index = index, autoplay = true}
+  -- The URL and metadata go to MediaEngine; row identity is kept in Lua only.
+  local loadEntries = entries
+  if entries[index].onlineId then
+    loadEntries = {}
+    for i, entry in ipairs(entries) do
+      loadEntries[i] = {url = entry.url, title = entry.title, artist = entry.artist, album = entry.album,
+        art = entry.art, kind = entry.kind}
+    end
+  end
   if start and start > 0 then options.start = start end
-  local state, err = tos.media.load(entries, options)
+  local state, err = tos.media.load(loadEntries, options)
   if not state and #entries > 1 then
     -- The engine refuses a queue as a whole if one item is malformed; the item that was asked for must still play.
     queue = {entries[index]}
     options.index = 1
-    state, err = tos.media.load(queue, options)
+    state, err = tos.media.load({loadEntries[index]}, options)
     if state then entries, index = queue, 1 end
   end
   if stopped or mine ~= session then return end
   if not state then
     queue = previous
-    notices.play = tos.i18n.t("notice.play_failed", {reason = tostring(err or "?")})
+    notices.play = entries[index].onlineId and tos.i18n.t(tos.device.mode() == "sleep" and "online.sleep" or "online.failed")
+      or tos.i18n.t("notice.play_failed", {reason = tostring(err or "?")})
     render()
     return
   end
   notices.play = nil
   remember(entries[index])
   renderNow()
-  tos.page.focus(kind == "video" and "player.video" or "player.audio", {live = true})
+  if kind == "video" then tos.page.focus("player.video", {live = true}) end
   stopSaver()
   saver = tos.timer.every(30, function() savePosition(false) end)
   render()
@@ -334,15 +390,115 @@ end
 -- ---------------------------------------------------------------------------------------------------------------
 -- events
 
+local function requestTag(revision) return "online-" .. revision end
+
+local function cancelOnline()
+  failedId = nil
+  pendingSearch = nil
+  if onlineBusy then
+    if tos.http.cancel then pcall(tos.http.cancel, requestTag(onlineRevision)) end
+    onlineNotice = nil
+  end
+  onlineRevision = onlineRevision + 1
+  onlineBusy = false
+end
+
+local function beginOnline()
+  cancelOnline()
+  onlineBusy = true
+  onlineNotice = tos.i18n.t("online.loading")
+  render()
+  return onlineRevision
+end
+
+local function onlineCurrent(revision, base, page)
+  return not stopped and onlineRevision == revision and activePage == page and
+    base == online.source(tos.config.music_source_url) and tos.device.mode() ~= "sleep"
+end
+
+local function showSearch()
+  cancelOnline()
+  if not online.source(tos.config.music_source_url) then
+    onlineNotice = tos.i18n.t("online.configure")
+    tos.settings.open("player")
+    render()
+    return
+  end
+  tos.state.set(tos.json.encode({searchTitle = tos.i18n.t("online.search"), searchFields = {
+    {key = "online-query", type = "text", label = tos.i18n.t("online.query"), value = query, maxLength = online.queryLength}
+  }}))
+  tos.page.focus("player.search", {live = true})
+end
+
+local function playOnline(index)
+  local tracks = lists.online
+  if not tracks[index] then return end
+  if tos.device.mode() == "sleep" then onlineNotice = tos.i18n.t("online.sleep"); render(); return end
+  local base = online.source(tos.config.music_source_url)
+  if not base then showSearch(); return end
+  local revision = beginOnline()
+  local entries, selected = online.resolve(base, tracks, tracks[index].id, requestTag(revision))
+  if not onlineCurrent(revision, base, LIBRARY_PAGE) or variant ~= "online" then return end
+  onlineBusy = false
+  if entries then
+    onlineNotice = nil
+    for _, entry in ipairs(entries) do entry.source = base end
+    play(entries, selected, "audio")
+  else failedId = tracks[index].id; onlineNotice = tos.i18n.t("online.failed"); render() end
+end
+
+local function search(value)
+  local base = online.source(tos.config.music_source_url)
+  if not base then return end
+  query = online.query(value) or ""
+  if query == "" or tos.device.mode() == "sleep" then return end
+  -- A fast reply can arrive between leaving the form and entering the library.
+  -- Submit only once the results page owns the request.
+  cancelOnline()
+  pendingSearch = {base = base, query = query}
+  tos.page.release("player.search")
+end
+
+local function browseOnline()
+  onlineSearchResults = false
+  local base = online.source(tos.config.music_source_url)
+  if not base or tos.device.mode() == "sleep" then render(); return end
+  local revision = beginOnline()
+  local tracks = online.browse(base, requestTag(revision))
+  if not onlineCurrent(revision, base, LIBRARY_PAGE) or variant ~= "online" then return end
+  onlineBusy = false
+  browseLoaded = tracks ~= nil
+  lists.online = tracks or {}
+  onlineNotice = not tracks and tos.i18n.t("online.browseUnavailable") or #tracks == 0 and tos.i18n.t("online.empty") or nil
+  render()
+end
+
+local function runSearch(submission)
+  local base = submission.base
+  if variant ~= "online" or base ~= online.source(tos.config.music_source_url) or tos.device.mode() == "sleep" then return end
+  if not onlineSearchResults then discoveryTracks = lists.online end
+  lists.online = {}
+  onlineSearchResults = true
+  local revision = beginOnline()
+  local tracks = online.search(base, submission.query, requestTag(revision))
+  if not onlineCurrent(revision, base, LIBRARY_PAGE) or variant ~= "online" then return end
+  onlineBusy = false
+  if tracks then lists.online = tracks end
+  onlineNotice = not tracks and tos.i18n.t("online.failed") or #tracks == 0 and tos.i18n.t("online.empty") or nil
+  render()
+end
+
 tos.on("start", function()
   recent = restore("recent", {})
   saved = restore("saved", {})
   local cached = restore("channels", {})
   if cached.url == tos.config.playlist_url and type(cached.items) == "table" then channels = cached.items end
   previous = {music_dir = tos.config.music_dir, video_dir = tos.config.video_dir, playlist_url = tos.config.playlist_url,
-    stream_url = tos.config.stream_url}
+    stream_url = tos.config.stream_url, music_source_url = tos.config.music_source_url}
   local last = tos.store.get("variant")
-  if type(last) == "string" and lists[last] then variant = last end
+  if type(last) == "string" and lists[last] then variant = last
+  elseif online.source(tos.config.music_source_url) then variant = "online" end
+  if variant ~= "online" then libraryVariant = variant end
   refreshLists()
   render()
   renderNow()
@@ -354,9 +510,17 @@ end)
 
 tos.on("config", function(c)
   local changed = {}
-  for key, value in pairs({music_dir = c.music_dir, video_dir = c.video_dir, playlist_url = c.playlist_url, stream_url = c.stream_url}) do
+  for key, value in pairs({music_dir = c.music_dir, video_dir = c.video_dir, playlist_url = c.playlist_url, stream_url = c.stream_url, music_source_url = c.music_source_url}) do
     changed[key] = previous[key] ~= value
     previous[key] = value
+  end
+  if changed.music_source_url then
+    cancelOnline()
+    lists.online, onlineNotice, query = {}, nil, ""
+    discoveryTracks = nil
+    sourceGeneration = sourceGeneration + 1
+    onlineSearchResults, browseLoaded = false, false
+    if activePage == LIBRARY_PAGE and variant == "online" then browseOnline() else render() end
   end
   if changed.music_dir or changed.video_dir then scan() end
   if changed.playlist_url then fetchPlaylist(c.playlist_url) end
@@ -364,13 +528,25 @@ tos.on("config", function(c)
 end)
 
 tos.on("page.enter", function(page)
-  if page ~= LIBRARY_PAGE then return end
-  render()
+  activePage = page
+  if page == "upnext" then tos.back.intercept(true) end
+  if page ~= LIBRARY_PAGE then
+    if page ~= "search" then pendingSearch = nil end
+    return
+  end
+  local submission = pendingSearch
+  pendingSearch = nil
+  if submission then variant = "online"; runSearch(submission)
+  elseif variant == "online" and not browseLoaded and not onlineSearchResults and not onlineBusy then browseOnline()
+  else render() end
+  tos.back.intercept(variant == "online" and onlineSearchResults)
   -- New files may have arrived since the last look.
-  if not scannedAt or now() - scannedAt > 15000 then scan() end
+  if activePage == LIBRARY_PAGE and (not scannedAt or now() - scannedAt > 15000) then scan() end
 end)
 
 tos.on("page.leave", function(page)
+  if activePage == page then activePage = nil end
+  if page == LIBRARY_PAGE then cancelOnline() end
   -- A film nobody is looking at keeps no decoder busy.
   if page == "video" and tos.state.get("media.kind") == "video" then
     local status = tos.state.get("media.status")
@@ -379,23 +555,65 @@ tos.on("page.leave", function(page)
   end
 end)
 
+local function leaveResults()
+  cancelOnline()
+  if onlineSearchResults then lists.online = discoveryTracks or {}; discoveryTracks = nil end
+  onlineSearchResults, onlineNotice = false, nil
+  tos.back.intercept(false)
+end
+
+tos.on("back", function(page)
+  if page == "upnext" then tos.page.focus("player.audio", {live = true})
+  elseif page == LIBRARY_PAGE and onlineSearchResults then
+    leaveResults(); variant = searchOrigin or "online"
+    if variant == "online" and not browseLoaded then browseOnline() else render() end
+  end
+end)
+
 tos.on("tap", function(name, index)
+  if name == "expand" then
+    local status = tos.state.get("media.status")
+    if status and status ~= "stopped" then tos.page.focus("player.audio", {live = true}) end
+    return
+  elseif name == "upnext" then tos.page.focus("player.upnext", {live = true}); return
+  elseif name == "cover" then tos.page.focus("player.audio", {live = true}); return
+  elseif name == "feature" then if variant == "online" and not onlineSearchResults then playOnline(1) end; return
+  elseif name == "retry" then
+    if not online.source(tos.config.music_source_url) then tos.settings.open("player")
+    elseif onlineSearchResults then runSearch({base = online.source(tos.config.music_source_url), query = query})
+    else browseOnline() end
+    return
+  elseif name == "nav" then
+    if index == 3 then if not onlineSearchResults then searchOrigin = variant end; showSearch(); return end
+    if index ~= 1 and index ~= 2 then return end
+    leaveResults(); variant = index == 1 and "online" or libraryVariant
+    tos.store.set("variant", variant)
+    if variant == "online" and not browseLoaded then browseOnline() else render() end
+    return
+  end
   if name == "tab" then
     local target = type(index) == "number" and ORDER[index]
     if target and target ~= variant then
+      cancelOnline()
       variant = target
+      if target ~= "online" then libraryVariant = target end
       tos.store.set("variant", variant)
-      render()
+      if variant == "online" and not browseLoaded and not onlineSearchResults then browseOnline() else render() end
     end
     return
   end
   if name == "cycle" then
+    cancelOnline()
     variant = ORDER[variantIndex() % #ORDER + 1]
     tos.store.set("variant", variant)
-    render()
+    if variant == "online" and not browseLoaded and not onlineSearchResults then browseOnline() else render() end
     return
   end
   if name ~= "play" or type(index) ~= "number" then return end
+  if variant == "online" then
+    playOnline(index - onlineOffset())
+    return
+  end
   local list = lists[variant]
   local item = list[index]
   if not item then return end
@@ -409,6 +627,13 @@ tos.on("tap", function(name, index)
     local kind = item.kind or library.kindOf(item.url)
     play({entryOf(item, kind)}, 1, kind)
   end
+end)
+
+tos.on("form.change", function(key, value)
+  if activePage == "search" and key == "online-query" then search(value) end
+end)
+tos.on("mode", function(mode)
+  if mode == "sleep" then cancelOnline(); render() end
 end)
 
 tos.on("media.track", function(info)
@@ -451,6 +676,7 @@ end)
 
 tos.on("stop", function()
   stopped = true
+  cancelOnline()
   savePosition(false)
   stopSaver()
 end)

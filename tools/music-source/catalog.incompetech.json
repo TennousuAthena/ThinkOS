@@ -1,0 +1,74 @@
+[
+  {
+    "id": "carefree",
+    "title": "Carefree",
+    "artist": "Kevin MacLeod",
+    "url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Carefree.mp3",
+    "durationMs": 205140,
+    "album": "25 Years (Volume 2)",
+    "art": "https://cdn-images.dzcdn.net/images/cover/be56f4817dfe1e29bd62f2bde3b07b96/500x500-000000-80-0-0.jpg"
+  },
+  {
+    "id": "sneaky",
+    "title": "Sneaky Snitch",
+    "artist": "Kevin MacLeod",
+    "url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Sneaky%20Snitch.mp3",
+    "durationMs": 136620,
+    "album": "Sneaky Snitch",
+    "art": "https://cdn-images.dzcdn.net/images/cover/07a48e747fff27543583822cb6a9b8b4/500x500-000000-80-0-0.jpg"
+  },
+  {
+    "id": "USUAN1100768",
+    "title": "Fluffing a Duck",
+    "artist": "Kevin MacLeod",
+    "url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Fluffing%20a%20Duck.mp3",
+    "durationMs": 67368,
+    "album": "Fluffing a Duck",
+    "art": "https://cdn-images.dzcdn.net/images/cover/047ea9f96793a3c7bfd1b9d469cff3b9/500x500-000000-80-0-0.jpg"
+  },
+  {
+    "id": "USUAN1300012",
+    "title": "Local Forecast - Elevator",
+    "artist": "Kevin MacLeod",
+    "url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Local%20Forecast%20-%20Elevator.mp3",
+    "durationMs": 189205,
+    "album": "25 Years (Volume 2)",
+    "art": "https://cdn-images.dzcdn.net/images/cover/be56f4817dfe1e29bd62f2bde3b07b96/500x500-000000-80-0-0.jpg"
+  },
+  {
+    "id": "USUAN1700002",
+    "title": "Pookatori and Friends",
+    "artist": "Kevin MacLeod",
+    "url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Pookatori%20and%20Friends.mp3",
+    "durationMs": 247798,
+    "album": "Missing Hit N to R",
+    "art": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/2f/cc/04/2fcc041a-ac30-b34a-7c23-559dd6782aac/artwork.jpg/600x600bb.jpg"
+  },
+  {
+    "id": "USUAN1100844",
+    "title": "Cipher",
+    "artist": "Kevin MacLeod",
+    "url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cipher2.mp3",
+    "durationMs": 231262,
+    "album": "Light Electronic",
+    "art": "https://cdn-images.dzcdn.net/images/cover/e87e4f71dfc2928ad6b199f65fa56046/500x500-000000-80-0-0.jpg"
+  },
+  {
+    "id": "USUAN1100843",
+    "title": "Wallpaper",
+    "artist": "Kevin MacLeod",
+    "url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Wallpaper.mp3",
+    "durationMs": 220056,
+    "album": "Light Electronic",
+    "art": "https://cdn-images.dzcdn.net/images/cover/e87e4f71dfc2928ad6b199f65fa56046/500x500-000000-80-0-0.jpg"
+  },
+  {
+    "id": "USUAN1100085",
+    "title": "Scheming Weasel (faster version)",
+    "artist": "Kevin MacLeod",
+    "url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Scheming%20Weasel%20faster.mp3",
+    "durationMs": 89130,
+    "album": "25 Years (Volume 2)",
+    "art": "https://cdn-images.dzcdn.net/images/cover/be56f4817dfe1e29bd62f2bde3b07b96/500x500-000000-80-0-0.jpg"
+  }
+]

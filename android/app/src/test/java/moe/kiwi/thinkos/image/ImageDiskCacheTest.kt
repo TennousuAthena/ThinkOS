@@ -70,6 +70,21 @@ class ImageDiskCacheTest {
         } finally { release.countDown(); pool.shutdownNow() }
     }
 
+    @Test fun repeatedPageLoadsReuseTheSameCoverWithTheNetworkUnavailable() {
+        val root = temporary.newFolder()
+        val cover = "https://www.bing.com/th?id=OHR.Photo_1920x1080.jpg"
+        val cache = ImageDiskCache(root)
+        var downloads = 0
+        repeat(10) {
+            cache.acquire(cover, { file ->
+                check(downloads++ == 0) { "Network unavailable" }
+                write(file, 4)
+            }, {}).use { assertEquals(4, it.file.length()) }
+        }
+        ImageDiskCache(root).acquire(cover, { error("Network unavailable") }, {}).use { assertEquals(4, it.file.length()) }
+        assertEquals(1, downloads)
+    }
+
     @Test fun cacheDoesNotReadThroughSymlinks() {
         val root = temporary.newFolder(); val external = temporary.newFile()
         external.writeText("private")

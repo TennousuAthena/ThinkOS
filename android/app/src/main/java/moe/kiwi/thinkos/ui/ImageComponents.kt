@@ -133,6 +133,10 @@ internal class ImageComponents(private val loader: ImageLoader, private val auth
             override fun onAttachedToWindow() { super.onAttachedToWindow(); reconcile() }
             override fun onDetachedFromWindow() { stop(); super.onDetachedFromWindow() }
             override fun onWindowVisibilityChanged(visibility: Int) { super.onWindowVisibilityChanged(visibility); reconcile() }
+            override fun onVisibilityAggregated(isVisible: Boolean) {
+                super.onVisibilityAggregated(isVisible)
+                if (isVisible) reconcile()
+            }
             override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
                 super.onSizeChanged(w, h, oldw, oldh)
                 if (w != oldw || h != oldh) { stop(); reconcile() }
@@ -178,6 +182,7 @@ internal class ImageComponents(private val loader: ImageLoader, private val auth
                 val path = definition.optString("items").removePrefix("{{").removeSuffix("}}").trim()
                 PhotoSequence.parse(Binding.lookup(snapshot, path) as? JSONArray)
             } else text("src", "").takeIf { it.isNotBlank() }?.let { listOf(Photo(it, it)) }.orEmpty()
+            if (!carousel) root.visibility = if (source.isEmpty()) View.GONE else View.VISIBLE
             val nextGrant = loader.grant(authority())
             val revoked = grant !== nextGrant
             val changed = sequence.items.toSet() != source.toSet() || revoked
@@ -255,8 +260,11 @@ internal class ImageComponents(private val loader: ImageLoader, private val auth
         }
         private fun cancelRequest() { serial++; pending?.cancel(true); pending = null }
         private fun request(photo: Photo, success: (LoadedImage) -> Unit, failure: () -> Unit) {
+            val authority = authority()
+            if (!PreparePolicy.imageAllowedWhileWarm(photo.src, authority) && !root.isShown &&
+                generateSequence(root.parent) { it.parent }.any { it is PageView && it.visibility == View.INVISIBLE }) return
             val token = ++serial
-            pending = loader.load(authority(), photo.src, root.width, root.height) { result ->
+            pending = loader.load(authority, photo.src, root.width, root.height) { result ->
                 if (token != serial || !readable()) { result.getOrNull()?.close(); return@load }
                 pending = null
                 result.fold(success, { error ->

@@ -34,5 +34,20 @@
   "error.audio": "অডিও আউটপুট ব্যর্থ হয়েছে",
   "error.other": "চালানো ব্যর্থ হয়েছে",
   "placeholder.stream_url": "http, https বা rtsp ঠিকানা",
-  "placeholder.playlist_url": "M3U ঠিকানা"
+  "placeholder.playlist_url": "M3U ঠিকানা",
+  "variant.online": "অনলাইন",
+  "online.browse": "সংগীত দেখুন",
+  "online.browseUnavailable": "সংগীত দেখা যাচ্ছে না",
+  "online.search": "গান খুঁজুন",
+  "online.query": "গান বা শিল্পী",
+  "setting.music_source_url": "সঙ্গীত উৎসের URL",
+  "online.configure": "সঙ্গীতের উৎস সেট করুন",
+  "online.loading": "লোড হচ্ছে…",
+  "online.empty": "কোনো গান পাওয়া যায়নি",
+  "online.failed": "উৎস বা প্লেব্যাক উপলব্ধ নয়",
+  "online.sleep": "ঘুমের সময় প্লেব্যাক বন্ধ থাকে",
+  "placeholder.music_source_url": "https://music.example.net",
+  "nav.discover": "আবিষ্কার",
+  "nav.featured": "বাছাই করা গান",
+  "nav.queue": "পরবর্তী"
 }

@@ -165,8 +165,9 @@ object PluginSchema {
                     val kind = value.optString("type").takeIf { it.isNotEmpty() }
                     if (kind != null) {
                         require(renderApis.getJSONObject("componentTypes").optInt(kind, API + 1) <= api) { "component requires a newer plugin API" }
+                        if (kind == "list" && value.optJSONObject("item")?.has("image") == true) require(api >= renderApis.getInt("listRowImage")) { "list thumbnails require a newer plugin API" }
                         val properties = renderApis.getJSONObject("componentProperties")
-                        for (key in properties.keys()) if (value.has(key)) require(properties.getInt(key) <= api) { "component property requires a newer plugin API" }
+                        for (key in properties.keys()) if (value.has(key.removePrefix("$kind."))) require(properties.getInt(key) <= api) { "component property requires a newer plugin API" }
                     }
                     if (value.has("children") && !value.has("template") && kind == null) require(renderApis.getInt("componentGroups") <= api) { "component groups require a newer plugin API" }
                     for (key in value.keys()) gate(value.opt(key))

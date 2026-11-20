@@ -283,3 +283,15 @@ ws://<server>:8765/ws
 - Server下发路径以已认证期望状态的sha256校验文件；可选Git tag校验仍只在取回端执行。ADR-041的独立OTA/registry路径先用APK内置的独立角色公钥验证目录原始字节，再核对清单与文件摘要；Server提示不能替代签名目录或模块的独立系统根。
 - 设备不运行Git、不访问作者仓库；可从公开镜像或可选Server镜像读取签名registry目录和内容寻址文件。`source`中的作者仓库地址仍只用于显示/排错，不会变成设备的Git或下载入口。
 - 插件的权限由设备按 manifest 强制执行，Server 下发不能绕过
+
+## 在线音乐源 HTTP v1
+
+音乐源独立于设备管理 Server。音源基址来自播放器的 `music_source_url`。返回 UTF-8 JSON。契约见 `shared/protocol/schema/music/v1.json`。执行 `python3 tools/music-source/gen_contract.py --check` 可验证生成的限制。
+
+| 方法与路径 | 参数 | 成功响应 |
+|---|---|---|
+| GET `/v1/browse` | 无 | `{tracks:[{id,title,artist,album?,art?,durationMs?}]}`，按源端顺序返回最多 12 首 |
+| GET `/v1/search` | `q` 是经百分号编码的歌曲或艺人，UTF-8 1–160 字节 | 和浏览使用同一曲目结构，最多 12 首 |
+| GET `/v1/resolve` | `ids` 为逗号分隔的 1–12 个不重复 ID | `{links:[{id,url}]}`，仅返回可解析项。选中 ID 缺失时客户端报错 |
+
+ID 最多 64 个 ASCII 字母、数字、下划线或连字符。标题、艺人、专辑各不超过 240 个 UTF-8 字节。封面是 HTTP(S) URL，最多 1024 字节。时长是 1–86400000 的整数毫秒。源缺少封面时省略该字段。旧音源没有浏览端点时，搜索仍可用。解析 URL 必须是绝对 HTTP(S)，不超过 2048 字节且不含用户信息或片段。解析 URL 仅在播放会话中使用。HTTP 请求总等待为 5 秒，响应体上限 32 KiB，仅跟随同源重定向。音频 URL 和后续重定向沿用原生媒体网络策略。部署与本地复现见 `tools/music-source/README.md`。

@@ -1,5 +1,7 @@
 # 22 · 播放器规划：媒体接口、player 系统插件与页面
 
+> 2026-11-18 实作采用[ThinkOS 音源 HTTP v1](../tools/music-source/README.md)，复用原生播放会话。本文的 Navidrome/Subsonic 来源仍是候选方案。
+
 > **2026-11-01 补记**：本文的媒体接口、`media` 状态、`video` / `controls` / `seekbar`、HLS / DASH、`player` 插件已按另一份计划实现，见 `27-streaming.md` 与 ADR-030（API 7）。**没有实现的部分仍以本文为准**：`nowplaying` 版式、歌词、频谱（SpectrumTap）、`list.current`、封面主色 `mood`、`tos.audio` 系统音量。下面保留 2026-10-30 的原文。
 
 > **2026-11-02 补记**：音频页的封面、队列变体、音量条、资料库迷你条、首页卡片和 `list.current` 已用一个 OS 组件 `nowplaying` 实现（API 8，ADR-036，见 `30-player-ui.md`），没有照本文做 `nowplaying` 版式。歌词、频谱、`mood` 背景染色、嵌入封面仍以本文为准。
@@ -289,7 +291,7 @@ plugins/player/
 **P 性能**：AWAKE / AMBIENT / ASLEEP 各一组（播放中、有无频谱）的单核 CPU、janky、PSS，对比 §2 基线；50 次切歌无泄漏，PSS 峰值 <350MB；视频 1080p30 的丢帧数与内存。
 **V 视频**：合成 H.264 / HEVC / VP9 + SRT；不支持的编码给出可见错误。
 **F 失败与安全**：404 流、坏文件、无读权限、断网、`library.read` 越界路径与超大文件、`media` 权限缺失。
-**通用**：`./gradlew assembleDebug`、lint、`adb install -r`、APK 只有 `lib/armeabi-v7a/`、断网无 Server 冷启动 <3s、`package_plugins.py --validate-only`、`gen_android_strings.py --check`。
+**通用**：`./gradlew assembleDebug`、lint、`adb install -r`、APK 只有 `lib/armeabi-v7a/`、断网无 Server 冷启动 < 5s、`package_plugins.py --validate-only`、`gen_android_strings.py --check`。
 
 ## 12. 风险
 

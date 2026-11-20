@@ -48,7 +48,7 @@ local function timer(seconds,fn,repeating,opts)
   return nextTimer
 end
 tos.timer={after=function(s,fn) return timer(s,fn,false) end,every=function(s,fn,opts) return timer(s,fn,true,opts) end,cancel=function(id) timers[id]=nil; host("timer.cancel",id) end,sleep=function(s) return await("sleep",s) end}
-tos.http={get=function(url,opts) return await("http.get",url,opts) end,post=function(url,body,opts) return await("http.post",url,body,opts) end}
+tos.http={get=function(url,opts) return await("http.get",url,opts) end,post=function(url,body,opts) return await("http.post",url,body,opts) end, cancel=function(tag) return host("http.cancel",tag) end}
 tos.net={resolve=function(hostname) return await("net.resolve",hostname) end}
 tos.media={load=function(queue,opts) return await("media.load",queue,opts) end,probe=function(url,opts) return await("media.probe",url,opts) end}
 for _,method in ipairs({'play','pause','toggle','next','prev','seek','volume','stop','shuffle','repeat','jump','live','audioTrack','textTrack'}) do

@@ -2,6 +2,7 @@
 package protocol
 
 import "fmt"
+import "strings"
 
 type SchemaPluginCatalog struct {
 	Plugins []SchemaPluginIndex `json:"plugins"`
@@ -125,6 +126,7 @@ type SchemaListRow struct {
 	Trailing *string `json:"trailing,omitempty"`
 	Progress any `json:"progress,omitempty"`
 	Max any `json:"max,omitempty"`
+	Image *string `json:"image,omitempty"`
 }
 
 type SchemaList struct {
@@ -134,6 +136,7 @@ type SchemaList struct {
 	Tap *string `json:"tap,omitempty"`
 	Weight *float64 `json:"weight,omitempty"`
 	Current any `json:"current,omitempty"`
+	ScrollKey *string `json:"scrollKey,omitempty"`
 }
 
 type SchemaDaylight struct {
@@ -268,6 +271,7 @@ type SchemaNowPlaying struct {
 	Idle *string `json:"idle,omitempty"`
 	Notice *string `json:"notice,omitempty"`
 	Weight *float64 `json:"weight,omitempty"`
+	Tap *string `json:"tap,omitempty"`
 }
 
 type SchemaTv struct {
@@ -440,13 +444,13 @@ type SchemaApp struct {
 	Listed *bool `json:"listed,omitempty"`
 }
 
-const PluginAPI = 10
+const PluginAPI = 12
 
 var renderComponentTypes = map[string]int{"text": 1, "icon": 1, "clock": 1, "form": 1, "progress": 2, "chart": 2, "list": 2, "daylight": 2, "moon": 2, "image": 3, "carousel": 3, "controls": 7, "video": 7, "seekbar": 7, "nowplaying": 8, "tv": 8, "tabs": 8, "slider": 8, "toggle": 8, "grid": 8}
 
 var renderLayouts = map[string]int{"stacks": 1, "focus": 1, "form": 1, "split": 2, "stage": 2, "tiles": 4, "aero": 5, "panel": 8}
 
-var renderComponentProperties = map[string]int{"tap": 2, "weight": 2, "current": 8, "nav": 9, "subtitle": 10, "primary": 10, "secondary": 10, "back": 10}
+var renderComponentProperties = map[string]int{"tap": 2, "weight": 2, "current": 8, "nav": 9, "subtitle": 10, "primary": 10, "secondary": 10, "back": 10, "nowplaying.tap": 11, "scrollKey": 11}
 
 var renderTemplates = map[string]int{"glance": 1, "tile": 4}
 
@@ -454,7 +458,7 @@ var renderPageRoles = map[string]int{"launcher": 9, "onboarding": 10}
 
 var renderPermissions = map[string]int{"system.update": 10, "system.plugins": 10}
 
-var renderLayoutSlots = map[string]int{"panel.update": 10, "form.hero": 10}
+var renderLayoutSlots = map[string]int{"panel.update": 10, "form.hero": 10, "split.over": 11, "split.under": 11}
 
 var renderFormFields = map[string]int{"link": 1, "confirm": 9, "preview": 9, "nav": 9, "link.icon": 10, "nav.items.icon": 10, "time": 10}
 
@@ -546,8 +550,9 @@ func ValidateRenderAPI(value any, api int) error {
                 kind, ok := rawKind.(string)
                 minimum, known := renderComponentTypes[kind]
                 if !ok || !known || minimum > api { return fmt.Errorf("component requires a newer plugin API") }
+                if item, ok := node["item"].(map[string]any); ok && kind == "list" && api < 12 { if _, has := item["image"]; has { return fmt.Errorf("list thumbnails require a newer plugin API") } }
                 for key, minimum := range renderComponentProperties {
-                    if _, present := node[key]; present && minimum > api { return fmt.Errorf("component property requires a newer plugin API") }
+                    if _, present := node[strings.TrimPrefix(key, kind+".")]; present && minimum > api { return fmt.Errorf("component property requires a newer plugin API") }
                 }
             }
             _, children := node["children"]

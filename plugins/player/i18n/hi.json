@@ -34,5 +34,20 @@
   "error.audio": "ऑडियो आउटपुट विफल रहा",
   "error.other": "प्लेबैक विफल रहा",
   "placeholder.stream_url": "http, https या rtsp पता",
-  "placeholder.playlist_url": "M3U पता"
+  "placeholder.playlist_url": "M3U पता",
+  "variant.online": "ऑनलाइन",
+  "online.browse": "संगीत देखें",
+  "online.browseUnavailable": "संगीत सूची उपलब्ध नहीं",
+  "online.search": "गीत खोजें",
+  "online.query": "गीत या कलाकार",
+  "setting.music_source_url": "संगीत स्रोत का URL",
+  "online.configure": "संगीत स्रोत सेट करें",
+  "online.loading": "लोड हो रहा है…",
+  "online.empty": "कोई गीत नहीं मिला",
+  "online.failed": "स्रोत या प्लेबैक उपलब्ध नहीं है",
+  "online.sleep": "स्लीप में प्लेबैक रुका है",
+  "placeholder.music_source_url": "https://music.example.net",
+  "nav.discover": "खोजें",
+  "nav.featured": "चुनिंदा गीत",
+  "nav.queue": "आगे"
 }

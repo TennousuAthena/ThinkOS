@@ -1,0 +1,23 @@
+{
+  "layout": "focus",
+  "variants": [
+    {
+      "id": "queue",
+      "title": "Queue"
+    }
+  ],
+  "slots": {
+    "over": {
+      "type": "text",
+      "style": "body",
+      "value": "@page.audio",
+      "tap": "cover"
+    },
+    "hero": {
+      "type": "nowplaying",
+      "style": "full",
+      "idle": "{{nowTitle}}",
+      "notice": "{{playNotice}}"
+    }
+  }
+}

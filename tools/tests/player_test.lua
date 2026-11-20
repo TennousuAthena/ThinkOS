@@ -109,7 +109,7 @@ local function new(options)
     return (value:gsub("{([%w_]+)}", function(k) return tostring(args and args[k]) end))
   end
   tos = {
-    config = cfg, json = json,
+    config = cfg, json = json, back = {intercept = function(on) env.intercept = on end},
     on = function(name, fn) env.handlers[name] = fn end,
     state = {set = function(text) for key, value in pairs(json.decode(text)) do env.state[key] = value end end, get = function(path)
       local key = path:match("^media%.(.+)$"); return key and env.media[key] or nil end},
@@ -129,7 +129,10 @@ local function new(options)
       if result == nil then return nil, "denied" end
       return result
     end},
-    http = {get = function(url, opts) env.requested = url; return env.http(url, opts) end},
+    device = {mode = function() return env.mode or "day" end},
+    settings = {open = function() env.settings = true end},
+    http = {get = function(url, opts) env.requested = url; return env.http(url, opts) end,
+      cancel = function(tag) env.cancelled = tag end},
     media = {
       load = function(entries, opts)
         env.loads[#env.loads + 1] = {entries = clone(entries), options = clone(opts)}
@@ -144,8 +147,9 @@ local function new(options)
     page = {focus = function(page, opts) env.focus[#env.focus + 1] = {page = page, live = opts and opts.live} end,
       release = function(page) env.released = env.released + 1 end},
   }
-  local modules = {m3u = m3u, library = library}
+  local modules = {m3u = m3u, library = library, online_contract = assert(load(online_contract_source, "online_contract", "t"))()}
   require = function(name) return assert(modules[name], name) end
+  modules.online = assert(load(online_source, "online", "t"))()
   assert(load(main_source, "player", "t"))()
   function env.fire()
     local ids = {}
@@ -162,7 +166,7 @@ local function new(options)
 end
 
 -- The library lists are chosen with the tabs (the title also still cycles through them); open the one asked for.
-local TABS = {music = 1, video = 2, recent = 3, streams = 4}
+local TABS = {music = 1, video = 2, recent = 3, streams = 4, online = 5}
 local function show(env, name)
   env.event("tap", "tab", TABS[name])
   assert(env.state.heading == strings["variant." .. name], name)
@@ -191,10 +195,10 @@ test("start shows the stored history at once and scans after a moment", function
   assert(env.state.heading == strings["variant.recent"])
 end)
 
-test("the tabs name the four lists and tapping one shows it", function()
+test("the tabs name the five lists and tapping one shows it", function()
   local env = new({lists = {audio = {items = music(3)}, video = {items = {}}}})
   env.fire()
-  assert(#env.state.tabs == 4 and env.state.tabs[1] == strings["variant.music"] and env.state.tabs[2] == strings["variant.video"]
+  assert(#env.state.tabs == 5 and env.state.tabs[1] == strings["variant.music"] and env.state.tabs[2] == strings["variant.video"]
     and env.state.tabs[3] == strings["variant.recent"] and env.state.tabs[4] == strings["variant.streams"])
   assert(env.state.tab == 1)
   env.event("tap", "tab", 2)
@@ -236,7 +240,7 @@ test("tapping music queues the whole list, starts there and opens the audio page
   assert(#load.entries == 4 and load.options.index == 3 and load.options.autoplay and load.options.start == nil)
   assert(load.entries[3].url == "file:///sdcard/Music/t3.flac" and load.entries[3].kind == "audio" and load.entries[3].mime == "audio/flac")
   assert(load.entries[3].title == "Song 3" and load.entries[3].artist == "Artist 3")   -- the file name, split for the screen
-  assert(env.focus[1].page == "player.audio" and env.focus[1].live)
+  assert(#env.focus == 0)
   env.event("tap", "play", 99)
   env.event("tap", "other", 1)
   assert(#env.loads == 1)
@@ -315,12 +319,12 @@ test("a stream address in the settings plays at once, is saved once, and is not 
   local env = new()
   env.config.stream_url = "http://radio.test/live.mp3"
   env.event("config", env.config)
-  assert(#env.loads == 1 and env.loads[1].entries[1].kind == "audio" and env.focus[1].page == "player.audio")
+  assert(#env.loads == 1 and env.loads[1].entries[1].kind == "audio" and #env.focus == 0)
   env.event("config", env.config)                       -- same value again: nothing new
   assert(#env.loads == 1)
   env.config.stream_url = "rtsp://192.168.1.9/cam1"
   env.event("config", env.config)
-  assert(#env.loads == 2 and env.loads[2].entries[1].kind == "video" and env.focus[2].page == "player.video")
+  assert(#env.loads == 2 and env.loads[2].entries[1].kind == "video" and env.focus[1].page == "player.video")
   local saved = json.decode(env.store.saved)
   assert(#saved == 2 and saved[1].url == "rtsp://192.168.1.9/cam1")
   show(env, "streams")
@@ -347,7 +351,7 @@ test("a playlist address fills the Streams page, and cached channels survive a r
   env.event("tap", "play", 2)
   -- A channel plays alone: the player would otherwise fetch the playlist of every queued HLS / DASH item at once.
   assert(#env.loads[1].entries == 1 and env.loads[1].options.index == 1 and env.loads[1].entries[1].kind == "audio"
-    and env.loads[1].entries[1].url == "http://tv.test/radio.mp3" and env.focus[1].page == "player.audio")
+    and env.loads[1].entries[1].url == "http://tv.test/radio.mp3" and #env.focus == 0)
   local cached = new({config = {playlist_url = "http://tv.test/list.m3u"}})
   cached.store.channels = env.store.channels
   cached.event("start")
@@ -495,7 +499,7 @@ test("a queue with one bad entry still plays the chosen one; a refused load keep
   end
   env.event("tap", "play", 2)
   assert(calls == 2 and #env.loads == 1 and #env.loads[1].entries == 1 and env.loads[1].entries[1].url == "file:///sdcard/Music/t2.flac")
-  assert(env.focus[1].page == "player.audio" and env.state.playNotice == "")
+  assert(#env.focus == 0 and env.state.playNotice == "")
   tos.media.load = function() return nil, "denied" end
   env.event("tap", "play", 1)
   assert(env.state.playNotice == "Playback failed" and env.state.footer == "Playback failed", env.state.playNotice)
@@ -514,3 +518,152 @@ test("a full library stays inside the state budget with long names", function()
   assert(#json.encode(env.state) < 200 * 1024, #json.encode(env.state))   -- the state document may hold 256 KiB
   assert(utf8.len(env.state.items[1].title) and utf8.len(env.state.items[1].subtitle))
 end)
+
+local tracks = {tracks = {{id = "one", title = "Demo One", artist = "Test", album = "Album", art = "https://music.test/cover.jpg", durationMs = 125000}, {id = "two", title = "Demo Two", artist = "Test"}}}
+local links = {links = {{id = "one", url = "https://music.test/one.wav?short=1"}, {id = "two", url = "https://music.test/two.wav?short=2"}}}
+local function onlineEnv(hook)
+  local env
+  env = new({config = {music_source_url = "https://music.test/source/"}, http = function(url, options)
+    assert(options.timeout_ms == 5000 and options.max_bytes == 32768 and options.same_origin)
+    local response = url:find("/resolve?", 1, true) and links or tracks
+    if hook then return hook(env, url, response) end
+    return {status = 200, body = json.encode(response)}
+  end})
+  env.event("page.enter", "library")
+  assert(env.requested == "https://music.test/source/v1/browse" and env.state.featureHeading == "▶  Demo One")
+  env.requested = nil
+  env.event("tap", "nav", 3)
+  assert(env.focus[#env.focus].page == "player.search" and #env.loads == 0)
+  env.event("page.leave", "library")
+  env.event("page.enter", "search")
+  env.event("form.change", "online-query", " Demo & ")
+  assert(env.requested == nil, "search must wait for the results page")
+  env.event("page.leave", "search")
+  assert(env.requested == nil, "search must not start between page.leave and page.enter")
+  env.event("page.enter", "library")
+  assert(env.requested == "https://music.test/source/v1/search?q=Demo%20%26")
+  return env
+end
+
+test("the featured catalogue plays and passes optional metadata without typing a search", function()
+  local env = new({config = {music_source_url = "https://music.test"}, http = function(url)
+    return {status = 200, body = json.encode(url:find("/resolve?", 1, true) and links or tracks)}
+  end})
+  env.event("page.enter", "library")
+  assert(env.requested == "https://music.test/v1/browse")
+  assert(env.state.featureDetail == "Test / Album  2:05" and env.state.items[1].title == "Demo Two")
+  env.event("tap", "feature")
+  assert(#env.loads == 1 and env.loads[1].entries[1].album == "Album" and env.loads[1].entries[1].art == "https://music.test/cover.jpg")
+end)
+
+test("search remains usable with sources that predate the browse endpoint", function()
+  local env = new({config = {music_source_url = "https://music.test"}, http = function(url)
+    if url:find("/browse", 1, true) then return {status = 404, body = "{}"} end
+    return {status = 200, body = json.encode(tracks)}
+  end})
+  env.event("page.enter", "library")
+  assert(#env.state.items == 0 and env.state.sourceNotice == strings["online.browseUnavailable"])
+  env.event("tap", "nav", 3)
+  env.event("page.leave", "library")
+  env.event("page.enter", "search")
+  env.event("form.change", "online-query", "Demo")
+  env.event("page.leave", "search")
+  env.event("page.enter", "library")
+  assert(env.requested == "https://music.test/v1/search?q=Demo" and env.state.items[1].title == "Demo One")
+end)
+
+test("online catalogue rejects malformed or oversized optional metadata", function()
+  for _, bad in ipairs({{album = string.rep("a", 4096)}, {art = "file:///sdcard/cover.jpg"},
+                        {durationMs = -1}, {durationMs = "2000"}}) do
+    bad.id, bad.title, bad.artist = "one", "Demo One", "Test"
+    local env = new({config = {music_source_url = "https://music.test"}, http = function()
+      return {status = 200, body = json.encode({tracks = {bad}})}
+    end})
+    env.event("page.enter", "library")
+    assert(#env.state.items == 0 and env.state.sourceNotice == strings["online.browseUnavailable"])
+  end
+end)
+
+test("online search resolves on selection, queues audio and leaves temporary addresses out of history", function()
+  local env = onlineEnv()
+  assert(#env.state.items == 2 and env.state.items[1].title == "Demo One")
+  env.event("tap", "play", 2)
+  assert(env.requested == "https://music.test/source/v1/resolve?ids=one,two")
+  assert(#env.loads == 1 and env.loads[1].options.index == 2 and #env.loads[1].entries == 2)
+  assert(env.loads[1].entries[2].url == links.links[2].url and env.loads[1].entries[2].onlineId == nil)
+  assert(env.focus[#env.focus].page == "player.search" and env.store.recent == nil)
+  env.event("tap", "expand"); assert(env.focus[#env.focus].page == "player.audio")
+  env.event("tap", "upnext"); env.event("page.enter", "upnext"); assert(env.intercept)
+  env.event("back", "upnext"); assert(env.focus[#env.focus].page == "player.audio" and #env.loads == 1)
+  env.event("command", "toggle"); env.event("command", "next"); env.event("command", "prev")
+  assert(env.toggled and env.nexted and env.preved)
+end)
+
+test("online rejects new playback during sleep and ignores resolve that finishes after entering sleep", function()
+  local env = onlineEnv(function(app, _, response)
+    if response == links then app.mode = "sleep"; app.handlers.mode("sleep") end
+    return {status = 200, body = json.encode(response)}
+  end)
+  env.event("tap", "play", 1)
+  assert(#env.loads == 0)
+  env.requested = nil
+  env.event("tap", "play", 1)
+  assert(not env.requested and #env.loads == 0 and env.state.sourceNotice == strings["online.sleep"])
+end)
+
+test("empty search keeps its query with the status and Back reloads an unavailable discovery catalogue", function()
+  local browseAvailable = false
+  local env = new({config = {music_source_url = "https://music.test"}, http = function(url)
+    if url:find("/browse", 1, true) then
+      if not browseAvailable then return {status = 503, body = "unavailable"} end
+      return {status = 200, body = json.encode(tracks)}
+    end
+    return {status = 200, body = '{"tracks":[]}' }
+  end})
+  env.event("page.enter", "library")
+  assert(env.state.sourceNotice == strings["online.browseUnavailable"] and env.state.featureNotice == "")
+  env.event("tap", "nav", 3)
+  env.event("page.leave", "library")
+  env.event("page.enter", "search")
+  env.event("form.change", "online-query", "Missing")
+  env.event("page.leave", "search")
+  env.event("page.enter", "library")
+  assert(env.state.section == "Missing" and env.state.sourceNotice == strings["online.empty"])
+  assert(env.state.featureNotice == "" and env.state.navIndex == 3 and #env.state.items == 0)
+  browseAvailable = true
+  env.event("back", "library")
+  assert(env.requested == "https://music.test/v1/browse" and env.state.navIndex == 1)
+  assert(env.state.featureHeading == "▶  Demo One" and env.state.items[1].title == "Demo Two")
+end)
+
+test("online ignores late responses after leaving and reports invalid or refused resolution", function()
+  local act = "leave"
+  local env = onlineEnv(function(app, _, response)
+    if response == links then
+      if act == "leave" then app.handlers["page.leave"]("library") end
+      if act == "invalid" then return {status = 200, body = '{"links":[{"id":"one","url":"file:///data/test"}]}'} end
+      if act == "status" then return {status = 503, body = "unavailable"} end
+    end
+    return {status = 200, body = json.encode(response)}
+  end)
+  env.event("tap", "play", 1)
+  assert(#env.loads == 0 and env.cancelled:match("^online%-"))
+  env.event("page.enter", "library")
+  for _, failure in ipairs({"invalid", "status"}) do
+    act = failure
+    env.event("tap", "play", 1)
+    assert(#env.loads == 0 and env.state.sourceNotice == strings["online.failed"])
+  end
+end)
+
+if online_fixture_json then
+  test("the real HTTP fixture responses drive the production Lua queue", function()
+    local fixture = json.decode(online_fixture_json)
+    local env = onlineEnv(function(_, url)
+      return {status = 200, body = json.encode(url:find("/resolve?", 1, true) and fixture.resolve or fixture.search)}
+    end)
+    assert(#env.state.items == 2)
+    env.event("tap", "play", 1)
+    assert(#env.loads == 1 and env.loads[1].entries[1].url == fixture.resolve.links[1].url)
+  end)
+end

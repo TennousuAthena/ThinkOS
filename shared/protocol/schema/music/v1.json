@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ThinkOS music source v1",
+  "$defs": {
+    "id": {"type":"string", "maxLength":64, "pattern":"^[a-zA-Z0-9_-]+$"},
+    "title": {"type":"string", "minLength":1, "maxLength":240},
+    "artist": {"type":"string", "maxLength":240},
+    "query": {"type":"string", "minLength":1, "maxLength":160},
+    "url": {"type":"string", "maxLength":2048, "pattern":"^https?://"},
+    "art": {"type":"string", "minLength":1, "maxLength":1024, "pattern":"^https?://"},
+    "album": {"type":"string", "maxLength":240},
+    "durationMs": {"type":"integer", "minimum":1, "maximum":86400000},
+    "track": {"type":"object", "additionalProperties":false, "required":["id","title","artist"], "properties":{"id":{"$ref":"#/$defs/id"},"title":{"$ref":"#/$defs/title"},"artist":{"$ref":"#/$defs/artist"},"album":{"$ref":"#/$defs/album"},"art":{"$ref":"#/$defs/art"},"durationMs":{"$ref":"#/$defs/durationMs"}}},
+    "link": {"type":"object", "additionalProperties":false, "required":["id","url"], "properties":{"id":{"$ref":"#/$defs/id"},"url":{"$ref":"#/$defs/url"}}},
+    "search": {"type":"object", "additionalProperties":false, "required":["tracks"], "properties":{"tracks":{"type":"array", "maxItems":12, "items":{"$ref":"#/$defs/track"}}}},
+    "resolve": {"type":"object", "additionalProperties":false, "required":["links"], "properties":{"links":{"type":"array", "maxItems":12, "items":{"$ref":"#/$defs/link"}}}}
+  },
+  "x-http": {"browse":"/v1/browse", "search":"/v1/search", "resolve":"/v1/resolve", "maxBody":32768, "timeoutMs":5000}
+}

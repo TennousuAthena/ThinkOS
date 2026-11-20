@@ -10,7 +10,7 @@ class PublicMediaContractTest(unittest.TestCase):
     def test_optional_entry_and_probe_fields_share_api_ten(self):
         document = json.loads((ROOT / "shared/schema/plugin/layouts.json").read_text())
         vocabulary = document["x-thinkos-api"]
-        self.assertEqual(10, vocabulary["current"])
+        self.assertGreaterEqual(vocabulary["current"], 10)
         self.assertEqual({"public_only": 10}, vocabulary["mediaEntryFields"])
         self.assertEqual({"public_only": 10}, vocabulary["mediaProbeOptions"])
 

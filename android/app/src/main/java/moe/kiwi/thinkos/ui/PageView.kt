@@ -121,7 +121,7 @@ internal class ComponentGroup(
             removeAllViews()
             bound.clear()
             definitions.forEach { def ->
-                val renderer = if(desktop && def.optString("type")=="clock" && def.optString("style")=="analog") AeroClockView(context) else BuiltinComponents.create(context, def, compact,
+                val renderer = if(desktop && def.optString("type")=="clock" && def.optString("style")=="analog") AeroClockView(context) else BuiltinComponents.create(context, def, compact, pluginId,
                     images = { image -> events.component(context, pluginId, image) }) { event, index ->
                     events.send(pluginId, "tap", if (index == null) listOf(event) else listOf(event, index))
                 } ?: if (def.optString("type") !in setOf("clock", "form", "icon", "text")) events.component(context, pluginId, def) else null
@@ -329,6 +329,7 @@ internal class ComponentGroup(
     }
     fun singleTextLine() { (bound.singleOrNull()?.view as? TextView)?.let { if (it.maxLines != 1) it.maxLines = 1 } }
     fun noticeLines() { (bound.singleOrNull()?.view as? TextView)?.let { it.maxLines = 2; it.ellipsize = android.text.TextUtils.TruncateAt.END } }
+    val onlyTabs: Boolean get() = bound.filter { it.view.visibility != GONE }.all { it.definition.optString("type") == "tabs" }
     val hasContent: Boolean get() = embeddedTile != null || bound.any { it.view.visibility != GONE }
     /** Width of one cell in a row of [count] children inside [inner] pixels: equal cells, never wider than a toggle needs. */
     private fun cellWidth(inner: Int, count: Int) = minOf(inner / count.coerceAtLeast(1), (104 * resources.displayMetrics.density).toInt())
@@ -843,6 +844,12 @@ internal class PageView(
         }
         val header = groups.any { (name, group) -> roles[name] == "header" && group.hasContent }
         val footer = groups.any { (name, group) -> roles[name] == "footer" && group.hasContent }
+        // A split with only navigation in its lead needs one row in either orientation.
+        if (layout == "split" && role in setOf("lead", "main") && groups["lead"]?.onlyTabs == true) {
+            val box = RenderGeometry.slot("focus", "content", spec.width, spec.height, spec.density, header, footer)
+            val end = if (groups["lead"]?.hasContent == true) minOf(box.bottom, box.top + spec.dp(48f)) else box.top
+            return if (role == "lead") Rect(box.left, box.top, box.right, end) else Rect(box.left, end, box.right, box.bottom)
+        }
         val box = RenderGeometry.slot(layout, role ?: "content", spec.width, spec.height, spec.density, header, footer)
         return Rect(box.left, box.top, box.right, box.bottom)
     }

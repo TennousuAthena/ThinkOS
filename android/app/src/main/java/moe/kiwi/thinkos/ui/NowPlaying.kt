@@ -108,7 +108,7 @@ internal class NowPlayingView(
     private var queueCurrent = 0
 
     override val view: View get() = this
-    override val handlesTap = true
+    override val handlesTap get() = style != "bar"
     override val interactive: Boolean get() = true
 
     init {
@@ -154,11 +154,13 @@ internal class NowPlayingView(
                 trackChanged(first)
             }
             setText(title, newTitle.ifBlank { "—" })
-            setText(artist, m?.optString("artist").orEmpty())
+            val performer = m?.optString("artist").orEmpty()
+            val album = m?.optString("album").orEmpty()
+            setText(artist, listOf(performer, album).filter(String::isNotBlank).distinct().joinToString(" / "))
             setText(format, if (m?.optString("kind") == "video") "" else AudioFormatLine.of(m?.optString("audioCodec").orEmpty(),
                 m?.optInt("sampleRate") ?: 0, m?.optInt("bitDepth") ?: 0, m?.optInt("bitrate") ?: 0))
             val art = m?.optString("art").orEmpty()
-            if (art != artSource) { artSource = art; releaseArt(); ensureArt() }
+            if (art != artSource) { artSource = art; releaseArt(); requestLayout(); ensureArt() }
         } else if (trackKey.isNotEmpty()) {
             trackKey = ""; artSource = ""; releaseArt(); retone()
         }
@@ -197,8 +199,9 @@ internal class NowPlayingView(
         val fromPicture = image?.let(::averageTone)
         hue = fromPicture?.first ?: CoverTone.hue(trackKey)
         saturation = fromPicture?.second ?: .5f
-        cover.set(CoverTone.cover(hue), firstGlyph(media?.optString("title").orEmpty().ifBlank { media?.optString("artist").orEmpty() }),
-            if (active || trackKey.isNotEmpty()) media?.optString("artist").orEmpty() else "")
+        val glyph = if (media?.optString("kind") == "audio") "♪"
+            else firstGlyph(media?.optString("title").orEmpty())
+        cover.set(CoverTone.cover(hue), glyph, "")
         toneFor = null
     }
 
@@ -326,16 +329,24 @@ internal class NowPlayingView(
 
     private fun arrange(w: Int, h: Int) {
         val rtl = layoutDirection == LAYOUT_DIRECTION_RTL
-        val key = listOf(style, variant, w, h, rtl, hasNotice, active)
+        val key = listOf(style, variant, w, h, rtl, hasNotice, active, artSource.isEmpty())
         if (key == planKey) return
         planKey = key
-        plan = NowPlayingGeometry.layout(style, variant, w, h, dp, rtl, hasNotice, active)
+        plan = NowPlayingGeometry.layout(style, variant, w, h, dp, rtl, hasNotice, active, artSource.isNotEmpty())
         placed.clear()
         fun put(child: View, box: Box?) {
             child.visibility = if (box == null) GONE else VISIBLE
             if (box != null) placed += child to box
         }
-        put(cover, plan.cover); put(title, plan.title); put(artist, plan.artist); put(format, plan.format); put(notice, plan.notice)
+        val coverBox = plan.cover?.let { box ->
+            if (style != "full" || artSource.isNotEmpty()) box else {
+                val side = minOf(box.width, box.height, (84 * dp).toInt())
+                val left = box.left + (box.width - side) / 2
+                val top = box.top + (box.height - side) / 2
+                Box(left, top, left + side, top + side)
+            }
+        }
+        put(cover, coverBox); put(title, plan.title); put(artist, plan.artist); put(format, plan.format); put(notice, plan.notice)
         put(idle, plan.idle); put(seek, plan.seek); put(line, plan.line); put(volume, plan.volume); put(queue, plan.queue)
         buttonKinds = kindsOf(plan.buttons)
         val boxes = plan.controls?.let { NowPlayingGeometry.buttons(plan.buttons, it, dp) }.orEmpty()
@@ -374,6 +385,7 @@ internal class NowPlayingView(
 
     /** The cover of the full page pauses and resumes; elsewhere a tap falls through to whatever the card opens. */
     override fun tapAt(x: Float, y: Float): Boolean {
+        if (style == "bar" && active && isClickable && !inside(plan.controls, x, y)) return performClick()
         if (style != "full" || !active || !inside(plan.cover, x, y) || !allowed()) return false
         engine.toggle()
         return true

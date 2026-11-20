@@ -34,5 +34,20 @@
   "error.audio": "音訊輸出失敗",
   "error.other": "播放失敗",
   "placeholder.stream_url": "http、https 或 rtsp 位址",
-  "placeholder.playlist_url": "M3U 位址"
+  "placeholder.playlist_url": "M3U 位址",
+  "variant.online": "線上音樂",
+  "online.browse": "瀏覽音樂",
+  "online.browseUnavailable": "暫時無法瀏覽",
+  "online.search": "搜尋歌曲",
+  "online.query": "歌曲或藝人",
+  "setting.music_source_url": "音樂來源網址",
+  "online.configure": "請設定音樂來源",
+  "online.loading": "載入中…",
+  "online.empty": "找不到歌曲",
+  "online.failed": "音樂來源或播放無法使用",
+  "online.sleep": "睡眠時無法播放",
+  "placeholder.music_source_url": "https://music.example.net",
+  "nav.discover": "探索",
+  "nav.featured": "精選歌曲",
+  "nav.queue": "待播"
 }

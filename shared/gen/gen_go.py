@@ -17,7 +17,7 @@ def go_type(schema, doc):
     return {'string':'string','number':'float64','integer':'int','boolean':'bool','object':'map[string]any'}.get(kind,'any')
 
 def main():
-    parts=['// GENERATED - DO NOT EDIT. Run python3 shared/gen/gen_go.py.\npackage protocol\n\nimport "fmt"\n']
+    parts=['// GENERATED - DO NOT EDIT. Run python3 shared/gen/gen_go.py.\npackage protocol\n\nimport "fmt"\nimport "strings"\n']
     for schema,doc in objects():
         fields=[]
         for key,value in schema.get('properties',{}).items():
@@ -117,8 +117,9 @@ func ValidateRenderAPI(value any, api int) error {
                 kind, ok := rawKind.(string)
                 minimum, known := renderComponentTypes[kind]
                 if !ok || !known || minimum > api { return fmt.Errorf("component requires a newer plugin API") }
+                if item, ok := node["item"].(map[string]any); ok && kind == "list" && api < @@ROW_IMAGE_API@@ { if _, has := item["image"]; has { return fmt.Errorf("list thumbnails require a newer plugin API") } }
                 for key, minimum := range renderComponentProperties {
-                    if _, present := node[key]; present && minimum > api { return fmt.Errorf("component property requires a newer plugin API") }
+                    if _, present := node[strings.TrimPrefix(key, kind+".")]; present && minimum > api { return fmt.Errorf("component property requires a newer plugin API") }
                 }
             }
             _, children := node["children"]
@@ -130,7 +131,7 @@ func ValidateRenderAPI(value any, api int) error {
     }
     return walk(value)
 }
-'''.replace('@@GROUP_API@@', str(vocabulary['componentGroups'])).replace('@@SLOT_WIDGET_API@@', str(vocabulary['slotWidgets'])).replace('@@TILE_IMAGE_API@@', str(vocabulary['tileFields']['image'])).replace('@@TILE_FACE_CONTENT_API@@', str(vocabulary['tileFaceFields']['content'])))
+'''.replace('@@ROW_IMAGE_API@@', str(vocabulary['listRowImage'])).replace('@@GROUP_API@@', str(vocabulary['componentGroups'])).replace('@@SLOT_WIDGET_API@@', str(vocabulary['slotWidgets'])).replace('@@TILE_IMAGE_API@@', str(vocabulary['tileFields']['image'])).replace('@@TILE_FACE_CONTENT_API@@', str(vocabulary['tileFaceFields']['content'])))
     OUT.parent.mkdir(parents=True,exist_ok=True)
     OUT.write_text('\n'.join(parts))
     print(OUT.relative_to(ROOT))

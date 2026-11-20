@@ -34,5 +34,20 @@
   "error.audio": "音频输出失败",
   "error.other": "播放失败",
   "placeholder.stream_url": "http、https 或 rtsp 地址",
-  "placeholder.playlist_url": "M3U 地址"
+  "placeholder.playlist_url": "M3U 地址",
+  "variant.online": "在线音乐",
+  "online.browse": "浏览音乐",
+  "online.browseUnavailable": "暂时无法浏览",
+  "online.search": "搜索歌曲",
+  "online.query": "歌曲或艺人",
+  "setting.music_source_url": "音乐源地址",
+  "online.configure": "音乐源未配置",
+  "online.loading": "正在加载…",
+  "online.empty": "找不到歌曲",
+  "online.failed": "音乐源或播放不可用",
+  "online.sleep": "睡眠中无法播放",
+  "placeholder.music_source_url": "HTTPS 地址",
+  "nav.discover": "发现",
+  "nav.featured": "精选歌曲",
+  "nav.queue": "待播"
 }

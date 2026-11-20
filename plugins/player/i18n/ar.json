@@ -34,5 +34,20 @@
   "error.audio": "فشل إخراج الصوت",
   "error.other": "فشل التشغيل",
   "placeholder.stream_url": "عنوان http أو https أو rtsp",
-  "placeholder.playlist_url": "عنوان M3U"
+  "placeholder.playlist_url": "عنوان M3U",
+  "variant.online": "عبر الإنترنت",
+  "online.browse": "تصفح الموسيقى",
+  "online.browseUnavailable": "التصفح غير متاح",
+  "online.search": "البحث عن أغانٍ",
+  "online.query": "أغنية أو فنان",
+  "setting.music_source_url": "رابط مصدر الموسيقى",
+  "online.configure": "اضبط مصدرًا للموسيقى",
+  "online.loading": "جارٍ التحميل…",
+  "online.empty": "لم يتم العثور على أغانٍ",
+  "online.failed": "المصدر أو التشغيل غير متاح",
+  "online.sleep": "التشغيل متوقف مؤقتًا أثناء النوم",
+  "placeholder.music_source_url": "https://music.example.net",
+  "nav.discover": "اكتشف",
+  "nav.featured": "أغانٍ مختارة",
+  "nav.queue": "التالي"
 }

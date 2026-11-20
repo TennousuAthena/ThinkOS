@@ -414,8 +414,10 @@ def validate_view(view, api=None):
             if kind is not None:
                 if vocabulary['componentTypes'].get(kind, api + 1) > api:
                     raise ValidationError(f'component {kind} requires a newer plugin API')
+                if kind == 'list' and 'image' in value.get('item', {}) and api < vocabulary['listRowImage']:
+                    raise ValidationError('list thumbnails require a newer plugin API')
                 for key, minimum in vocabulary['componentProperties'].items():
-                    if key in value and minimum > api:
+                    if key.removeprefix(str(kind) + '.') in value and minimum > api:
                         raise ValidationError(f'component property {key} requires a newer plugin API')
             if 'children' in value and 'template' not in value and kind is None and vocabulary['componentGroups'] > api:
                 raise ValidationError('component groups require a newer plugin API')

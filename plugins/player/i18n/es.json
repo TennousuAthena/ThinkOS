@@ -34,5 +34,20 @@
   "error.audio": "Falló la salida de audio",
   "error.other": "Error de reproducción",
   "placeholder.stream_url": "Dirección http, https o rtsp",
-  "placeholder.playlist_url": "Dirección M3U"
+  "placeholder.playlist_url": "Dirección M3U",
+  "variant.online": "En línea",
+  "online.browse": "Explorar música",
+  "online.browseUnavailable": "Exploración no disponible",
+  "online.search": "Buscar canciones",
+  "online.query": "Canción o artista",
+  "setting.music_source_url": "URL de la fuente musical",
+  "online.configure": "Configura una fuente musical",
+  "online.loading": "Cargando…",
+  "online.empty": "No se encontraron canciones",
+  "online.failed": "Fuente o reproducción no disponible",
+  "online.sleep": "La reproducción se pausa durante el reposo",
+  "placeholder.music_source_url": "https://music.example.net",
+  "nav.discover": "Descubrir",
+  "nav.featured": "Canciones destacadas",
+  "nav.queue": "A continuación"
 }

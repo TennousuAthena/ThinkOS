@@ -1,0 +1,6 @@
+{
+  "layout": "form",
+  "slots": {
+    "body": {"type": "form", "path": "searchFields", "title": "{{searchTitle}}"}
+  }
+}

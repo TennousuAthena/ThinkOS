@@ -1,5 +1,7 @@
 # 27 · 流媒体播放：实现、验收与已知限制
 
+> 在线音乐目录和解析由播放器设置中的独立音源提供，音频进入同一 MediaEngine。见[在线音乐源](../tools/music-source/README.md)。
+
 > 2026-11-01。ADR-030，API 7。目标：本地与网络音视频的完整播放（常见容器与编码、HLS / DASH / RTSP / 渐进式 HTTP），并在真机上完整验收。
 > 标记：**已实测** = 在 Lenovo ThinkSmart View（HUA0BWUT，Android 8.1，armeabi-v7a）上跑过，命令和结果文件在 §9；**未验证**集中在 §8，没有出现在那里的都是已实测的。
 > 先读：`AGENTS.md` → `08-decisions.md` ADR-022、ADR-030 → `06-plugins.md` §6.10 → 本文。本文取代 `22-player-plan.md` 中已实现的部分，没实现的部分仍以 22 为准（§7）。

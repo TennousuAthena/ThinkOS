@@ -21,6 +21,7 @@ sys.path.insert(0, str(ROOT / 'tools/tests'))
 sys.path.insert(0, str(ROOT / 'tools'))
 from device_app_files import read_app_file
 from device_hierarchy import dump_hierarchy
+from device_touch import set_editor_text
 from media_device import Device
 from media_stream_device import BASE, Origin, PORT
 
@@ -73,12 +74,12 @@ def main():
         left, top, right, bottom = map(int, re.findall(r'\d+', node.get('bounds')))
         return (left + right) // 2, (top + bottom) // 2
 
-    def find(text=None, desc=None, root=None):
+    def find(text=None, desc=None, root=None, min_y=0):
         root = root if root is not None else tree()
         viewport = list(map(int, re.findall(r'\d+', root.find('node').get('bounds', ''))))
         for node in root.iter('node'):
             bounds = list(map(int, re.findall(r'\d+', node.get('bounds', ''))))
-            if len(bounds) != 4 or bounds[2] <= bounds[0] or bounds[3] <= bounds[1]: continue
+            if len(bounds) != 4 or bounds[2] <= bounds[0] or bounds[3] <= bounds[1] or bounds[1] < min_y: continue
             x, y = (bounds[0] + bounds[2]) // 2, (bounds[1] + bounds[3]) // 2
             if len(viewport) == 4 and not (viewport[0] <= x < viewport[2] and viewport[1] <= y < viewport[3]): continue
             if text is not None and node.get('text') == text: return node
@@ -165,7 +166,13 @@ def main():
         assert rows is not None, 'local music row is missing'
         device.tap(*box(rows))
         playing = wait(lambda: state().get('status') == 'playing' and state().get('position', 0) > 1500, 20)
-        check('tapping a row plays it and opens the audio page', bool(playing) and page() == 'player.audio', (page(), state().get('status')))
+        check('tapping a music row plays it in the library', bool(playing) and page() == 'player.library', (page(), state().get('status')))
+        title = state().get('title')
+        _, height = screen()
+        footer = wait(lambda: find(text=title, min_y=height * .75), 8) if title else None
+        assert footer is not None, 'The currently playing track is missing from the mini player'
+        device.tap(*box(footer))
+        check('the mini player opens the audio page', wait(lambda: page() == 'player.audio', 8))
         pause = find(desc=read_label('media_pause'))
         if pause is not None:
             device.tap(*box(pause))
@@ -215,10 +222,8 @@ def main():
                 device.screenshot(evidence / 'player-editor-failure.png')
             assert field is not None, 'no input field for ' + label
             device.tap(*box(field))
-            existing = field.get('text') or ''
-            device.shell('input', 'keyevent', 123)
-            if existing: device.shell('input', 'keyevent', *([67] * len(existing)))
-            device.shell('input', 'text', value)
+            set_editor_text(device, value)
+            assert wait(lambda: find(text=value), 5) is not None, 'Editor text did not match the test URL'
             device.tap(*box(ok_button()))
             time.sleep(0.6)
 

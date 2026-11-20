@@ -26,10 +26,10 @@ import kotlin.math.sqrt
 /** Fixed native components; none reads coordinates, network, files or a plugin's private channel. */
 internal object BuiltinComponents {
     fun create(context: Context, definition: JSONObject, compact: Boolean,
-               images: ((JSONObject) -> RenderComponent?)? = null, tap: (String, Int?) -> Unit): RenderComponent? = when (definition.optString("type")) {
+               owner: String, images: ((JSONObject) -> RenderComponent?)? = null, tap: (String, Int?) -> Unit): RenderComponent? = when (definition.optString("type")) {
         "progress" -> ProgressComponent(context, definition)
         "chart" -> ChartComponent(context, definition)
-        "list" -> ListComponent(context, definition, compact, tap)
+        "list" -> ListComponent(context, definition, compact, owner, images, tap)
         "grid" -> GridComponent(context, definition, images, tap)
         "tabs" -> TabsComponent(context, definition, tap)
         "toggle" -> DeviceComponents.createToggle(context, definition)
@@ -248,7 +248,8 @@ private class MoonComponent(context: Context, definition: JSONObject) : DrawingC
     }
 }
 
-private class ListComponent(context: Context, private val definition: JSONObject, private val compact: Boolean,
+private class ListComponent(context: Context, private val definition: JSONObject, private val compact: Boolean, private val owner: String,
+    private val images: ((JSONObject) -> RenderComponent?)?,
     private val tap: (String, Int?) -> Unit) : ListView(context), RenderComponent {
     override val view: View get() = this
     override val interactive: Boolean get() = true
@@ -261,6 +262,8 @@ private class ListComponent(context: Context, private val definition: JSONObject
     private var strings: (String) -> String? = { null }
     private val rowDefinition = definition.getJSONObject("item")
     private fun template(key: String) = Binding.compile(rowDefinition.optString(key))
+    private val imageTemplate = template("image")
+    private var rowsActive = false
     private val titleTemplate = template("title")
     private val subtitleTemplate = template("subtitle")
     private val trailingTemplate = template("trailing")
@@ -268,6 +271,24 @@ private class ListComponent(context: Context, private val definition: JSONObject
     private val progress = ScalarBinding(rowDefinition.opt("progress"))
     private val maximum = ScalarBinding(rowDefinition.opt("max"), 1.0)
     /** The 1-based row marked as the one in use (the track playing); 0 marks none. */
+    // Only numeric offsets survive removal of a page. Bound the cache across all plugin owners.
+    private companion object {
+        val bookmarks = object : LinkedHashMap<Pair<String,String>, Pair<Int,Int>>(16, .75f, true) {
+            override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Pair<String,String>, Pair<Int,Int>>?) = size > 32
+        }
+    }
+    private val scrollKey = definition.optString("scrollKey").takeIf(String::isNotBlank)?.let(Binding::compile)
+    private var bookmark: Pair<String,String>? = null
+    private fun savePosition() {
+        val key = bookmark ?: return
+        if (childCount > 0 && isShown) bookmarks[key] = firstVisiblePosition to getChildAt(0).top
+    }
+    override fun active(value: Boolean) {
+        rowsActive = value
+        if (!value) savePosition()
+        for (i in 0 until childCount) (getChildAt(i) as? Row)?.showImage(value)
+    }
+    override fun onDetachedFromWindow() { savePosition(); super.onDetachedFromWindow() }
     private val current = ScalarBinding(definition.opt("current"))
     private var currentRow = 0
     private val rows = object : BaseAdapter() {
@@ -287,6 +308,9 @@ private class ListComponent(context: Context, private val definition: JSONObject
         setOnItemClickListener { _, _, position, _ -> definition.optString("tap").takeIf { it.isNotBlank() }?.let { tap(it, position + 1) } }
     }
     override fun bind(snapshot: JSONObject, variant: String, strings: (String) -> String?) {
+        val key = scrollKey?.render(snapshot, variant, strings)?.take(128)?.let { owner to it }
+        val restore = key != bookmark
+        if (restore) { savePosition(); bookmark = key }
         this.snapshot = snapshot; this.variant = variant; this.strings = strings
         items = ComponentData.array(definition.getString("items"), snapshot) ?: JSONArray()
         val marked = current.number(snapshot, variant, strings)?.toInt() ?: 0
@@ -294,10 +318,20 @@ private class ListComponent(context: Context, private val definition: JSONObject
         currentRow = marked
         rows.notifyDataSetChanged()
         // The track in use scrolls into view when it changes, unless a finger is on the list.
-        if (moved && marked in 1..items.length()) post { if (!isPressed) smoothScrollToPositionFromTop(marked - 1, height / 3, 250) }
+        if (restore && key != null) {
+            val position = bookmarks[key] ?: (0 to 0)
+            setSelectionFromTop(position.first.coerceIn(0, (items.length()-1).coerceAtLeast(0)), position.second)
+        }
+        if (scrollKey == null && moved && marked in 1..items.length()) post { if (!isPressed) smoothScrollToPositionFromTop(marked - 1, height / 3, 250) }
     }
     override fun colors(value: Palette) { palette = value; rows.notifyDataSetChanged() }
     private inner class Row : LinearLayout(context) {
+        private var image: RenderComponent? = null
+        private var imageSource = ""
+        private val thumbnail = android.widget.FrameLayout(context)
+        fun showImage(visible: Boolean) { image?.active(visible && isAttachedToWindow) }
+        override fun onAttachedToWindow() { super.onAttachedToWindow(); showImage(rowsActive) }
+        override fun onDetachedFromWindow() { showImage(false); super.onDetachedFromWindow() }
         private val icon = IconView(context)
         private val title = TextView(context).apply { textSize = TextScale.BODY; maxLines = 1; ellipsize = TextUtils.TruncateAt.END; includeFontPadding = false }
         private val subtitle = TextView(context).apply { textSize = TextScale.CAPTION; maxLines = 1; ellipsize = TextUtils.TruncateAt.END; includeFontPadding = false }
@@ -314,7 +348,8 @@ private class ListComponent(context: Context, private val definition: JSONObject
             orientation = HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
             minimumHeight = ((if (compact) 64 else 80) * dp).toInt()
             setPadding((8 * dp).toInt(), (8 * dp).toInt(), (8 * dp).toInt(), (8 * dp).toInt())
-            addView(icon, LayoutParams((36 * dp).toInt(), (36 * dp).toInt()).apply { marginEnd = (12 * dp).toInt() })
+            thumbnail.addView(icon)
+            addView(thumbnail, LayoutParams((48 * dp).toInt(), (48 * dp).toInt()).apply { marginEnd = (12 * dp).toInt() })
             addView(LinearLayout(context).apply {
                 orientation = VERTICAL; addView(title); addView(subtitle); addView(mini, LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (10 * dp).toInt()))
             }, LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
@@ -330,7 +365,20 @@ private class ListComponent(context: Context, private val definition: JSONObject
             trailing.text = trailingTemplate.render(snapshot, variant, strings, item)
             trailing.visibility = if (trailing.text.isEmpty()) GONE else VISIBLE
             icon.name = iconTemplate.render(snapshot, variant, strings, item)
-            icon.visibility = if (icon.name.isEmpty()) GONE else VISIBLE
+            val src = imageTemplate.render(snapshot, variant, strings, item)
+            if (src != imageSource) {
+                showImage(false)
+                image?.let { thumbnail.removeView(it.view) }
+                imageSource = src
+                image = if (src.isBlank()) null else images?.invoke(JSONObject().put("type", "image").put("fit", "contain").put("src", "{{thumbnail}}"))
+                image?.let { picture ->
+                    thumbnail.addView(picture.view)
+                    picture.bind(JSONObject().put("thumbnail", src), variant, strings)
+                    picture.colors(palette)
+                    showImage(rowsActive)
+                }
+            }
+            thumbnail.visibility = if (src.isEmpty() && icon.name.isEmpty()) GONE else VISIBLE
             icon.palette = palette
             mini.fraction = RenderGeometry.progress(progress.number(snapshot, variant, strings, item), maximum.number(snapshot, variant, strings, item))
             mini.visibility = if (rowDefinition.has("progress")) VISIBLE else GONE

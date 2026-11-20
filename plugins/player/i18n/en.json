@@ -34,5 +34,20 @@
   "error.audio": "The audio output failed",
   "error.other": "Playback failed",
   "placeholder.stream_url": "http, https or rtsp address",
-  "placeholder.playlist_url": "M3U address"
+  "placeholder.playlist_url": "M3U address",
+  "variant.online": "Online",
+  "online.browse": "Browse music",
+  "online.browseUnavailable": "Browse unavailable",
+  "online.search": "Search tracks",
+  "online.query": "Track or artist",
+  "setting.music_source_url": "Music source URL",
+  "online.configure": "Configure a music source",
+  "online.loading": "Loading…",
+  "online.empty": "No tracks found",
+  "online.failed": "Music source or playback unavailable",
+  "online.sleep": "Playback is paused during sleep",
+  "placeholder.music_source_url": "https://music.example.net",
+  "nav.discover": "Discover",
+  "nav.featured": "Featured songs",
+  "nav.queue": "Up next"
 }

@@ -34,5 +34,20 @@
   "error.audio": "Сбой вывода звука",
   "error.other": "Ошибка воспроизведения",
   "placeholder.stream_url": "Адрес http, https или rtsp",
-  "placeholder.playlist_url": "Адрес M3U"
+  "placeholder.playlist_url": "Адрес M3U",
+  "variant.online": "Онлайн",
+  "online.browse": "Обзор музыки",
+  "online.browseUnavailable": "Обзор недоступен",
+  "online.search": "Найти музыку",
+  "online.query": "Трек или исполнитель",
+  "setting.music_source_url": "URL источника музыки",
+  "online.configure": "Настройте источник музыки",
+  "online.loading": "Загрузка…",
+  "online.empty": "Ничего не найдено",
+  "online.failed": "Источник или воспроизведение недоступны",
+  "online.sleep": "Воспроизведение приостановлено в режиме сна",
+  "placeholder.music_source_url": "https://music.example.net",
+  "nav.discover": "Обзор",
+  "nav.featured": "Подборка песен",
+  "nav.queue": "Далее"
 }

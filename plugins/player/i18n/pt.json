@@ -34,5 +34,20 @@
   "error.audio": "Falha na saída de áudio",
   "error.other": "Falha na reprodução",
   "placeholder.stream_url": "Endereço http, https ou rtsp",
-  "placeholder.playlist_url": "Endereço M3U"
+  "placeholder.playlist_url": "Endereço M3U",
+  "variant.online": "Online",
+  "online.browse": "Explorar música",
+  "online.browseUnavailable": "Exploração indisponível",
+  "online.search": "Buscar faixas",
+  "online.query": "Faixa ou artista",
+  "setting.music_source_url": "URL da fonte musical",
+  "online.configure": "Configure uma fonte musical",
+  "online.loading": "Carregando…",
+  "online.empty": "Nenhuma faixa encontrada",
+  "online.failed": "Fonte ou reprodução indisponível",
+  "online.sleep": "Reprodução pausada durante o repouso",
+  "placeholder.music_source_url": "https://music.example.net",
+  "nav.discover": "Descobrir",
+  "nav.featured": "Faixas em destaque",
+  "nav.queue": "A seguir"
 }

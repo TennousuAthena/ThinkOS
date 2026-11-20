@@ -613,6 +613,10 @@
             "string",
             "number"
           ]
+        },
+        "image": {
+          "type": "string",
+          "maxLength": 512
         }
       }
     },
@@ -651,6 +655,10 @@
             "string",
             "number"
           ]
+        },
+        "scrollKey": {
+          "type": "string",
+          "maxLength": 128
         }
       },
       "description": "'current' is the 1-based row to mark as the one in use (the track being played); the list scrolls it into view when it changes."
@@ -804,13 +812,21 @@
             },
             "main": {
               "$ref": "#/$defs/slotContent"
+            },
+            "over": {
+              "$ref": "#/$defs/slotContent"
+            },
+            "under": {
+              "$ref": "#/$defs/slotContent"
             }
           }
         }
       },
       "x-thinkos-slot-roles": {
         "lead": "lead",
-        "main": "main"
+        "main": "main",
+        "over": "header",
+        "under": "footer"
       }
     },
     "stage": {
@@ -1409,6 +1425,11 @@
           "type": "number",
           "minimum": 0,
           "maximum": 100
+        },
+        "tap": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+          "maxLength": 64
         }
       },
       "description": "The OS music player view, bound to the media session: cover (the artwork, or a cover drawn from the title when there is none), title, artist, a format line, position bar, transport buttons, volume and, as a page variant, the queue. 'full' fills a page (variant 'queue' shows the queue beside the cover), 'bar' is a one-line mini player, 'card' fits a home card. 'idle' is shown while nothing plays; 'notice' is a line of text (a playback error) under the title. Buttons, the bar and the queue call the player directly; the plugin only provides the media."
@@ -1661,9 +1682,37 @@
       "type": "string",
       "pattern": "^[a-z][a-z0-9-]*$",
       "enum": [
-        "wifi", "wifi-off", "volume", "volume-off", "brightness", "tv", "radio", "cast", "apps", "settings",
-        "clear-day", "clear-night", "partly-day", "partly-night", "cloud", "fog", "rain", "shower", "snow", "thunder",
-        "sun", "moon", "unknown", "monitor", "map-pin", "house", "sliders-horizontal", "puzzle", "moon-star", "sunset", "bluetooth"
+        "wifi",
+        "wifi-off",
+        "volume",
+        "volume-off",
+        "brightness",
+        "tv",
+        "radio",
+        "cast",
+        "apps",
+        "settings",
+        "clear-day",
+        "clear-night",
+        "partly-day",
+        "partly-night",
+        "cloud",
+        "fog",
+        "rain",
+        "shower",
+        "snow",
+        "thunder",
+        "sun",
+        "moon",
+        "unknown",
+        "monitor",
+        "map-pin",
+        "house",
+        "sliders-horizontal",
+        "puzzle",
+        "moon-star",
+        "sunset",
+        "bluetooth"
       ]
     },
     "formLink": {
@@ -1759,7 +1808,7 @@
     }
   },
   "x-thinkos-api": {
-    "current": 10,
+    "current": 12,
     "componentTypes": {
       "text": 1,
       "icon": 1,
@@ -1800,7 +1849,9 @@
       "subtitle": 10,
       "primary": 10,
       "secondary": 10,
-      "back": 10
+      "back": 10,
+      "nowplaying.tap": 11,
+      "scrollKey": 11
     },
     "componentGroups": 2,
     "templates": {
@@ -1907,7 +1958,10 @@
     },
     "layoutSlots": {
       "panel.update": 10,
-      "form.hero": 10
-    }
+      "form.hero": 10,
+      "split.over": 11,
+      "split.under": 11
+    },
+    "listRowImage": 12
   }
 }

@@ -1,8 +1,8 @@
 {
   "id": "player",
   "name": "@name",
-  "version": "0.4.0",
-  "api": 9,
+  "version": "0.6.3",
+  "api": 12,
   "main": "main.lua",
   "permissions": [
     "media",
@@ -50,6 +50,15 @@
       "group": "@group.streams",
       "placeholder": "@placeholder.playlist_url",
       "level": "normal"
+    },
+    "music_source_url": {
+      "type": "text",
+      "label": "@setting.music_source_url",
+      "default": "",
+      "maxLength": 1024,
+      "group": "@group.streams",
+      "placeholder": "@placeholder.music_source_url",
+      "level": "normal"
     }
   },
   "pages": [
@@ -68,6 +77,18 @@
       "id": "audio",
       "title": "@page.audio",
       "view": "views/audio.json",
+      "live": true
+    },
+    {
+      "id": "search",
+      "title": "@online.search",
+      "view": "views/search.json",
+      "live": true
+    },
+    {
+      "id": "upnext",
+      "title": "@nav.queue",
+      "view": "views/upnext.json",
       "live": true
     }
   ],

@@ -101,3 +101,11 @@ AirPlay 镜像的密钥派生与包格式参照了 RPiPlay 的 `lib/mirror_buffe
 | Suntimes | GPL-3.0-or-later | 2026-11-03，[上游README的Legal Stuff](https://github.com/forrestguice/SuntimesWidget#legal-stuff)明写“GPLv3 or later”，[LICENSE](https://github.com/forrestguice/SuntimesWidget/blob/master/LICENSE)为GPLv3全文。只读参考；黄金时刻、蓝调时刻的角度数值和它一致（`docs/14-handoff.md`），未引入依赖或复制源码 |
 | Navidrome | GPL-3.0 | 只计划对接它的接口（`docs/22-player-plan.md`），没有用到代码 |
 | iptv-api | AGPL-3.0 | `plugins/iptv/manifest.json` 里有一个它生成的列表地址，用户可改；没有复制代码和列表（`docs/31-iptv.md`） |
+
+### LX Music Desktop（仅协议参考）
+
+2026-11-18 核查 [v2.12.6](https://github.com/lyswhut/lx-music-desktop/tree/v2.12.6)（Git 对象 `ad95d5091c9ed689fa72b5e5c849df65f5a679ce`）的 LICENSE 为 Apache-2.0，README 另有使用说明。阅读[官方自定义源接口](https://lyswhut.github.io/lx-music-doc/desktop/custom-source)和版本内 `userApi`、`musicSdk`，用于了解搜索、解析分工。ThinkOS 的客户端、HTTP schema 与音源是独立的 MIT 实现。
+
+### Incompetech 示例曲目
+
+`tools/music-source/catalog.incompetech.json` 所列曲目均由 Kevin MacLeod 创作，来自 [Incompetech 曲目目录](https://incompetech.com/music/royalty-free/)，按 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) 授权。示例只收录曲目信息和作者原始音频链接。音频不随 APK 或仓库分发。

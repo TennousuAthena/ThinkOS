@@ -68,6 +68,10 @@ internal class PluginDnsResolver(
             return request
         }
         requests.add(request)
+        if (closed.get()) {
+            request.fail("dns unavailable")
+            return request
+        }
         request.task = FutureTask {
             if (!request.finished.get()) {
                 try {
@@ -166,7 +170,8 @@ internal class PluginDnsResolver(
 
     override fun close() {
         if (!closed.compareAndSet(false, true)) return
-        requests.toList().forEach { it.cancel(true) }
+        // Its weakly consistent iterator tolerates removal by the workers.
+        for (request in requests) request.cancel(true)
         workers.shutdownNow()
         deadlines.shutdownNow()
     }

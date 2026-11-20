@@ -34,5 +34,20 @@
   "error.audio": "La sortie audio a échoué",
   "error.other": "Échec de la lecture",
   "placeholder.stream_url": "Adresse http, https ou rtsp",
-  "placeholder.playlist_url": "Adresse M3U"
+  "placeholder.playlist_url": "Adresse M3U",
+  "variant.online": "En ligne",
+  "online.browse": "Parcourir la musique",
+  "online.browseUnavailable": "Navigation indisponible",
+  "online.search": "Chercher des titres",
+  "online.query": "Titre ou artiste",
+  "setting.music_source_url": "URL de la source musicale",
+  "online.configure": "Configurer une source musicale",
+  "online.loading": "Chargement…",
+  "online.empty": "Aucun titre trouvé",
+  "online.failed": "Source ou lecture indisponible",
+  "online.sleep": "Lecture suspendue pendant la veille",
+  "placeholder.music_source_url": "https://music.example.net",
+  "nav.discover": "Découvrir",
+  "nav.featured": "Titres à découvrir",
+  "nav.queue": "À suivre"
 }

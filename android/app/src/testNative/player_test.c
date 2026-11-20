@@ -46,14 +46,19 @@ static void source(lua_State *L, const char *global, const char *path) {
     fclose(file); lua_pushlstring(L, data, size); lua_setglobal(L, global); free(data);
 }
 int main(int argc, char **argv) {
-    assert(argc == 7 || argc == 8 || argc == 11);
-    if (argc >= 8) test_label = argv[7];
+    assert(argc == 7 || argc == 8 || argc == 10 || argc == 11);
+    if (argc == 8 || argc == 11) test_label = argv[7];
     Runtime *r = calloc(1, sizeof(*r));
     r->L = lua_newstate(tracking_alloc, r); assert(r->L);
     *(Runtime **)lua_getextraspace(r->L) = r;
     lua_pushcfunction(r->L, initialize); assert(lua_pcall(r->L, 0, 0, 0) == LUA_OK);
     const char *names[] = {"main_source", "m3u_source", "library_source", "manifest_json", "strings_json"};
     for (int i = 0; i < 5; i++) source(r->L, names[i], argv[i + 2]);
+    if (argc == 10) {
+        source(r->L, "online_source", argv[7]);
+        source(r->L, "online_contract_source", argv[8]);
+        if (strcmp(argv[9], "-") != 0) source(r->L, "online_fixture_json", argv[9]);
+    }
     if (argc == 11) {
         source(r->L, "radio_browser_source", argv[8]);
         source(r->L, "radio_categories_source", argv[9]);

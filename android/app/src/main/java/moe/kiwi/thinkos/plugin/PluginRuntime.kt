@@ -64,7 +64,7 @@ class PluginRuntime(
     interface Callbacks {
         fun onCatalog(pages: List<PluginPage>, widgets: List<PluginWidget>)
         fun onState(pluginId: String, state: JSONObject)
-        fun onFocus(pageKey: String, live: Boolean, release: Boolean, answersTap: Boolean = false)
+        fun onFocus(pageKey: String, live: Boolean, release: Boolean, answersTap: Boolean, backFrom: String? = null)
         fun onTileAnimation(pluginId: String, name: String) {}
         fun onError(pluginId: String, message: String)
         /** `tos.panel.close()`: the control sheet's plugin is done. */
@@ -288,7 +288,7 @@ class PluginRuntime(
         val capability7 = MediaCalls()
         listOf("media.load", "media.play", "media.pause", "media.toggle", "media.next", "media.prev", "media.seek", "media.volume", "media.stop", "media.shuffle", "media.repeat", "media.jump", "media.live", "media.audioTrack", "media.textTrack", "media.probe", "library.list").forEach { put(it, capability7) }
         val capability8 = NetworkCalls()
-        listOf("http.get", "http.post", "net.resolve").forEach { put(it, capability8) }
+        listOf("http.get", "http.post", "http.cancel", "net.resolve").forEach { put(it, capability8) }
         val applications = AppsCalls()
         listOf("apps.list", "apps.open").forEach { put(it, applications) }
     }
@@ -385,7 +385,7 @@ class PluginRuntime(
         val store = stores.getOrPut(bundle.id) { LocalStore(bundle.id) }
         var publishPending = false
         /** While the plugin handles a `back` event: whether it asked the OS for anything but a reading. */
-        var backSlice = false
+        var backPage: String? = null
         var backAnswered = false
         var updateTapElapsed: Long? = null
         var onboardingTapElapsed: Long? = null
@@ -396,6 +396,7 @@ class PluginRuntime(
         var stateTiming: String? = null
         val timers = mutableMapOf<Int, Runnable>()
         val awaits = mutableMapOf<Int, Future<*>?>()
+        val httpTasks = mutableMapOf<String, Int>()
         val pages = arrayObjects(bundle.manifest.optJSONArray("pages")).map { page ->
             val view = readObject(resolve(bundle.directory, page.getString("view")))
             val variants = page.optJSONArray("variants") ?: view.optJSONArray("variants")
@@ -420,6 +421,7 @@ class PluginRuntime(
             timers.clear()
             awaits.values.forEach { it?.cancel(true) }
             awaits.clear()
+            httpTasks.clear()
             slice(this) { lua?.close() }
             lua = null
             store.flush()
@@ -506,9 +508,9 @@ class PluginRuntime(
                         name, instance.bundle.manifest.getInt("api"), instance.grantedPermissions())) return@forEach
                 if (name != "back") { execute(instance) { it.dispatch(name, values) }; return@forEach }
                 // Back (ADR-040): did the plugin do anything about it? If not, the next press leaves without it.
-                instance.backSlice = true
+                instance.backPage = (values.firstOrNull() as? String)?.let { instance.bundle.id + "." + it }
                 instance.backAnswered = false
-                try { execute(instance) { it.dispatch(name, values) } } finally { instance.backSlice = false }
+                try { execute(instance) { it.dispatch(name, values) } } finally { instance.backPage = null }
                 if (instance.backAnswered) main.post { if (!closed) callbacks.onBackAnswered(instance.bundle.id) }
             }
         }
@@ -691,6 +693,7 @@ class PluginRuntime(
     private fun resume(instance: Instance, taskId: Int, values: Array<Any?>) {
         if (!owned(instance) || instance.lua == null || instance.disabled || !instance.awaits.containsKey(taskId)) return
         instance.awaits.remove(taskId)
+        instance.httpTasks.entries.removeAll { it.value == taskId }
         val startup = pending[instance.bundle.id] === instance && instance.startTask == taskId
         try {
             val step = slice(instance) { instance.lua!!.resume(taskId, values) }
@@ -705,7 +708,7 @@ class PluginRuntime(
         }
     }
     private fun host(instance: Instance, method: String, args: Array<Any?>, taskId: Int): Any? {
-        if (instance.backSlice && method !in QUIET_METHODS) instance.backAnswered = true
+        if (instance.backPage != null && method !in QUIET_METHODS) instance.backAnswered = true
         val capability = hostCapabilities[method] ?: error("Unavailable API: $method")
         return capability.call(instance, method, args, taskId)
     }
@@ -1060,7 +1063,8 @@ class PluginRuntime(
                     val page = instance.pages.firstOrNull { it.id == id } ?: error("page does not belong to plugin")
                     val live = arg(1) == true; require(!live || page.live)
                     val answersTap = SystemClock.elapsedRealtime() - (tapped[bundle.id] ?: Long.MIN_VALUE / 2) < TAP_ANSWER_MILLIS
-                    main.post { if (!closed) callbacks.onFocus(page.key, live, method == "page.release", answersTap) }
+                    val backFrom = instance.backPage
+                    main.post { if (!closed) callbacks.onFocus(page.key, live, method == "page.release", answersTap, backFrom) }
                     null
                 }
                 else -> error("Unavailable API: $method")
@@ -1265,17 +1269,43 @@ class PluginRuntime(
                     }
                     null
                 }
+                "http.cancel" -> {
+                    require(instance.bundle.manifest.getInt("api") >= 10 && "network" in instance.grantedPermissions())
+                    val tag = arg(0) as? String ?: error("HTTP tag required")
+                    val task = instance.httpTasks.remove(tag)
+                    if (task != null) {
+                        instance.awaits[task]?.cancel(true)
+                        // Leave the current Lua slice before resuming its cancelled sibling.
+                        worker.postAtFrontOfQueue { resume(instance, task, arrayOf(null, "HTTP cancelled")) }
+                    }
+                    task != null
+                }
                 "http.get", "http.post" -> {
                     require("network" in instance.grantedPermissions()) { "network permission required" }
                     require(taskId != 0 && instance.awaits.size < 8 && (active.values + pending.values).sumOf { it.awaits.size } < 32)
                     val url = arg(0) as String
                     val body = if (method == "http.post") arg(1) as? String else null
                     val options = arg(if (method == "http.post") 2 else 1) as? Map<*, *>
+                    val timeout = PluginHttp.timeout(options)
+                    val tag = (options?.get("tag") as? String)?.also {
+                        require(instance.bundle.manifest.getInt("api") >= 10 && it.matches(HTTP_TAG)) { "Invalid HTTP tag" }
+                        require(it !in instance.httpTasks) { "HTTP tag already active" }
+                    }
+                    if (tag != null) instance.httpTasks[tag] = taskId
+                    val expired = Runnable {
+                        instance.awaits[taskId]?.cancel(true)
+                        resume(instance, taskId, arrayOf(null, "HTTP deadline"))
+                    }
                     instance.awaits[taskId] = null
                     instance.awaits[taskId] = io.submit {
                         val response = runCatching { PluginHttp.request(if (method == "http.get") "GET" else "POST", url, body, options) }
-                        worker.post { resume(instance, taskId, if (response.isSuccess) arrayOf(response.getOrThrow(), null) else arrayOf(null, response.exceptionOrNull()?.message ?: "network error")) }
+                        worker.post {
+                            worker.removeCallbacks(expired)
+                            resume(instance, taskId, if (response.isSuccess) arrayOf(response.getOrThrow(), null)
+                                else arrayOf(null, response.exceptionOrNull()?.message ?: "network error"))
+                        }
                     }
+                    if (timeout != null) worker.postDelayed(expired, timeout)
                     null
                 }
                 else -> error("Unavailable API: $method")
@@ -1568,6 +1598,7 @@ class PluginRuntime(
         /** A settings category id as the schema writes it; the settings page ignores one it does not know. */
         private val SETTINGS_SECTION = Regex("[a-z][a-z0-9_-]{0,31}")
         /** Host calls that only read: making one while handling `back` is no reaction to it. */
+        private val HTTP_TAG = Regex("[a-zA-Z0-9_-]{1,48}")
         private val QUIET_METHODS = setOf("log", "i18n.t", "state.get", "config", "locale", "module", "units.get", "units.temperature", "units.wind", "update.status", "onboarding.status", "device.mode", "device.canSetLocale", "device.canSetTimeZone", "tz.zones", "plugins.installed", "plugins.catalog")
         private fun arrayValues(array: JSONArray?): List<Any> = if (array == null) emptyList() else (0 until array.length()).map(array::get)
         private fun arrayObjects(array: JSONArray?): List<JSONObject> = arrayValues(array).map { it as JSONObject }

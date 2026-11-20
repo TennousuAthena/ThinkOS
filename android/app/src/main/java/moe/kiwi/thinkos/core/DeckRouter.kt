@@ -279,8 +279,9 @@ class DeckRouter(
         onPageEvent(page.pluginId, "variant", JSONArray().put(page.id).put(variant))
     }
     /** [answersTap]: the request answers a tap the user just made on this plugin's own page, so it is not a background takeover. */
-    fun requestFocus(pageKey: String, live: Boolean, release: Boolean, answersTap: Boolean = false) {
+    fun requestFocus(pageKey: String, live: Boolean, release: Boolean, answersTap: Boolean = false, backFrom: String? = null) {
         val page = pages.firstOrNull { it.key == pageKey } ?: return
+        if (backFrom != null && nav.top?.frame?.page != backFrom) return
         if (onboardingOpen) {
             // Only the verified onboarding owner can replace its own step. No takeover can steal it.
             if (page.pluginId != currentPage?.pluginId || "onboarding" !in page.roles) return
@@ -300,7 +301,8 @@ class DeckRouter(
             return
         }
         val now = SystemClock.elapsedRealtime()
-        if (store.current.attention == Attention.ASLEEP || !answersTap && lastLocal != Long.MIN_VALUE && now - lastLocal < 30_000) return
+        if (store.current.attention == Attention.ASLEEP) return
+        if (!answersTap && backFrom == null && lastLocal != Long.MIN_VALUE && now - lastLocal < 30_000) return
         if (live && !page.live) return
         val active = currentPage
         val top = nav.top

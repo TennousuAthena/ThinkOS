@@ -100,6 +100,19 @@ def main():
 
     def swipe(x1, y1, x2, y2): device.shell('input', 'swipe', x1, y1, x2, y2, 350); time.sleep(1.2)
 
+    def on_page(page): return beat()[:1] == [page]
+
+    def queue_page():
+        control = wait(lambda: find(text=plugin['nav.queue']))
+        if control is None:
+            return False
+        device.tap(*center(control))
+        return bool(wait(lambda: on_page('player.upnext')))
+
+    def back_to(page):
+        device.shell('input', 'keyevent', 'KEYCODE_BACK')
+        return bool(wait(lambda: on_page(page)))
+
     def volume():
         out = device.shell('media', 'volume', '--stream', '3', '--get')
         match = re.search(r'volume is (\d+) in range \[(\d+)\.\.(\d+)\]', out)
@@ -139,14 +152,23 @@ def main():
         rows.sort(key=lambda n: bounds(n)[1])
         device.tap(*center(rows[0]))
 
-        # --- the audio page ----------------------------------------------------------------------------------
-        check('a tapped row opens the audio page', wait(lambda: beat()[:1] == ['player.audio'] or None))
-        time.sleep(2)
-        state = device.state() or {}
+        def playing_state():
+            state = device.state() or {}
+            return state if state.get('status') == 'playing' else None
+
+        state = wait(playing_state) or {}
+        check('a tapped row starts playback and keeps the library open', on_page('player.library'))
         check('the engine plays and the queue holds the library', state.get('status') == 'playing' and state.get('count', 0) >= 2, (state.get('status'), state.get('count')))
+        title = state.get('title', '')
+        height = screen()[1]
+        footer = wait(lambda: next((node for node in visible_nodes(tree()) if node.get('text') == title and
+                                    bounds(node)[1] > height * .75), None))
+        if footer is not None:
+            device.tap(*center(footer))
+        check('the mini player opens the full audio page', footer is not None and wait(lambda: on_page('player.audio')))
+        assert on_page('player.audio'), 'Full player is required for the cover and control checks'
         pause = find(desc=system['media.pause'])
         check('the audio page has a pause button', pause is not None)
-        title = state.get('title', '')
         check('the title of the track is on the page', title != '' and find(text=title) is not None, title)
         check('the shuffle, repeat and volume controls are there', all(find(desc=system[k]) is not None for k in ('media.shuffle', 'media.repeat_off', 'media_volume')))
         shot('audio-cover-landscape-dark')
@@ -171,10 +193,9 @@ def main():
         else:
             check('the volume bar can be found', False)
 
-        # the queue variant
-        swipe(width // 4, height * 3 // 4, width // 4, height // 4)
-        listing = wait(lambda: next((n for n in tree().iter('node') if n.get('class') == 'android.widget.ListView'), None), 6)
-        check('swiping up on the cover shows the queue', listing is not None)
+        in_queue = queue_page()
+        listing = wait(lambda: next((n for n in tree().iter('node') if n.get('class') == 'android.widget.ListView'), None), 6) if in_queue else None
+        check('Up next opens a separate page with the queue', listing is not None)
         shot('audio-queue-landscape-dark')
         if listing is not None:
             left, top, right, bottom = bounds(listing)
@@ -182,25 +203,24 @@ def main():
             device.tap((left + right) // 2, top + row + row // 2); time.sleep(2)
             check('a tap on a queue row jumps to it', (device.state() or {}).get('index') == 2, (device.state() or {}).get('index'))
             shot('audio-queue-landscape-dark-second')
-        swipe(width // 4, height // 4, width // 4, height * 3 // 4)
+        check('Back returns from the queue to the full player', back_to('player.audio'))
 
         # --- both orientations and both themes -----------------------------------------------------------------
         for orientation, label in ((1, 'portrait'), (0, 'landscape')):
             orient(orientation)
-            width, height = screen()
             for theme in ('LIGHT', 'DARK'):
                 device.debug('theme', value=theme); time.sleep(1.2)
                 shot('audio-cover-%s-%s' % (label, theme.lower()))
-            swipe(width // 4, height * 3 // 4, width // 4, height // 4)
+            assert queue_page(), 'Up next must open after rotation'
             for theme in ('LIGHT', 'DARK'):
                 device.debug('theme', value=theme); time.sleep(1.2)
                 shot('audio-queue-%s-%s' % (label, theme.lower()))
-            swipe(width // 4, height // 4, width // 4, height * 3 // 4)
+            assert back_to('player.audio'), 'Back must return to the full player after rotation'
         check('the pages kept playing through rotation and theme changes', (device.state() or {}).get('status') == 'playing')
 
         # --- the library while something plays; the home card ------------------------------------------------------
         title = (device.state() or {}).get('title', '')
-        device.open_page('player.library'); time.sleep(2)
+        check('Back from the full player returns to the library', back_to('player.library'))
         count = sum(1 for n in tree().iter('node') if n.get('text') == title)
         check('the playing track is in the list and in the footer bar', count >= 2, (title, count))
         shot('library-landscape-dark-playing')

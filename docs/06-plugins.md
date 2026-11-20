@@ -333,7 +333,8 @@ tos.on("data", function(alias) ... end)         -- API 6：声明的公开数据
 | `tos.store.get(key)` / `set(key, v)` | — | 否 | 持久化 KV，每插件 256KiB；立即更新内存，最后一次修改 2s 后合并原子落盘，停止时提交。进程突然退出可能丢失尚未提交的修改 |
 | `tos.timer.after(s, fn)` / `every(s, fn)` / `cancel(id)` | — | 否 | 定时器；`every(60, fn, {align=true})` 对齐到整分钟 |
 | `tos.timer.sleep(s)` | — | 是 | 等待 0.001–3600 秒，不阻塞共享插件线程 |
-| `tos.http.get(url, opts)` / `post(url, body, opts)` | `network` | 是 | 返回 `res`（`status`、`headers`、`body`）或 `nil, err`；连接/读超时各 3s，请求/响应 ≤1MiB；`opts.headers` 设置请求头 |
+| `tos.http.get(url, opts)` / `post(url, body, opts)` | `network` | 是 | 返回 `res`（`status`、`headers`、`body`）或 `nil, err`；连接/读超时各 3s，请求/响应 ≤1MiB；`opts.headers` 设置请求头，仅发到初始源。`same_origin` 禁止跨源重定向，`max_bytes` 降低响应体上限，`timeout_ms` 限制含排队的总等待（500–10000 ms） |
+| `tos.http.cancel(tag)` | `network` | 否 | API 10 扩展。`opts.tag` 是同插件实例内的请求标识，限 1–48 个字母、数字、下划线和连字符。同一标识只对应一项进行中请求。取消时唤回原请求并返回 `nil, err`，发送中请求会尝试中断，阻塞读取仍受连接超时约束。 |
 | `tos.net.resolve(host)` | `network` | 是 | API 10：系统 DNS 发现，返回最多8项 `{address, name?}` 或 `nil, err`；IPv4/IPv6数值地址去重。`name` 为小写、无尾点的合法DNS名，canonical PTR须再经系统正向解析确认包含原地址，否则省略。只收≤253字节ASCII DNS主机名，拒URL、端口、控制字符和数值/歧义IP字面量。排队、A/AAAA、PTR及正向确认整体≤3s，失败为脱敏的 `dns invalid host` / `dns unavailable` / `dns timeout` / `dns busy`。不返回URL、不发HTTP，DNS结果不作为连接授权，HTTP(S)仍须按原网络规则和默认证书/主机名校验 |
 | `tos.json.decode(s)` / `encode(t)` | — | 否 | C 侧 yyjson；深度 ≤24、文本 ≤1MiB；JSON null 为 `tos.json.null`，保留解码所得空数组/空对象类型及 int64；循环表与非 JSON 值报错 |
 | `tos.time.now()` | — | 否 | 可信时间（毫秒）；时间未校准时返回 `nil` |
@@ -890,3 +891,11 @@ dir = "plugins/clock"            # 本地目录，保留原来的“放进目录
 所有者仅对最后批次本机签名和发布；移动tag、权限增加、角色/system权限限制和
 设备原生安装确认沿现规则。发现缺页/不完整/限流时不会拿部分结果生成新目录，
 也不因搜索遗漏删除旧插件。作者约定与工具命令见 [registry/README.md](../registry/README.md)。
+
+### API 11 · 音乐浏览页
+
+固定布局 split 可加 over 与 under 槽位，系统先为导航及底栏留出空间，再安排两栏。列表可声明 scrollKey 来按内容记住当前可见行和像素偏移。系统最多在内存中保留 32 项。迷你播放条 nowplaying (bar) 可声明 tap，文字及缩略图触发该事件，播放键和切歌键继续直接操作媒体会话。
+
+### API 12 · 列表行封面
+
+列表的 `item.image` 可绑定行数据中的图片地址。使用此字段的插件需要 API 12。

@@ -41,6 +41,7 @@ internal class TabsComponent(context: Context, private val definition: JSONObjec
             val item = items?.opt(i)
             (item as? String) ?: (item as? JSONObject)?.optString("title").orEmpty()
         }
+        visibility = if (next.isEmpty()) GONE else VISIBLE
         selected = current.number(snapshot, variant, strings)?.toInt() ?: 0
         if (next != labels) {
             labels = next

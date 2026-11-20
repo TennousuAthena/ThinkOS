@@ -356,7 +356,11 @@ internal class MediaSeekBar(context: Context, private val engine: MediaEngine, p
                 dragFraction = fractionAt(event.x)
                 invalidate()
             }
-            MotionEvent.ACTION_MOVE -> x()?.let { dragFraction = fractionAt(it); invalidate() }
+            MotionEvent.ACTION_MOVE -> x()?.let {
+                dragFraction = fractionAt(it)
+                invalidate()
+                moe.kiwi.thinkos.perf.InputTrace.applied(moe.kiwi.thinkos.perf.InputTrace.SEEK, it)
+            }
             MotionEvent.ACTION_POINTER_UP -> if (event.getPointerId(event.actionIndex) == pointerId) finish(event.getX(event.actionIndex))
             MotionEvent.ACTION_UP -> if (pointerId >= 0) finish(x() ?: event.x)
             MotionEvent.ACTION_CANCEL -> { dragFraction = -1f; pointerId = -1; invalidate() }

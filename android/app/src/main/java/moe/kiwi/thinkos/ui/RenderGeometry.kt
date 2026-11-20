@@ -130,28 +130,25 @@ object RenderGeometry {
                 else -> Box(0, 0, w, h)
             }
         }
-        if (layout == "split") {
-            if (w > h) {
-                val gap = minOf(dp(16), interior.width)
-                val lead = ((interior.width - gap) * 0.4).toInt()
-                return when (role) {
-                    "lead" -> Box(x, y, x + lead, h - y)
-                    "main" -> Box(x + lead + gap, y, w - x, h - y)
-                    else -> interior
-                }
-            }
-            val gap = minOf(dp(16), interior.height)
-            val lead = ((interior.height - gap) * 0.4).toInt()
-            return when (role) {
-                "lead" -> Box(x, y, w - x, y + lead)
-                "main" -> Box(x, y + lead + gap, w - x, h - y)
-                else -> interior
-            }
-        }
         val bands = (if (hasHeader) 1 else 0) + (if (hasFooter) 1 else 0)
         val band = if (bands == 0) 0 else minOf(dp(56), interior.height / bands)
         val header = if (hasHeader) band else 0
         val footer = if (hasFooter) band else 0
+        if (layout == "split") {
+            if (role == "over" || role == "header") return Box(x, y, w - x, y + header)
+            if (role == "under" || role == "footer") return Box(x, h - y - footer, w - x, h - y)
+            val top = y + header
+            val bottom = h - y - footer
+            val available = bottom - top
+            if (w > h) {
+                val gap = minOf(dp(16), interior.width)
+                val lead = ((interior.width - gap) * 0.4).toInt()
+                return if (role == "lead") Box(x, top, x + lead, bottom) else Box(x + lead + gap, top, w - x, bottom)
+            }
+            val gap = minOf(dp(16), available)
+            val lead = ((available - gap) * 0.4).toInt()
+            return if (role == "lead") Box(x, top, w - x, top + lead) else Box(x, top + lead + gap, w - x, bottom)
+        }
         return when (role) {
             "header", "over" -> Box(x, y, w - x, y + header)
             "footer", "under" -> Box(x, h - y - footer, w - x, h - y)
