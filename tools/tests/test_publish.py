@@ -4,6 +4,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+from urllib.parse import quote
 import stat
 import sys
 import tempfile
@@ -29,6 +30,7 @@ publish = load('thinkos_publish', 'publish.py')
 TOKEN = 'cnb-test-token'
 REPO = 'kiwimoe/ThinkOS'
 VERSION = '0.1.31'
+FFMPEG = 'thinkos-ffmpeg-source-v1.9.0+1.tar.gz'
 COMMIT = 'c' * 40
 
 
@@ -219,9 +221,13 @@ class PublishTest(unittest.TestCase):
     def github(self):
         return publish.GitHubSite(REPO, str(self.gh), self.fake.github_web)
 
-    def prepare(self, sites=('cnb',), channel='beta', published=False, extra=None, suffix=''):
+    def prepare(self, sites=('cnb',), channel='beta', published=False, extra=None, suffix='', ffmpeg=None):
         directory = self.work / ('prepared-' + str(len(list(self.work.glob('prepared-*')))))
         directory.mkdir()
+        if ffmpeg is not None:
+            (directory / 'reference').mkdir()
+            (directory / 'reference' / FFMPEG).write_bytes(ffmpeg)
+            extra = {**(extra or {}), 'FFMPEG-SOURCE.md': b'see v0.1.32\n'}
         apk = ('thinkos-%s.apk' % VERSION)
         files = {apk: os.urandom(5000), 'thinkos-source-v%s.tar.gz' % VERSION: os.urandom(3000), 'LICENSE-GPL-3.0.md': b'gpl\n'}
         files.update(extra or {})
@@ -236,6 +242,10 @@ class PublishTest(unittest.TestCase):
         (directory / (channel + '.json.sig')).write_bytes(b'\x30\x06signat')
         report = {'schema': 1, 'stage': 'prepared', 'source_commit': COMMIT, 'version': VERSION, 'published': published,
                   'attachments': [{'path': name, 'sha256': hashlib.sha256(raw).hexdigest(), 'size': len(raw)} for name, raw in files.items()],
+                  **({'ffmpeg_source': {'path': 'reference/' + FFMPEG, 'release_tag': 'v0.1.32', 'size': len(ffmpeg),
+                                        'sha256': hashlib.sha256(ffmpeg).hexdigest(),
+                                        'urls': ['%s/%s/-/releases/download/v0.1.32/%s' % (self.fake.web, REPO, FFMPEG)]}}
+                     if ffmpeg is not None else {}),
                   'modules': [], 'catalog': {'path': channel + '.json',
                                              'sha256': hashlib.sha256((directory / (channel + '.json')).read_bytes()).hexdigest(), 'seq': 4}}
         (directory / 'release-preparation.json').write_bytes(json.dumps(report).encode())
@@ -294,6 +304,36 @@ class PublishTest(unittest.TestCase):
             self.fake.corrupt.add(('v' + VERSION, 'thinkos-%s.apk' % VERSION))  # flips the last byte: the tail sample must catch it
             with self.assertRaises(publish.PublishError):
                 self.run_publish(self.prepare(), [self.cnb()], execute=True)
+
+    def test_c3_unchanged_ffmpeg_source_is_referenced_not_uploaded_again(self):
+        archive = os.urandom(4000)
+        self.fake.releases['v0.1.32'] = {'id': 'earlier'}
+        self.fake.assets[('earlier', quote(FFMPEG))] = archive  # the fake keeps names as they appear in the URL
+        prepared = self.prepare(ffmpeg=archive)
+        self.run_publish(prepared, [self.cnb()], execute=True)
+        uploaded = [event[1] for event in self.fake.events if event[0] == 'confirm']
+        self.assertNotIn(FFMPEG, uploaded)
+        self.assertIn('FFMPEG-SOURCE.md', uploaded)
+        body = [event[2]['body'] for event in self.fake.events if event[0] == 'create' and event[1] == 'v' + VERSION][0]
+        self.assertIn('/v0.1.32/' + FFMPEG, body)
+        self.assertIn(hashlib.sha256(archive).hexdigest(), body)
+
+    def test_c4_a_missing_or_changed_earlier_ffmpeg_source_stops_before_anything_is_created(self):
+        archive = os.urandom(4000)
+        for state in ('missing', 'changed'):
+            self.fake.events.clear(); self.fake.releases.clear(); self.fake.assets.clear()
+            if state == 'changed':
+                self.fake.releases['v0.1.32'] = {'id': 'earlier'}
+                self.fake.assets[('earlier', quote(FFMPEG))] = archive[:-1] + b'\x00'
+            with self.assertRaises(publish.PublishError):
+                self.run_publish(self.prepare(ffmpeg=archive), [self.cnb()], execute=True)
+            self.assertFalse([event for event in self.fake.events if event[0] in ('create', 'confirm')], state)
+
+    def test_c5_a_reference_whose_local_copy_differs_is_refused(self):
+        prepared = self.prepare(ffmpeg=os.urandom(4000))
+        (prepared / 'reference' / FFMPEG).write_bytes(b'tampered')
+        with self.assertRaises(publish.PublishError):
+            publish.Prepared(prepared)
 
     def test_d_the_token_is_never_sent_to_a_confirmation_url_outside_the_api(self):
         prepared = self.prepare()

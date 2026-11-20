@@ -15,7 +15,7 @@ import re
 import subprocess
 import sys
 import time
-from urllib.parse import quote, urlsplit
+from urllib.parse import quote, unquote, urlsplit
 import urllib.error
 import urllib.request
 
@@ -73,6 +73,7 @@ class Prepared:
         if hashlib.sha256(self.catalog_raw).hexdigest() != report['catalog']['sha256']:
             raise PublishError('Catalog differs from the preparation report')
         self.files = self._versioned_files()
+        self.ffmpeg = self._ffmpeg_reference()
         notes = self.catalog['release'].get('notes', {})
         self.notes = (notes.get('en') or notes.get('zh-Hans') or next(iter(notes.values()), ''))[:2048]
 
@@ -107,6 +108,25 @@ class Prepared:
         if apk not in names:
             raise PublishError('The release APK is missing from the prepared attachments')
         return sorted(names)
+
+    def _ffmpeg_reference(self):
+        """An unchanged FFmpeg source archive is not uploaded again; it must already be on each site under an earlier tag."""
+        value = self.report.get('ffmpeg_source')
+        if value is None:
+            return None
+        name = str(value.get('path', '')).removeprefix('reference/')
+        if value.get('path') != 'reference/' + name or not NAME.fullmatch(name) \
+                or not re.fullmatch(r'v[0-9]+\.[0-9]+\.[0-9]+', str(value.get('release_tag'))) \
+                or value['release_tag'] == 'v' + self.version or not re.fullmatch(r'[a-f0-9]{64}', str(value.get('sha256'))):
+            raise PublishError('Malformed FFmpeg source reference')
+        local = self.root / 'reference' / name
+        regular(local, MAX_FILE)
+        if local.stat().st_size != value.get('size') or digest(local) != value['sha256']:
+            raise PublishError('Local FFmpeg source differs from the preparation report')
+        if 'FFMPEG-SOURCE.md' not in self.files:
+            raise PublishError('FFMPEG-SOURCE.md must accompany a release that refers to earlier FFmpeg source')
+        return {'name': name, 'tag': value['release_tag'], 'size': value['size'], 'sha256': value['sha256'],
+                'urls': list(value.get('urls', [])), 'path': local}
 
     def expected(self, name):
         path = self.root / name
@@ -323,14 +343,27 @@ def publish(prepared, sites, suffix='', target='main', execute=False, out=print,
     for site in sites:
         out('%s: release %s (%d files), then %s <- %s + %s' % (
             site.name, version_tag, len(prepared.files), rolling_tag, prepared.catalog_name, prepared.signature_name))
+        if prepared.ffmpeg:
+            out('%s: FFmpeg source is not uploaded again; it must already be at %s' % (
+                site.name, site.asset_url(prepared.ffmpeg['tag'], prepared.ffmpeg['name'])))
     if not execute:
         out('Dry run: nothing was sent. Use --execute to publish.')
         return {}
     done = {}
     for site in sites:
         title = 'ThinkOS %s%s' % (prepared.version, suffix)
+        notes = prepared.notes
+        if prepared.ffmpeg:
+            # Confirm the earlier copy is still downloadable and unchanged before any release page points at it.
+            source = site.asset_url(prepared.ffmpeg['tag'], prepared.ffmpeg['name'])
+            listed = [url for url in prepared.ffmpeg['urls'] if unquote(url) == unquote(source)]
+            if not listed:
+                raise PublishError('%s: FFMPEG-SOURCE.md does not list %s' % (site.name, source))
+            read_back(source, prepared.ffmpeg['size'], prepared.ffmpeg['sha256'], sleep=sleep, path=prepared.ffmpeg['path'])
+            out('%s: FFmpeg source at %s read back and matches' % (site.name, prepared.ffmpeg['tag']))
+            notes += '\n\nFFmpeg corresponding source (GPLv3): %s\nSHA-256: %s' % (listed[0], prepared.ffmpeg['sha256'])
         # If the owner has not pushed the version tag, CNB creates it at exactly the prepared commit, never at a branch tip.
-        release = site.ensure_release(version_tag, title, prepared.notes, prerelease_version, prepared.report['source_commit'], False)
+        release = site.ensure_release(version_tag, title, notes, prerelease_version, prepared.report['source_commit'], False)
         for name in prepared.files:
             site.upload(release, prepared.root / name)
             out('%s: uploaded %s' % (site.name, name))

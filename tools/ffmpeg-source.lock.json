@@ -22,5 +22,6 @@
       "commit": "37c90f55d8b6c3948c79449b04755527b4ae1351",
       "branch": "release/6.0"
     }
-  ]
+  ],
+  "published_release": "v0.1.32"
 }

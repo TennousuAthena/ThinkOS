@@ -296,7 +296,26 @@ class ReleaseToolsTest(unittest.TestCase):
                                        {'path':'LICENSE-GPL-3.0.md','sha256':hashlib.sha256(license_bytes).hexdigest()}]))
         output = root/'prepared'; output.mkdir()
         with patch.object(release, 'ROOT', root):
-            self.assertEqual(3,len(release.gpl_attachments(manifest,output)))
+            uploaded, reference = release.gpl_attachments(manifest,output)
+            self.assertEqual(3,len(uploaded)); self.assertIsNone(reference)
+            # Already published: the archive is checked and kept locally, FFMPEG-SOURCE.md is attached in its place.
+            (root/'tools/ffmpeg-source.lock.json').write_text(json.dumps({'root':'fixture-ffmpeg-source','published_release':'v0.1.32'}))
+            bases = ['https://cnb.cool/o/r/-/releases/download/v0.1.35','https://github.com/o/r/releases/download/v0.1.35']
+            referred = root/'referred'; referred.mkdir()
+            uploaded, reference = release.gpl_attachments(manifest,referred,bases,'0.1.35')
+            self.assertEqual({'fixture-ffmpeg-source.tar.gz.sha256','LICENSE-GPL-3.0.md','FFMPEG-SOURCE.md'},{a['path'] for a in uploaded})
+            self.assertFalse((referred/archive.name).exists())
+            self.assertEqual(archive_digest, common.digest(referred/'reference'/archive.name))
+            self.assertEqual(['https://cnb.cool/o/r/-/releases/download/v0.1.32/'+archive.name,
+                              'https://github.com/o/r/releases/download/v0.1.32/'+archive.name], reference['urls'])
+            note = (referred/'FFMPEG-SOURCE.md').read_text()
+            self.assertIn(archive_digest, note); self.assertTrue(all(url in note for url in reference['urls']))
+            for tag, base in (('v0.1.35', bases), ('latest', bases), ('v0.1.32', ['https://cnb.cool/o/r/-/releases/download/main'])):
+                (root/'tools/ffmpeg-source.lock.json').write_text(json.dumps({'root':'fixture-ffmpeg-source','published_release':tag}))
+                bad = root/('bad-'+tag+str(len(base))); bad.mkdir()
+                with self.assertRaises(ValueError):
+                    release.gpl_attachments(manifest,bad,base,'0.1.35')
+            (root/'tools/ffmpeg-source.lock.json').write_text(json.dumps({'root':'fixture-ffmpeg-source'}))
             (attachments/(archive.name+'.sha256')).write_text('0'*64+'  '+archive.name+'\n')
             second = root/'rejected'; second.mkdir()
             with self.assertRaises(ValueError):

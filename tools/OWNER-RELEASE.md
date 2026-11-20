@@ -66,7 +66,7 @@ tools/release.sh prepare \
 
 默认不操作设备。只有明确指定 `--smoke-serial HUA0BWUT` 才调用已有 release 冒烟驱动：需要设备当前已经安装同版本、同正式证书的 debug 包，替换成 release 验证后恢复该 debug 包；不会卸载、改变设备管理或安装系统模块。省略冒烟会明确记为未验证，不会报告完整发布验收成功。该驱动与此工具不包含冷启动性能、10 分钟性能或物理断电验收。
 
-成功产出 `release-preparation.json`、APK、组件及原始清单/签名、通道 JSON/签名、GPLv3 全文、FFmpeg 完整对应源码及摘要、ThinkOS 对应源码和 `SHA256SUMS`。状态是本地 `prepared`，`published=false`。检查失败则没有成功清单，保留已有材料供审阅；修复后应使用新的准备目录。
+成功产出 `release-preparation.json`、APK、组件及原始清单/签名、通道 JSON/签名、GPLv3 全文、FFmpeg 完整对应源码及摘要（`tools/ffmpeg-source.lock.json` 有 `published_release` 时不再重复附带存档，只留在准备目录的 `reference/` 里，改附 `FFMPEG-SOURCE.md` 指向该版本的同一份；`publish.py` 会先核对各站上那份仍可下载且未变）、ThinkOS 对应源码和 `SHA256SUMS`。状态是本地 `prepared`，`published=false`。检查失败则没有成功清单，保留已有材料供审阅；修复后应使用新的准备目录。
 
 ## 对外发布仍须所有者执行
 

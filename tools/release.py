@@ -324,7 +324,10 @@ def copy_artifact(source, destination):
         raise ValueError('Artifact copy changed its bytes')
 
 
-def gpl_attachments(manifest, destination):
+def gpl_attachments(manifest, destination, bases=(), version=None):
+    """Returns (attachments, reference). With `published_release` in the lock, the unchanged FFmpeg archive is not
+    uploaded again: it is checked here, kept locally under reference/ for publish.py to compare against the copy
+    already on each site, and FFMPEG-SOURCE.md is attached instead with the exact download addresses (GPLv3 s6(d))."""
     manifest = regular(manifest, 64 * 1024)
     entries = document(manifest, 64 * 1024)
     lock = document(ROOT / 'tools/ffmpeg-source.lock.json', 64 * 1024)
@@ -332,7 +335,11 @@ def gpl_attachments(manifest, destination):
     expected = {archive_name, archive_name + '.sha256', 'LICENSE-GPL-3.0.md'}
     if not isinstance(entries, list) or {entry.get('path') for entry in entries} != expected or len(entries) != 3:
         raise ValueError('LIC-04 must provide the exact FFmpeg source/checksum and GPLv3 attachment set')
-    attachments = []
+    published = lock.get('published_release')
+    if published is not None and (not isinstance(published, str) or not re.fullmatch(r'v[0-9]+\.[0-9]+\.[0-9]+', published)
+                                  or published == 'v' + str(version)):
+        raise ValueError('published_release must name an earlier version tag that carries this FFmpeg archive')
+    attachments, reference = [], None
     for entry in entries:
         if Path(entry['path']).name != entry['path']:
             raise ValueError('Attachment paths must be basenames')
@@ -342,6 +349,11 @@ def gpl_attachments(manifest, destination):
             raise ValueError('LIC-04 attachment hash mismatch')
         if source.name == 'LICENSE-GPL-3.0.md' and source.read_bytes() != (ROOT / source.name).read_bytes():
             raise ValueError('GPLv3 attachment must equal the repository license')
+        if published and source.name == archive_name:
+            (destination / 'reference').mkdir(mode=0o700)
+            copy_artifact(source, destination / 'reference' / source.name)
+            reference = {'path': 'reference/' + source.name, 'sha256': actual, 'size': source.stat().st_size}
+            continue
         copy_artifact(source, destination / source.name)
         attachments.append({'path': source.name, 'sha256': actual, 'size': source.stat().st_size})
     checksum = (manifest.parent / (archive_name + '.sha256')).read_text().strip().split()
@@ -351,7 +363,23 @@ def gpl_attachments(manifest, destination):
         names = archive.getnames()
         if not any(name.endswith('/ffmpeg/configure') for name in names) or not any('/decoder_ffmpeg/' in name for name in names):
             raise ValueError('Corresponding FFmpeg extension/build source is incomplete')
-    return attachments
+    if reference is None:
+        return attachments, None
+    suffix = '/v' + str(version)
+    if not bases or any(not base.endswith(suffix) for base in bases):
+        raise ValueError('Distribution bases must end with the version tag to address the published FFmpeg source')
+    reference.update(release_tag=published, urls=[base[:-len(suffix)] + '/' + published + '/' + archive_name for base in bases])
+    note = ('# FFmpeg corresponding source (GPLv3)\n\n'
+            'This release does not repeat the FFmpeg source archive. The complete corresponding source of the FFmpeg extension '
+            'in thinkos-' + str(version) + '.apk is the unchanged archive published with ThinkOS ' + published + ':\n\n'
+            + ''.join('- ' + url + '\n' for url in reference['urls']) +
+            '\nFile: ' + archive_name + '\nSize: ' + str(reference['size']) + ' bytes\nSHA-256: ' + reference['sha256'] + '\n\n'
+            '本版不再重复附带 FFmpeg 源码存档。安装包中 FFmpeg 扩展对应的完整源码，就是随 ThinkOS ' + published +
+            ' 发布的同一份存档，下载地址与校验值见上。\n')
+    exclusive_write(destination / 'FFMPEG-SOURCE.md', note.encode('utf-8'))
+    attachments.append({'path': 'FFMPEG-SOURCE.md', 'sha256': digest(destination / 'FFMPEG-SOURCE.md'),
+                        'size': (destination / 'FFMPEG-SOURCE.md').stat().st_size})
+    return attachments, reference
 
 
 # Device and host validation evidence (screenshots, recordings, logs) is tracked for the development team but is not source:
@@ -530,7 +558,7 @@ def prepare(args):
     password = None
     try:
         modules = build_modules(requests, output, bases, private, public, system_pair, args.slot, environment, previous, tools, trust=trust)
-        attachments = gpl_attachments(args.attachments, output)
+        attachments, ffmpeg_reference = gpl_attachments(args.attachments, output, bases, version)
         attachments.append(source_archive(output, version, commit))
         if args.smoke_serial:
             run([sys.executable, 'tools/tests/release_smoke.py', '--serial', args.smoke_serial,
@@ -557,6 +585,7 @@ def prepare(args):
         attachments.append({'path': artifact.name, 'sha256': apk['sha256'], 'size': apk['size']})
         report.update(stage='prepared', catalog={'path': catalog_path.name, 'sha256': digest(catalog_path), 'seq': args.seq},
                       modules=modules, attachments=attachments, source_tag='v' + version,
+                      **({'ffmpeg_source': ffmpeg_reference} if ffmpeg_reference else {}),
                       qualification='Local preparation only; device smoke is separately recorded, external publication is pending owner action')
         exclusive_write(output / 'OWNER-PUBLISH.md', (
             '# Owner publication remains pending\n\n'
@@ -564,7 +593,7 @@ def prepare(args):
             'Review release-preparation.json, SHA256SUMS and the raw channel/module signatures. Check the explicit device-smoke result; '
             'an omitted smoke is not an accepted release. Complete the remaining physical soak and certificate migration requirements.\n\n'
             'Only after owner approval: create version tag v' + version + ' at ' + commit + '; push that exact tag; create an immutable Release '
-            'with the APK, selected modules and their manifest/signature pairs, GPLv3 license, FFmpeg source/checksum, and ThinkOS source archive; '
+            'with the APK, selected modules and their manifest/signature pairs, GPLv3 license, FFmpeg source/checksum (or FFMPEG-SOURCE.md pointing at the earlier release that carries it), and ThinkOS source archive; '
             'publish ' + args.channel + '.json and its .sig to the reviewed distribution repository. Promote stable only with a higher seq after soak.\n'
         ).encode('utf-8'))
         completed_report = json_bytes(report)

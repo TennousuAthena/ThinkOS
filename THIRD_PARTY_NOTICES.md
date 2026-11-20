@@ -13,7 +13,7 @@ ThinkOS 自己写的代码和文档是 MIT（`LICENSE`）。完整版 APK 含有
 
 FFmpeg 扩展的源码在 https://github.com/jellyfin/jellyfin-androidx-media 的标签 `v1.9.0+1`（子模块 `media` 指向 androidx/media，`ffmpeg` 指向 FFmpeg 的 `release/6.0`）。发布 APK 时要把这份源码一起存档：上游删掉了，提供源码的义务还在（GPL-3.0 第 6 条）。
 
-LIC-04 的源码存档由本项目的 `tools/archive_ffmpeg_source.sh` 生成，位置为 `artifacts/lic/LIC-04/thinkos-ffmpeg-source-v1.9.0+1.tar.gz`，正式发布时作为同名 Release 附件；压缩包内完整保留上游的许可证和构建脚本，GPL 来源不并入项目的 MIT 源文件。精确提交固定于 `tools/ffmpeg-source.lock.json`；分支名仅用于说明，不追踪分支最新内容。 2026-11-03 的完整存档 SHA-256 为 `596cda9ccd49b14d20781b6ef2e7f86033b9506d2bac7c05628b4db412458f66`（468,864,556 字节）；同机离线重建摘要一致，14,524 个上游源码 blob 均按固定 Git 对象校验，清单与结果见 `artifacts/lic/LIC-04/`。
+LIC-04 的源码存档由本项目的 `tools/archive_ffmpeg_source.sh` 生成，位置为 `artifacts/lic/LIC-04/thinkos-ffmpeg-source-v1.9.0+1.tar.gz`，正式发布时作为同名 Release 附件（存档不变时只随首次带它的版本上传一次，见 `tools/ffmpeg-source.lock.json` 的 `published_release`，之后各版附 `FFMPEG-SOURCE.md` 写明下载地址和 SHA-256）；压缩包内完整保留上游的许可证和构建脚本，GPL 来源不并入项目的 MIT 源文件。精确提交固定于 `tools/ffmpeg-source.lock.json`；分支名仅用于说明，不追踪分支最新内容。 2026-11-03 的完整存档 SHA-256 为 `596cda9ccd49b14d20781b6ef2e7f86033b9506d2bac7c05628b4db412458f66`（468,864,556 字节）；同机离线重建摘要一致，14,524 个上游源码 blob 均按固定 Git 对象校验，清单与结果见 `artifacts/lic/LIC-04/`。
 
 ## 运行时库与数据
 
