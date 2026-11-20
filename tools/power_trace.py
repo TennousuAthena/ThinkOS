@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """拔电实验：量电源线拔掉以后系统主供电轨（VPH_PWR）怎么掉、设备还能撑多久（docs/40-power-loss.md §5）。
 
-  python3 -I tools/power_trace.py start [--out DIR] [--rate-ms 2] [--mode probe|guard]
+  python3 -I tools/power_trace.py start [--out DIR] [--rate-ms 2] [--mode probe|guard] [--via usb|wifi]
   python3 -I tools/power_trace.py stop
 
 start：把 powerd 推到设备的 /data/local/tmp（重启即消失，不持久），在设备上起两路采样，经 Wi-Fi 发回这台 Mac：
@@ -10,7 +10,9 @@ start：把 powerd 推到设备的 /data/local/tmp（重启即消失，不持久
   2. 其它通道（usbin、dcin、battery），每 0.5 秒一行，用来弄清楚 USB 线和电源线各自供什么
 然后一直收到设备断开（电源线拔了，设备死了）或 Ctrl-C，打印摘要：几毫秒掉到几伏，最后一个样本是什么时候。
 
-要拔线的是人。拔之前先把 USB 数据线拔掉（它可能也在给板子供电，会让实验失真）；设备上的采样走 Wi-Fi，不依赖 adb。
+供电轨样本默认经 USB（adb）传回（--via usb）：Wi-Fi 芯片接在同一条供电轨上，拔线时它比处理器先断电，最后一段下坡就发不出来；USB 控制器
+更晚才死。USB 线不给板子供电（2026-11-06 的 E1），所以插着 USB 线、只拔圆口电源线。--via wifi 是旧办法（采样经 Wi-Fi，拔线前要先拔 USB 线）。
+其它通道（usbin、dcin、battery）一直走 Wi-Fi。
 设备序列号默认 HUA0BWUT，可用 ANDROID_SERIAL 覆盖。
 """
 import argparse
@@ -72,6 +74,33 @@ class Recorder(threading.Thread):
                 line = raw.decode(errors='replace').rstrip('\n')
                 self.rows.append((now, line))
                 self.last_arrival = now
+                out.write('%.6f %s\n' % (now, line))
+                out.flush()
+        self.closed.set()
+
+
+class PipeRecorder(threading.Thread):
+    """Same as Recorder, but the lines are the output of a command run on the device over adb (USB) instead of a socket."""
+
+    def __init__(self, path, command):
+        super().__init__(daemon=True)
+        self.path = path
+        self.command = command
+        self.rows = []
+        self.connected = threading.Event()
+        self.closed = threading.Event()
+        self.last_arrival = 0.0
+
+    def run(self):
+        env = dict(os.environ, ADB_MDNS='0')
+        process = subprocess.Popen(['adb', '-s', SERIAL, 'exec-out', self.command], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, env=env)
+        with open(self.path, 'w') as out:
+            for raw in process.stdout:
+                now = time.time()
+                line = raw.decode(errors='replace').rstrip('\r\n')
+                self.rows.append((now, line))
+                self.last_arrival = now
+                self.connected.set()
                 out.write('%.6f %s\n' % (now, line))
                 out.flush()
         self.closed.set()
@@ -141,30 +170,39 @@ def start(args):
     device, mine = lan_address()
     print('设备 %s，这台 Mac %s，输出 %s' % (device, mine, out))
 
-    vph, other = Recorder(os.path.join(out, 'vph.txt')), Recorder(os.path.join(out, 'channels.txt'))
-    vph.start()
+    wifi = args.via == 'wifi'
+    other = Recorder(os.path.join(out, 'channels.txt'))
     other.start()
+    vph = Recorder(os.path.join(out, 'vph.txt')) if wifi else None
+    if wifi:
+        vph.start()
 
     adb('push', binary, '/data/local/tmp/powerd')
     shell('chmod 755 /data/local/tmp/powerd')
     stop(None)
-    if args.mode == 'guard':
-        probe = '/data/local/tmp/powerd --trace --interval-ms %d 2>&1 | nc %s %d' % (args.rate_ms, mine, vph.port)
-    else:
-        probe = '/data/local/tmp/powerd --probe --interval-ms %d | nc %s %d' % (args.rate_ms, mine, vph.port)
+    flags = ('--trace --interval-ms %d 2>&1' if args.mode == 'guard' else '--probe --interval-ms %d') % args.rate_ms
     channels = ('while :; do echo "$(cat %s/usbin) $(cat %s/dcin) $(cat /sys/class/power_supply/battery/voltage_now) '
                 '$(cat /sys/class/power_supply/usb/online)"; sleep 0.5; done | nc %s %d' % (VADC16, VADC16, mine, other.port))
     with tempfile.TemporaryDirectory() as tmp:
-        for name, body in (('power-trace-probe.sh', probe), ('power-trace-channels.sh', channels)):
+        scripts = [('power-trace-channels.sh', channels)]
+        if wifi:
+            scripts.append(('power-trace-probe.sh', '/data/local/tmp/powerd %s | nc %s %d' % (flags, mine, vph.port)))
+        for name, body in scripts:
             path = os.path.join(tmp, name)
             open(path, 'w').write('#!/system/bin/sh\n' + body + '\n')
             adb('push', path, '/data/local/tmp/' + name)
     shell('sync')
-    for name in ('power-trace-probe.sh', 'power-trace-channels.sh'):
+    for name, _ in scripts:
         shell("su -c 'nohup sh /data/local/tmp/%s >/dev/null 2>&1 &'" % name)
+    if not wifi:
+        vph = PipeRecorder(os.path.join(out, 'vph.txt'), "su -c '/data/local/tmp/powerd %s'" % flags)
+        vph.start()
     if not vph.connected.wait(15) or not other.connected.wait(15):
-        sys.exit('设备没有连回来：检查 Mac 和设备是否在同一个网段，防火墙是否挡了入站连接')
-    print('采样已开始。现在可以：1) 拔掉 USB 数据线  2) 过 20 秒以上再拔电源线（圆口）。Ctrl-C 结束。\n')
+        sys.exit('设备没有连回来：检查 USB 线（--via usb），或 Mac 和设备是否在同一个网段、防火墙是否挡了入站连接（其它通道和 --via wifi）')
+    if wifi:
+        print('采样已开始（Wi-Fi）。现在可以：1) 拔掉 USB 数据线  2) 过 20 秒以上再拔电源线（圆口）。Ctrl-C 结束。\n')
+    else:
+        print('采样已开始（USB）。USB 线保持插着，过 20 秒以上只拔电源线（圆口）。Ctrl-C 结束。\n')
 
     try:
         shown = 0.0
@@ -203,6 +241,7 @@ def main():
     a.add_argument('--out')
     a.add_argument('--rate-ms', type=int, default=2)
     a.add_argument('--mode', choices=['probe', 'guard'], default='probe')
+    a.add_argument('--via', choices=['usb', 'wifi'], default='usb')
     a.set_defaults(fn=start)
     b = sub.add_parser('stop')
     b.set_defaults(fn=stop)
