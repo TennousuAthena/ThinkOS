@@ -127,3 +127,26 @@ python3 tools/provision.py golden-plan \
 5. 从进 EDL 到进入引导的真实用时，与单机流程比较。没有测量就留空，不给推测用时。
 
 完成这些物理验证前，生成 XML/哈希、应用安装成功或临时 fixture 通过都不能标记 WEL-5 刷机验收完成。金镜像更新时重新走清理与首台验收；旧镜像保留版本和恢复记录，不把新 APK 直接混入已清理的参考 userdata。
+
+## 7. 2026-11-06 第一次实际取镜像（参考机 44fec07a）
+
+**参考机状态：**按 `docs/19` §12 刷好，装了全部 ThinkOS 模块和正式证书的 0.1.33，Device Owner 已设（`preserved`），默认时区 Asia/Shanghai、语言 zh-Hans-CN，没有保存的 Wi-Fi、没有 adb 信任（所有者决定不带）。取镜像用 `edl r`，文件在 `~/ThinkSmartView/golden/`（仓库外，700 权限）。
+
+**清理顺序**（脚本 `tools/golden_clean.sh`）：先 `am force-stop`，再 `stop` 停掉安卓框架（框架还活着，关机时可能把 Wi-Fi 配置写回去），然后删 ThinkOS 数据、Wi-Fi、adb 信任、蓝牙配置和 `persist.service.bdroid.bdaddr`、netstats、模块 zip 和临时文件，最后把 `/data` 的空闲空间写满零（约 3.7 GB，70 秒）再删掉，让已删文件的残留字节被覆盖。完了直接 `adb reboot edl`；adb 信任删掉后这条连接还认，这个顺序在这台上走通了。
+
+**取镜像后扫描（只用字符串，不能证明全部干净）：**userdata 里没有 `PreSharedKey`、没有 Mac 用户名的 adb 公钥；但找到 4 处所有者家里 Wi-Fi 的名字，位置是 `/data/system/netstats` 的用量统计（魔数 `ANET`），这类文件按网络名记账。已把这 4 处在镜像里按同样长度改成占位字符（只改字节，没动结构），扫描确认为 0；脚本已补上删 netstats，下次从源头清掉。还看到 `bluetooth_address` 存在 `settings_secure.xml` 里（参考机自己的蓝牙地址）、以及某个属性转储文件里带着随机的 `persist.service.bdroid.bdaddr`，没查出是哪个文件。**第二台刷好后要核对蓝牙地址是不是各自的。**
+
+**大小：**boot 32 MiB、recovery 32 MiB、system 1.5 GiB、userdata 4290223616 字节（原始，没有压缩）。读取速度约 33 MB/s。哈希在 `golden.json`。
+
+**没有 sparse 工具（`img2simg`）也不需要：**写入用 `edl w` 逐个分区写原始镜像，这个机制今天已经用过（aboot、recovery、boot 都写成功）。**还没验证的：**`edl` 的稀疏写入、`golden-plan` 生成的 XML 配 qfil 的补丁写法、第二台的 GPT 是否与参考机完全一致、第二台出厂的 `aboot` 和 `vendor` 是否需要进镜像。
+
+**冒烟测试（2026-11-06，写回参考机本身）：**用 `edl w` 逐个写 boot、recovery、system、userdata（写前核对四个哈希和分区表与参考机一致），复位后约 25 秒 adb 出现，状态是“未授权”（符合不带 adb 信任；点允许后要 `adb kill-server` 重连才变成 `device`）。开机正常：时区 Asia/Shanghai、语言 zh-Hans-CN，Device Owner 在、ThinkOS 锁定在前台，九个模块都在，`powerd`、`updaterd`、`wfdd` 在跑，保存的 Wi-Fi 为空（所有者自己连上后天气能取到）。这一次没有测：引导画面本身（所有者看的）、系统栏、蓝牙地址、更新器收更新。
+**交付前的状态：**冒烟之后又写回一次，并读回四个分区，哈希都与 `golden.json` 一致，**没有复位**，机器停在 EDL（黑屏）。没有电池，断电再上电就是第一次开机，等于用户拿到手的状态。
+
+## 8. 2026-11-06 第二台：vendor 必须进镜像
+
+**发现：**Lineage 的刷机包自带 vendor 镜像（`vendor.new.dat.br` 加 `vendor.transfer.list`，`updater-script` 里 `block_image_update("…/vendor", …)`）。所以第 4 节“四个分区的镜像”只在**已经刷过 Lineage 包的机器**上能用（第一台冒烟测试就是写回它自己，所以没暴露）；出厂机或只刷了官方整包的机器，vendor 还是官方的，不对。**金镜像必须带 vendor。**
+
+**做法：**`tools/rebuild_vendor_image.py ZIP 输出目录` 把包里的块数据还原成 384 MiB 的原始 vendor 镜像（ext4，卷标 `vendor`，4 KiB 块，`new` 块总数和解压后大小一致），放在 `~/ThinkSmartView/golden/vendor.img`。用同一个脚本重做的结果与实际刷进去的字节完全一致，写入后读回哈希一致。**没验证：**它和第一台经 recovery 刷出来的 vendor 是否逐字节相同（第一台已送出，没有读过它的 vendor）。
+
+**第二台实际走的步骤（出厂固件 `Lenovo_Kingston_OS_DV_190904_V0.0.31-factory`，`adb reboot edl` 直接进 EDL，序列号也是 `44fec07a`，不唯一）：**先 `edl r` 备份它自己的 `persist`、`modemst1/2`、`fsc`、`fsg`、`ssd`、`sec`、`devinfo`，分区表与参考机一致；官方整包 qfil（和第一台一样，也会覆盖 persist 开头约 4.6 MB）；`edl w aboot`；`edl w vendor`（上面还原的镜像）；然后 boot、recovery、system、userdata 四个金镜像；`edl reset`，约 20 秒 adb 出现，状态未授权（符合不带 adb 信任）。总共不到 10 分钟，全程不用碰屏幕。

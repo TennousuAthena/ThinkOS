@@ -1,5 +1,7 @@
 # 36 · 未完成工作：任务清单与验收计划
 
+> 2026-11-17 状态入口：下方11月3日至6日的版本/未安装说明是当日快照。当前应用源码为 **0.1.33/1033**，0.1.32正式发布和CNB手动OTA已有记录（§11G）；参考机的模块安装及金镜像后续记录见 `docs/19` §12、`docs/golden-image-guide.md` §7–8。安装记录不代表模块OTA验收。F2已实现且有主机与独立UID的API27/UI分项证据，完整生产闭环仍待。最新主机收尾见 [本夜报告](../artifacts/unattended/2026-11-17/thinkos-status.md)，不能把历史状态当今天设备状态。
+
 > 2026-11-03。写给接手实现的 Agent。范围：到今天为止讨论定下、代码里还没有的东西。本文只派活和定验收，设计细节在各任务写明的文档里。
 > 现状核对于 2026-11-03 01:30（HKT）：`update/`、`plugins/welcome`、`plugins/hub`、`plugins/apps`、`plugins/radio`、`system/thinkos-updater`、`tos.update`、`tos.plugins`、`tos.apps`、`onboarding` 角色、`thinkos.fairplay` 开关都还不存在。
 > 写这份清单时没有跑构建和设备测试。现状来自读代码、读已有截图和脚本统计，截图可能比工作区旧。

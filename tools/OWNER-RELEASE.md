@@ -153,4 +153,5 @@ python3 tools/publish.py …/release-0.1.31 --site cnb --site github --github-re
 4. `tools/release.sh prepare … --previous-catalog /绝对路径/stable.json --modules /绝对路径/modules.json`。模块的清单和包用系统钥匙签名，其余和普通版本一样。
 5. 更新 `thinkos-updater` 自己的版本，通过健康期以后，守卫会自动轮换成新的 `current`，旧的留作 `previous`（见 `system/thinkos-updater/guard/README.md`）。要观察：备用机上 `/data/adb/thinkos/guard/{current,previous}`。
 6. 新模块 `thinkos-btsink`（蓝牙音箱，`docs/46`）**还不在白名单**：加进去要改更新器的状态记录布局、应用和契约里的 id 列表，应在第一次在备用机上部署更新器之前一起做，否则以后要迁移状态文件。要加时一并改 `updaterd.c` 的 `MODULES`、`shared/schema/update/*.json`、`tools/release.py`、`UpdateCatalog` 和相关测试。
+7. 在另一份临时克隆里 `prepare`（为了不动开发工作区）要注意两点（2026-11-06 试过，没走完）：①克隆里没有被 git 忽略的 `artifacts/`，`tools/tests` 里有测试要读证书基线，缺了会失败（2 到 5 项），要把 `artifacts/` 复制进去并写进克隆的 `.git/info/exclude`；②目录规则要求应用 `versionCode` 和 `seq` 同时增大，所以只升模块、应用版本不变是出不了包的，演练要么连应用一起升一版。克隆里的 `android/keystore.properties` 带口令，用完整个删掉。
 

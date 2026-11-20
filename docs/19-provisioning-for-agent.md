@@ -295,3 +295,20 @@ adb -s <序列号> shell dumpsys deviceidle whitelist +moe.kiwi.thinkos
 ## 11. 维护本文
 
 每次真实走完这个流程，把 ⚠️ 项改成 ✅（写日期和结果），把没记录的按键/坐标补上。这是该文档的主要价值来源。
+
+## 12. 2026-11-06 第二台真实走通的记录（序列号 44fec07a，出厂固件起步）
+
+这台出厂就是 `Lenovo_Kingston_OS_DV_190904_V0.0.31-factory`（userdebug，装有几个第三方应用），adb 能用。走完 §3–§5.2，`tools/provision.py verify` 三项（Lineage 版本、API 27、仅 armv7）通过。下面是和正文不一样或正文没写的地方：
+
+- **进 EDL：** `adb reboot edl` 在出厂固件和已开 USB 调试的 Lineage 上都直接成功（枚举到 `05c6:9008`，`QUSB__BULK`）。**“同时按住两个音量键再上电”在这台上不管用**，机器照常进 Lineage，没查出原因。以后先用 `adb reboot edl`；Lineage 刚装好时 USB 调试是关的，要在屏幕上开（设置向导跳过，关于里连点“版本号”7 次，开发者选项里开 USB 调试并允许这台电脑）。
+- **刷之前先备份这台独有的分区：**整包 qfil 会把 `persist` 开头约 4.6 MB 写成通用的 `persist_1.img`。用 `edl r` 读出 `persist`、`modemst1`、`modemst2`、`fsc`、`fsg`、`ssd`、`sec`、`devinfo` 放到仓库外（这次是 `~/ThinkSmartView/backup-44fec07a/`，700 权限，带 SHA256SUMS）。没验证过覆盖后校准数据是否丢失，也没验证过恢复。
+- **qfil 的路径形式：**在 `~/ThinkSmartView` 下用 `edl --loader=image/prog_emmc_firehose_8953_ddr.mbn qfil rawprogram_unsparse.xml patch0.xml image/`。正文第一种写法（`image/rawprogram_unsparse.xml`）会把路径拼成 `image/image/…`，报 `FileNotFoundError`，什么也没写。日志里的 `Sector size in XML 4096 does not match disk sector size 512` 两次成功都有，正常。刷完 `edl w aboot`、`edl w recovery` 都成功。
+- **进 recovery：**官方固件起来后 `adb reboot recovery` 成功。recovery 里 `adb devices` 显示 `unauthorized`，但屏幕上选 Apply update → Apply from ADB 以后状态变成 `sideload`，`adb sideload` 能传（到 47% 停是正常的）。格式化数据和 Apply from ADB 是屏幕上的操作，命令代替不了。
+- **写 Magisk boot 前：**读出 boot 分区，前 21523752 字节的 SHA-256 与 `boot_orig/boot.img` 完全一致（`7d5c9280…`），再写 `magisk_patched.img`。
+- **屏幕：**Lineage 起来后屏幕会进 Dozing、显示关闭，`KEYCODE_WAKEUP` 唤不醒，`input keyevent 26` 连发两次才亮；先 `svc power stayon true` 加 §6.1 的两条设置可避免。画面是竖屏 800×1280。
+- **Magisk：**首次打开弹 “Requires Additional Setup”，点 OK 会重启，之后 `su -c id` 直接是 root，`magisk -v` 是 27.0。
+- **Zygisk 要在装 Vector 之前设好并读回：**§5.2 的 sqlite 命令嵌在 `adb shell` 里引号会出错，设置表是空的，Vector 照样装上了但没生效；改成把两行 `magisk --sqlite` 写进一个脚本推到设备上以 root 运行，`SELECT * FROM settings` 读回 `key=zygisk|value=1` 后再装一次 Vector，重启后三个模块都在。装 Vector 时会打印 `Unable to find preinit dir`，没发现影响。
+- **`tools/provision.py` 不能加 `-I`：**它 `import release`，加了 `-I` 会 `ModuleNotFoundError`。
+- **Wi-Fi、校时、ThinkOS：**Wi-Fi 由所有者在设备屏幕上连（密码不经过 Agent）；timesync 联网后校准成功，安卓时区默认是 UTC-11（`Pacific/Midway`），要靠引导里选地点（更新器 `SET_TIMEZONE`）或手工改。ThinkOS 用 `/private/tmp/thinkos-release/0.1.33/thinkos-0.1.33.apk` 装（核对了与 `SHA256SUMS` 一致、签名者是所有者正式证书），再 `cmd package set-home-activity`、`dumpsys deviceidle whitelist +moe.kiwi.thinkos`。新装第一次启动会弹存储权限。
+- **全部模块（2026-11-06，所有者明确要求 Agent 来装）：**`system/install.sh`（cast）、`install-certs.sh <序列号> --mode replace`（117 张）、`install-shell.sh`、`install-immersive.sh`、`install-updater.sh --keys-header … --serial …`、`install-power.sh`，加 `thinkos-btsink` 手工推 zip 用 `magisk --install-module`，一次重启。重启后：`powerd`、`updaterd`、`wfdd` 在跑；Vector 日志里 immersive 的四类 hook（requestTransientBars、updateSystemBarsLw、onSwipeFromBottom、onSwipeFromLeft）都挂上了；`/system/etc/security/cacerts` 117 张；守卫放好了（`current/updater-guard`、`policy`、两个启动脚本版本 2、`guard-state.bin`）；已装的更新器二进制与带所有者公钥（`UP_SYSTEM_KEY_COUNT 2`）的构建逐字节相同；ThinkOS 前台没有安卓系统栏。**`install-updater.sh` 原来写死 `/data/adb/magisk/magisk`，Magisk 27 里没有这个文件（只有 `magisk32`，`/sbin/magisk` 指向它），第一次真机运行就失败，已改成按名字调用。**`tools/tests/certs_device.py` 要 debug 包里的 `trust_roots` 命令，对正式包不适用；它还要求音量为 0。
+- 还没做：更新器真正收一次正式签名的更新、守卫实际救一次坏更新、shell 模块的外部应用下拉、btsink 的蓝牙行为、Device Owner、清理和取镜像。
