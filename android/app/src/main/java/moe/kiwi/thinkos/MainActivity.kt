@@ -12,6 +12,11 @@ import android.provider.Settings
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
+import android.widget.FrameLayout
+import moe.kiwi.thinkos.core.Mode
+import moe.kiwi.thinkos.core.SleepTaps
+import moe.kiwi.thinkos.device.SleepBacklight
 import android.view.WindowManager
 import moe.kiwi.thinkos.core.OnboardingPolicy
 import moe.kiwi.thinkos.core.Theme
@@ -34,6 +39,17 @@ import org.json.JSONObject
 class MainActivity : Activity(), RuntimeHost.Observer {
     private lateinit var host: RuntimeHost
     private lateinit var stage: ThinkStage
+    private lateinit var sleepCurtain: View
+    private var sleeping = false
+    private var sleepTaps: SleepTaps? = null
+    private var sleepTouchStream = false
+    private var normalTouchStream = false
+    private var sleepForeground = false
+    private var displayBrightness = 1f
+    private fun updateSleepBacklight() {
+        SleepBacklight.set(this, sleeping && sleepForeground && hasWindowFocus() &&
+            displayBrightness <= 0.03f && host.system.sleepBacklightVerified)
+    }
     private var maintenance: AlertDialog? = null
     private var diagnosticDialog: AlertDialog? = null
     private var legal: LegalDialog? = null
@@ -77,7 +93,12 @@ class MainActivity : Activity(), RuntimeHost.Observer {
         host.store.update { it.copy(safeMode = CrashRecovery.isSafeMode(this)) }
         stage = ThinkStage(this, host.store, host.router, { host.sensors.touch() }, { showMaintenance() }, host.pageEvents, host::openSettings)
         stage.onPractice = host::practiceCompleted
-        setContentView(stage)
+        sleepCurtain = View(this).apply {
+            setBackgroundColor(android.graphics.Color.BLACK)
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            visibility = View.GONE
+        }
+        setContentView(FrameLayout(this).apply { addView(stage); addView(sleepCurtain) })
         stage.viewTreeObserver.addOnDrawListener(object : android.view.ViewTreeObserver.OnDrawListener {
             private var drawn = false
             override fun onDraw() {
@@ -100,6 +121,8 @@ class MainActivity : Activity(), RuntimeHost.Observer {
     override fun onResume() {
         super.onResume()
         if (!::host.isInitialized) return
+        sleepForeground = true
+        updateSleepBacklight()
         KioskState.noteResumed(taskId)
         if (BuildConfig.DEBUG) TouchInjection.stageState = { stage.debugState().toString() }
         if (KioskState.returningBeforeTimeout()) host.sensors.touch()
@@ -114,6 +137,9 @@ class MainActivity : Activity(), RuntimeHost.Observer {
     }
     override fun onPause() {
         if (!::host.isInitialized) { super.onPause(); return }
+        sleepForeground = false
+        sleepTaps?.reset()
+        updateSleepBacklight()
         pluginConsent?.dismiss()
         miracastModule?.dismiss()
         if (BuildConfig.DEBUG && KioskState.ownsForegroundTask(taskId)) TouchInjection.stageState = null
@@ -128,6 +154,7 @@ class MainActivity : Activity(), RuntimeHost.Observer {
         // An Activity cannot leave Lua suspended on a permission dialog it is no longer able to show.
         storageRequest?.let(host::storagePermissionHostClosed)
         storageRequest = null
+        SleepBacklight.set(this, false)
         host.removeObserver(this)
         maintenance?.dismiss()
         diagnosticDialog?.dismiss()
@@ -160,18 +187,43 @@ class MainActivity : Activity(), RuntimeHost.Observer {
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (!::host.isInitialized) return
+        if (!hasFocus) sleepTaps?.reset()
+        updateSleepBacklight()
         if (hasFocus) {
             immersive()
             if (KioskState.mayRelock()) kiosk.relock(this, host.system.kioskLock)
         }
     }
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-        if (::host.isInitialized && event.actionMasked == MotionEvent.ACTION_DOWN) host.sensors.touch()
+        val action = event.actionMasked
+        if (action == MotionEvent.ACTION_DOWN) sleepTouchStream = sleeping
+        if (sleeping || sleepTouchStream) {
+            sleepTouchStream = action != MotionEvent.ACTION_UP && action != MotionEvent.ACTION_CANCEL
+            val taps = sleepTaps
+            when (action) {
+                MotionEvent.ACTION_DOWN -> if (event.pointerCount == 1 && event.isFromSource(android.view.InputDevice.SOURCE_TOUCHSCREEN))
+                    taps?.begin(event.getPointerId(0), event.x, event.y, event.eventTime)
+                MotionEvent.ACTION_MOVE -> if (event.pointerCount == 1) {
+                    repeat(event.historySize) { taps?.move(event.getPointerId(0), event.getHistoricalX(it), event.getHistoricalY(it)) }
+                    taps?.move(event.getPointerId(0), event.x, event.y)
+                } else taps?.cancelGesture()
+                MotionEvent.ACTION_UP -> if (event.pointerCount == 1 &&
+                    taps?.end(event.getPointerId(0), event.x, event.y, event.eventTime) == true) host.sensors.wakeFromTouch()
+                else -> taps?.cancelGesture()
+            }
+            return true
+        }
+        if (action == MotionEvent.ACTION_DOWN) {
+            normalTouchStream = true
+            if (::host.isInitialized) host.sensors.touch()
+            if (sleeping) return true
+        }
+        if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) normalTouchStream = false
         return super.dispatchTouchEvent(event)
     }
     /** Back peels one layer off what is over the page sequence; on the sequence itself it does nothing (ADR-040). */
     @Deprecated("Kiosk keeps the device on its home page")
-    override fun onBackPressed() { if (::stage.isInitialized) stage.back() }
+    override fun onBackPressed() { if (::stage.isInitialized && !sleeping) stage.back() }
 
     private fun immersive() {
         @Suppress("DEPRECATION")
@@ -204,6 +256,7 @@ class MainActivity : Activity(), RuntimeHost.Observer {
         stage.prepareSystemHome()
     }
     override fun onOpenAndroid(target: String): Boolean {
+        if (sleeping) return false
         val action = when (target) {
             "wifi" -> Settings.ACTION_WIFI_SETTINGS
             "locale" -> Settings.ACTION_LOCALE_SETTINGS
@@ -215,6 +268,7 @@ class MainActivity : Activity(), RuntimeHost.Observer {
         return launchOutside(Intent(action))
     }
     override fun onOpenAndroidApp(packageName: String, result: (Boolean) -> Unit): Boolean {
+        if (sleeping) return false
         if (!KioskState.ownsForegroundTask(taskId) || foreignLaunchPending) return false
         val intent = packageManager.getLaunchIntentForPackage(packageName)
         if (intent == null) { showOpenFailure(packageName); result(false); return true }
@@ -264,6 +318,7 @@ class MainActivity : Activity(), RuntimeHost.Observer {
     }
     override fun onSettingsUnavailable() { showMaintenance() }
     override fun onAbout() {
+        if (sleeping) return
         if (isFinishing || isDestroyed || legal?.isShowing == true || miracastModule != null) return
         legal = LegalDialog(this, Palette.forTheme(host.store.current.theme)) {
             host.sensors.touch()
@@ -275,7 +330,9 @@ class MainActivity : Activity(), RuntimeHost.Observer {
         nativeWindowsChanged()
     }
     override fun onRenderSettingsChanged() { stage.refreshSettings() }
+    override fun onSleepBacklightSettingChanged() = updateSleepBacklight()
     override fun onPluginConsent(request: moe.kiwi.thinkos.plugin.RegistryConsent, result: (Boolean) -> Unit): Boolean {
+        if (sleeping) return false
         if (isFinishing || isDestroyed || !KioskState.ownsForegroundTask(taskId) ||
             !window.decorView.hasWindowFocus() || pluginConsent != null || miracastModule != null ||
             listOf(maintenance, diagnosticDialog, legal, updates).any { it?.isShowing == true }) return false
@@ -296,6 +353,7 @@ class MainActivity : Activity(), RuntimeHost.Observer {
         }
     }
     override fun onUpdates(): Boolean {
+        if (sleeping) return false
         if (isFinishing || isDestroyed || !KioskState.ownsForegroundTask(taskId) || miracastModule != null) return false
         if (updates?.isShowing == true) return true
         updates = UpdateDialog(this, Palette.forTheme(host.store.current.theme), host.updates::publicStatus,
@@ -308,6 +366,7 @@ class MainActivity : Activity(), RuntimeHost.Observer {
         return true
     }
     override fun onMiracastFeature(expectedRevision: Long): Boolean {
+        if (sleeping) return false
         if (host.settings.revision() != expectedRevision) return false
         if (miracastModule != null) {
             if (miracastRevision == expectedRevision) return true
@@ -358,6 +417,7 @@ class MainActivity : Activity(), RuntimeHost.Observer {
         updates?.refresh()
     }
     override fun onStoragePermissionRequest(requestId: Long): Boolean {
+        if (sleeping) return false
         if (isFinishing || isDestroyed || storageRequest != null) return false
         storageRequest = requestId
         KioskState.allowSystemSettings() // The watchdog must not cover Android's permission dialog.
@@ -380,8 +440,36 @@ class MainActivity : Activity(), RuntimeHost.Observer {
         if (KioskState.resumed) KioskState.maintenanceUntil = 0
         immersive()
     }
+    override fun onDisplayMode(mode: Mode) {
+        val next = mode == Mode.SLEEP
+        if (next == sleeping) return
+        sleeping = next
+        sleepTaps = if (sleeping) SleepTaps(ViewConfiguration.get(this).scaledTouchSlop.toFloat(),
+            ViewConfiguration.getLongPressTimeout(), host.system.sleepTapDebounce) else null
+        if (sleeping) {
+            if (normalTouchStream) {
+                val now = android.os.SystemClock.uptimeMillis()
+                val cancel = MotionEvent.obtain(now, now, MotionEvent.ACTION_CANCEL, 0f, 0f, 0)
+                try { super.dispatchTouchEvent(cancel) } finally { cancel.recycle() }
+                normalTouchStream = false
+                sleepTouchStream = true
+            }
+            stage.interruptForSleep()
+            maintenance?.dismiss()
+            diagnosticDialog?.dismiss()
+            legal?.dismiss()
+            updates?.dismiss()
+            miracastModule?.dismiss()
+            pluginConsent?.dismiss()
+        }
+        sleepCurtain.visibility = if (sleeping) View.VISIBLE else View.GONE
+        stage.importantForAccessibility = if (sleeping) View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS else View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
+        updateSleepBacklight()
+    }
     override fun onBrightness(value: Float) {
-        window.attributes = window.attributes.apply { screenBrightness = value.coerceIn(0.03f, 1f) }
+        displayBrightness = value.coerceIn(0.03f, 1f)
+        window.attributes = window.attributes.apply { screenBrightness = displayBrightness }
+        if (sleeping && displayBrightness == 0.03f) updateSleepBacklight()
     }
     override fun onError(pluginId: String, message: String) {
         // Failed packages preserve the previous working page. Details are available in maintenance.
@@ -393,6 +481,7 @@ class MainActivity : Activity(), RuntimeHost.Observer {
 
     /** The recovery menu is native on purpose: it must work when the settings plugin does not. */
     private fun showMaintenance() {
+        if (sleeping) return
         miracastModule?.dismiss()
         if (maintenance?.isShowing == true) return
         val state = host.store.current

@@ -354,10 +354,8 @@
     <string name="setting_sleep_enabled">睡眠</string>
     <string name="setting_sleep_start">睡眠开始</string>
     <string name="setting_sleep_end">睡眠结束</string>
-    <string name="setting_sleep_wake">触摸唤醒</string>
-    <string name="setting_sleep_wake_double">双击</string>
-    <string name="setting_sleep_wake_single">单击</string>
-    <string name="setting_sleep_wake_off">关闭</string>
+    <string name="setting_sleep_backlight_verified">已验收的背光关闭</string>
+    <string name="setting_sleep_tap_debounce_ms">点击防抖（毫秒）</string>
     <string name="setting_mode_manual_hold">手动切换保持</string>
     <string name="setting_mode_manual_hold_next">到下个切换点</string>
     <string name="setting_mode_manual_hold_forever">一直保持</string>

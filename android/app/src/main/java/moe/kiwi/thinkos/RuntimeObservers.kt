@@ -18,6 +18,8 @@ interface RendererObserver : RuntimeObserver {
 }
 
 interface DisplayObserver : RuntimeObserver {
+    fun onSleepBacklightSettingChanged() {}
+    fun onDisplayMode(mode: moe.kiwi.thinkos.core.Mode) {}
     fun onBrightness(value: Float)
     fun onOrientationRequest(value: Int) {}
 }

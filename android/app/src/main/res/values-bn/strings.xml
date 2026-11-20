@@ -354,10 +354,8 @@
     <string name="setting_sleep_enabled">ঘুম</string>
     <string name="setting_sleep_start">ঘুম শুরু</string>
     <string name="setting_sleep_end">ঘুম শেষ</string>
-    <string name="setting_sleep_wake">ছুঁয়ে জাগান</string>
-    <string name="setting_sleep_wake_double">দুইবার ট্যাপ</string>
-    <string name="setting_sleep_wake_single">একবার ট্যাপ</string>
-    <string name="setting_sleep_wake_off">বন্ধ</string>
+    <string name="setting_sleep_backlight_verified">যাচাইকৃত ব্যাকলাইট বন্ধ</string>
+    <string name="setting_sleep_tap_debounce_ms">ট্যাপের বিরতি (মিলিসেকেন্ড)</string>
     <string name="setting_mode_manual_hold">ম্যানুয়াল মোডের মেয়াদ</string>
     <string name="setting_mode_manual_hold_next">পরের পরিবর্তন পর্যন্ত</string>
     <string name="setting_mode_manual_hold_forever">বদলানো পর্যন্ত</string>

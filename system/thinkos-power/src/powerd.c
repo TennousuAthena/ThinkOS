@@ -20,7 +20,7 @@
  *
  * 手动关机：应用在设置里有一个“关机”（要确认）。它连抽象 socket @thinkos-power 发一行 POWEROFF，本进程先做触发时的
  *   那套收尾（灭背光、sync、转只读），再关机，之后断电是干净的。只认 root 和 ThinkOS 应用的 uid（读 packages.list），
- *   每行最多 64 字节，20 毫秒内读完，不然丢掉；采样循环不被它拖慢。命令：HELLO、STATUS、POWEROFF。
+ *   每行最多 64 字节，20 毫秒内读完，不然丢掉；采样循环不被它拖慢。命令：HELLO、STATUS、POWEROFF 与三条背光租约命令。
  *
  * 其它：
  *   --probe       只记录电压，每行 “毫秒 µV 读取耗时µs”，不做任何动作。拔电实验用它量衰减曲线与撑多久。
@@ -60,7 +60,7 @@
 #include <android/log.h>
 #endif
 
-#define VERSION "2"
+#define VERSION "3"
 #define APP_PACKAGE "moe.kiwi.thinkos"
 #define MAX_LEDS 4
 #define ARM_SAMPLES 10
@@ -111,6 +111,11 @@ static int led_fd[MAX_LEDS];
 static FILE *replay_fp;
 static int socket_fd = -1;
 static int manual_off_started;
+static int emergency_started;
+
+#include "backlight_lease.h"
+static struct dark_lease sleep_dark = { "/sys/class/leds/lcd-backlight/brightness", 0, 0 };
+
 
 static int64_t now_us(void)
 {
@@ -338,6 +343,9 @@ static int watched_is_readonly(void)
 static void trip_sequence(void)
 {
     int64_t t0 = now_us();
+    // A low-rail event takes over the backlight; a lease must never restore it.
+    emergency_started = 1;
+    sleep_dark.deadline = 0;
 #ifdef __linux__
     if (!cfg.replay) {
         struct sched_param sp = {50};
@@ -532,7 +540,9 @@ static void manual_poweroff(void)
 /* 每个采样周期调用一次：接受连接，20 毫秒内读完一行，答复。不阻塞采样。 */
 static void service_socket(void)
 {
-    if (socket_fd < 0 || manual_off_started) return;
+    if (manual_off_started) return;
+    dark_expire(&sleep_dark, now_us());
+    if (socket_fd < 0) return;
     for (int served = 0; served < 4; served++) {
         int fd = accept_client(socket_fd);
         if (fd < 0) return;
@@ -559,6 +569,15 @@ static void service_socket(void)
         if (!peer_allowed(fd)) reply(fd, "ERR denied\n");
         else if (!strcmp(line, "HELLO")) reply(fd, "OK thinkos-power " VERSION "\n");
         else if (!strcmp(line, "STATUS")) reply(fd, "OK {\"protocol\":1,\"poweroff\":true}\n");
+        else if (!strcmp(line, "DARK_BEGIN") || !strcmp(line, "DARK_KEEP") || !strcmp(line, "DARK_END")) {
+            int ok = 0;
+            if (!cfg.dry && !cfg.replay && !emergency_started) {
+                if (!strcmp(line, "DARK_BEGIN")) ok = dark_begin(&sleep_dark, now_us());
+                else if (!strcmp(line, "DARK_KEEP")) ok = dark_keep(&sleep_dark, now_us());
+                else ok = dark_end(&sleep_dark);
+            }
+            reply(fd, ok ? "OK\n" : "ERR backlight unavailable\n");
+        }
         else if (!strcmp(line, "POWEROFF")) {
             manual_off_started = 1;
             reply(fd, "OK\n");
@@ -763,6 +782,7 @@ int main(int argc, char **argv)
     if (open_command_socket()) say("cannot open the command socket %s: no manual power off (%s)", cfg.socket_name, strerror(errno));
     say("powerd " VERSION "%s", cfg.dry ? " (dry run)" : "");
     int rc = run_guard();
+    if (!manual_off_started) dark_end(&sleep_dark);
     if (socket_fd >= 0 && cfg.socket_name[0] == '/') unlink(cfg.socket_name);
     if (wake_fd >= 0) {
         write_small("/sys/power/wake_unlock", "thinkos-power\n");

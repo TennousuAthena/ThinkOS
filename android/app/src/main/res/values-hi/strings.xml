@@ -354,10 +354,8 @@
     <string name="setting_sleep_enabled">नींद</string>
     <string name="setting_sleep_start">नींद शुरू</string>
     <string name="setting_sleep_end">नींद समाप्त</string>
-    <string name="setting_sleep_wake">छूकर जगाएँ</string>
-    <string name="setting_sleep_wake_double">दो बार छुएँ</string>
-    <string name="setting_sleep_wake_single">एक बार छुएँ</string>
-    <string name="setting_sleep_wake_off">बंद</string>
+    <string name="setting_sleep_backlight_verified">बैकलाइट बंद करने की पुष्टि</string>
+    <string name="setting_sleep_tap_debounce_ms">टैप के बीच अंतर (मिलीसेकंड)</string>
     <string name="setting_mode_manual_hold">मैन्युअल मोड की अवधि</string>
     <string name="setting_mode_manual_hold_next">अगले बदलाव तक</string>
     <string name="setting_mode_manual_hold_forever">बदलने तक</string>

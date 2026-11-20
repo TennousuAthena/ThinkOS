@@ -66,7 +66,7 @@
 - 背光压到最低档；照片页在红移下自动切回时钟页（红色照片没有观赏价值）
 - 例外：`level=urgent` 的通知不受红色滤镜影响
 
-睡眠当前已接逻辑模式、静音和播放/投屏拒绝，画面暂沿用 `NIGHT`，窗口亮度仍不低于3%；这不是全黑效果。背光0、双击偷看与结束睡眠画面须等MODE0人工验证后实现，不能用逻辑 `sleep` 状态当作黑屏验收。
+睡眠显示纯黑画面，暂停并静音，拒绝新播放和投屏。前五次有效点按由睡眠界面拦截，第六次退出到低亮红移。默认窗口亮度下限为 3%。启用背光归零前，须通过 MODE-0 实物检查，确认肉眼全黑、真实触摸仍可读且背光可恢复。
 
 ### 1.3 规则
 
@@ -292,7 +292,8 @@
 | `redshift.start` / `redshift.end` | time | 固定时间时显示 | `19:00` / `07:00` |
 | `sleep.enabled` | bool | 睡眠时间表开关 | 关 |
 | `sleep.start` / `sleep.end` | time | 睡眠启用时显示 | `23:00` / `07:00` |
-| `sleep.wake` | choice | `double` / `single` / `off`；睡眠启用时显示，偷看能力待MODE0 | `double` |
+| `sleep.backlight_verified` | bool | 设备本地开关，MODE-0 实物验收后开启 | `false` |
+| `sleep.tap_debounce_ms` | number | 0–150 ms 防抖，第六次有效触摸退出睡眠 | `40` |
 | `mode.manual_hold` | choice | `next` 到下个切换点 / `forever` 一直保持 | `next` |
 
 `time` 沿用API10，值为ASCII `HH:mm`，24小时制、5分钟一档。原生编辑先改草稿，取消、返回、Home或离页均不提交，确定只发一次提交；开始与结束允许跨午夜，不能相等。迁移逐 `local` / `server` 层处理：合法新trigger优先同层旧值，否则旧关→`off`、旧开→`sun`，随后消费该层旧bool，保留本地优先级，重置新值后不重复迁移。

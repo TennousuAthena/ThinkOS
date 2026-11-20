@@ -13,7 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * One bounded exchange per connection to the optional power guard module (`thinkos-power`, docs/40). It sends one of three fixed
+ * One bounded exchange per connection to the optional power guard module (`thinkos-power`, docs/40). It sends fixed
  * lines, takes no path or argument from Lua, never runs a shell and never retries a power off.
  */
 internal class PowerClient(private val elapsed: () -> Long = SystemClock::elapsedRealtime) {
@@ -22,6 +22,8 @@ internal class PowerClient(private val elapsed: () -> Long = SystemClock::elapse
 
     /** Asks for a clean power off: the guard puts the lights out, flushes and goes read-only, then powers off. */
     suspend fun powerOff(): Boolean = withContext(Dispatchers.IO) { exchange("POWEROFF").getOrNull() == "OK" }
+
+    internal fun sleepBacklight(command: String): Boolean = exchange(command).getOrNull() == "OK"
 
     private fun exchange(line: String): Result<String> = try {
         LocalSocket().use { socket ->
@@ -66,7 +68,7 @@ internal object PowerProtocol {
     const val ADDRESS = "thinkos-power"
     const val TIMEOUT_MS = 2000
     const val REPLY_MAX = 256
-    private val fixed = setOf("HELLO", "STATUS", "POWEROFF")
+    private val fixed = setOf("HELLO", "STATUS", "POWEROFF", "DARK_BEGIN", "DARK_KEEP", "DARK_END")
 
     fun request(line: String): ByteArray {
         require(line in fixed) { "unknown power guard request" }

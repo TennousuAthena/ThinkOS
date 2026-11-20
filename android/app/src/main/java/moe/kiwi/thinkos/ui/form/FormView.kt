@@ -355,6 +355,12 @@ internal class FormView(context: Context, private val host: FormHost) : FrameLay
         text.setCompoundDrawablesRelative(icon, null, null, null)
     }
 
+    fun interruptInput() {
+        textDialog?.dismiss()
+        back()
+        active(false)
+    }
+
     fun active(value: Boolean) {
         if (!value) {
             rows.forEach { it.cancelInput() }

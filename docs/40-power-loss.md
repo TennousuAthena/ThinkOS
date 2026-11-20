@@ -148,3 +148,7 @@ HUA0BWUT，0.1.32 引导页开着、联网，读 `/sys/block/mmcblk0/stat` 每�
 - [jethac/thinksmart-view-hal](https://github.com/jethac/thinksmart-view-hal) 及其指向的 `jethac/lenovo-thinksmart-view`（`CHIP.md`）
 - [awesome-thinksmart](https://github.com/r4ym0n/awesome-thinksmart)（内核源码 [Starfire-development/android_kernel_lenovo_apq8053](https://github.com/Starfire-development/android_kernel_lenovo_apq8053)）
 - 联想快速入门：[manualslib](https://www.manualslib.com/manual/2182628/Lenovo-Thinksmart-View-Cd-18781y.html)
+
+## 睡眠背光租约（2026-11-18）
+
+`thinkos-power` v0.3 增加三条同一 socket、同一对端鉴权的固定命令。`DARK_BEGIN` 持有 20 秒租约并记住当前非零亮度。`DARK_KEEP` 仅在活动租约且仍为 0 时续约。`DARK_END` 在仍为 0 时还原原值。命令无参数，只操作 ThinkSmart 的固定背光节点。到期、正常守护进程退出时同样还原。掉压和关机仍走既有应急路径。应用在前台、有焦点且已降到最低亮度时才申请，经 MODE-0 后可从本地设置开启。

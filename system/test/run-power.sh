@@ -3,4 +3,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 ./build-power.sh --host >/dev/null
-exec python3 -I -W ignore test/test_power.py "$@"
+lease_test=$(mktemp /tmp/thinkos-backlight-test.XXXXXX)
+trap 'rm -f "$lease_test"' EXIT
+clang -Wall -Wextra -Werror test/backlight_lease_test.c -o "$lease_test"
+"$lease_test"
+python3 -I -W ignore test/test_power.py "$@"

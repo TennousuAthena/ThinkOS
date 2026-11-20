@@ -294,6 +294,8 @@ internal class ComponentGroup(
         return null
     }
     /** A component of this group closed something of its own on top (ADR-040). */
+    fun interruptFormInput() { bound.forEach { (it.view as? FormView)?.interruptInput() } }
+
     val hasBack: Boolean get() = bound.any { it.renderer?.hasBack == true || (it.view as? FormView)?.hasBack == true }
     fun back(): Boolean = bound.any { it.renderer?.back() == true || (it.view as? FormView)?.back() == true }
     fun localeChanged() {
@@ -690,6 +692,10 @@ internal class PageView(
     }
     fun releasePress() { pressed?.release(); pressed = null }
     /** Back closed something on this page instead of leaving it: the Aero start menu, a component's own menu (ADR-040). */
+    fun interruptFormInput() {
+        groups.values.forEach { it.interruptFormInput() }
+        stacks.values.forEach { it.current?.interruptFormInput() }
+    }
     val hasBack: Boolean get() = aero?.hasBack == true || groups.values.any { it.hasBack } || stacks.values.any { it.hasBack }
     fun back(): Boolean = aero?.back() == true || groups.values.any { it.back() } || stacks.values.any { it.back() }
     /**

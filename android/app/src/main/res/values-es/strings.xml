@@ -354,10 +354,8 @@
     <string name="setting_sleep_enabled">Sueño</string>
     <string name="setting_sleep_start">Inicio del sueño</string>
     <string name="setting_sleep_end">Fin del sueño</string>
-    <string name="setting_sleep_wake">Toque para despertar</string>
-    <string name="setting_sleep_wake_double">Doble toque</string>
-    <string name="setting_sleep_wake_single">Un toque</string>
-    <string name="setting_sleep_wake_off">Desactivado</string>
+    <string name="setting_sleep_backlight_verified">Apagado de luz verificado</string>
+    <string name="setting_sleep_tap_debounce_ms">Intervalo entre toques (ms)</string>
     <string name="setting_mode_manual_hold">Duración del modo manual</string>
     <string name="setting_mode_manual_hold_next">Hasta el próximo cambio</string>
     <string name="setting_mode_manual_hold_forever">Hasta cambiarlo</string>

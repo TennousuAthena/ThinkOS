@@ -113,6 +113,7 @@ class RuntimeHost(private val context: Context) : PluginRuntime.Callbacks {
             device.onModeChanged()
             media.onModeChanged()
             cast.onModeChanged()
+            notifyObservers<DisplayObserver> { it.onDisplayMode(store.current.mode) }
         }
         plugins.event(null, event, args)
     }, { router.settingsOpen || router.onboardingOpen || panelOpen }, daylight::isDay, modeRuntime = modes,
@@ -238,6 +239,8 @@ class RuntimeHost(private val context: Context) : PluginRuntime.Callbacks {
         MotionPrefs.clock = system.clockMotion
         syncPlaceZone()
         settings.addListener { scope, keys ->
+            if (scope == SettingsStore.SYSTEM && SystemSettings.Keys.SLEEP_BACKLIGHT_VERIFIED in keys)
+                mainHandler.post { notifyObservers<DisplayObserver> { it.onSleepBacklightSettingChanged() } }
             if (scope == SettingsStore.SYSTEM && keys.any { it == SystemSettings.Keys.LOCATION_MODE || it == SystemSettings.Keys.LOCATION_TIMEZONE }) syncPlaceZone()
             if (scope == SettingsStore.SYSTEM && keys.any { key ->
                     key.startsWith("redshift.") || key.startsWith("sleep.") || key.startsWith("mode.") ||
@@ -317,6 +320,7 @@ class RuntimeHost(private val context: Context) : PluginRuntime.Callbacks {
         }
         if (observer is DisplayObserver) {
             observer.onBrightness(brightness)
+            observer.onDisplayMode(store.current.mode)
             observer.onOrientationRequest(orientationCode())
         }
         if (observer is KioskObserver) observer.onKioskPolicy(system.kioskLock, system.panelEnabled)

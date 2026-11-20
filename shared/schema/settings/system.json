@@ -146,29 +146,21 @@
       "level": "normal",
       "section": "mode"
     },
-    "sleep.wake": {
-      "type": "choice",
-      "label": "@setting.sleep.wake",
-      "default": "double",
-      "choices": [
-        {
-          "value": "double",
-          "label": "@setting.sleep.wake.double"
-        },
-        {
-          "value": "single",
-          "label": "@setting.sleep.wake.single"
-        },
-        {
-          "value": "off",
-          "label": "@setting.sleep.wake.off"
-        }
-      ],
-      "depends": {
-        "key": "sleep.enabled",
-        "value": true
-      },
-      "level": "normal",
+    "sleep.backlight_verified": {
+      "type": "bool",
+      "label": "@setting.sleep.backlight_verified",
+      "default": false,
+      "level": "advanced",
+      "section": "mode"
+    },
+    "sleep.tap_debounce_ms": {
+      "type": "number",
+      "label": "@setting.sleep.tap_debounce_ms",
+      "min": 0,
+      "max": 150,
+      "step": 5,
+      "default": 40,
+      "level": "advanced",
       "section": "mode"
     },
     "mode.manual_hold": {

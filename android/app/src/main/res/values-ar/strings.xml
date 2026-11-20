@@ -354,10 +354,8 @@
     <string name="setting_sleep_enabled">النوم</string>
     <string name="setting_sleep_start">بدء النوم</string>
     <string name="setting_sleep_end">نهاية النوم</string>
-    <string name="setting_sleep_wake">الإيقاظ باللمس</string>
-    <string name="setting_sleep_wake_double">نقرتان</string>
-    <string name="setting_sleep_wake_single">نقرة واحدة</string>
-    <string name="setting_sleep_wake_off">إيقاف</string>
+    <string name="setting_sleep_backlight_verified">تم التحقق من إطفاء الإضاءة الخلفية</string>
+    <string name="setting_sleep_tap_debounce_ms">الفاصل بين النقرات (مللي ثانية)</string>
     <string name="setting_mode_manual_hold">مدة الوضع اليدوي</string>
     <string name="setting_mode_manual_hold_next">حتى التغيير التالي</string>
     <string name="setting_mode_manual_hold_forever">حتى التغيير يدوياً</string>

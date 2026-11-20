@@ -90,6 +90,18 @@ class ModeControllerTest {
         }
     }
 
+    @Test fun touchWakeOverridesTheRestOfSleepEvenWhenSunriseComesFirst() {
+        val morning = day(2026, 11, 6)
+        val controller = policy(limits(Trigger.SUN, sleep = true).copy(minimumSwitchMillis = 0))
+        assertEquals(Mode.SLEEP, controller.evaluate(Input(0, wall(morning, 5), null, false)).mode)
+        val wake = controller.evaluate(Input(1, wall(morning, 5), null, false, manual = ManualAction.Wake(ManualHold.NEXT_BOUNDARY)))
+        assertEquals(Mode.REDSHIFT, wake.mode)
+        assertTrue(wake.exitSleepViaRedshift)
+        assertEquals(wall(morning, 7), wake.manual!!.expiresAtWallMillis)
+        assertEquals(Mode.REDSHIFT, controller.evaluate(Input(hour, wall(morning, 6), null, false)).mode)
+        assertEquals(Mode.DAY, controller.evaluate(Input(2 * hour, wall(morning, 7), null, false)).mode)
+    }
+
     @Test fun fixedWindowsAndSleepUseHalfOpenIntervalsAcrossMidnight() {
         val date = day(2026, 11, 5)
         val start = wall(date, 22, 59)

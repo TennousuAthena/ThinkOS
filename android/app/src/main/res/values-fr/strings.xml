@@ -354,10 +354,8 @@
     <string name="setting_sleep_enabled">Sommeil</string>
     <string name="setting_sleep_start">Début du sommeil</string>
     <string name="setting_sleep_end">Fin du sommeil</string>
-    <string name="setting_sleep_wake">Réveil tactile</string>
-    <string name="setting_sleep_wake_double">Double toucher</string>
-    <string name="setting_sleep_wake_single">Simple toucher</string>
-    <string name="setting_sleep_wake_off">Désactivé</string>
+    <string name="setting_sleep_backlight_verified">Extinction du rétroéclairage vérifiée</string>
+    <string name="setting_sleep_tap_debounce_ms">Délai entre les touchers (ms)</string>
     <string name="setting_mode_manual_hold">Durée du mode manuel</string>
     <string name="setting_mode_manual_hold_next">Jusqu’au prochain changement</string>
     <string name="setting_mode_manual_hold_forever">Jusqu’à modification</string>

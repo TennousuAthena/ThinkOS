@@ -504,6 +504,13 @@ class ThinkStage(
         } else clearPrepared()
         applyDrift()
     }
+    fun interruptForSleep() {
+        current?.interruptFormInput()
+        disarmLongPress()
+        cancelGesture()
+        endPanelTouch()
+    }
+
     private fun cancelGesture() {
         appTransition.snap()
         system.backProgress = 0f

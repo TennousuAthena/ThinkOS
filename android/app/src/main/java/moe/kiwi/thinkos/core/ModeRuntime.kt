@@ -59,6 +59,11 @@ class ModeRuntime internal constructor(
         action = ModeController.ManualAction.Set(mode, configuration().manualHold)
     }
 
+    fun wakeFromTouch() {
+        checkOwner()
+        action = ModeController.ManualAction.Wake(configuration().manualHold)
+    }
+
     fun clearManual() { checkOwner(); action = ModeController.ManualAction.Clear }
     fun invalidateTime() { checkOwner(); astronomy.invalidate() }
 

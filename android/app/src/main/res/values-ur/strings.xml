@@ -354,10 +354,8 @@
     <string name="setting_sleep_enabled">نیند</string>
     <string name="setting_sleep_start">نیند شروع</string>
     <string name="setting_sleep_end">نیند ختم</string>
-    <string name="setting_sleep_wake">چھو کر جگائیں</string>
-    <string name="setting_sleep_wake_double">دو بار چھوئیں</string>
-    <string name="setting_sleep_wake_single">ایک بار چھوئیں</string>
-    <string name="setting_sleep_wake_off">بند</string>
+    <string name="setting_sleep_backlight_verified">بیک لائٹ بند کرنے کی تصدیق</string>
+    <string name="setting_sleep_tap_debounce_ms">ٹیپ کا وقفہ (ملی سیکنڈ)</string>
     <string name="setting_mode_manual_hold">دستی موڈ کی مدت</string>
     <string name="setting_mode_manual_hold_next">اگلی تبدیلی تک</string>
     <string name="setting_mode_manual_hold_forever">تبدیل کرنے تک</string>

@@ -169,6 +169,10 @@ internal class SliderView(context: Context) : View(context) {
     }
 
     override fun onDetachedFromWindow() { cancelTracking(); super.onDetachedFromWindow() }
+    override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
+        super.onWindowFocusChanged(hasWindowFocus)
+        if (!hasWindowFocus) cancelTracking()
+    }
     fun cancelGesture() = cancelTracking()
 
     private fun update(x: Float) {

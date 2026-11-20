@@ -17,7 +17,7 @@ class SystemSettingsVisibilityTest {
     @Test fun theDeviceListsOnlyWhatAPersonWouldChange() {
         // A set: org.json on the JVM does not keep key order (Android's does), and order is not the point here.
         assertEquals(
-            setOf("theme.mode", "redshift.trigger", "redshift.start", "redshift.end", "sleep.enabled", "sleep.start", "sleep.end", "sleep.wake", "mode.manual_hold", "display.orientation", "motion.clock", "display.brightness_max", "units.system", "units.wind", "location.name", "kiosk.lock", "tiles.live", "tiles.interval", "tiles.background", "media.public_http", "cast.enabled", "cast.airplay", "cast.airplay_mirror", "cast.miracast", "cast.name", "media.keep_awake_video", "panel.enabled", "apps.return_after_s",
+            setOf("theme.mode", "redshift.trigger", "redshift.start", "redshift.end", "sleep.enabled", "sleep.start", "sleep.end", "sleep.backlight_verified", "sleep.tap_debounce_ms", "mode.manual_hold", "display.orientation", "motion.clock", "display.brightness_max", "units.system", "units.wind", "location.name", "kiosk.lock", "tiles.live", "tiles.interval", "tiles.background", "media.public_http", "cast.enabled", "cast.airplay", "cast.airplay_mirror", "cast.miracast", "cast.name", "media.keep_awake_video", "panel.enabled", "apps.return_after_s",
                 "attention.awake_to_ambient_s", "attention.to_asleep_s", "attention.engaged_idle_s", "attention.ambient_page_after_s", "apps.android", "update.enabled", "update.auto_install", "update.channel", "update.mirror",
                 "plugins.auto_update", "plugins.community", "plugins.mirror"),
             scope.visibleFields.map { it.key }.toSet())
@@ -52,7 +52,7 @@ class SystemSettingsVisibilityTest {
     @Test fun categoriesAndTimingPresetsComeFromTheSharedDeclaration() {
         assertEquals(listOf("display", "mode", "location", "desktop", "media", "system", "plugins"), scope.sections.map { it.id })
         assertTrue(scope.visibleFields.all { field -> scope.sections.any { it.id == field.section } })
-        assertEquals(setOf("attention.engaged_idle_s", "attention.ambient_page_after_s", "update.channel", "update.mirror", "plugins.mirror"), scope.visibleFields.filter { it.level == FieldLevel.ADVANCED }.map { it.key }.toSet())
+        assertEquals(setOf("sleep.backlight_verified", "sleep.tap_debounce_ms", "attention.engaged_idle_s", "attention.ambient_page_after_s", "update.channel", "update.mirror", "plugins.mirror"), scope.visibleFields.filter { it.level == FieldLevel.ADVANCED }.map { it.key }.toSet())
         assertEquals("plugins", scope.fields.getValue("plugins.auto_update").section)
         assertEquals("plugins", scope.fields.getValue("plugins.community").section)
         assertEquals("plugins", scope.fields.getValue("plugins.mirror").section)

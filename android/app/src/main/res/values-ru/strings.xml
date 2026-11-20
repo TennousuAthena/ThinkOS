@@ -354,10 +354,8 @@
     <string name="setting_sleep_enabled">Сон</string>
     <string name="setting_sleep_start">Начало сна</string>
     <string name="setting_sleep_end">Конец сна</string>
-    <string name="setting_sleep_wake">Пробуждение касанием</string>
-    <string name="setting_sleep_wake_double">Двойное касание</string>
-    <string name="setting_sleep_wake_single">Одно касание</string>
-    <string name="setting_sleep_wake_off">Выкл.</string>
+    <string name="setting_sleep_backlight_verified">Отключение подсветки проверено</string>
+    <string name="setting_sleep_tap_debounce_ms">Интервал между нажатиями (мс)</string>
     <string name="setting_mode_manual_hold">Ручной режим действует</string>
     <string name="setting_mode_manual_hold_next">До следующей смены</string>
     <string name="setting_mode_manual_hold_forever">До ручной смены</string>

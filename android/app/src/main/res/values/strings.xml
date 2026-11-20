@@ -354,10 +354,8 @@
     <string name="setting_sleep_enabled">Sleep</string>
     <string name="setting_sleep_start">Sleep starts</string>
     <string name="setting_sleep_end">Sleep ends</string>
-    <string name="setting_sleep_wake">Touch to wake</string>
-    <string name="setting_sleep_wake_double">Double tap</string>
-    <string name="setting_sleep_wake_single">Single tap</string>
-    <string name="setting_sleep_wake_off">Off</string>
+    <string name="setting_sleep_backlight_verified">Verified backlight blackout</string>
+    <string name="setting_sleep_tap_debounce_ms">Tap debounce (ms)</string>
     <string name="setting_mode_manual_hold">Manual mode lasts</string>
     <string name="setting_mode_manual_hold_next">Until next change</string>
     <string name="setting_mode_manual_hold_forever">Until changed</string>

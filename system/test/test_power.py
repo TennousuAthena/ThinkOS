@@ -234,7 +234,7 @@ class WholePath(unittest.TestCase):
 
     def test_the_app_can_ask_for_a_clean_power_off(self):
         p = self.start('--no-sync', *self.socket_args())
-        self.assertEqual(self.say(b'HELLO\n'), 'OK thinkos-power 2')
+        self.assertEqual(self.say(b'HELLO\n'), 'OK thinkos-power 3')
         self.assertEqual(self.say(b'STATUS\n'), 'OK {"protocol":1,"poweroff":true}')
         self.assertEqual(self.say(b'POWEROFF\n'), 'OK')
         self.assertTrue(p.wait_for('manual-poweroff'))
@@ -268,7 +268,7 @@ class WholePath(unittest.TestCase):
         packages = os.path.join(self.board.dir, 'packages.list')
         open(packages, 'w').write('other.app 10001 0 /d default none 0 0\nmoe.kiwi.thinkos %d 0 /d default none 0 0\n' % os.getuid())
         self.start('--no-sync', '--socket', self.socket_path(), '--packages', packages)
-        self.assertEqual(self.say(b'HELLO\n'), 'OK thinkos-power 2')
+        self.assertEqual(self.say(b'HELLO\n'), 'OK thinkos-power 3')
         open(packages, 'w').write('moe.kiwi.thinkos %d 0 /d default none 0 0\n' % (os.getuid() + 1))
         self.assertEqual(self.say(b'HELLO\n'), 'ERR denied')
 

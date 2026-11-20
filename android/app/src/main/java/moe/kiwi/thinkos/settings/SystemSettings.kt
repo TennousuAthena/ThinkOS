@@ -20,7 +20,8 @@ object SystemSettings {
         const val SLEEP_ENABLED = "sleep.enabled"
         const val SLEEP_START = "sleep.start"
         const val SLEEP_END = "sleep.end"
-        const val SLEEP_WAKE = "sleep.wake"
+        const val SLEEP_BACKLIGHT_VERIFIED = "sleep.backlight_verified"
+        const val SLEEP_TAP_DEBOUNCE = "sleep.tap_debounce_ms"
         const val MODE_MANUAL_HOLD = "mode.manual_hold"
         const val DARK_BELOW = "theme.dark_below_lux"
         const val LIGHT_ABOVE = "theme.light_above_lux"
@@ -226,6 +227,9 @@ class SystemValues(private val store: SettingsStore) {
             (number("update.trial_s") * 1000).toLong(), (number("update.notice_s") * 1000).toLong(), number("update.failure_limit").toInt())
 
     /** Video playback keeps the display at least awake: a film must not fall into the ambient clock. */
+    val sleepBacklightVerified: Boolean get() = store.resolved(SettingsStore.SYSTEM, SystemSettings.Keys.SLEEP_BACKLIGHT_VERIFIED)
+        .let { it.overridden && it.value == true }
+    val sleepTapDebounce: Long get() = number(SystemSettings.Keys.SLEEP_TAP_DEBOUNCE).toLong()
     val keepAwakeVideo: Boolean get() = bool(SystemSettings.Keys.MEDIA_KEEP_AWAKE_VIDEO)
 }
 

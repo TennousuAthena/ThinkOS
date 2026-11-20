@@ -59,6 +59,7 @@ class ModeController(
     }
     sealed interface ManualAction {
         data class Set(val mode: Mode, val hold: ManualHold) : ManualAction
+        data class Wake(val hold: ManualHold) : ManualAction
         data object Clear : ManualAction
     }
     data class Input(
@@ -118,6 +119,11 @@ class ModeController(
         when (val action = input.manual) {
             is ManualAction.Set -> manualOverride = ManualOverride(action.mode, action.hold,
                 if (action.hold == ManualHold.NEXT_BOUNDARY) frame.manualBoundaries.minOrNull() else null)
+            is ManualAction.Wake -> if (mode == Mode.SLEEP) {
+                val expiry = if (action.hold == ManualHold.NEXT_BOUNDARY)
+                    frame.sleep?.end ?: frame.manualBoundaries.minOrNull() else null
+                manualOverride = ManualOverride(Mode.REDSHIFT, action.hold, expiry)
+            }
             ManualAction.Clear -> manualOverride = null
             null -> Unit
         }

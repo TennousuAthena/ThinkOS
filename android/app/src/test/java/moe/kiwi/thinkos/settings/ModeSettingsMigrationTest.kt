@@ -20,6 +20,16 @@ class ModeSettingsMigrationTest {
     private fun store(memory: Memory) = SettingsStore(memory).also { it.register(scope) }
     private fun value(store: SettingsStore, key: String = "redshift.trigger") = store.get("system", key)
 
+    @Test fun remoteSettingCannotEnablePhysicalBlackout() {
+        val current = store(Memory())
+        val system = SystemValues(current)
+        current.applyServer(JSONObject("""{"sleep":{"backlight_verified":true}}"""))
+        assertFalse(system.sleepBacklightVerified)
+        current.applyServer(JSONObject("{}"))
+        current.set("system", "sleep.backlight_verified", true)
+        assertTrue(system.sleepBacklightVerified)
+    }
+
     @Test fun freshInstallDoesNotWriteAndUsesSafeDefaults() {
         val memory = Memory(); val current = store(memory)
         assertEquals("sun", value(current))
@@ -27,7 +37,9 @@ class ModeSettingsMigrationTest {
         assertEquals(false, value(current, "sleep.enabled"))
         assertEquals("23:00", value(current, "sleep.start"))
         assertEquals("07:00", value(current, "sleep.end"))
-        assertEquals("double", value(current, "sleep.wake"))
+        assertEquals(false, value(current, "sleep.backlight_verified"))
+        assertEquals(40L, value(current, "sleep.tap_debounce_ms"))
+        assertFalse(SystemValues(current).sleepBacklightVerified)
         assertEquals("next", value(current, "mode.manual_hold"))
         assertEquals(0, memory.writes)
     }

@@ -76,6 +76,13 @@ class SensorController(
         evaluate()
         return store.current.mode == value
     }
+    fun wakeFromTouch() {
+        check(Looper.myLooper() == handler.looper)
+        if (store.current.mode != Mode.SLEEP) return
+        modeRuntime?.wakeFromTouch()
+        evaluate()
+    }
+
     fun clearMode(): Boolean {
         check(Looper.myLooper() == handler.looper) { "Mode controls require the main thread" }
         val runtime = modeRuntime ?: return false
