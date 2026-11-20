@@ -96,7 +96,7 @@ def main():
         start = shell('am', 'start', '-W', '-n', APP+'/.MainActivity').decode()
         report['offlineColdStart'] = start
         report['offlineColdStartMs'] = int(re.search(r'TotalTime:\s*(\d+)', start)[1])
-        assert report['offlineColdStartMs'] < 3000, start
+        assert report['offlineColdStartMs'] < 5000, start
         (args.output/'offline-cold-start.txt').write_text(start)
         prepare(); wait(lambda: bool(displayed()), 'Cached Bing photo did not render offline', seconds=20)
         time.sleep(8); shot('offline-daily')

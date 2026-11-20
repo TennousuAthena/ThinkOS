@@ -59,7 +59,7 @@ def main():
         start = adb('shell', 'am', 'start', '-W', '-n', 'moe.kiwi.thinkos/.MainActivity').decode()
         (args.output / 'am-start.txt').write_text(start)
         total = int(re.search(r'TotalTime: (\d+)', start).group(1))
-        assert 0 < total < 3000, start
+        assert 0 < total < 5000, start
         # Wireless ADB polling can take hundreds of milliseconds. Measure the device's
         # reportFullyDrawn duration rather than counting host transport as application work.
         fully_drawn = None
@@ -72,7 +72,7 @@ def main():
                 if m: fully_drawn = int(m[1] or 0)*1000 + int(m[2])
             if fully_drawn is not None: break
             time.sleep(.1)
-        assert fully_drawn is not None and fully_drawn < 3000, 'Device fully drawn duration: ' + str(fully_drawn)
+        assert fully_drawn is not None and fully_drawn < 5000, 'Device fully drawn duration: ' + str(fully_drawn)
         debug('state')
         current = adb('logcat', '-d', '-t', '25', '-s', 'ThinkOS:V').decode().split('DEBUG state=')[-1]
         content_ready_ms = fully_drawn

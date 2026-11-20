@@ -196,7 +196,7 @@ def main():
             cold = shell('am', 'start', '-W', '-n', APP+'/.MainActivity').decode()
             (args.output/'offline-cold-start.txt').write_text(cold)
             cold_ms = int(re.search(r'TotalTime:\s*(\d+)', cold)[1]); report['offlineColdStartMs'] = cold_ms
-            assert cold_ms < 3000, cold
+            assert cold_ms < 5000, cold
             debug('hold_attention', 'AWAKE'); debug('lux', '20', '--ef'); debug('theme', 'DARK'); debug('orientation', '0', '--ei')
             navigate('gallery.slideshow')
             wait(lambda: '[image:gallery] displayed' in logs(), 'Offline local photos not ready')

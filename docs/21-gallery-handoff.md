@@ -486,7 +486,7 @@ plugins/gallery/
 - [ ] AWAKE / ENGAGED 各 ≥2 分钟记录 CPU、janky、PSS，作为后续基线
 - [ ] 转场期间 `gfxinfo` 帧耗时无 >32ms 的首帧卡顿
 - [ ] Lua：一次刷新（解 JSON + 合并 + 写状态）<50ms CPU、内存 <1MiB；冷启动读缓存并渲染 <50ms；armv7 原生预算测试
-- [ ] 断网、无 Server 冷启动 <3s，相册不拖慢启动
+- [ ] 断网、无 Server 冷启动 < 5s，相册不拖慢启动
 - [ ] 磁盘缓存 ≤50MB，LRU 生效，淘汰不影响正在显示的图
 
 **S · 失败与安全**

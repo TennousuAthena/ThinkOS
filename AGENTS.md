@@ -98,7 +98,7 @@ adb shell dumpsys gfxinfo moe.kiwi.thinkos reset && adb shell dumpsys gfxinfo mo
 
 1. `./gradlew assembleDebug` 通过
 2. `adb install -r` 成功
-3. 设备上冷启动 < 3s（**断网、无 Server 条件下**）
+3. 设备上冷启动 < 5s（**断网、无 Server 条件下**；2026-11-19 所有者从 3s 放宽，进入系统后的操作延迟优先）
 4. 待机界面连续运行 10 分钟无掉帧告警（`gfxinfo` 看 janky frames）。这是性能测试，先告知所有者，功能先在设备上确认
 5. 不引入新的 arm64-only 依赖
 

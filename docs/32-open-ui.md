@@ -16,7 +16,7 @@
 | E2 | **界面也是插件**：页面、版式、组件（时钟、列表、滑块、音乐界面、电视界面、磁贴、操作栏……）都由 Lua 插件实现，APK 里只剩机制 | `ui/` 里不再有“某个具体组件长什么样”的代码 |
 | E3 | **可替换**：用户选择哪个插件提供哪个页面 / 版式 / 组件，随时可以换回出厂；换坏了会自己退回去 | 在设备上换掉时钟表盘的提供方，其它插件不受影响，重启后保留 |
 
-同时必须保住的（已有的硬约束和用户的优先级）：Lua 不在主线程；**时钟秒级精度最高优先**（ADR-029）；设备自主（ADR-015）；恢复路径不依赖插件；只能 armv7 / API 27，不用 WebView 和 Compose；内存峰值 < 350MB，冷启动 < 3s。
+同时必须保住的（已有的硬约束和用户的优先级）：Lua 不在主线程；**时钟秒级精度最高优先**（ADR-029）；设备自主（ADR-015）；恢复路径不依赖插件；只能 armv7 / API 27，不用 WebView 和 Compose；内存峰值 < 350MB，冷启动 < 5s。
 
 ## 2. 它改了哪些现有结论
 
@@ -205,7 +205,7 @@ end
 | **S1 可行性**（与 P1 并行） | 场景内核最小切片 + 用它写时钟（数字与指针，含扫秒）和滑块（跟手）。**跑设备测试前先告诉用户** | M | §6.1 的门槛；不达标走止损 |
 | **P2 契约** | 组件与版式可以由插件提供，先只允许“声明式模板 + 现有原语”；第一批出厂提供方：`tabs`、`toggle` | M | 用一个替换版 `tabs` 跑 `player`，截图与行为一致 |
 | **P3 场景内核 v1（API 9）** | 原语、信号表达式、动画、手势、虚拟化滚动、`slot`；`shared/schema/` 里的场景与契约定义和生成代码；打包器、Go 与 Kotlin 校验；场景快照 | XL | 内核自己的 JVM / 原生 Lua 测试；§6.1 门槛 |
-| **P4 移植** | 约 26 个提供方改写成出厂 Lua；难度顺序：progress → seekbar / controls / slider / toggle / tabs → clock / daylight / moon / chart → list / grid → carousel → nowplaying / tv → stacks / focus / split / stage / form / panel → tiles / aero | XL（可并行） | 每项：截图与原生版的像素差在容差内；ADR-029 度量；janky / CPU / PSS 不超基线 +20%；冷启动 < 3s |
+| **P4 移植** | 约 26 个提供方改写成出厂 Lua；难度顺序：progress → seekbar / controls / slider / toggle / tabs → clock / daylight / moon / chart → list / grid → carousel → nowplaying / tv → stacks / focus / split / stage / form / panel → tiles / aero | XL（可并行） | 每项：截图与原生版的像素差在容差内；ADR-029 度量；janky / CPU / PSS 不超基线 +20%；冷启动 < 5s |
 | **P5 外壳** | 翻页范式、手势映射、角色调度也可由插件提供。在此之前，返回栈、返回手势、应用和启动动画是内核外壳的机制（[33 号文档](33-apps-and-back.md)），到这一步它们就是外壳插件的接口 | L | 可选，看 P4 的结果再定 |
 
 `form`（设置表单加时区、地点选择器，约 1,060 行）涉及文字输入和对话框，需要内核先提供原生输入与对话框原语，放在 P4 靠后。
@@ -220,7 +220,7 @@ end
 | 待机 | AWAKE 静态数字时钟与 AMBIENT 首页的单核 CPU 不超过 `13-pre-m1-hardening.md` 基线的 +20%，janky < 5% | `bench.sh` / `gfxinfo`（跑之前先告诉用户） |
 | 滑块 | 手指到像素不经过 Lua（让一个插件占满 50 ms 切片时拖动仍然跟手）；松手后的 `change` 事件 ≤ 100 ms 到达 Lua | 设备脚本 |
 | 内存 | 出厂 UI 库常驻 Lua 内存 < 3 MiB，PSS 增量 < 10 MB | `dumpsys meminfo` |
-| 冷启动 | 仍 < 3s（断网、无 Server） | `pre_m1_cold_start.py` |
+| 冷启动 | 仍 < 5s（断网、无 Server） | `pre_m1_cold_start.py` |
 
 **止损**：时钟或待机一项做不到，调优一轮后仍不达标——不做“Lua 自绘”，退回 P2 的终点：提供方可以替换高层组件和版式（用现有原语组合），绘制原语（时钟表盘等）仍是内核的固定词汇。那时 E2 只能做到一半，我会把丢掉的部分交还用户决定，不会悄悄降标准。
 

@@ -240,7 +240,7 @@ python3 tools/vendor_tzdata.py                    # 更新 tzdata；默认读本
 
 ## 9. 验收口径（提交前自查，来自 `AGENTS.md`）
 
-1. `./gradlew assembleDebug` 通过；2. `adb install -r` 成功；3. 设备冷启动 < 3 s（**断网、无 Server**）；4. 待机界面连续 10 分钟 `gfxinfo` 无掉帧告警；5. 不引入新的非 armv7 依赖。
+1. `./gradlew assembleDebug` 通过；2. `adb install -r` 成功；3. 设备冷启动 < 5s（**断网、无 Server**）；4. 待机界面连续 10 分钟 `gfxinfo` 无掉帧告警；5. 不引入新的非 armv7 依赖。
 M1 另有：切换 50 张照片不 OOM（峰值 < 350 MB）；播放 30 分钟不断流，播放 + 频谱 CPU < 25%、帧率 ≥ 50 fps；断网后天气卡片保留最后数据；所有插件 Lua 内存合计 < 24 MB。
 
 ## 10. 代码地图

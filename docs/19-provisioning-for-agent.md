@@ -264,7 +264,7 @@ adb -s <序列号> shell dumpsys deviceidle whitelist +moe.kiwi.thinkos
 | 9 | ThinkOS | `dumpsys activity activities \| grep mResumedActivity` 含 `moe.kiwi.thinkos/.MainActivity` |
 | 10 | Home 键 | `adb shell input keyevent KEYCODE_HOME` 后前台仍是 ThinkOS |
 | 11 | 截图 | `adb exec-out screencap -p > /tmp/shot.png`，看过确认界面正常 |
-| 12 | 冷启动 | 断网重启后 ThinkOS < 3s（`AGENTS.md` 验收第 3 条；可在最后一步验证，需用户同意拔掉网络） |
+| 12 | 冷启动 | 断网重启后 ThinkOS < 5s（`AGENTS.md` 验收第 3 条；可在最后一步验证，需用户同意拔掉网络） |
 
 ## 9. 停下并求助的条件
 

@@ -32,6 +32,6 @@
 ## 最终复验待记录
 
 1. 新增 `shared/schema/plugin/index.json` / `catalog.json` 后再统一运行 JVM / lint / assemble，安装最终 APK；检查仅 armv7 原生库、目录插件和共享索引校验。
-2. 最终 APK 上按 M0.5 原要求测断网无 Server 冷启动 <3 s、AWAKE / AMBIENT CPU；超基线 20% 需调查。目录安全与生命周期的以上真机证据来自首候选，不代替最终性能验证。
+2. 最终 APK 上按 M0.5 原要求测断网无 Server 冷启动 <5 s（2026-11-19 从 3 s 放宽）、AWAKE / AMBIENT CPU；超基线 20% 需调查。目录安全与生命周期的以上真机证据来自首候选，不代替最终性能验证。
 
 尚未完成的验收不提前勾选 `09-roadmap.md` 中的 M0.5 验收框。

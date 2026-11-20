@@ -247,7 +247,7 @@ def main():
                 time.sleep(.1)
             (args.output/('offline-activity-timings-'+str(attempt)+'.txt')).write_text('\n'.join(lines)+'\n')
             assert ready is not None, 'Android did not report a fully drawn duration'
-            assert total<3000 and ready<3000,(total,ready)
+            assert total<5000 and ready<5000,(total,ready)
             assert 'plugin CPU budget exceeded' not in logs(), 'Offline cached start exhausted its budget'
             cold.append({'activityMs':total,'contentMs':ready,'hostObservedMs':host_observed})
         find(expected);shot('offline-fahrenheit-cache')

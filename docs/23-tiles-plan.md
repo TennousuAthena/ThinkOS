@@ -222,7 +222,7 @@
 
 | 指标 | 通过标准 | 方法 |
 |---|---|---|
-| 冷启动 | < 3s，断网、无 Server | `tools/tests/pre_m1_cold_start.py` |
+| 冷启动 | < 5s，断网、无 Server | `tools/tests/pre_m1_cold_start.py` |
 | 掉帧 | 连续 10 分钟无掉帧告警 | `dumpsys gfxinfo`、`tools/bench.sh` |
 | 单帧绘制 | ≤ 12ms | `gfxinfo` |
 | 内存峰值 | < 350MB | `dumpsys meminfo` |
