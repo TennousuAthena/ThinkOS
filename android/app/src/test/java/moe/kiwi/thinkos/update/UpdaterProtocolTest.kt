@@ -11,6 +11,17 @@ class UpdaterProtocolTest {
         for (value in listOf("RUN id", "HELLO\nREBOOT", "GRANT_LANGUAGE another.package", "SET_TIMEZONE Etc/UTC;id", "SET_TIMEZONE " + "A".repeat(65)))
             assertThrows(IllegalArgumentException::class.java) { UpdaterProtocol.request(value) }
     }
+    @Test fun severalDescriptorsAreSentOnePerSegmentAndRejoinToTheSameLine() {
+        val stage = UpdaterProtocol.request("STAGE")
+        val parts = UpdaterProtocol.segments(stage, 3)
+        assertEquals(listOf("S", "T", "AGE\n"), parts.map { it.toString(Charsets.US_ASCII) })
+        assertArrayEquals(stage, parts.reduce { a, b -> a + b })
+        val one = UpdaterProtocol.request("INSTALL_APK")
+        assertEquals(1, UpdaterProtocol.segments(one, 1).size)
+        assertArrayEquals(one, UpdaterProtocol.segments(one, 0).single())
+        assertThrows(IllegalArgumentException::class.java) { UpdaterProtocol.segments(stage, 4) }
+        assertThrows(IllegalArgumentException::class.java) { UpdaterProtocol.segments(byteArrayOf(10), 2) }
+    }
     @Test fun setupMutationsRequireARecentRealMonotonicTap() {
         assertTrue(UpdaterProtocol.fresh(1_000, 6_000))
         assertFalse(UpdaterProtocol.fresh(1_000, 6_001))

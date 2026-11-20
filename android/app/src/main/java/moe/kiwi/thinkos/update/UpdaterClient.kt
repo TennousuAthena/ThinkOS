@@ -73,8 +73,13 @@ internal class UpdaterClient(private val elapsed: () -> Long = SystemClock::elap
                             if (socket.peerCredentials.uid != 0) throw IOException("updater peer is not root")
                             if (tapElapsed != null && !UpdaterProtocol.fresh(tapElapsed, elapsed())) throw IOException("tap")
                             socket.soTimeout = remaining(deadline)
-                            socket.setFileDescriptorsForSend(descriptors.takeIf { it.isNotEmpty() })
-                            socket.outputStream.write(request)
+                            // API27's LocalSocket sizes its SCM_RIGHTS buffer by descriptor count instead
+                            // of bytes: one descriptor fits, several fail with EINVAL after overrunning the
+                            // stack buffer. Send one descriptor per segment; updaterd reads them all.
+                            UpdaterProtocol.segments(request, descriptors.size).forEachIndexed { index, part ->
+                                socket.setFileDescriptorsForSend(descriptors.getOrNull(index)?.let { arrayOf(it) })
+                                socket.outputStream.write(part)
+                            }
                             socket.outputStream.flush()
                             socket.setFileDescriptorsForSend(null)
                             val response = ByteArrayOutputStream()
@@ -95,7 +100,11 @@ internal class UpdaterClient(private val elapsed: () -> Long = SystemClock::elap
                         } finally { watch.cancel(false) }
                     }
                 } catch (cancelled: CancellationException) { throw cancelled }
-                catch (error: Exception) { Result.failure(error) }
+                catch (error: Exception) {
+                    if (UpdaterProtocol.timeoutFor(line) == UpdaterProtocol.MUTATION_TIMEOUT_MS)
+                        android.util.Log.w("ThinkOS", "Updater ${line} exchange failed: ${error.javaClass.simpleName}: ${error.message}")
+                    Result.failure(error)
+                }
     }
 
     private fun remaining(deadline: Long): Int = (deadline - elapsed()).takeIf { it > 0 }?.toInt()
@@ -127,6 +136,13 @@ internal object UpdaterProtocol {
         require(line in fixed || line.startsWith("SET_TIMEZONE ") && zoneId(line.removePrefix("SET_TIMEZONE ")))
         require(line.length + 1 <= 256 && line.all { it.code in 32..126 })
         return (line + "\n").toByteArray(Charsets.US_ASCII)
+    }
+    /** One descriptor per segment: the first segments are single bytes, the last carries the rest. */
+    fun segments(request: ByteArray, descriptors: Int): List<ByteArray> {
+        require(descriptors in 0..3 && request.size >= maxOf(descriptors, 1))
+        if (descriptors <= 1) return listOf(request)
+        return (0 until descriptors - 1).map { request.copyOfRange(it, it + 1) } +
+            listOf(request.copyOfRange(descriptors - 1, request.size))
     }
     fun error(response: String): String = if (response.startsWith("ERR ") && response.length in 5..128)
         response.removePrefix("ERR ") else "invalid updater reply"

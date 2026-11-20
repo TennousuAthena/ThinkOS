@@ -490,6 +490,28 @@ int main(int argc,char **argv) {
         finally:
             self.home.chmod(0o700)
 
+    def test_stage_descriptors_may_arrive_one_per_segment(self):
+        # Android 8.1's LocalSocket can only send one descriptor per write, so ThinkOS splits STAGE.
+        files = self.signed()
+        self.assertEqual(self.request('BEGIN'), 'OK')
+        with self.connect() as peer:
+            descriptors = [os.open(path, os.O_RDONLY) for path in files]
+            try:
+                for part, descriptor in zip((b'S', b'T', b'AGE\n'), descriptors):
+                    peer.sendmsg([part], [(socket.SOL_SOCKET, socket.SCM_RIGHTS, array.array('i', [descriptor]))])
+                data = b''
+                while not data.endswith(b'\n'):
+                    chunk = peer.recv(4096)
+                    if not chunk:
+                        break
+                    data += chunk
+            finally:
+                for descriptor in descriptors:
+                    os.close(descriptor)
+        self.assertEqual(data, b'OK\n')
+        self.assertEqual(self.module_status()['staged'], 2)
+        self.assertEqual(self.request('ROLLBACK'), 'OK')
+
     def test_bad_signature_unknown_id_hash_and_size_do_not_execute(self):
         self.assertEqual(self.request('BEGIN'), 'OK')
         cases = [(self.signed(key=2), 'ERR bad-signature'),
