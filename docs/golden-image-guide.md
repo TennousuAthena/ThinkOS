@@ -150,3 +150,15 @@ python3 tools/provision.py golden-plan \
 **做法：**`tools/rebuild_vendor_image.py ZIP 输出目录` 把包里的块数据还原成 384 MiB 的原始 vendor 镜像（ext4，卷标 `vendor`，4 KiB 块，`new` 块总数和解压后大小一致），放在 `~/ThinkSmartView/golden/vendor.img`。用同一个脚本重做的结果与实际刷进去的字节完全一致，写入后读回哈希一致。**没验证：**它和第一台经 recovery 刷出来的 vendor 是否逐字节相同（第一台已送出，没有读过它的 vendor）。
 
 **第二台实际走的步骤（出厂固件 `Lenovo_Kingston_OS_DV_190904_V0.0.31-factory`，`adb reboot edl` 直接进 EDL，序列号也是 `44fec07a`，不唯一）：**先 `edl r` 备份它自己的 `persist`、`modemst1/2`、`fsc`、`fsg`、`ssd`、`sec`、`devinfo`，分区表与参考机一致；官方整包 qfil（和第一台一样，也会覆盖 persist 开头约 4.6 MB）；`edl w aboot`；`edl w vendor`（上面还原的镜像）；然后 boot、recovery、system、userdata 四个金镜像；`edl reset`，约 20 秒 adb 出现，状态未授权（符合不带 adb 信任）。总共不到 10 分钟，全程不用碰屏幕。
+
+## 9. 2026-11-21 第三台装机与重新取 userdata（序列号同为 44fec07a）
+
+**装机：**照 §8 的步骤（备份独有分区到 `ThinkSmartView/backup-unit3-20261120-1945/`、官方整包 qfil、`aboot`、`vendor`、四个金镜像，逐个读回核对），不到 10 分钟。分区表与参考机一致。
+
+**OTA 验收（同一台，全程记录在 `docs/10` §16）：**应用 OTA、模块 OTA、更新器自我更新和守卫轮换都在这台上真机走通；坏模块演练（0.1.44 的电源模块 v0.6，只在有 `/data/adb/thinkos-drill-bad-boot` 时让开机停在 zygote）：开机卡住 → 模拟断电重启 → 守卫在挂载模块前恢复 v0.5 → 开机完成后退回旧 APK 并自动重启一次 → 正常。演练标记已删除。
+
+**新的 userdata：**机上为稳定版 0.1.45、更新器 v1.5（守卫 `current` 为 v1.5，`previous` 为 11 月 6 日那份）、电源模块 v0.5，Device Owner 照旧（`preserved`），时区 Asia/Shanghai、语言 zh-Hans-CN。用 `tools/golden_clean.sh` 清理后直接 `adb reboot edl`，`edl r userdata`；boot、recovery、system、vendor 读出与原金镜像逐字节相同，未替换。`golden.json` 的 userdata 摘要已更新为 `1fe92733…d81a`，旧的 userdata 与清单保留在 `golden/old-20261106/`。**旧金镜像里的更新器是 v1.1，装应用时用 `pm install -p` 必定失败（`docs/10` §16），以后新机一律用这份新的。**
+
+**扫描（字符串）：**没有 Wi-Fi 名、`PreSharedKey`、Mac 主机名。仍有：timesync 模块描述里的 `author=` 是所有者用户名（11 月 6 日起就在）；Magisk 的 su 记录里有调试时执行过的命令（只有命令和路径）。**下次清理前**应在机器还开着时清掉 Magisk 的 su 记录，`golden_clean.sh` 尚未包含这一步（未验证具体做法，不要盲加）。
+
+**交付状态：**读出后没有复位，机器停在 EDL（黑屏）；断电再上电就是第一次开机，进入引导、生成本机的投屏身份。
