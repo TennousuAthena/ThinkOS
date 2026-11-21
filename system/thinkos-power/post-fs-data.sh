@@ -14,16 +14,3 @@ MODDIR=${0%/*}
     sleep 2
   done
 ) &
-
-# 坏模块演练专用（v0.6，2026-11-21）：只有设备上存在 /data/adb/thinkos-drill-bad-boot 时才生效，
-# 等 zygote 起来后把它停掉，让这次开机永远到不了 sys.boot_completed，用来验证守卫的开机前恢复。
-# 没有这个标记文件的设备上什么也不做。演练后 v0.7 删除本段。
-if [ -f /data/adb/thinkos-drill-bad-boot ]; then
-  (
-    n=0
-    while [ $n -lt 300 ]; do
-      if [ "$(getprop init.svc.zygote)" = running ]; then stop zygote; exit 0; fi
-      n=$((n + 1)); sleep 1
-    done
-  ) &
-fi
