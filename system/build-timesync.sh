@@ -13,7 +13,7 @@ from pathlib import Path
 root=Path(sys.argv[1]);source=root/'timesync';output=Path(sys.argv[2])
 origin=json.loads((source/'ORIGIN.json').read_text())
 files={name:(source/name).read_bytes() for name in ('module.prop','service.sh','ORIGIN.json')}
-for name,digest in origin['unmodified_files'].items():
+for name,digest in origin['pinned_files'].items():
     if hashlib.sha256(files[name]).hexdigest()!=digest:raise SystemExit('Pinned timesync source changed: '+name)
 prop=dict(line.split('=',1) for line in files['module.prop'].decode().splitlines() if '=' in line)
 if prop.get('id')!='timesync' or not re.fullmatch(r'v[0-9]+\.[0-9]+',prop.get('version','')):

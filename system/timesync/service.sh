@@ -8,18 +8,11 @@
 # 之所以不用 NTP：设备上两个 busybox 都没编 ntpd，toybox nc 也不支持 UDP。
 # 之所以不用 nc 抓 header：root 下 nc 组包会被打回 400，curl 稳定可靠。
 
-LOG=/data/local/tmp/time-sync.log
+LOG=${TIMESYNC_LOG:-/data/local/tmp/time-sync.log}
+# 日志有界：超过 64 KiB 就从头写
+[ -f "$LOG" ] && [ "$(wc -c < "$LOG" 2>/dev/null || echo 0)" -gt 65536 ] && : > "$LOG"
 exec >>"$LOG" 2>&1
 echo "=== $(date) time-sync start ==="
-
-# 等网络就绪，最多 4 分钟
-i=0
-while [ "$i" -lt 120 ]; do
-  ping -c 1 -W 1 223.5.5.5 >/dev/null 2>&1 && break
-  sleep 2
-  i=$((i+1))
-done
-
 now_ok() {
   y=$(date +%Y)
   [ "$y" -ge 2020 ] 2>/dev/null
@@ -48,9 +41,11 @@ set_from_raw() {
   date -u "${M}${DAY}${HH}${MM}${YEAR}.${SS}"
 }
 
-# 最多重试 30 轮（约 2.5 分钟），覆盖开机时 DNS/网络还没完全就绪的情况
+# 一直试到取到时间为止（v1.1，2026-11-21）。v1.0 最多等约 6.5 分钟就放弃：新用户走完引导才连上 Wi-Fi 时，
+# 系统时间会一直停在 2009 年，HTTPS 全部失败。不再先 ping：有的网络不通 ICMP，直接取 Date 头。
+# 开机后前 5 分钟每 5 秒一轮，之后每 30 秒一轮；失败只记前 60 轮和之后每 20 轮，日志不会涨。
 n=0
-while [ "$n" -lt 30 ]; do
+while true; do
   n=$((n+1))
   for url in http://www.baidu.com http://www.taobao.com http://www.qq.com https://www.baidu.com; do
     RAW=$(fetch_date "$url")
@@ -58,17 +53,18 @@ while [ "$n" -lt 30 ]; do
       echo "got from $url: $RAW"
       if set_from_raw "$RAW"; then
         if now_ok; then
-          echo "OK after set: $(date)"
+          echo "OK after set: $(date) (round $n)"
           echo "=== done ==="
           exit 0
         fi
       fi
     fi
   done
-  echo "attempt $n failed, retry in 5s"
-  sleep 5
+  if [ "$n" -le 60 ]; then
+    [ "$n" -eq 60 ] && echo "round $n failed; continuing every 30s" || echo "round $n failed, retry in 5s"
+    sleep 5
+  else
+    [ $((n % 20)) -eq 0 ] && echo "round $n failed, still trying, time $(date)"
+    sleep 30
+  fi
 done
-
-echo "giving up after $n attempts, time still $(date)"
-echo "=== done (failed) ==="
-exit 0

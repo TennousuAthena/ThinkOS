@@ -40,11 +40,22 @@ class TimeSync(private val context: Context, private val system: SystemValues, p
         override fun onReceive(context: Context, intent: Intent) { WallClock.systemClockChanged(); reschedule(0) }
     }
 
+    /**
+     * A network just became the default one. Failed rounds back off to 30 minutes, which on first boot left the clock wrong long
+     * after Wi-Fi was connected during setup: measure right away instead (2026-11-21).
+     */
+    private val networkUp = object : android.net.ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: android.net.Network) { handler.post { if (failures > 0 || !WallClock.synced) reschedule(0) } }
+    }
+
     fun start() {
         if (started) return
         started = true
         restore()
         context.registerReceiver(clockChanged, IntentFilter(Intent.ACTION_TIME_CHANGED), null, handler)
+        runCatching {
+            context.getSystemService(android.net.ConnectivityManager::class.java).registerDefaultNetworkCallback(networkUp, handler)
+        }.onFailure { Log.w("ThinkOS", "time sync: cannot watch the network", it) }
         settings.addListener { scope, keys ->
             if (scope == SettingsStore.SYSTEM && (SystemSettings.Keys.NTP_SERVERS in keys || SystemSettings.Keys.TIME_SYNC_INTERVAL in keys)) reschedule(0)
         }
