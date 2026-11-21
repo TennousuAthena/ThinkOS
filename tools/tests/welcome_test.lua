@@ -77,7 +77,12 @@ assert(values["onboarding.done"]==0,"manual restart must clear an old completion
 assert(values["onboarding.attempts"]==0,"manual restart must renew an exhausted automatic prompt budget")
 assert(state.step=="hello" and #opened==0 and intercepted)
 assert(state.public.setup.region==nil,"an inferred locale must not be published as a chosen region")
-emit("tap","hello.next");assert(state.step=="language" and page=="setup")
+emit("back");assert(state.step=="hello" and page=="hello" and intercepted and #opened==0,
+  "Back on the first screen of unfinished setup stays there and keeps Back")
+emit("tap","hello.skip");assert(values["onboarding.done"]==0 and state.skipLabel=="skipConfirm","one skip tap only asks for confirmation")
+emit("tap","hello.next");assert(state.step=="language" and page=="setup" and state.skipLabel=="skipSetup",
+  "any other tap clears a pending skip confirmation")
+pass("Back on the first screen stays; skipping setup needs a second tap")
 for _,name in ipairs({"hello.next","hello.skip","hello.accessibility"}) do emit("tap",name) end
 assert(state.step=="language" and values["onboarding.done"]==0 and #opened==0 and #state.public.setup.skipped==0,
   "late welcome-page taps must not advance, skip or leave the current screen")
@@ -92,13 +97,13 @@ assert(values["units.system"]=="imperial" and state.step=="wifi")
 tap("primary");assert(opened[#opened]=="wifi" and state.step=="wifi")
 assert(state.secondary=="","offline Wi-Fi shows no skip: the clock cannot be set without a network")
 tap("secondary");assert(state.step=="wifi" and persisted.progress.skipped.wifi==nil,"a stale skip tap cannot pass the Wi-Fi screen")
-online=true;emit("device");assert(state.primary~=nil and state.step=="wifi")
-tap("primary");assert(state.step=="privacy" and state.public.setup.pending)
+online=true;emit("device");assert(state.step=="privacy" and state.public.setup.pending,
+  "connecting on Android's Wi-Fi page moves setup on by itself")
 online=false
 tap("secondary");assert(opened[#opened]=="licenses" and state.step=="privacy")
 tap("primary");assert(state.step=="updates")
 tap("secondary");assert(values["update.auto_install"]==false and state.step=="location")
-pass("offline Wi-Fi cannot be skipped and continues once online; privacy licenses stay on the same step; download-only writes false")
+pass("offline Wi-Fi cannot be skipped and continues by itself once online; privacy licenses stay on the same step; download-only writes false")
 
 assert(state.hero=="12:34")
 emit("form.change","location.name",{mode="manual",name="City",latitude=1,longitude=2,elevation=3,timezone="Asia/Shanghai"})
@@ -133,7 +138,8 @@ emit("practice","swipe");assert(practice=="variant" and persisted.progress.gestu
 emit("back");assert(practice=="swipe" and persisted.progress.gesture==1)
 for _, name in ipairs {"swipe","variant","panel","back"} do emit("practice",name) end
 assert(practice=="home" and persisted.progress.gesture==5)
-emit("practice","home");assert(persisted.progress.gesture==6 and focus==nil)
+emit("practice","home");assert(persisted.progress.gesture==6 and focus==nil and practice=="long-press",
+  "the Home lesson is only recognised: setup stays on screen and the next lesson starts")
 emit("page.leave","gestures");assert(practice==nil and values["onboarding.done"]==0)
 resetVm();enter("continue")
 assert(page=="gestures" and practice=="long-press" and persisted.progress.gesture==6)
@@ -142,13 +148,14 @@ emit("tap","gesture.next");assert(state.step=="welcome")
 emit("tap","gesture.next");emit("tap","hello.skip")
 assert(state.step=="welcome" and values["onboarding.done"]==0,"a stale lesson or greeting tap cannot press Start on the final page")
 tap("primary");assert(values["onboarding.done"]==1 and opened[#opened]=="release:setup")
-pass("wrong gestures and taps cannot pass practice; Home persists and resumes the next lesson; real completion releases the page")
+pass("wrong gestures and taps cannot pass practice; the Home lesson keeps setup on screen; real completion releases the page")
 
 online=true;resetVm();enter("restart")
+emit("tap","hello.skip");assert(values["onboarding.done"]==0)
 emit("tap","hello.skip")
 assert(values["onboarding.done"]==1 and state.public.setup.pending)
 assert(persisted.progress.skipped.wifi==nil and persisted.progress.skipped.timezone==nil)
-pass("skip-all completes setup and publishes only applicable skipped screens for later continuation")
+pass("a confirmed skip-all completes setup and publishes only applicable skipped screens for later continuation")
 
 persisted.progress={schema=1,step="done",gesture=1,skipped={location=true}}
 resetVm();enter("resume")

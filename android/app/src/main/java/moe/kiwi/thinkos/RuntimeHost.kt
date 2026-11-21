@@ -82,7 +82,7 @@ class RuntimeHost(private val context: Context) : PluginRuntime.Callbacks {
     val storagePermission = StoragePermission(context, ::requestStoragePermission)
     /** The brightness, volume and Wi-Fi the control sheet changes (ADR-035); `device` events reach the plugin that holds `system.device`. */
     val device = moe.kiwi.thinkos.device.DeviceControl(context, { levels },
-        onChange = { plugins.event(null, "device") }, onNetworkChange = { cast.reconfigure() },
+        onChange = { plugins.event(null, "device") }, onNetworkChange = { cast.reconfigure(); returnToSetupWhenOnline() },
         mode = { store.current.mode.name.lowercase(java.util.Locale.ROOT) },
         manualMode = { value -> sensors.setMode(moe.kiwi.thinkos.core.Mode.valueOf(value.uppercase(java.util.Locale.ROOT))) })
     val plugins: PluginRuntime = PluginRuntime(context, this, settings, media, storagePermission, device, castStatus = { cast.status() })
@@ -98,7 +98,7 @@ class RuntimeHost(private val context: Context) : PluginRuntime.Callbacks {
         onOnboardingPrompt = {
             val attempts = (settings.get(SettingsStore.SYSTEM, SystemSettings.Keys.ONBOARDING_ATTEMPTS) as Number).toInt()
             settings.set(SettingsStore.SYSTEM, SystemSettings.Keys.ONBOARDING_ATTEMPTS, attempts + 1)
-        }, onboardingIdleMillis = { system.onboardingIdleMillis })
+        }, onboardingIdleMillis = { system.onboardingIdleMillis }, onboardingDone = { system.onboardingDone })
     /** The sunrise-and-sunset theme asks this once a second; the Sun is recomputed at most every 30 s. */
     private val daylight = DaylightProbe({ runCatching { LocationProvider(settings).get().place }.getOrNull() })
     val modes = moe.kiwi.thinkos.core.ModeRuntime(settings,
@@ -116,8 +116,18 @@ class RuntimeHost(private val context: Context) : PluginRuntime.Callbacks {
             notifyObservers<DisplayObserver> { it.onDisplayMode(store.current.mode) }
         }
         plugins.event(null, event, args)
-    }, { router.settingsOpen || router.onboardingOpen || panelOpen }, daylight::isDay, modeRuntime = modes,
+    }, { router.settingsOpen || router.onboardingHoldsAttention || panelOpen }, daylight::isDay, modeRuntime = modes,
         onboardingOpen = { router.onboardingOpen })
+    /**
+     * Setup sent the user to Android's Wi-Fi page. Once a network is up, take the screen back so setup can go on: nothing on
+     * Android's page says what to do next. Runs on the main thread (DeviceControl announces there).
+     */
+    private fun returnToSetupWhenOnline() {
+        val kiosk = moe.kiwi.thinkos.shell.KioskState
+        if (!kiosk.foreign || kiosk.setupForeignTarget != "wifi" || !router.onboardingOpen || device.snapshot()["online"] != true) return
+        kiosk.setupForeignTarget = null
+        moe.kiwi.thinkos.shell.ForegroundTask.restore(context, "setup wifi connected")
+    }
     /** The control sheet is up: the display stays at full attention while somebody uses it. */
     @Volatile private var panelOpen = false
 

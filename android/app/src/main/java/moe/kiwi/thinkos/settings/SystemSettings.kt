@@ -143,6 +143,7 @@ class SystemValues(private val store: SettingsStore) {
     val onboardingNeeded: Boolean get() = moe.kiwi.thinkos.core.OnboardingPolicy.prompt(
         number(SystemSettings.Keys.ONBOARDING_DONE).toInt(), number(SystemSettings.Keys.ONBOARDING_ATTEMPTS).toInt(),
         number(SystemSettings.Keys.ONBOARDING_MAX_PROMPTS).toInt(), false)
+    val onboardingDone: Int get() = number(SystemSettings.Keys.ONBOARDING_DONE).toInt()
     val onboardingIdleMillis: Long get() = (number(SystemSettings.Keys.ONBOARDING_IDLE) * 1000).toLong()
     val onboardingGreetingSeconds: Double get() = number(SystemSettings.Keys.ONBOARDING_GREETING)
 

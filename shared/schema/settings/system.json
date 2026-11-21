@@ -1093,7 +1093,7 @@
     "onboarding.max_prompts": {
       "type": "number",
       "label": "@setting.onboarding.max_prompts",
-      "default": 3,
+      "default": 0,
       "min": 0,
       "max": 10,
       "step": 1,

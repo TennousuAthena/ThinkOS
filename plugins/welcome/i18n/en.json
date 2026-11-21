@@ -6,6 +6,7 @@
   "back": "Back",
   "skip": "Skip",
   "skipSetup": "Skip setup",
+  "skipConfirm": "Confirm skipping setup",
   "accessibility": "Accessibility",
   "language": "Language",
   "region": "Region",

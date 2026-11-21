@@ -138,6 +138,7 @@ class MainActivity : Activity(), RuntimeHost.Observer {
         immersive()
         KioskState.leaveForeign()
         KioskState.foreignFromSetup = false
+        KioskState.setupForeignTarget = null
         kiosk.apply(this, host.system.kioskLock, host.system.panelEnabled)   // coming back from Android's settings locks again
         if (BuildConfig.DEBUG) moe.kiwi.thinkos.perf.InputTrace.window(window)
         stage.start()
@@ -298,6 +299,7 @@ class MainActivity : Activity(), RuntimeHost.Observer {
             "settings" -> Settings.ACTION_SETTINGS
             else -> return false
         }
+        KioskState.setupForeignTarget = if (host.router.onboardingOpen) target else null
         return launchOutside(Intent(action))
     }
     override fun onOpenAndroidApp(packageName: String, result: (Boolean) -> Unit): Boolean {

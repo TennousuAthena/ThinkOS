@@ -27,6 +27,8 @@ local currentPage, visible, greeting, timer = nil, false, 1, nil
 local resumeOnly = progress.resumeOnly == true
 local shownFields, failure = {}, nil
 local continuation = 0
+-- "Skip setup" needs a second tap on the same line (owner decision 2026-11-21). Any other tap or leaving resets it.
+local confirmSkip = false
 local render, route, advance
 local practiceNames={"swipe", "variant", "panel", "back", "home", "long-press"}
 local practicing=false
@@ -110,9 +112,8 @@ advance = function(skip)
 end
 local function previous()
   failure=nil
-  if progress.step == "hello" then
-    persist(); tos.back.intercept(false); tos.page.release(currentPage or "hello"); return
-  end
+  -- Back on the first screen stays here: unfinished setup is not left by Back (owner decision 2026-11-21).
+  if progress.step == "hello" then confirmSkip=false; render(); return end
   if progress.step == "gestures" and progress.gesture > 1 then
     progress.gesture=progress.gesture-1; persist(); route(); return
   end
@@ -171,7 +172,8 @@ render = function()
   end
   local step = progress.step
   local state = { step=step, title=t(step), subtitle=failure or "", primary=t("continue"), secondary="", back=t("back"),
-                  fields={}, hero="", greeting=languages[greeting][3], public=publicState() }
+                  fields={}, hero="", greeting=languages[greeting][3], public=publicState(),
+                  skipLabel=t(confirmSkip and "skipConfirm" or "skipSetup") }
   shownFields = {}
   if step == "language" then
     local current = tos.locale()
@@ -258,11 +260,15 @@ tos.on("page.enter", function(page, variant, params)
   end
   route()
 end)
-tos.on("page.leave", function() continuation=continuation+1; visible=false; cancelTimer(); stopPractice(); persist() end)
+tos.on("page.leave", function() continuation=continuation+1; visible=false; confirmSkip=false; cancelTimer(); stopPractice(); persist() end)
 tos.on("stop", function() continuation=continuation+1; visible=false; cancelTimer(); stopPractice(); persist() end)
 tos.on("back", function() if visible then previous() end end)
 tos.on("locale", function() if visible then render() end end)
-tos.on("device", function() if visible and progress.step == "wifi" then render() end end)
+tos.on("device", function()
+  if not visible or progress.step ~= "wifi" then return end
+  -- Connected from Android's Wi-Fi page: go straight on, the OS brings this screen back to the front.
+  if online() then advance(false) else render() end
+end)
 tos.on("location", function() if visible and progress.step == "location" then render() end end)
 
 local function primary()
@@ -285,9 +291,11 @@ tos.on("tap", function(name, action)
   if not visible then return end
   if name == "hello.next" or name == "hello.skip" or name == "hello.accessibility" then
     if currentPage~="hello" or progress.step~="hello" then return end
+    if name=="hello.skip" and not confirmSkip then confirmSkip=true; render(); return end
+    local confirmed=confirmSkip; confirmSkip=false
     if name=="hello.next" then advance(false)
-    elseif name=="hello.skip" then skipAll()
-    else tos.device.openAndroid("accessibility") end
+    elseif name=="hello.skip" and confirmed then skipAll()
+    else render(); tos.device.openAndroid("accessibility") end
   elseif name == "gesture.next" or name == "gesture.skip" or name == "gesture.back" then
     if currentPage~="gestures" or progress.step~="gestures" then return end
     if name=="gesture.next" then primary() elseif name=="gesture.skip" then secondary() else previous() end
@@ -299,10 +307,7 @@ end)
 tos.on("practice", function(name)
   if not visible or progress.step ~= "gestures" or name ~= practiceNames[progress.gesture] then return end
   progress.gesture=progress.gesture+1; persist()
-  if name == "home" then
-    -- Home is the global exit. Persist the next lesson without taking the screen back.
-    return
-  end
+  -- The OS only recognises the lesson; unfinished setup stays on screen, Home included.
   render(); startPractice()
 end)
 tos.on("form.change", function(key, value)

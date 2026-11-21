@@ -18,6 +18,8 @@ class DeckRouter(
     private val shouldStartOnboarding: () -> Boolean = { false },
     private val onOnboardingPrompt: () -> Unit = {},
     private val onboardingIdleMillis: () -> Long = { 1_800_000L },
+    /** The completed setup version (`onboarding.done`); below [OnboardingPolicy.VERSION] setup is unfinished. */
+    private val onboardingDone: () -> Int = { OnboardingPolicy.VERSION },
 ) {
     private val preferences = context.getSharedPreferences("deck", Context.MODE_PRIVATE)
     var lastNavigationReason = "initial"; private set
@@ -30,8 +32,16 @@ class DeckRouter(
     private val nav = NavStack()
     private val gate = BackGate()
     private val onboardingEntry = OnboardingEntryPolicy()
-    private val onboardingIdle = Runnable { if (onboardingOpen) homeKey() }
+    /** Idle setup is not left; it only stops holding full attention, so the display dims as usual until touched. */
+    private val onboardingIdle = Runnable { if (onboardingOpen) onboardingIdleExpired = true }
+    private var onboardingIdleExpired = false
     val onboardingOpen: Boolean get() = nav.has(NavStack.Kind.ONBOARDING)
+    /** Setup is on screen and somebody touched it recently: keep the display at full attention, as on the settings page. */
+    val onboardingHoldsAttention: Boolean get() = onboardingOpen && !onboardingIdleExpired
+    /** Unfinished setup cannot be left by Home, the bottom-edge swipe or Back (only completing, a confirmed skip, or rescue). */
+    private val onboardingLocked: Boolean get() = OnboardingPolicy.holdsScreen(onboardingOpen, onboardingDone())
+    /** A Home press must not suppress this start's automatic entry into unfinished setup. */
+    private fun noteHomeRequest() { if (onboardingDone() >= OnboardingPolicy.VERSION) onboardingEntry.homeRequested() }
     private val ambientRole = Runnable {
         if (store.current.attention == Attention.AMBIENT && store.current.theme != Theme.NIGHT && !nav.has(NavStack.Kind.TAKEOVER) && !settingsOpen && !onboardingOpen) {
             pages.firstOrNull { "ambient" in it.roles }?.let { showBase(it, reason = "system") }
@@ -110,6 +120,7 @@ class DeckRouter(
     /** Any touch keeps the settings page open for another 30 seconds. */
     fun noteInteraction() {
         if (onboardingOpen) {
+            onboardingIdleExpired = false
             handler.removeCallbacks(onboardingIdle)
             handler.postDelayed(onboardingIdle, onboardingIdleMillis())
         }
@@ -147,6 +158,7 @@ class DeckRouter(
             select(page, 1, false, params = JSONObject().put("mode", mode), reason = "onboarding")
         } else {
             homeKey()
+            onboardingIdleExpired = false
             if (!push(NavStack.Kind.ONBOARDING, page, 1, params = JSONObject().put("mode", mode), reason = "onboarding")) return false
         }
         noteInteraction()
@@ -186,8 +198,9 @@ class DeckRouter(
     }
 
     /** The Home key always means "take me home": every layer goes, and the page is the home page. */
-    fun homeKey() {
-        onboardingEntry.homeRequested()
+    fun homeKey(leavingSetup: Boolean = false) {
+        noteHomeRequest()
+        if (onboardingLocked && !leavingSetup) { noteInteraction(); return }
         handler.removeCallbacks(settingsIdle)
         handler.removeCallbacks(onboardingIdle)
         val home = homePage ?: return
@@ -198,7 +211,8 @@ class DeckRouter(
 
     /** Global physical bottom edge: always Home, regardless of the page/application we left. */
     fun homeGesture(): Boolean {
-        onboardingEntry.homeRequested()
+        noteHomeRequest()
+        if (onboardingLocked) { noteInteraction(); return false }
         val target = homePage ?: return false
         handler.removeCallbacks(settingsIdle)
         handler.removeCallbacks(onboardingIdle)
@@ -249,6 +263,7 @@ class DeckRouter(
         }
         if (top.kind == NavStack.Kind.SETTINGS) handler.removeCallbacks(settingsIdle)
         if (top.kind == NavStack.Kind.ONBOARDING) {
+            if (onboardingLocked) { noteInteraction(); return BackResult.DELIVERED }
             homeKey()
             return BackResult.POPPED
         }
@@ -285,7 +300,8 @@ class DeckRouter(
         if (onboardingOpen) {
             // Only the verified onboarding owner can replace its own step. No takeover can steal it.
             if (page.pluginId != currentPage?.pluginId || "onboarding" !in page.roles) return
-            if (release) homeKey()
+            // The setup plugin's own release (finished, or a confirmed skip) is the sanctioned way out.
+            if (release) homeKey(leavingSetup = true)
             else {
                 nav.replaceTop(NavStack.Frame(page.key, resolveVariant(page, null)))
                 select(page, 1, false, reason = "onboarding_step")

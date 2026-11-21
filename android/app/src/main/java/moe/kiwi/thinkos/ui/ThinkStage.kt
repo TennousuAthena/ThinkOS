@@ -817,7 +817,9 @@ class ThinkStage(
         if (event.actionMasked == MotionEvent.ACTION_DOWN) {
             endPanelTouch()
             val density = resources.displayMetrics.density
-            pullPossible = !panel.showing && events.panelEnabled && !router.settingsOpen && router.panelPage != null && event.y <= events.panelEdgeDp * density
+            // Setup has no control sheet: a pull there is only the practice lesson, which never opens it.
+            pullPossible = !panel.showing && events.panelEnabled && !router.settingsOpen && (!router.onboardingOpen || practiceActive()) &&
+                router.panelPage != null && event.y <= events.panelEdgeDp * density
             backPossible = events.backEnabled && (panel.showing || router.canGoBack || current?.hasBack == true) && BackGesture.startsAtEdge(event.x, events.backEdgeDp * density)
             upPossible = events.upEnabled && !store.current.safeMode && router.homePage != null &&
                 (panel.showing || router.currentPage != router.homePage || router.canGoBack) &&

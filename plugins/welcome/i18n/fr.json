@@ -6,6 +6,7 @@
   "back": "Retour",
   "skip": "Ignorer",
   "skipSetup": "Ignorer la configuration",
+  "skipConfirm": "Confirmer : ignorer la configuration",
   "accessibility": "Accessibilité",
   "language": "Langue",
   "region": "Région",

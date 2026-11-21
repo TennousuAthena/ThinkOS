@@ -29,7 +29,18 @@ class OnboardingPolicyTest {
         assertFalse(OnboardingPolicy.prompt(0, 3, 3, false))
         assertFalse(OnboardingPolicy.prompt(1, 0, 3, false))
         assertFalse(OnboardingPolicy.prompt(0, 0, 3, true))
-        assertFalse(OnboardingPolicy.prompt(0, 0, 0, false))
+    }
+    @Test fun withoutAPromptLimitUnfinishedSetupReturnsOnEveryStart() {
+        // onboarding.max_prompts defaults to 0 since 2026-11-21: no limit.
+        assertTrue(OnboardingPolicy.prompt(0, 0, 0, false))
+        assertTrue(OnboardingPolicy.prompt(0, 999, 0, false))
+        assertFalse(OnboardingPolicy.prompt(1, 999, 0, false))
+        assertFalse(OnboardingPolicy.prompt(0, 0, 0, true))
+    }
+    @Test fun onlyUnfinishedSetupOnScreenHoldsHomeAndBack() {
+        assertTrue(OnboardingPolicy.holdsScreen(open = true, done = 0))
+        assertFalse(OnboardingPolicy.holdsScreen(open = true, done = OnboardingPolicy.VERSION))   // finishing skipped screens later
+        assertFalse(OnboardingPolicy.holdsScreen(open = false, done = 0))
     }
     @Test fun homeFromAnAndroidScreenSetupOpenedReturnsToSetupButEveryOtherHomeLeavesIt() {
         assertTrue(OnboardingPolicy.homeKeepsSetup(openedFromSetup = true, setupOpen = true))

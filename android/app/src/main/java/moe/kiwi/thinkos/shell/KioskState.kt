@@ -17,6 +17,8 @@ object KioskState {
      * Home brings us back, so this lives with the process, not an Activity: Home from that screen means "back to setup".
      */
     @Volatile var foreignFromSetup = false
+    /** Which Android screen setup opened (`wifi`, `date`, ...); null otherwise. Cleared when ThinkOS is back in front. */
+    @Volatile var setupForeignTarget: String? = null
     /**
      * While an Android app is in front because the user opened it (ADR-035), the watchdog leaves it alone until this moment
      * (elapsed realtime). 0 means no such app is out; [Long.MAX_VALUE] means it may stay as long as it likes.

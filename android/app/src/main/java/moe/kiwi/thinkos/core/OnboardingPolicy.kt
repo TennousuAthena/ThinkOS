@@ -5,8 +5,12 @@ object OnboardingPolicy {
     const val VERSION = 1
     fun adoptExisting(hadLocalSettings: Boolean, hasCompletionValue: Boolean, initialized: Boolean): Boolean =
         !initialized && hadLocalSettings && !hasCompletionValue
+    /** [maxPrompts] 0 (the default since 2026-11-21) means no limit: unfinished setup returns on every start. */
     fun prompt(done: Int, attempts: Int, maxPrompts: Int, safeMode: Boolean): Boolean =
-        !safeMode && done < VERSION && attempts < maxPrompts
+        !safeMode && done < VERSION && (maxPrompts <= 0 || attempts < maxPrompts)
+
+    /** Unfinished first-run setup on screen: Home, the bottom-edge swipe and Back stay on it (owner decision 2026-11-21). */
+    fun holdsScreen(open: Boolean, done: Int): Boolean = open && done < VERSION
 
     /** Home from an Android screen that setup itself opened (Wi-Fi, date) means "back to setup"; any other Home leaves it. */
     fun homeKeepsSetup(openedFromSetup: Boolean, setupOpen: Boolean): Boolean = openedFromSetup && setupOpen
