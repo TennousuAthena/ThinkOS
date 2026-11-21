@@ -324,7 +324,7 @@ class PublishTest(unittest.TestCase):
             self.fake.events.clear(); self.fake.releases.clear(); self.fake.assets.clear()
             if state == 'changed':
                 self.fake.releases['v0.1.32'] = {'id': 'earlier'}
-                self.fake.assets[('earlier', quote(FFMPEG))] = archive[:-1] + b'\x00'
+                self.fake.assets[('earlier', quote(FFMPEG))] = archive[:-1] + bytes([archive[-1] ^ 1])  # always differs
             with self.assertRaises(publish.PublishError):
                 self.run_publish(self.prepare(ffmpeg=archive), [self.cnb()], execute=True)
             self.assertFalse([event for event in self.fake.events if event[0] in ('create', 'confirm')], state)
