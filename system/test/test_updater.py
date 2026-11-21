@@ -534,6 +534,7 @@ int main(int argc,char **argv) {
         (self.modules / 'thinkos-cast/service.sh').write_text('changed')
         self.assertEqual(self.request('ROLLBACK'), 'OK')
         self.assertEqual((self.modules / 'thinkos-cast/service.sh').read_text(), 'old service\n')
+        self.assertEqual((self.modules / 'thinkos-cast').stat().st_mode & 0o777, 0o755)
         self.assertEqual(outside.read_text(), 'do not touch')
         self.assertFalse(self.status()['transaction'])
 

@@ -844,7 +844,8 @@ static int restore_modules(int dir) {
         if (!fstatat(modules, previous, &old, AT_SYMLINK_NOFOLLOW) || errno != ENOENT || remove_tree(modules, temporary, 0)) { rc = -1; break; }
         if (journal.originals & (1u << i)) {
             int source = open_dir_at(dir, ids[i]), target = make_dir_at(modules, temporary);
-            if (source < 0 || target < 0 || copy_tree(source, target, 0)) rc = -1;
+            /* The private backup's top directory is 0700; a Magisk module directory is 0755. */
+            if (source < 0 || target < 0 || copy_tree(source, target, 0) || fchmod(target, 0755)) rc = -1;
             if (source >= 0) close(source);
             if (target >= 0) close(target);
             if (rc) break;
